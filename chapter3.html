@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 4: Your First SwiftUI App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .lesson-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        .lesson-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .lesson-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .code-panel {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+        }
+
+        .code-header {
+            background: #2d2d30;
+            padding: 15px;
+            border-bottom: 1px solid #3e3e42;
+            font-weight: 600;
+            color: #cccccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-content {
+            padding: 20px;
+            white-space: pre-wrap;
+        }
+
+        .simulator-panel {
+            flex: 1;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 280px;
+            height: 560px;
+            background: #000;
+            border-radius: 35px;
+            padding: 25px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 30px;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .app-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .lesson-objectives {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        .lesson-objectives h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .lesson-objectives ul {
+            margin-left: 20px;
+            color: #333;
+        }
+
+        .lesson-objectives li {
+            margin: 5px 0;
+        }
+
+        /* Enhanced syntax highlighting */
+        .keyword { color: #ff79c6; font-weight: bold; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; font-style: italic; }
+        .type { color: #8be9fd; font-weight: bold; }
+        .function { color: #50fa7b; }
+        .property { color: #bd93f9; }
+        .number { color: #ffb86c; }
+        .operator { color: #ff79c6; }
+        .modifier { color: #8be9fd; }
+        
+        /* Bright explanations for dark background */
+        .explanation { 
+            color: #f8f8f2; 
+            background: rgba(98, 114, 164, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #50fa7b;
+        }
+        
+        .explanation-title {
+            color: #50fa7b;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .explanation-content {
+            color: #f8f8f2;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .code-explanation {
+            color: #f1fa8c;
+            background: rgba(241, 250, 140, 0.15);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #f1fa8c;
+        }
+
+        .important-note {
+            color: #ff7979;
+            background: rgba(255, 121, 121, 0.15);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #ff7979;
+        }
+
+        .pro-tip {
+            color: #74b9ff;
+            background: rgba(116, 185, 255, 0.15);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #74b9ff;
+        }
+
+        /* Counter app styles */
+        .counter-app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .counter-display {
+            font-size: 72px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 30px 0;
+        }
+
+        .counter-buttons {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .counter-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .counter-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .counter-btn.minus {
+            background: #dc3545;
+        }
+
+        .counter-btn.plus {
+            background: #28a745;
+        }
+
+        .reset-btn {
+            background: rgba(108, 117, 125, 0.2);
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 4px;
+            border-radius: 2px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .lesson-content {
+                flex-direction: column;
+            }
+            
+            .phone-frame {
+                width: 250px;
+                height: 500px;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chapter 4: Your First SwiftUI App</h1>
+            <p>Build Complete, Interactive Applications from Scratch</p>
+        </div>
+
+        <div class="lesson-container">
+            <div class="lesson-header">
+                <h2 id="lessonTitle">4.1 App Structure and Entry Point</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 25%"></div>
+                </div>
+            </div>
+            
+            <div class="lesson-content">
+                <div class="code-panel">
+                    <div class="code-header">
+                        <span id="codeFileName">App.swift</span>
+                        <span id="codeType">Application Structure</span>
+                    </div>
+                    <div class="code-content" id="codeContent">
+<div class="explanation">
+<div class="explanation-title">🏗️ SWIFTUI APP STRUCTURE</div>
+<div class="explanation-content">
+Every SwiftUI app starts with an App struct that defines the entry point and overall structure. This is where your app begins its lifecycle and determines what content to show.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<div class="code-explanation">
+🚀 APP ENTRY POINT: @main tells Swift "start the app here". Every SwiftUI app needs exactly one @main entry point.
+</div>
+
+<span class="keyword">@main</span>
+<span class="keyword">struct</span> <span class="type">MyFirstApp</span>: <span class="type">App</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">ContentView</span>()
+        }
+    }
+}
+
+<div class="code-explanation">
+📱 APP PROTOCOL: The App protocol requires a body property that returns Scene(s). WindowGroup is the most common scene type for iOS apps.
+</div>
+
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="type">Text</span>(<span class="string">"Welcome to SwiftUI!"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Your First App is Running"</span>)
+                .<span class="modifier">font</span>(.<span class="property">title2</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">gray</span>)
+            
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
+                .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
+                .<span class="modifier">foregroundColor</span>(.<span class="property">yellow</span>)
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="important-note">
+⚠️ KEY CONCEPTS: The App struct is your entry point, ContentView is your main interface, and the View protocol defines your UI structure.
+</div>
+                    </div>
+                </div>
+                
+                <div class="simulator-panel">
+                    <div class="phone-frame">
+                        <div class="screen">
+                            <div class="status-bar">
+                                <span>9:41</span>
+                                <span>📶 📶 🔋</span>
+                            </div>
+                            <div class="app-content" id="simulator">
+                                <div style="text-align: center; padding: 40px 20px;">
+                                    <div style="font-size: 28px; font-weight: bold; color: #007bff; margin-bottom: 15px;">Welcome to SwiftUI!</div>
+                                    <div style="font-size: 16px; color: #666; margin-bottom: 30px;">Your First App is Running</div>
+                                    <div style="font-size: 48px; color: #ffc107;">⭐</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-objectives">
+                        <h4>Learning Objectives:</h4>
+                        <ul id="objectives">
+                            <li>Understand SwiftUI app structure and entry points</li>
+                            <li>Learn about the App protocol and Scene hierarchy</li>
+                            <li>Master the relationship between App, Scene, and View</li>
+                            <li>Create your first functional SwiftUI application</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="previousLesson()">← Previous</button>
+            <span id="lessonCounter">1 / 4</span>
+            <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLesson = 0;
+        let counter = 0;
+
+        const lessons = [
+            {
+                title: "4.1 App Structure and Entry Point",
+                fileName: "App.swift",
+                fileType: "Application Structure",
+                objectives: [
+                    "Understand SwiftUI app structure and entry points",
+                    "Learn about the App protocol and Scene hierarchy",
+                    "Master the relationship between App, Scene, and View",
+                    "Create your first functional SwiftUI application"
+                ],
+                code: `<div class="explanation">
+<div class="explanation-title">🏗️ SWIFTUI APP STRUCTURE</div>
+<div class="explanation-content">
+Every SwiftUI app starts with an App struct that defines the entry point and overall structure. This is where your app begins its lifecycle and determines what content to show.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<div class="code-explanation">
+🚀 APP ENTRY POINT: @main tells Swift "start the app here". Every SwiftUI app needs exactly one @main entry point.
+</div>
+
+<span class="keyword">@main</span>
+<span class="keyword">struct</span> <span class="type">MyFirstApp</span>: <span class="type">App</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">ContentView</span>()
+        }
+    }
+}
+
+<div class="code-explanation">
+📱 APP PROTOCOL: The App protocol requires a body property that returns Scene(s). WindowGroup is the most common scene type for iOS apps.
+</div>
+
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="type">Text</span>(<span class="string">"Welcome to SwiftUI!"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Your First App is Running"</span>)
+                .<span class="modifier">font</span>(.<span class="property">title2</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">gray</span>)
+            
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
+                .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
+                .<span class="modifier">foregroundColor</span>(.<span class="property">yellow</span>)
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="important-note">
+⚠️ KEY CONCEPTS: The App struct is your entry point, ContentView is your main interface, and the View protocol defines your UI structure.
+</div>`,
+                simulator: `<div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 28px; font-weight: bold; color: #007bff; margin-bottom: 15px;">Welcome to SwiftUI!</div>
+                    <div style="font-size: 16px; color: #666; margin-bottom: 30px;">Your First App is Running</div>
+                    <div style="font-size: 48px; color: #ffc107;">⭐</div>
+                </div>`
+            },
+            {
+                title: "4.2 Building a Counter App",
+                fileName: "CounterApp.swift",
+                fileType: "Interactive App",
+                objectives: [
+                    "Learn state management with @State property wrapper",
+                    "Create interactive buttons that respond to user input",
+                    "Understand how SwiftUI automatically updates the UI",
+                    "Build your first stateful application"
+                ],
+                code: `<div class="explanation">
+<div class="explanation-title">🔢 COUNTER APP WITH STATE</div>
+<div class="explanation-content">
+State is what makes SwiftUI apps interactive. When state changes, SwiftUI automatically updates the UI to reflect those changes. This is the foundation of reactive programming.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">CounterApp</span>: <span class="type">View</span> {
+    <span class="comment">// @State makes this variable observable by SwiftUI</span>
+    <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">count</span> = <span class="number">0</span>
+
+<div class="code-explanation">
+🔄 REACTIVE MAGIC: When @State variables change, SwiftUI automatically recomputes and redraws the affected parts of the UI.
+</div>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">30</span>) {
+            <span class="type">Text</span>(<span class="string">"Counter App"</span>)
+                .<span class="modifier">font</span>(.<span class="property">title</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+            
+            <span class="comment">// This text updates automatically when count changes</span>
+            <span class="type">Text</span>(<span class="string">"\\(count)"</span>)
+                .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">72</span>, <span class="property">weight</span>: .<span class="property">bold</span>))
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            
+            <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">40</span>) {
+                <span class="type">Button</span>(<span class="string">"-"</span>) {
+                    <span class="property">count</span> -= <span class="number">1</span>
+                }
+                .<span class="modifier">font</span>(.<span class="property">title</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">60</span>, <span class="property">height</span>: <span class="number">60</span>)
+                .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">red</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">white</span>)
+                .<span class="modifier">clipShape</span>(<span class="type">Circle</span>())
+                
+                <span class="type">Button</span>(<span class="string">"+"</span>) {
+                    <span class="property">count</span> += <span class="number">1</span>
+                }
+                .<span class="modifier">font</span>(.<span class="property">title</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">60</span>, <span class="property">height</span>: <span class="number">60</span>)
+                .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">green</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">white</span>)
+                .<span class="modifier">clipShape</span>(<span class="type">Circle</span>())
+            }
+            
+            <span class="type">Button</span>(<span class="string">"Reset"</span>) {
+                <span class="property">count</span> = <span class="number">0</span>
+            }
+            .<span class="modifier">font</span>(.<span class="property">headline</span>)
+            .<span class="modifier">padding</span>()
+            .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">gray</span>.<span class="function">opacity</span>(<span class="number">0.2</span>))
+            .<span class="modifier">cornerRadius</span>(<span class="number">10</span>)
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="pro-tip">
+💡 STATE BEST PRACTICE: Keep @State variables private and use descriptive names. This makes your code more maintainable.
+</div>`,
+                simulator: `<div class="counter-app">
+                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">Counter App</div>
+                    <div class="counter-display" id="counterValue">0</div>
+                    <div class="counter-buttons">
+                        <button class="counter-btn minus" onclick="updateCounter(-1)">-</button>
+                        <button class="counter-btn plus" onclick="updateCounter(1)">+</button>
+                    </div>
+                    <button class="reset-btn" onclick="resetCounter()">Reset</button>
+                </div>`
+            },
+            {
+                title: "4.3 Text Input and Data Binding",
+                fileName: "GreetingApp.swift",
+                fileType: "User Input",
+                objectives: [
+                    "Learn two-way data binding with TextField",
+                    "Understand the @State and $ binding relationship",
+                    "Create responsive interfaces that react to user input",
+                    "Master text field validation and formatting"
+                ],
+                code: `<div class="explanation">
+<div class="explanation-title">📝 TEXT INPUT AND BINDING</div>
+<div class="explanation-content">
+Two-way data binding connects user interface elements to your data. When users type in a TextField, your @State variable updates automatically, and vice versa.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">GreetingApp</span>: <span class="type">View</span> {
+    <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">name</span> = <span class="string">""</span>
+
+<div class="code-explanation">
+🔗 BINDING MAGIC: The $ prefix creates a Binding from an @State variable. This enables two-way communication between UI and data.
+</div>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">30</span>) {
+            <span class="type">Text</span>(<span class="string">"Greeting App"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+            
+            <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">leading</span>, <span class="property">spacing</span>: <span class="number">8</span>) {
+                <span class="type">Text</span>(<span class="string">"Enter your name:"</span>)
+                    .<span class="modifier">font</span>(.<span class="property">headline</span>)
+                    .<span class="modifier">foregroundColor</span>(.<span class="property">secondary</span>)
+                
+                <span class="type">TextField</span>(<span class="string">"Your name here"</span>, <span class="property">text</span>: <span class="operator">$</span><span class="property">name</span>)
+                    .<span class="modifier">textFieldStyle</span>(<span class="type">RoundedBorderTextFieldStyle</span>())
+                    .<span class="modifier">font</span>(.<span class="property">title2</span>)
+            }
+            .<span class="modifier">padding</span>(.<span class="property">horizontal</span>)
+            
+            <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">10</span>) {
+                <span class="keyword">if</span> <span class="property">name</span>.<span class="property">isEmpty</span> {
+                    <span class="type">Text</span>(<span class="string">"Enter your name above"</span>)
+                        .<span class="modifier">font</span>(.<span class="property">title2</span>)
+                        .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+                        .<span class="modifier">padding</span>()
+                        .<span class="modifier">background</span>(
+                            <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">15</span>)
+                                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>.<span class="function">opacity</span>(<span class="number">0.1</span>))
+                        )
+                }
+            }
+            
+            <span class="type">HStack</span> {
+                <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"textformat.123"</span>)
+                <span class="type">Text</span>(<span class="string">"Character count: \\(name.count)"</span>)
+            }
+            .<span class="modifier">font</span>(.<span class="property">caption</span>)
+            .<span class="modifier">foregroundColor</span>(.<span class="property">secondary</span>)
+            
+            <span class="type">Spacer</span>()
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="important-note">
+⚠️ BINDING REQUIREMENTS: Controls that need to modify data (like TextField) require bindings ($), while read-only views (like Text) use the value directly.
+</div>`,
+                simulator: `<div style="text-align: center; padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 30px;">Greeting App</div>
+                    
+                    <div style="text-align: left; margin-bottom: 20px;">
+                        <div style="font-weight: bold; color: #666; margin-bottom: 8px;">Enter your name:</div>
+                        <input type="text" id="nameInput" placeholder="Your name here" oninput="updateGreeting()" style="width: 200px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; text-align: center;">
+                    </div>
+                    
+                    <div id="greetingDisplay" style="background: #f8f9fa; color: #666; padding: 20px; border-radius: 15px; font-size: 18px; font-weight: bold; margin: 20px 0; min-height: 60px; display: flex; align-items: center; justify-content: center;">
+                        Enter your name above
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; justify-content: center; color: #666; font-size: 14px;">
+                        <span>📊</span>
+                        <span id="charCount">Character count: 0</span>
+                    </div>
+                </div>`
+            },
+            {
+                title: "4.4 Building a Complete Todo App",
+                fileName: "TodoApp.swift",
+                fileType: "Full Application",
+                objectives: [
+                    "Combine all learned concepts into one complete app",
+                    "Create dynamic lists with add/delete functionality",
+                    "Apply state management and user input together",
+                    "Build a real-world application from scratch"
+                ],
+                code: `<div class="explanation">
+<div class="explanation-title">🎉 COMPLETE TODO APPLICATION</div>
+<div class="explanation-content">
+Let's combine everything you've learned into one complete, functional SwiftUI app. This demonstrates how all the pieces work together in a real application.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="comment">// Data model for todo items</span>
+<span class="keyword">struct</span> <span class="type">TodoItem</span>: <span class="type">Identifiable</span> {
+    <span class="keyword">let</span> <span class="property">id</span> = <span class="type">UUID</span>()
+    <span class="keyword">var</span> <span class="property">title</span>: <span class="type">String</span>
+    <span class="keyword">var</span> <span class="property">isCompleted</span> = <span class="keyword">false</span>
+}
+
+<div class="code-explanation">
+🏷️ IDENTIFIABLE PROTOCOL: Makes items uniquely identifiable for SwiftUI. UUID() generates unique identifiers automatically.
+</div>
+
+<span class="keyword">struct</span> <span class="type">TodoApp</span>: <span class="type">View</span> {
+    <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">todos</span>: [<span class="type">TodoItem</span>] = [
+        <span class="type">TodoItem</span>(<span class="property">title</span>: <span class="string">"Learn SwiftUI basics"</span>, <span class="property">isCompleted</span>: <span class="keyword">true</span>),
+        <span class="type">TodoItem</span>(<span class="property">title</span>: <span class="string">"Build first app"</span>),
+        <span class="type">TodoItem</span>(<span class="property">title</span>: <span class="string">"Master state management"</span>)
+    ]
+    
+    <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">newTodoText</span> = <span class="string">""</span>
+    
+    <span class="keyword">var</span> <span class="property">completedCount</span>: <span class="type">Int</span> {
+        <span class="property">todos</span>.<span class="function">filter</span> { <span class="operator">$</span><span class="number">0</span>.<span class="property">isCompleted</span> }.<span class="property">count</span>
+    }
+
+<div class="code-explanation">
+📊 COMPUTED PROPERTY: This calculates completed tasks in real-time. When todos change, this automatically updates.
+</div>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">NavigationView</span> {
+            <span class="type">VStack</span> {
+                <span class="comment">// Progress header</span>
+                <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">8</span>) {
+                    <span class="type">Text</span>(<span class="string">"Progress: \\(completedCount)/\\(todos.count)"</span>)
+                        .<span class="modifier">font</span>(.<span class="property">headline</span>)
+                    
+                    <span class="type">ProgressView</span>(<span class="property">value</span>: <span class="type">Double</span>(<span class="property">completedCount</span>), <span class="property">total</span>: <span class="type">Double</span>(<span class="property">todos</span>.<span class="property">count</span>))
+                        .<span class="modifier">progressViewStyle</span>(<span class="type">LinearProgressViewStyle</span>(<span class="property">tint</span>: .<span class="property">blue</span>))
+                }
+                .<span class="modifier">padding</span>()
+                .<span class="modifier">background</span>(<span class="type">Color</span>(.<span class="property">systemGray6</span>))
+                .<span class="modifier">cornerRadius</span>(<span class="number">12</span>)
+                .<span class="modifier">padding</span>()
+                
+                <span class="comment">// Add new todo section</span>
+                <span class="type">HStack</span> {
+                    <span class="type">TextField</span>(<span class="string">"Add new todo"</span>, <span class="property">text</span>: <span class="operator">$</span><span class="property">newTodoText</span>)
+                        .<span class="modifier">textFieldStyle</span>(<span class="type">RoundedBorderTextFieldStyle</span>())
+                    
+                    <span class="type">Button</span>(<span class="string">"Add"</span>) {
+                        <span class="function">addTodo</span>()
+                    }
+                    .<span class="modifier">disabled</span>(<span class="property">newTodoText</span>.<span class="property">isEmpty</span>)
+                    .<span class="modifier">buttonStyle</span>(.<span class="property">borderedProminent</span>)
+                }
+                .<span class="modifier">padding</span>()
+                
+                <span class="comment">// Todo list</span>
+                <span class="type">List</span> {
+                    <span class="type">ForEach</span>(<span class="property">todos</span>) { <span class="property">todo</span> <span class="keyword">in</span>
+                        <span class="type">HStack</span> {
+                            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="property">todo</span>.<span class="property">isCompleted</span> ? <span class="string">"checkmark.circle.fill"</span> : <span class="string">"circle"</span>)
+                                .<span class="modifier">foregroundColor</span>(<span class="property">todo</span>.<span class="property">isCompleted</span> ? .<span class="property">green</span> : .<span class="property">gray</span>)
+                                .<span class="modifier">font</span>(.<span class="property">title2</span>)
+                                .<span class="modifier">onTapGesture</span> {
+                                    <span class="function">toggleTodo</span>(<span class="property">todo</span>)
+                                }
+                            
+                            <span class="type">Text</span>(<span class="property">todo</span>.<span class="property">title</span>)
+                                .<span class="modifier">strikethrough</span>(<span class="property">todo</span>.<span class="property">isCompleted</span>)
+                                .<span class="modifier">foregroundColor</span>(<span class="property">todo</span>.<span class="property">isCompleted</span> ? .<span class="property">secondary</span> : .<span class="property">primary</span>)
+                            
+                            <span class="type">Spacer</span>()
+                        }
+                    }
+                    .<span class="modifier">onDelete</span>(<span class="property">perform</span>: <span class="function">deleteTodos</span>)
+                }
+                .<span class="modifier">listStyle</span>(<span class="type">PlainListStyle</span>())
+            }
+            .<span class="modifier">navigationTitle</span>(<span class="string">"My Tasks"</span>)
+        }
+    }
+    
+    <span class="keyword">func</span> <span class="function">addTodo</span>() {
+        <span class="keyword">let</span> <span class="property">newTodo</span> = <span class="type">TodoItem</span>(<span class="property">title</span>: <span class="property">newTodoText</span>)
+        <span class="property">todos</span>.<span class="function">append</span>(<span class="property">newTodo</span>)
+        <span class="property">newTodoText</span> = <span class="string">""</span>
+    }
+    
+    <span class="keyword">func</span> <span class="function">toggleTodo</span>(<span class="keyword">_</span> <span class="property">todo</span>: <span class="type">TodoItem</span>) {
+        <span class="keyword">if</span> <span class="keyword">let</span> <span class="property">index</span> = <span class="property">todos</span>.<span class="function">firstIndex</span>(<span class="property">where</span>: { <span class="operator">$</span><span class="number">0</span>.<span class="property">id</span> == <span class="property">todo</span>.<span class="property">id</span> }) {
+            <span class="property">todos</span>[<span class="property">index</span>].<span class="property">isCompleted</span>.<span class="function">toggle</span>()
+        }
+    }
+    
+    <span class="keyword">func</span> <span class="function">deleteTodos</span>(<span class="property">offsets</span>: <span class="type">IndexSet</span>) {
+        <span class="property">todos</span>.<span class="function">remove</span>(<span class="property">atOffsets</span>: <span class="property">offsets</span>)
+    }
+}
+
+<div class="pro-tip">
+🎊 CONGRATULATIONS: You've built a complete SwiftUI app with navigation, state management, user input, lists, and interactions!
+</div>`,
+                simulator: `<div style="height: 100%; display: flex; flex-direction: column; padding: 15px;">
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="color: #333; margin-bottom: 5px;">My Tasks</div>
+                        <div style="font-size: 14px; color: #666;">Progress: <span id="progressText">1/3</span></div>
+                        <div style="background: #e9ecef; height: 6px; border-radius: 3px; margin-top: 8px; overflow: hidden;">
+                            <div id="progressBar" style="background: #007bff; height: 100%; width: 33%; transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                        <input type="text" id="newTaskInput" placeholder="Add new todo" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" onkeypress="if(event.key==='Enter') addNewTask()">
+                        <button onclick="addNewTask()" style="background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">Add</button>
+                    </div>
+                    
+                    <div id="taskList" style="flex: 1; overflow-y: auto;">
+                        <div class="task-item" onclick="toggleTask(0)" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                            <span style="color: #28a745; margin-right: 12px; font-size: 18px; font-weight: bold;">✓</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; text-decoration: line-through; color: #666;">Learn SwiftUI basics</div>
+                            </div>
+                            <button onclick="deleteTask(0); event.stopPropagation();" style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px;">×</button>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(1)" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                            <span style="color: #666; margin-right: 12px; font-size: 18px; font-weight: bold;">○</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #333;">Build first app</div>
+                            </div>
+                            <button onclick="deleteTask(1); event.stopPropagation();" style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px;">×</button>
+                        </div>
+                        <div class="task-item" onclick="toggleTask(2)" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px; cursor: pointer;">
+                            <span style="color: #666; margin-right: 12px; font-size: 18px; font-weight: bold;">○</span>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: #333;">Master state management</div>
+                            </div>
+                            <button onclick="deleteTask(2); event.stopPropagation();" style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px;">×</button>
+                        </div>
+                    </div>
+                </div>`
+            }
+        ];
+
+        // Interactive functions
+        function updateCounter(increment) {
+            counter += increment;
+            if (counter < 0) counter = 0;
+            document.getElementById('counterValue').textContent = counter;
+        }
+
+        function resetCounter() {
+            counter = 0;
+            document.getElementById('counterValue').textContent = counter;
+        }
+
+        function updateGreeting() {
+            const input = document.getElementById('nameInput');
+            const display = document.getElementById('greetingDisplay');
+            const charCount = document.getElementById('charCount');
+            
+            if (input && display) {
+                const name = input.value.trim();
+                if (name) {
+                    display.textContent = `Hello, ${name}! 👋`;
+                    display.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    display.style.color = 'white';
+                } else {
+                    display.textContent = 'Enter your name above';
+                    display.style.background = '#f8f9fa';
+                    display.style.color = '#666';
+                }
+                
+                if (charCount) {
+                    charCount.textContent = `Character count: ${name.length}`;
+                }
+            }
+        }
+
+        // Todo app functionality
+        let appTasks = [
+            { id: 0, title: "Learn SwiftUI basics", completed: true },
+            { id: 1, title: "Build first app", completed: false },
+            { id: 2, title: "Master state management", completed: false }
+        ];
+
+        function addNewTask() {
+            const input = document.getElementById('newTaskInput');
+            if (input && input.value.trim()) {
+                const newTask = {
+                    id: appTasks.length,
+                    title: input.value.trim(),
+                    completed: false
+                };
+                appTasks.push(newTask);
+                input.value = '';
+                renderTasks();
+                updateProgress();
+            }
+        }
+
+        function toggleTask(id) {
+            const task = appTasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                renderTasks();
+                updateProgress();
+            }
+        }
+
+        function deleteTask(id) {
+            appTasks = appTasks.filter(t => t.id !== id);
+            renderTasks();
+            updateProgress();
+        }
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            if (taskList) {
+                taskList.innerHTML = appTasks.map(task => `
+                    <div class="task-item" onclick="toggleTask(${task.id})" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: background 0.2s;">
+                        <span style="color: ${task.completed ? '#28a745' : '#666'}; margin-right: 12px; font-size: 18px; font-weight: bold;">
+                            ${task.completed ? '✓' : '○'}
+                        </span>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; ${task.completed ? 'text-decoration: line-through; color: #666;' : 'color: #333;'}">${task.title}</div>
+                        </div>
+                        <button onclick="deleteTask(${task.id}); event.stopPropagation();" style="background: #dc3545; color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px;">×</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateProgress() {
+            const completedCount = appTasks.filter(t => t.completed).length;
+            const totalCount = appTasks.length;
+            const percentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
+            
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (progressText) {
+                progressText.textContent = `${completedCount}/${totalCount}`;
+            }
+            
+            if (progressBar) {
+                progressBar.style.width = `${percentage}%`;
+            }
+        }
+
+        function updateLesson() {
+            const lesson = lessons[currentLesson];
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('codeFileName').textContent = lesson.fileName;
+            document.getElementById('codeType').textContent = lesson.fileType;
+            document.getElementById('codeContent').innerHTML = lesson.code;
+            document.getElementById('simulator').innerHTML = lesson.simulator;
+            document.getElementById('lessonCounter').textContent = `${currentLesson + 1} / ${lessons.length}`;
+            
+            // Update objectives
+            const objectivesList = document.getElementById('objectives');
+            objectivesList.innerHTML = lesson.objectives.map(obj => `<li>${obj}</li>`).join('');
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = ((currentLesson + 1) / lessons.length) * 25;
+            progressBar.style.width = progressPercent + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentLesson === 0;
+            document.getElementById('nextBtn').disabled = currentLesson === lessons.length - 1;
+            
+            // Add smooth transition animation
+            document.querySelector('.lesson-container').style.animation = 'slideUp 0.5s ease-out';
+            
+            // Initialize interactive elements for specific lessons
+            if (currentLesson === 1) {
+                counter = 0;
+            } else if (currentLesson === 3) {
+                setTimeout(() => {
+                    renderTasks();
+                    updateProgress();
+                }, 100);
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                currentLesson++;
+                updateLesson();
+            }
+        }
+
+        function previousLesson() {
+            if (currentLesson > 0) {
+                currentLesson--;
+                updateLesson();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextLesson();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousLesson();
+            }
+        });
+
+        // Add hover effects
+        const style = document.createElement('style');
+        style.textContent = `
+            .task-item:hover {
+                background-color: #e9ecef !important;
+                transform: translateX(2px);
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize
+        updateLesson();
+    </script>
+</body>
+</html>(.<span class="property">gray</span>)
+                } <span class="keyword">else</span> {
+                    <span class="type">Text</span>(<span class="string">"Hello, \\(name)! 👋"</span>)
+                        .<span class="modifier">font</span>(.<span class="property">title</span>)
+                        .<span class="modifier">fontWeight</span>(.<span class="property">semibold</span>)
+                        .<span class="modifier">foregroundColor</span

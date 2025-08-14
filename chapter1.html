@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 1: Introduction to SwiftUI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .lesson-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        .lesson-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .lesson-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .code-panel {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+        }
+
+        .code-header {
+            background: #2d2d30;
+            padding: 15px;
+            border-bottom: 1px solid #3e3e42;
+            font-weight: 600;
+            color: #cccccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-content {
+            padding: 20px;
+            white-space: pre-wrap;
+        }
+
+        .simulator-panel {
+            flex: 1;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 280px;
+            height: 560px;
+            background: #000;
+            border-radius: 35px;
+            padding: 25px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 30px;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .app-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .lesson-info {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            margin: 20px;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            color: #333;
+        }
+
+        .lesson-objectives {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        .lesson-objectives h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .lesson-objectives ul {
+            margin-left: 20px;
+            color: #333;
+        }
+
+        .lesson-objectives li {
+            margin: 5px 0;
+        }
+
+        /* Swift syntax highlighting */
+        .keyword { color: #ff79c6; font-weight: bold; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; font-style: italic; }
+        .type { color: #8be9fd; font-weight: bold; }
+        .function { color: #50fa7b; }
+        .property { color: #bd93f9; }
+        .number { color: #ffb86c; }
+
+        /* Simulator content styles */
+        .intro-view {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .intro-view h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .intro-view p {
+            font-size: 18px;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .feature-list {
+            text-align: left;
+            max-width: 300px;
+            margin: 30px auto 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .comparison-view {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .comparison-section {
+            margin-bottom: 30px;
+        }
+
+        .comparison-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .framework-card {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .framework-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .framework-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .concept-demo {
+            text-align: center;
+            padding: 30px 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .concept-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .concept-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+
+        .swiftui-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 25px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .timeline {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .timeline-date {
+            background: #667eea;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 15px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 4px;
+            border-radius: 2px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .lesson-content {
+                flex-direction: column;
+            }
+            
+            .phone-frame {
+                width: 250px;
+                height: 500px;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chapter 1: Introduction to SwiftUI</h1>
+            <p>Building Modern iOS Apps with Declarative UI</p>
+        </div>
+
+        <div class="lesson-container">
+            <div class="lesson-header">
+                <h2 id="lessonTitle">1.1 What is SwiftUI?</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 12.5%"></div>
+                </div>
+            </div>
+            
+            <div class="lesson-content">
+                <div class="code-panel">
+                    <div class="code-header">
+                        <span id="codeFileName">Introduction.swift</span>
+                        <span id="codeType">Concept</span>
+                    </div>
+                    <div class="code-content" id="codeContent">
+<span class="comment">/*
+SwiftUI: Apple's Modern UI Framework
+
+SwiftUI is a declarative framework for building 
+user interfaces across all Apple platforms.
+
+Key Principles:
+• Declarative syntax
+• Cross-platform compatibility  
+• Real-time previews
+• Data-driven updates
+• Native performance
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// SwiftUI views are structs that conform to the View protocol</span>
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
+            .<span class="function">font</span>(.<span class="property">largeTitle</span>)
+            .<span class="function">foregroundColor</span>(.<span class="property">blue</span>)
+    }
+}
+                    </div>
+                </div>
+                
+                <div class="simulator-panel">
+                    <div class="phone-frame">
+                        <div class="screen">
+                            <div class="status-bar">
+                                <span>9:41</span>
+                                <span>📶 📶 🔋</span>
+                            </div>
+                            <div class="app-content" id="simulator">
+                                <div class="intro-view">
+                                    <div class="swiftui-logo">UI</div>
+                                    <h2>SwiftUI</h2>
+                                    <p>Modern UI Framework</p>
+                                    <p>Build apps for iOS, macOS, watchOS, and tvOS</p>
+                                    <div class="feature-list">
+                                        <div class="feature-item">
+                                            <div class="feature-icon">✨</div>
+                                            Declarative Syntax
+                                        </div>
+                                        <div class="feature-item">
+                                            <div class="feature-icon">⚡</div>
+                                            Real-time Previews
+                                        </div>
+                                        <div class="feature-item">
+                                            <div class="feature-icon">🔄</div>
+                                            Data-driven UI
+                                        </div>
+                                        <div class="feature-item">
+                                            <div class="feature-icon">🚀</div>
+                                            Cross-platform
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-objectives">
+                        <h4>Learning Objectives:</h4>
+                        <ul id="objectives">
+                            <li>Understand what SwiftUI is and its core principles</li>
+                            <li>Learn about declarative vs imperative programming</li>
+                            <li>Explore SwiftUI's cross-platform capabilities</li>
+                            <li>Discover the benefits of modern UI development</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="previousLesson()">← Previous</button>
+            <span id="lessonCounter">1 / 8</span>
+            <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "1.1 What is SwiftUI?",
+                fileName: "Introduction.swift",
+                fileType: "Concept",
+                objectives: [
+                    "Understand what SwiftUI is and its core principles",
+                    "Learn about declarative vs imperative programming", 
+                    "Explore SwiftUI's cross-platform capabilities",
+                    "Discover the benefits of modern UI development"
+                ],
+                code: `<span class="comment">/*
+SwiftUI: Apple's Modern UI Framework
+
+SwiftUI is a declarative framework for building 
+user interfaces across all Apple platforms.
+
+Key Principles:
+• Declarative syntax
+• Cross-platform compatibility  
+• Real-time previews
+• Data-driven updates
+• Native performance
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// SwiftUI views are structs that conform to the View protocol</span>
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
+            .<span class="function">font</span>(.<span class="property">largeTitle</span>)
+            .<span class="function">foregroundColor</span>(.<span class="property">blue</span>)
+    }
+}`,
+                simulator: `<div class="intro-view">
+                    <div class="swiftui-logo">UI</div>
+                    <h2>SwiftUI</h2>
+                    <p>Modern UI Framework</p>
+                    <p>Build apps for iOS, macOS, watchOS, and tvOS</p>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">✨</div>
+                            Declarative Syntax
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">⚡</div>
+                            Real-time Previews
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🔄</div>
+                            Data-driven UI
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🚀</div>
+                            Cross-platform
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.2 SwiftUI vs Traditional UI Frameworks",
+                fileName: "Comparison.swift",
+                fileType: "Comparison",
+                objectives: [
+                    "Compare SwiftUI with UIKit and AppKit",
+                    "Understand the advantages of declarative programming",
+                    "Learn about SwiftUI's modern approach to UI development",
+                    "Explore cross-platform development benefits"
+                ],
+                code: `<span class="comment">// Traditional UIKit approach (Imperative)</span>
+<span class="keyword">class</span> <span class="type">ViewController</span>: <span class="type">UIViewController</span> {
+    <span class="keyword">override</span> <span class="keyword">func</span> <span class="function">viewDidLoad</span>() {
+        <span class="keyword">super</span>.<span class="function">viewDidLoad</span>()
+        
+        <span class="keyword">let</span> <span class="property">label</span> = <span class="type">UILabel</span>()
+        <span class="property">label</span>.<span class="property">text</span> = <span class="string">"Hello, World!"</span>
+        <span class="property">label</span>.<span class="property">font</span> = <span class="type">UIFont</span>.<span class="function">systemFont</span>(<span class="property">ofSize</span>: <span class="number">24</span>)
+        <span class="property">label</span>.<span class="property">textColor</span> = .<span class="property">blue</span>
+        <span class="property">view</span>.<span class="function">addSubview</span>(<span class="property">label</span>)
+        
+        <span class="comment">// Auto Layout constraints...</span>
+    }
+}
+
+<span class="comment">// Modern SwiftUI approach (Declarative)</span>
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">Text</span>(<span class="string">"Hello, World!"</span>)
+            .<span class="function">font</span>(.<span class="property">title</span>)
+            .<span class="function">foregroundColor</span>(.<span class="property">blue</span>)
+    }
+}`,
+                simulator: `<div class="comparison-view">
+                    <div class="comparison-section">
+                        <div class="comparison-title">UI Framework Comparison</div>
+                        
+                        <div class="framework-card">
+                            <div class="framework-name">UIKit (Traditional)</div>
+                            <div class="framework-desc">
+                                • Imperative programming<br>
+                                • Manual memory management<br>
+                                • Complex Auto Layout<br>
+                                • iOS only
+                            </div>
+                        </div>
+                        
+                        <div class="framework-card">
+                            <div class="framework-name">SwiftUI (Modern)</div>
+                            <div class="framework-desc">
+                                • Declarative programming<br>
+                                • Automatic memory management<br>
+                                • Simple layout system<br>
+                                • Cross-platform support
+                            </div>
+                        </div>
+                        
+                        <div class="framework-card">
+                            <div class="framework-name">Key Advantages</div>
+                            <div class="framework-desc">
+                                ✅ Less code to write<br>
+                                ✅ Easier to understand<br>
+                                ✅ Better performance<br>
+                                ✅ Live previews
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.3 Declarative vs Imperative Programming",
+                fileName: "Paradigms.swift", 
+                fileType: "Concept",
+                objectives: [
+                    "Understand declarative programming principles",
+                    "Compare declarative vs imperative approaches",
+                    "Learn how SwiftUI implements declarative patterns",
+                    "Explore the benefits of declarative UI"
+                ],
+                code: `<span class="comment">/*
+Declarative Programming in SwiftUI
+
+Instead of telling the computer HOW to do something,
+you describe WHAT you want the result to be.
+
+Imperative: "Create a button, set its title, add it to view..."
+Declarative: "I want a button that says 'Click Me'"
+*/</span>
+
+<span class="comment">// Declarative approach - describe what you want</span>
+<span class="keyword">struct</span> <span class="type">DeclarativeView</span>: <span class="type">View</span> {
+    <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">isVisible</span> = <span class="keyword">true</span>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span> {
+            <span class="keyword">if</span> <span class="property">isVisible</span> {
+                <span class="type">Text</span>(<span class="string">"I'm visible!"</span>)
+                    .<span class="function">foregroundColor</span>(.<span class="property">green</span>)
+            }
+            
+            <span class="type">Button</span>(<span class="string">"Toggle Visibility"</span>) {
+                <span class="property">isVisible</span>.<span class="function">toggle</span>()
+            }
+        }
+    }
+}`,
+                simulator: `<div class="concept-demo">
+                    <div class="concept-title">Declarative UI Concepts</div>
+                    
+                    <div class="concept-box">
+                        <strong>Imperative</strong><br>
+                        "HOW to do it"<br>
+                        Step-by-step instructions
+                    </div>
+                    
+                    <div class="concept-box">
+                        <strong>Declarative</strong><br>
+                        "WHAT you want"<br>
+                        Describe the desired result
+                    </div>
+                    
+                    <div style="margin: 20px 0; color: #333;">
+                        <strong>SwiftUI Benefits:</strong><br>
+                        • Less boilerplate code<br>
+                        • Easier to understand<br>
+                        • Automatic updates<br>
+                        • Better testability
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.4 SwiftUI Timeline and Evolution", 
+                fileName: "Timeline.swift",
+                fileType: "History",
+                objectives: [
+                    "Learn about SwiftUI's development history",
+                    "Understand major version releases and features", 
+                    "Explore the evolution of Apple's UI frameworks",
+                    "Discover what's coming in future versions"
+                ],
+                code: `<span class="comment">/*
+SwiftUI Evolution Timeline
+
+SwiftUI was introduced at WWDC 2019 and has been
+rapidly evolving with each iOS release.
+
+Key Milestones:
+• 2019: SwiftUI 1.0 - Initial release
+• 2020: SwiftUI 2.0 - Improved APIs, LazyVGrid
+• 2021: SwiftUI 3.0 - AsyncImage, refreshable
+• 2022: SwiftUI 4.0 - Charts, NavigationStack  
+• 2023: SwiftUI 5.0 - Observation framework
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// Example of modern SwiftUI features</span>
+<span class="keyword">struct</span> <span class="type">ModernSwiftUIView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">NavigationStack</span> {
+            <span class="type">List</span> {
+                <span class="type">Text</span>(<span class="string">"SwiftUI 1.0"</span>)
+                <span class="type">Text</span>(<span class="string">"SwiftUI 2.0"</span>) 
+                <span class="type">Text</span>(<span class="string">"SwiftUI 3.0"</span>)
+                <span class="type">Text</span>(<span class="string">"SwiftUI 4.0"</span>)
+                <span class="type">Text</span>(<span class="string">"SwiftUI 5.0"</span>)
+            }
+            .<span class="function">navigationTitle</span>(<span class="string">"SwiftUI Evolution"</span>)
+        }
+    }
+}`,
+                simulator: `<div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">2019</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">SwiftUI 1.0</div>
+                            <div class="timeline-desc">Initial release at WWDC. Basic views, modifiers, and state management.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">2020</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">SwiftUI 2.0</div>
+                            <div class="timeline-desc">LazyVGrid, LazyHGrid, improved performance, and better macOS support.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">2021</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">SwiftUI 3.0</div>
+                            <div class="timeline-desc">AsyncImage, refreshable, searchable, and focus management.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">2022</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">SwiftUI 4.0</div>
+                            <div class="timeline-desc">Charts framework, NavigationStack, and improved animations.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <div class="timeline-date">2023</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">SwiftUI 5.0</div>
+                            <div class="timeline-desc">Observation framework, improved data flow, and performance enhancements.</div>
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.5 Cross-Platform Development",
+                fileName: "CrossPlatform.swift",
+                fileType: "Concept", 
+                objectives: [
+                    "Understand SwiftUI's cross-platform capabilities",
+                    "Learn how to write code once and run everywhere",
+                    "Explore platform-specific adaptations",
+                    "Discover the benefits of unified development"
+                ],
+                code: `<span class="comment">/*
+SwiftUI Cross-Platform Development
+
+Write once, run everywhere:
+• iOS (iPhone & iPad)
+• macOS (Mac computers)
+• watchOS (Apple Watch) 
+• tvOS (Apple TV)
+
+SwiftUI automatically adapts to each platform's
+design guidelines and interaction patterns.
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="keyword">struct</span> <span class="type">CrossPlatformView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span> {
+            <span class="type">Text</span>(<span class="string">"Hello from SwiftUI!"</span>)
+                .<span class="function">font</span>(.<span class="property">largeTitle</span>)
+            
+            <span class="comment">// Platform-specific adaptations</span>
+            #<span class="keyword">if</span> os(iOS)
+            <span class="type">Text</span>(<span class="string">"Running on iPhone/iPad"</span>)
+            #<span class="keyword">elseif</span> os(macOS)
+            <span class="type">Text</span>(<span class="string">"Running on Mac"</span>)
+            #<span class="keyword">elseif</span> os(watchOS)
+            <span class="type">Text</span>(<span class="string">"Running on Apple Watch"</span>)
+            #<span class="keyword">elseif</span> os(tvOS)
+            <span class="type">Text</span>(<span class="string">"Running on Apple TV"</span>)
+            #<span class="keyword">endif</span>
+        }
+    }
+}`,
+                simulator: `<div class="concept-demo">
+                    <div class="concept-title">Cross-Platform SwiftUI</div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📱</div>
+                            <div style="font-weight: bold; color: #333;">iOS</div>
+                            <div style="font-size: 12px; color: #666;">iPhone & iPad</div>
+                        </div>
+                        
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">💻</div>
+                            <div style="font-weight: bold; color: #333;">macOS</div>
+                            <div style="font-size: 12px; color: #666;">Mac computers</div>
+                        </div>
+                        
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">⌚</div>
+                            <div style="font-weight: bold; color: #333;">watchOS</div>
+                            <div style="font-size: 12px; color: #666;">Apple Watch</div>
+                        </div>
+                        
+                        <div style="background: #f0f8ff; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📺</div>
+                            <div style="font-weight: bold; color: #333;">tvOS</div>
+                            <div style="font-size: 12px; color: #666;">Apple TV</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                        <strong>One Codebase</strong><br>
+                        <small>Multiple Platforms</small>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.6 Prerequisites and Requirements",
+                fileName: "Requirements.swift",
+                fileType: "Setup",
+                objectives: [
+                    "Learn the hardware and software requirements",
+                    "Understand necessary development tools",
+                    "Explore Apple Developer Program benefits",
+                    "Prepare for SwiftUI development"
+                ],
+                code: `<span class="comment">/*
+SwiftUI Development Requirements
+
+Hardware Requirements:
+• Mac computer (MacBook, iMac, Mac Pro, or Mac Studio)
+• At least 8GB RAM (16GB recommended)
+• 100GB+ free storage space
+
+Software Requirements:
+• macOS Monterey (12.0) or later
+• Xcode 13.0 or later
+• iOS 13.0+ for target devices
+
+Optional but Recommended:
+• Apple Developer Program ($99/year)
+• Physical iOS device for testing
+• Multiple screen sizes for testing
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// Minimum SwiftUI app structure</span>
+<span class="keyword">@main</span>
+<span class="keyword">struct</span> <span class="type">MyApp</span>: <span class="type">App</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">ContentView</span>()
+        }
+    }
+}
+
+<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">Text</span>(<span class="string">"Ready to build!"</span>)
+    }
+}`,
+                simulator: `<div style="padding: 20px; height: 100%; overflow-y: auto;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 10px;">Development Setup</div>
+                    </div>
+                    
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #4caf50;">
+                        <div style="font-weight: bold; color: #2e7d32; margin-bottom: 8px;">✅ Required</div>
+                        <div style="font-size: 14px; color: #333; line-height: 1.4;">
+                            • Mac computer<br>
+                            • macOS Monterey+<br>
+                            • Xcode 13+<br>
+                            • 8GB+ RAM
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #ff9800;">
+                        <div style="font-weight: bold; color: #f57c00; margin-bottom: 8px;">⭐ Recommended</div>
+                        <div style="font-size: 14px; color: #333; line-height: 1.4;">
+                            • 16GB+ RAM<br>
+                            • SSD storage<br>
+                            • Physical iOS device<br>
+                            • Apple Developer Program
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #2196f3;">
+                        <div style="font-weight: bold; color: #1976d2; margin-bottom: 8px;">💡 Tip</div>
+                        <div style="font-size: 14px; color: #333; line-height: 1.4;">
+                            Start with Xcode's built-in simulator, then test on real devices for the best user experience.
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.7 SwiftUI vs React Native & Flutter",
+                fileName: "Frameworks.swift", 
+                fileType: "Comparison",
+                objectives: [
+                    "Compare SwiftUI with other modern frameworks",
+                    "Understand the pros and cons of each approach",
+                    "Learn when to choose SwiftUI over alternatives",
+                    "Explore native vs cross-platform trade-offs"
+                ],
+                code: `<span class="comment">/*
+Modern UI Framework Comparison
+
+SwiftUI (Apple - Native):
+• Best performance on Apple platforms
+• Native look and feel
+• Deep OS integration
+• Apple ecosystem only
+
+React Native (Meta - Cross-platform):
+• JavaScript-based
+• iOS + Android support
+• Large community
+• Bridge-based architecture
+
+Flutter (Google - Cross-platform):
+• Dart language
+• Custom rendering engine
+• iOS + Android + Web + Desktop
+• Consistent UI across platforms
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// SwiftUI's native performance advantage</span>
+<span class="keyword">struct</span> <span class="type">PerformantView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">ScrollView</span> {
+            <span class="type">LazyVStack</span> {
+                <span class="type">ForEach</span>(<span class="number">0</span>..<span class="number">10000</span>, <span class="property">id</span>: \.<span class="property">self</span>) { <span class="property">index</span> in
+                    <span class="type">Text</span>(<span class="string">"Row \\(index)"</span>)
+                        .<span class="function">padding</span>()
+                }
+            }
+        }
+    }
+}`,
+                simulator: `<div style="padding: 15px; height: 100%; overflow-y: auto;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 20px; font-weight: bold; color: #333;">Framework Comparison</div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">SwiftUI</div>
+                        <div style="font-size: 12px;">Native • iOS/macOS • Swift</div>
+                    </div>
+                    
+                    <div style="background: #61dafb; color: #333; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">React Native</div>
+                        <div style="font-size: 12px;">Cross-platform • JavaScript</div>
+                    </div>
+                    
+                    <div style="background: #02569b; color: white; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">Flutter</div>
+                        <div style="font-size: 12px;">Cross-platform • Dart</div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #dee2e6;">
+                        <div style="font-weight: bold; color: #333; margin-bottom: 8px;">Choose SwiftUI when:</div>
+                        <div style="font-size: 13px; color: #666; line-height: 1.4;">
+                            ✓ Building for Apple platforms only<br>
+                            ✓ Need best performance<br>
+                            ✓ Want native iOS/macOS experience<br>
+                            ✓ Deep system integration required
+                        </div>
+                    </div>
+                </div>`
+            },
+            {
+                title: "1.8 Chapter Summary & Next Steps",
+                fileName: "Summary.swift",
+                fileType: "Review",
+                objectives: [
+                    "Review key concepts from Chapter 1",
+                    "Understand what you've learned about SwiftUI",
+                    "Prepare for the next chapter on development environment",
+                    "Practice with hands-on exercises"
+                ],
+                code: `<span class="comment">/*
+Chapter 1 Summary: Introduction to SwiftUI
+
+Key Concepts Learned:
+✅ SwiftUI is Apple's modern, declarative UI framework
+✅ Declarative programming describes WHAT, not HOW
+✅ SwiftUI supports iOS, macOS, watchOS, and tvOS
+✅ Cross-platform development with shared code
+✅ Better than traditional imperative frameworks
+✅ Requires Mac + Xcode for development
+
+Next Chapter Preview:
+Chapter 2 will cover setting up your development environment,
+installing Xcode, creating your first project, and exploring
+the Xcode interface and SwiftUI preview system.
+*/</span>
+
+<span class="keyword">import</span> SwiftUI
+
+<span class="comment">// Your journey starts here!</span>
+<span class="keyword">struct</span> <span class="type">WelcomeToSwiftUI</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="type">Text</span>(<span class="string">"🎉 Chapter 1 Complete!"</span>)
+                .<span class="function">font</span>(.<span class="property">largeTitle</span>)
+                .<span class="function">fontWeight</span>(.<span class="property">bold</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Ready for Chapter 2?"</span>)
+                .<span class="function">font</span>(.<span class="property">title2</span>)
+                .<span class="function">foregroundColor</span>(.<span class="property">blue</span>)
+        }
+        .<span class="function">padding</span>()
+    }
+}`,
+                simulator: `<div style="padding: 20px; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 15px;">Chapter 1 Complete!</div>
+                    <div style="font-size: 18px; color: #667eea; margin-bottom: 30px;">Introduction to SwiftUI</div>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; max-width: 250px;">
+                        <div style="font-weight: bold; margin-bottom: 15px;">What You Learned:</div>
+                        <div style="font-size: 14px; line-height: 1.6; text-align: left;">
+                            ✓ What SwiftUI is<br>
+                            ✓ Declarative programming<br>
+                            ✓ Cross-platform development<br>
+                            ✓ Framework comparisons<br>
+                            ✓ Development requirements
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background: #e8f5e8; border-radius: 10px; color: #2e7d32;">
+                        <strong>Next: Chapter 2</strong><br>
+                        <small>Setting Up Your Development Environment</small>
+                    </div>
+                </div>`
+            }
+        ];
+
+        function updateLesson() {
+            const lesson = lessons[currentLesson];
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('codeFileName').textContent = lesson.fileName;
+            document.getElementById('codeType').textContent = lesson.fileType;
+            document.getElementById('codeContent').innerHTML = lesson.code;
+            document.getElementById('simulator').innerHTML = lesson.simulator;
+            document.getElementById('lessonCounter').textContent = `${currentLesson + 1} / ${lessons.length}`;
+            
+            // Update objectives
+            const objectivesList = document.getElementById('objectives');
+            objectivesList.innerHTML = lesson.objectives.map(obj => `<li>${obj}</li>`).join('');
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = ((currentLesson + 1) / lessons.length) * 100;
+            progressBar.style.width = progressPercent + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentLesson === 0;
+            document.getElementById('nextBtn').disabled = currentLesson === lessons.length - 1;
+            
+            // Add smooth transition animation
+            document.querySelector('.lesson-container').style.animation = 'slideUp 0.5s ease-out';
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                currentLesson++;
+                updateLesson();
+            }
+        }
+
+        function previousLesson() {
+            if (currentLesson > 0) {
+                currentLesson--;
+                updateLesson();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextLesson();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousLesson();
+            }
+        });
+
+        // Initialize
+        updateLesson();
+    </script>
+</body>
+</html>

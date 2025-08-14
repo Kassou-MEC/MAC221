@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SwiftUI Chapter 5: Understanding Views</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height:100vh; overflow-x:hidden;
+    }
+    .container { max-width:1400px; margin:0 auto; padding:20px; }
+    .header { text-align:center; color:white; margin-bottom:30px; animation:slideDown .8s ease-out; }
+    .header h1 { font-size:2.5em; font-weight:700; margin-bottom:10px; }
+    .header p { font-size:1.2em; opacity:.9; }
+    .lesson-container { background:white; border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,.1); overflow:hidden; margin-bottom:30px; animation:slideUp .8s ease-out .2s both; }
+    .lesson-header { background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); color:white; padding:20px; text-align:center; }
+    .lesson-content { display:flex; min-height:600px; }
+    .code-panel { flex:1; background:#1e1e1e; color:#d4d4d4; font-family:Monaco, Menlo, monospace; font-size:14px; line-height:1.5; overflow:auto; }
+    .code-header { background:#2d2d30; padding:15px; border-bottom:1px solid #3e3e42; font-weight:600; color:#ccc; display:flex; justify-content:space-between; align-items:center; }
+    .code-content { padding:20px; white-space:pre-wrap; }
+    .simulator-panel { flex:1; background:#f8f9fa; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:20px; }
+    .phone-frame { width:280px; height:560px; background:#000; border-radius:35px; padding:25px 15px; box-shadow:0 10px 30px rgba(0,0,0,.3); position:relative; }
+    .phone-frame::before { content:''; position:absolute; top:10px; left:50%; transform:translateX(-50%); width:60px; height:4px; background:#333; border-radius:2px; }
+    .screen { width:100%; height:100%; background:white; border-radius:25px; overflow:hidden; display:flex; flex-direction:column; position:relative; }
+    .status-bar { height:30px; background:rgba(0,0,0,.05); display:flex; justify-content:space-between; align-items:center; padding:0 15px; font-size:12px; color:#333; }
+    .app-content { flex:1; display:flex; flex-direction:column; padding:20px; overflow-y:auto; }
+    .navigation-buttons { display:flex; justify-content:center; align-items:center; gap:15px; padding:20px; flex-wrap:wrap; }
+    .nav-btn { padding:12px 25px; border:none; border-radius:25px; background:linear-gradient(135deg,#667eea 0%, #764ba2 100%); color:white; font-weight:600; cursor:pointer; transition:all .3s ease; box-shadow:0 5px 15px rgba(0,0,0,.2); }
+    .nav-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,0,0,.3); }
+    .nav-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .lesson-objectives { background:rgba(76,175,80,.1); border-left:4px solid #4caf50; padding:15px; margin:20px; border-radius:5px; }
+    .lesson-objectives h4 { color:#2e7d32; margin-bottom:10px; }
+    .lesson-objectives ul { margin-left:20px; color:#333; }
+    .lesson-objectives li { margin:5px 0; }
+    .keyword { color:#ff79c6; font-weight:bold; } .string{color:#f1fa8c;} .comment{color:#6272a4; font-style:italic;}
+    .type{color:#8be9fd; font-weight:bold;} .function{color:#50fa7b;} .property{color:#bd93f9;} .number{color:#ffb86c;} .operator{color:#ff79c6;} .modifier{color:#8be9fd;}
+    .explanation{ color:#f8f8f2; background:rgba(98,114,164,.3); padding:12px; border-radius:8px; margin:10px 0; border-left:4px solid #50fa7b; }
+    .explanation-title{ color:#50fa7b; font-weight:bold; font-size:16px; margin-bottom:8px; }
+    .explanation-content{ color:#f8f8f2; line-height:1.6; font-size:14px; }
+    .code-explanation{ color:#f1fa8c; background:rgba(241,250,140,.15); padding:8px; border-radius:6px; margin:8px 0; border-left:3px solid #f1fa8c; }
+    .important-note{ color:#ff7979; background:rgba(255,121,121,.15); padding:8px; border-radius:6px; margin:8px 0; border-left:3px solid #ff7979; }
+    .pro-tip{ color:#74b9ff; background:rgba(116,185,255,.15); padding:8px; border-radius:6px; margin:8px 0; border-left:3px solid #74b9ff; }
+    .view-demo{ display:flex; flex-direction:column; gap:15px; padding:15px; }
+    .view-example{ background:#f8f9fa; border:2px solid #e9ecef; border-radius:12px; padding:15px; text-align:center; transition:all .3s ease; }
+    .view-title{ font-weight:bold; color:#333; margin-bottom:8px; }
+    .layout-demo{ display:grid; grid-template-columns:1fr 1fr; gap:15px; padding:15px; }
+    .layout-example{ background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; padding:20px; border-radius:12px; text-align:center; font-weight:bold; }
+    .custom-view-demo{ padding:20px; text-align:center; }
+    .card-view{ background:white; border-radius:15px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.1); margin:10px 0; border-left:4px solid #667eea; }
+    .progress-bar{ background:rgba(255,255,255,.2); height:4px; border-radius:2px; margin:0 20px; overflow:hidden; }
+    .progress-fill{ background:white; height:100%; border-radius:2px; transition:width .3s ease; }
+    @keyframes slideDown{ from{opacity:0; transform:translateY(-50px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes slideUp{ from{opacity:0; transform:translateY(50px);} to{opacity:1; transform:translateY(0);} }
+    @media (max-width:768px){
+      .lesson-content{ flex-direction:column; }
+      .phone-frame{ width:250px; height:500px; }
+      .navigation-buttons{ flex-direction:column; gap:10px; }
+      .layout-demo{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Chapter 5: Understanding Views</h1>
+      <p>Master the Building Blocks of SwiftUI Interfaces</p>
+    </div>
+
+    <div class="lesson-container">
+      <div class="lesson-header">
+        <h2 id="lessonTitle">5.1 What Are Views in SwiftUI?</h2>
+        <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width: 20%"></div></div>
+      </div>
+
+      <div class="lesson-content">
+        <div class="code-panel">
+          <div class="code-header">
+            <span id="codeFileName">ViewBasics.swift</span>
+            <span id="codeType">View Fundamentals</span>
+          </div>
+          <div class="code-content" id="codeContent"></div>
+        </div>
+
+        <div class="simulator-panel">
+          <div class="phone-frame">
+            <div class="screen">
+              <div class="status-bar"><span>9:41</span><span>📶 📶 🔋</span></div>
+              <div class="app-content" id="simulator"></div>
+            </div>
+          </div>
+
+          <div class="lesson-objectives">
+            <h4>Learning Objectives:</h4>
+            <ul id="objectives"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="navigation-buttons">
+      <button class="nav-btn" id="prevBtn">← Previous</button>
+      <span id="lessonCounter">1 / 5</span>
+      <button class="nav-btn" id="nextBtn">Next →</button>
+    </div>
+  </div>
+
+  <script>
+    // --- DATA ---
+    const lessons = [
+      {
+        title: "5.1 What Are Views in SwiftUI?",
+        fileName: "ViewBasics.swift",
+        fileType: "View Fundamentals",
+        objectives: [
+          "Understand what views are and their role in SwiftUI",
+          "Learn about the View protocol and body property",
+          "Explore basic built-in views like Text, Image, and Button",
+          "Master view composition and hierarchy concepts"
+        ],
+        code: `<div class="explanation">
+  <div class="explanation-title">🧩 WHAT ARE VIEWS IN SWIFTUI?</div>
+  <div class="explanation-content">
+    Views are the fundamental building blocks of SwiftUI apps. Everything you see on screen is a view.
+  </div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<div class="code-explanation">🎯 VIEW PROTOCOL: Every SwiftUI view conforms to the View protocol, which requires a body property.</div>
+
+<span class="comment">// Basic view examples</span>
+<span class="keyword">struct</span> <span class="type">BasicViews</span>: <span class="type">View</span> {
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+      <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
+        .<span class="modifier">font</span>(.<span class="property">title</span>)
+        .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+      <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"heart.fill"</span>)
+        .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+        .<span class="modifier">foregroundColor</span>(.<span class="property">red</span>)
+    }
+    .<span class="modifier">padding</span>()
+  }
+}`,
+        simulator: `<div class="view-demo">
+  <div class="view-example"><div class="view-title">Text View</div><div style="color:#007bff; font-size:18px; font-weight:bold;">Hello, SwiftUI!</div></div>
+  <div class="view-example"><div class="view-title">Image View</div><div style="color:#dc3545; font-size:32px;">❤️</div></div>
+</div>`
+      },
+      {
+        title: "5.2 View Modifiers and Styling",
+        fileName: "ViewModifiers.swift",
+        fileType: "Styling System",
+        objectives: [
+          "Master view modifiers for customizing appearance",
+          "Learn the modifier chaining pattern",
+          "Understand how modifiers create new views",
+          "Practice with common styling modifiers"
+        ],
+        code: `<div class="explanation">
+  <div class="explanation-title">🎨 VIEW MODIFIERS AND STYLING</div>
+  <div class="explanation-content">Modifiers transform basic views into polished components by chaining.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">ModifierExamples</span>: <span class="type">View</span> {
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+      <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
+        .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+        .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+        .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+        .<span class="modifier">underline</span>()
+      <span class="type">Text</span>(<span class="string">"Background Style"</span>)
+        .<span class="modifier">padding</span>()
+        .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">yellow</span>)
+        .<span class="modifier">cornerRadius</span>(<span class="number">10</span>)
+        .<span class="modifier">shadow</span>(<span class="property">radius</span>: <span class="number">5</span>)
+    }
+  }
+}`,
+        simulator: `<div class="view-demo">
+  <div style="text-align:center; margin-bottom:15px;">
+    <div style="color:#007bff; font-size:24px; font-weight:bold; text-decoration:underline;">Styled Text</div>
+  </div>
+  <div style="text-align:center;">
+    <span style="background:#ffc107; padding:8px 12px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,.2);">Background Style</span>
+  </div>
+</div>`
+      },
+      {
+        title: "5.3 Layout Views and Containers",
+        fileName: "LayoutViews.swift",
+        fileType: "Layout System",
+        objectives: [
+          "Master VStack, HStack, and ZStack",
+          "Learn spacing and alignment",
+          "Understand container layout behavior",
+          "Build nested layouts"
+        ],
+        code: `<div class="explanation">
+  <div class="explanation-title">📐 LAYOUT VIEWS AND CONTAINERS</div>
+  <div class="explanation-content">VStack arranges vertically, HStack horizontally, ZStack overlays.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">LayoutExamples</span>: <span class="type">View</span> {
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">16</span>) {
+      <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">leading</span>, <span class="property">spacing</span>: <span class="number">6</span>) {
+        <span class="type">Text</span>(<span class="string">"VStack Example"</span>).<span class="modifier">font</span>(.<span class="property">headline</span>)
+        <span class="type">Text</span>(<span class="string">"Item 1"</span>)
+        <span class="type">Text</span>(<span class="string">"Item 2"</span>)
+        <span class="type">Text</span>(<span class="string">"Item 3"</span>)
+      }
+      .<span class="modifier">padding</span>()
+      .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">blue</span>.<span class="function">opacity</span>(<span class="number">0.1</span>))
+      .<span class="modifier">cornerRadius</span>(<span class="number">10</span>)
+
+      <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+        <span class="type">Circle</span>().<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">red</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">40</span>, <span class="property">height</span>: <span class="number">40</span>)
+        <span class="type">Rectangle</span>().<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">green</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">40</span>, <span class="property">height</span>: <span class="number">40</span>)
+        <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">10</span>).<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">40</span>, <span class="property">height</span>: <span class="number">40</span>)
+      }
+      .<span class="modifier">padding</span>()
+      .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">green</span>.<span class="function">opacity</span>(<span class="number">0.1</span>))
+      .<span class="modifier">cornerRadius</span>(<span class="number">10</span>)
+
+      <span class="type">ZStack</span> {
+        <span class="type">Rectangle</span>().<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">purple</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        <span class="type">Text</span>(<span class="string">"ZStack"</span>).<span class="modifier">foregroundColor</span>(.<span class="property">white</span>)
+      }
+      .<span class="modifier">padding</span>()
+    }
+    .<span class="modifier">padding</span>()
+  }
+}`,
+        simulator: `<div class="layout-demo">
+  <div class="layout-example">
+    <div style="text-align:left; margin-bottom:10px; font-size:16px;">VStack Example</div>
+    <div style="text-align:left;">Item 1</div><div style="text-align:left;">Item 2</div><div style="text-align:left;">Item 3</div>
+  </div>
+  <div class="layout-example">
+    <div style="display:flex; justify-content:space-around; width:100%;">
+      <div style="width:40px; height:40px; background:#dc3545; border-radius:50%;"></div>
+      <div style="width:40px; height:40px; background:#28a745;"></div>
+      <div style="width:40px; height:40px; background:#007bff; border-radius:10px;"></div>
+    </div>
+  </div>
+  <div class="layout-example">
+    <div style="position:relative; width:100px; height:100px; margin:0 auto; background:#6f42c1; border-radius:10px; color:white; display:flex; justify-content:center; align-items:center;">ZStack</div>
+  </div>
+</div>`
+      },
+      {
+        title: "5.4 Custom Views and Composition",
+        fileName: "CustomViews.swift",
+        fileType: "View Architecture",
+        objectives: [
+          "Create reusable custom views",
+          "Understand composition patterns",
+          "Use @ViewBuilder",
+          "Break down complex interfaces"
+        ],
+        code: `<div class="explanation">
+  <div class="explanation-title">🏗️ CUSTOM VIEWS AND COMPOSITION</div>
+  <div class="explanation-content">Compose small views to build complex interfaces.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">WelcomeMessage</span>: <span class="type">View</span> {
+  <span class="keyword">let</span> <span class="property">name</span>: <span class="type">String</span>
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span> {
+      <span class="type">Text</span>(<span class="string">"Welcome back,"</span>).<span class="modifier">font</span>(.<span class="property">title</span>)
+      <span class="type">Text</span>(<span class="property">name</span>).<span class="modifier">font</span>(.<span class="property">largeTitle</span>).<span class="modifier">fontWeight</span>(.<span class="property">bold</span>).<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+    }
+  }
+}`,
+        simulator: `<div class="custom-view-demo">
+  <div class="card-view">
+    <div style="text-align:center; margin-bottom:15px;">
+      <div style="width:80px; height:80px; background-color:#007bff; border-radius:50%; margin:0 auto 10px;"></div>
+      <div style="font-size:24px; font-weight:bold; color:#333;">Welcome back,</div>
+      <div style="font-size:28px; font-weight:bold; color:#007bff;">Sarah</div>
+    </div>
+  </div>
+</div>`
+      },
+      {
+        title: "5.5 View Lifecycle and State",
+        fileName: "ViewLifecycle.swift",
+        fileType: "State Management",
+        objectives: [
+          "Understand SwiftUI view lifecycle",
+          "Learn @State and @Binding basics",
+          "Trigger view updates via state",
+          "Create interactive views"
+        ],
+        code: `<div class="explanation">
+  <div class="explanation-title">🔄 VIEW LIFECYCLE AND STATE</div>
+  <div class="explanation-content">State changes drive updates in SwiftUI.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">CounterView</span>: <span class="type">View</span> {
+  <span class="keyword">@State private var</span> <span class="property">count</span>: <span class="type">Int</span> = <span class="number">0</span>
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span> {
+      <span class="type">Text</span>(<span class="string">"Count: \\(count)"</span>)
+      <span class="type">Button</span>(<span class="string">"Increment"</span>) { <span class="property">count</span> += <span class="number">1</span> }
+    }
+  }
+}`,
+        simulator: `<div class="view-demo">
+  <div class="view-example">
+    <div class="view-title">Counter Example</div>
+    <div id="counterValue" style="text-align:center; margin:15px 0; font-size:24px;">Count: 0</div>
+    <button id="incBtn" style="background:#007bff; color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Increment</button>
+  </div>
+</div>`
+      }
+    ];
+
+    let currentLesson = 0;
+
+    function loadLesson(lessonIndex){
+      const lesson = lessons[lessonIndex];
+      // Update text labels
+      document.getElementById('lessonTitle').textContent = lesson.title;
+      document.getElementById('codeFileName').textContent = lesson.fileName;
+      document.getElementById('codeType').textContent = lesson.fileType;
+      // Inject HTML content
+      document.getElementById('codeContent').innerHTML = lesson.code;
+      document.getElementById('simulator').innerHTML = lesson.simulator;
+
+      // Objectives
+      const objectivesList = document.getElementById('objectives');
+      objectivesList.innerHTML = '';
+      lesson.objectives.forEach(obj => {
+        const li = document.createElement('li');
+        li.textContent = obj;
+        objectivesList.appendChild(li);
+      });
+
+      // Progress + counter
+      const progress = ((lessonIndex + 1) / lessons.length) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+      document.getElementById('lessonCounter').textContent = (lessonIndex + 1) + ' / ' + lessons.length;
+
+      // Buttons state
+      document.getElementById('prevBtn').disabled = lessonIndex === 0;
+      document.getElementById('nextBtn').disabled = lessonIndex === lessons.length - 1;
+
+      // Hook simulator interactions for this lesson (if any)
+      const incBtn = document.getElementById('incBtn');
+      if (incBtn){
+        incBtn.onclick = () => {
+          const val = document.getElementById('counterValue');
+          const n = parseInt(val.textContent.replace(/[^0-9]/g,''), 10) || 0;
+          val.textContent = 'Count: ' + (n + 1);
+        };
+      }
+    }
+
+    function nextLesson(){
+      if (currentLesson < lessons.length - 1){
+        currentLesson++;
+        loadLesson(currentLesson);
+      }
+    }
+    function previousLesson(){
+      if (currentLesson > 0){
+        currentLesson--;
+        loadLesson(currentLesson);
+      }
+    }
+
+    // Wire up and render first lesson once DOM is ready
+    window.addEventListener('load', () => {
+      document.getElementById('prevBtn').addEventListener('click', previousLesson);
+      document.getElementById('nextBtn').addEventListener('click', nextLesson);
+      loadLesson(0);
+    });
+  </script>
+</body>
+</html>

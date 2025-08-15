@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SwiftUI Chapter 7: State & Interactivity — Interactive Deck</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh;overflow-x:hidden
+  }
+  .container{max-width:1400px;margin:0 auto;padding:20px}
+  .header{text-align:center;color:#fff;margin-bottom:20px;animation:slideDown .6s ease-out}
+  .header h1{font-size:2.2em;font-weight:800;margin-bottom:6px}
+  .header p{font-size:1.05em;opacity:.9}
+
+  .lesson-container{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden;margin-bottom:20px;animation:slideUp .6s ease-out .1s both}
+  .lesson-header{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff;padding:16px;text-align:center}
+  .progress-bar{background:rgba(255,255,255,.25);height:4px;border-radius:2px;margin:8px 20px 0;overflow:hidden}
+  .progress-fill{background:#fff;height:100%;border-radius:2px;transition:width .3s ease}
+
+  .lesson-content{display:flex;min-height:620px}
+  .code-panel{flex:1;background:#1e1e1e;color:#d4d4d4;font-family:Monaco,Menlo,monospace;font-size:14px;line-height:1.5;overflow:auto}
+  .code-header{background:#2d2d30;padding:12px;border-bottom:1px solid #3e3e42;font-weight:600;color:#ccc;display:flex;justify-content:space-between;align-items:center}
+  .code-content{padding:16px;white-space:pre-wrap;max-height:520px;overflow-y:auto}
+
+  .simulator-panel{flex:1;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:16px}
+  .phone-frame{width:280px;height:560px;background:#000;border-radius:35px;padding:25px 15px;box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative}
+  .phone-frame::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:#333;border-radius:2px}
+  .screen{width:100%;height:100%;background:#fff;border-radius:25px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .status-bar{height:30px;background:rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:center;padding:0 15px;font-size:12px;color:#333}
+  .app-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:16px 12px;gap:12px;overflow-y:auto}
+
+  .lesson-objectives{background:rgba(76,175,80,.1);border-left:4px solid #4caf50;padding:12px;margin:16px;border-radius:5px}
+  .lesson-objectives h4{color:#2e7d32;margin-bottom:8px}
+  .lesson-objectives ul{margin-left:18px;color:#333}
+  .lesson-objectives li{margin:4px 0}
+
+  .navigation-buttons{display:flex;justify-content:center;align-items:center;gap:12px;padding:18px 12px;flex-wrap:wrap}
+  .nav-btn{padding:10px 20px;border:none;border-radius:25px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:700;cursor:pointer;transition:.25s;box-shadow:0 5px 15px rgba(0,0,0,.2)}
+  .nav-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.3)}
+  .nav-btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* Simulator UI helpers */
+  .btn{padding:10px 14px;border:none;border-radius:10px;background:#007bff;color:#fff;font-weight:700;cursor:pointer}
+  .btn.secondary{background:#6c757d}
+  .btn.warning{background:#fd7e14}
+  .btn:active{transform:translateY(1px)}
+  .row{display:flex;gap:8px;align-items:center}
+  .col{display:flex;flex-direction:column;gap:6px;width:100%}
+  .field{width:100%;padding:10px;border:1px solid #dee2e6;border-radius:10px}
+  .field.error{border-color:#dc3545}
+  .card{width:100%;background:#f8f9fa;border:1px solid #e9ecef;border-radius:12px;padding:12px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#e9ecef;font-size:12px}
+  .hint{font-size:12px;color:#6c757d}
+  .slider{width:100%}
+  .segmented{display:flex;border:1px solid #dee2e6;border-radius:999px;overflow:hidden}
+  .segmented button{flex:1;border:none;padding:8px 10px;background:#fff;cursor:pointer}
+  .segmented button.active{background:#007bff;color:#fff}
+  .toggle{position:relative;width:46px;height:26px;background:#dee2e6;border-radius:999px;cursor:pointer}
+  .toggle .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s}
+  .toggle.on{background:#28a745}
+  .toggle.on .knob{left:23px}
+
+  /* Code accents */
+  .keyword{color:#ff79c6;font-weight:bold}.string{color:#f1fa8c}.comment{color:#6272a4;font-style:italic}
+  .type{color:#8be9fd;font-weight:bold}.property{color:#bd93f9}.modifier{color:#8be9fd}.number{color:#ffb86c}
+  .explanation{color:#f8f8f2;background:rgba(98,114,164,.3);padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #50fa7b}
+  .explanation-title{color:#50fa7b;font-weight:800;font-size:16px;margin-bottom:8px}
+  .explanation-content{color:#f8f8f2;line-height:1.6;font-size:14px}
+  .code-explanation{color:#f1fa8c;background:rgba(241,250,140,.15);padding:8px;border-radius:6px;margin:8px 0;border-left:3px solid #f1fa8c}
+
+  @keyframes slideDown{from{opacity:0;transform:translateY(-40px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width:768px){.lesson-content{flex-direction:column}.phone-frame{width:250px;height:500px}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Chapter 7: State & Interactivity</h1>
+      <p>@State • Buttons • TextField • Binding • Toggle • Slider • Stepper • Picker • Forms</p>
+    </div>
+
+    <div class="lesson-container">
+      <div class="lesson-header">
+        <h2 id="lessonTitle">7.1 @State Basics</h2>
+        <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:10%"></div></div>
+      </div>
+
+      <div class="lesson-content">
+        <!-- Code -->
+        <div class="code-panel">
+          <div class="code-header">
+            <span id="codeFileName">CounterView.swift</span>
+            <span id="codeType">State & Interactivity</span>
+          </div>
+          <div class="code-content" id="codeContent"></div>
+        </div>
+
+        <!-- Simulator -->
+        <div class="simulator-panel">
+          <div class="phone-frame">
+            <div class="screen">
+              <div class="status-bar"><span>9:41</span><span>📶 📶 🔋</span></div>
+              <div class="app-content" id="simulator"><!-- filled per page --></div>
+            </div>
+          </div>
+
+          <div class="lesson-objectives">
+            <h4>Learning Objectives:</h4>
+            <ul id="objectives"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="navigation-buttons">
+      <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
+      <span id="lessonCounter">1 / 10</span>
+      <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
+    </div>
+  </div>
+
+<script>
+/* -------------------------
+   Data model (10 pages)
+------------------------- */
+const lessons = [
+  { title:"7.1 @State Basics", file:"CounterView.swift", type:"stateCounter",
+    objectives:["Understand @State", "Update views when values change", "Trigger changes with a Button"] },
+  { title:"7.2 Buttons & Actions", file:"ButtonsDemo.swift", type:"buttons",
+    objectives:["Handle multiple actions", "Disable based on state", "Reset patterns"] },
+  { title:"7.3 TextField & Input", file:"TextFieldDemo.swift", type:"textfield",
+    objectives:["Bind TextField to state", "Live preview of input", "Count characters"] },
+  { title:"7.4 Toggle & Conditional UI", file:"ToggleDemo.swift", type:"toggle",
+    objectives:["Switch boolean state", "Show/Hide sections", "Reflect state in UI"] },
+  { title:"7.5 Slider & Styling", file:"SliderDemo.swift", type:"slider",
+    objectives:["Bind Slider to state", "Drive styling from state", "Show dynamic values"] },
+  { title:"7.6 Stepper & Computed Values", file:"StepperDemo.swift", type:"stepper",
+    objectives:["Increment/Decrement patterns", "Compute totals from state", "Disable bounds"] },
+  { title:"7.7 Picker / Segmented Control", file:"PickerDemo.swift", type:"picker",
+    objectives:["Bind selection to state", "Style based on selection", "Segmented control mapping"] },
+  { title:"7.8 Binding to Child Views", file:"BindingChild.swift", type:"bindingChild",
+    objectives:["Pass @Binding to child", "Mutate parent state from child", "Keep views in sync"] },
+  { title:"7.9 Form & Validation", file:"FormValidation.swift", type:"form",
+    objectives:["Validate input", "Disable submit when invalid", "Simple feedback"] },
+  { title:"7.10 Mini Settings (Combined)", file:"CombinedState.swift", type:"combined",
+    objectives:["Combine multiple states", "Build a cohesive UI", "Live preview of settings"] }
+];
+
+let currentLesson = 0;
+
+/* -------------------------
+   Utilities
+------------------------- */
+function $(id){ return document.getElementById(id); }
+function setHTML(id, html){ const el=$(id); if(el) el.innerHTML = html; }
+
+/* -------------------------
+   Render controller
+------------------------- */
+function render(){
+  const lesson = lessons[currentLesson];
+
+  // Header + meta
+  $('lessonTitle').textContent = lesson.title;
+  $('codeFileName').textContent = lesson.file;
+  $('codeType').textContent = "State & Interactivity";
+  $('lessonCounter').textContent = (currentLesson+1) + " / " + lessons.length;
+  $('progressBar').style.width = (((currentLesson+1)/lessons.length)*100) + "%";
+  $('prevBtn').disabled = currentLesson===0;
+  $('nextBtn').disabled = currentLesson===lessons.length-1;
+
+  // Objectives
+  const ul=$('objectives'); ul.innerHTML=''; lesson.objectives.forEach(o=>{const li=document.createElement('li'); li.textContent=o; ul.appendChild(li);});
+
+  // Clear simulator
+  setHTML('simulator','');
+
+  // Route to page
+  const routes = {
+    stateCounter: renderStateCounter,
+    buttons: renderButtons,
+    textfield: renderTextField,
+    toggle: renderToggle,
+    slider: renderSlider,
+    stepper: renderStepper,
+    picker: renderPicker,
+    bindingChild: renderBindingChild,
+    form: renderForm,
+    combined: renderCombined
+  };
+  routes[lesson.type]();
+}
+
+/* -------------------------
+   7.1 @State Basics
+------------------------- */
+function renderStateCounter(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">💡 @State holds local, source-of-truth data for a view.</div>
+  <div class="explanation-content">When a <code>@State</code> value changes, SwiftUI re-renders the body that depends on it.</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">CounterView</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> count = <span class="number">0</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">16</span>) {
+      <span class="type">Text</span>(<span class="string">"Count: \\(count)"</span>).<span class="modifier">font</span>(.<span class="property">title2</span>)
+      <span class="type">Button</span>(<span class="string">"Increment"</span>) { count += <span class="number">1</span> }
+        .<span class="modifier">buttonStyle</span>(.<span class="property">borderedProminent</span>)
+    }
+    .<span class="modifier">padding</span>()
+  }
+}
+
+<div class="code-explanation">Tap the button → <code>count</code> changes → <code>Text</code> updates.</div>
+  `);
+
+  setHTML('simulator', `
+    <div class="card" style="text-align:center">
+      <div id="s1-count" style="font-size:20px;font-weight:700">Count: 0</div>
+      <button class="btn" onclick="s1_inc()">Increment</button>
+    </div>
+  `);
+}
+function s1_inc(){ const el=$('s1-count'); const n=parseInt(el.textContent.replace(/\D/g,'')) + 1; el.textContent = "Count: " + n; }
+
+/* -------------------------
+   7.2 Buttons & Actions
+------------------------- */
+function renderButtons(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🧭 Multiple buttons can drive the same state.</div>
+  <div class="explanation-content">Use logic to disable actions (e.g., no negative values).</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">ButtonsDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> count = <span class="number">0</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">HStack</span> {
+      <span class="type">Button</span>(<span class="string">"-"</span>) { <span class="keyword">if</span> count &gt; <span class="number">0</span> { count -= <span class="number">1</span> } }
+      <span class="type">Text</span>(<span class="string">"\\(count)"</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">40</span>)
+      <span class="type">Button</span>(<span class="string">"+"</span>) { count += <span class="number">1</span> }
+      <span class="type">Button</span>(<span class="string">"Reset"</span>) { count = <span class="number">0</span> }
+    }
+    .<span class="modifier">font</span>(.<span class="property">title2</span>)
+  }
+}
+<div class="code-explanation">Minus is effectively disabled at 0.</div>
+  `);
+
+  setHTML('simulator', `
+    <div class="row">
+      <button class="btn secondary" onclick="s2_dec()">−</button>
+      <div id="s2-count" style="min-width:40px;text-align:center;font-weight:700">0</div>
+      <button class="btn" onclick="s2_inc()">+</button>
+      <button class="btn warning" onclick="s2_reset()">Reset</button>
+    </div>
+    <div id="s2-hint" class="hint">Can't go below 0.</div>
+  `);
+}
+function s2_get(){ return parseInt($('s2-count').textContent,10); }
+function s2_set(v){ $('s2-count').textContent = v; }
+function s2_inc(){ s2_set(s2_get()+1); }
+function s2_dec(){ if(s2_get()>0) s2_set(s2_get()-1); }
+function s2_reset(){ s2_set(0); }
+
+/* -------------------------
+   7.3 TextField & Input
+------------------------- */
+function renderTextField(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">⌨️ Bind TextField to @State for live updates.</div>
+  <div class="explanation-content">Derived values (like character count) recompute automatically.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">TextFieldDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> name = <span class="string">""</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">leading</span>, <span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">TextField</span>(<span class="string">"Enter name"</span>, <span class="property">text</span>: <span class="string">$name</span>)
+        .<span class="modifier">textFieldStyle</span>(.<span class="property">roundedBorder</span>)
+      <span class="type">Text</span>(<span class="string">"Hello, \\(name.isEmpty ? "there" : name)!"</span>)
+      <span class="type">Text</span>(<span class="string">"Characters: \\(name.count)"</span>).<span class="modifier">font</span>(.<span class="property">caption</span>)
+    }
+    .<span class="modifier">padding</span>()
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <input id="s3-name" class="field" type="text" placeholder="Enter name" oninput="s3_update()"/>
+      <div id="s3-greet" style="font-weight:700">Hello, there!</div>
+      <div class="hint">Characters: <span id="s3-count">0</span></div>
+    </div>
+  `);
+}
+function s3_update(){
+  const v=$('s3-name').value;
+  $('s3-greet').textContent = "Hello, " + (v.trim()==="" ? "there" : v) + "!";
+  $('s3-count').textContent = String(v.length);
+}
+
+/* -------------------------
+   7.4 Toggle & Conditional UI
+------------------------- */
+function renderToggle(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🔘 Toggle binds to a Bool state.</div>
+  <div class="explanation-content">Use conditions to show/hide extra controls.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">ToggleDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> showAdvanced = <span class="keyword">false</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">Toggle</span>(<span class="string">"Show Advanced"</span>, <span class="property">isOn</span>: <span class="string">$showAdvanced</span>)
+      <span class="keyword">if</span> showAdvanced {
+        <span class="type">Text</span>(<span class="string">"Advanced settings revealed."</span>)
+      }
+    }
+    .<span class="modifier">padding</span>()
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <div class="row" onclick="s4_toggle()" style="cursor:pointer;gap:12px">
+        <div id="s4-toggle" class="toggle"><div class="knob"></div></div>
+        <div style="font-weight:700">Show Advanced</div>
+      </div>
+      <div id="s4-advanced" class="card" style="display:none">Advanced settings revealed.</div>
+    </div>
+  `);
+}
+function s4_toggle(){
+  const t=$('s4-toggle');
+  const adv=$('s4-advanced');
+  t.classList.toggle('on');
+  adv.style.display = t.classList.contains('on') ? 'block' : 'none';
+}
+
+/* -------------------------
+   7.5 Slider & Styling
+------------------------- */
+function renderSlider(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🎚️ Bind Slider to numeric @State.</div>
+  <div class="explanation-content">Use the value to style other views (e.g., font size).</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">SliderDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> size: <span class="type">Double</span> = <span class="number">18</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">Slider</span>(<span class="property">value</span>: <span class="string">$size</span>, <span class="property">in</span>: <span class="number">12</span>...<span class="number">48</span>)
+      <span class="type">Text</span>(<span class="string">"Preview"</span>).<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: size))
+      <span class="type">Text</span>(<span class="string">"Size: \\(Int(size))"</span>).<span class="modifier">font</span>(.<span class="property">caption</span>)
+    }
+    .<span class="modifier">padding</span>()
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <input id="s5-slider" class="slider" type="range" min="12" max="48" step="1" value="18" oninput="s5_change(this.value)"/>
+      <div id="s5-preview" style="font-weight:700; font-size:18px">Preview</div>
+      <div class="hint">Size: <span id="s5-size">18</span></div>
+    </div>
+  `);
+}
+function s5_change(v){
+  $('s5-preview').style.fontSize = v + 'px';
+  $('s5-size').textContent = String(parseInt(v,10));
+}
+
+/* -------------------------
+   7.6 Stepper & Computed Values
+------------------------- */
+function renderStepper(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">➕➖ Stepper adjusts a numeric state within bounds.</div>
+  <div class="explanation-content">Derived totals recompute as state changes.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">StepperDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> qty = <span class="number">1</span>
+  <span class="keyword">let</span> price = <span class="number">9.99</span>
+
+  <span class="keyword">var</span> <span class="property">total</span>: <span class="type">Double</span> { <span class="type">Double</span>(qty) * price }
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">Button</span>(<span class="string">"-"</span>) { <span class="keyword">if</span> qty &gt; <span class="number">1</span> { qty -= <span class="number">1</span> } }
+      <span class="type">Text</span>(<span class="string">"Qty: \\(qty)"</span>)
+      <span class="type">Button</span>(<span class="string">"+" </span>) { qty += <span class="number">1</span> }
+    }
+    <span class="type">Text</span>(<span class="string">"Total: $\\(total, specifier: "%.2f")"</span>)
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <div class="row">
+        <button class="btn secondary" onclick="s6_dec()">−</button>
+        <div id="s6-qty" class="badge">Qty: 1</div>
+        <button class="btn" onclick="s6_inc()">+</button>
+      </div>
+      <div id="s6-total" style="font-weight:700">Total: $9.99</div>
+      <div class="hint">Min quantity is 1.</div>
+    </div>
+  `);
+}
+function s6_get(){ return parseInt($('s6-qty').textContent.replace(/\D/g,''),10); }
+function s6_set(q){
+  if(q<1) q=1;
+  $('s6-qty').textContent = "Qty: " + q;
+  const total = (q * 9.99).toFixed(2);
+  $('s6-total').textContent = "Total: $" + total;
+}
+function s6_inc(){ s6_set(s6_get()+1); }
+function s6_dec(){ s6_set(s6_get()-1); }
+
+/* -------------------------
+   7.7 Picker / Segmented Control
+------------------------- */
+function renderPicker(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🎛️ Picker binds a selection value.</div>
+  <div class="explanation-content">Segmented style offers quick one-tap switching.</div>
+</div>
+
+<span class="keyword">enum</span> <span class="type">Theme</span>: <span class="type">String</span>, <span class="type">CaseIterable</span> { <span class="string">case</span> blue, green, red }
+
+<span class="keyword">struct</span> <span class="type">PickerDemo</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> theme: <span class="type">Theme</span> = .<span class="property">blue</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">Picker</span>(<span class="string">"Theme"</span>, <span class="property">selection</span>: <span class="string">$theme</span>) {
+      <span class="type">Text</span>(<span class="string">"Blue"</span>).<span class="modifier">tag</span>(<span class="type">Theme</span>.<span class="property">blue</span>)
+      <span class="type">Text</span>(<span class="string">"Green"</span>).<span class="modifier">tag</span>(.<span class="property">green</span>)
+      <span class="type">Text</span>(<span class="string">"Red"</span>).<span class="modifier">tag</span>(.<span class="property">red</span>)
+    }
+    .<span class="modifier">pickerStyle</span>(.<span class="property">segmented</span>)
+
+    <span class="type">Text</span>(<span class="string">"Selected: \\(theme.rawValue.capitalized)"</span>)
+      .<span class="modifier">foregroundColor</span>(theme == .<span class="property">blue</span> ? .<span class="property">blue</span> : theme == .<span class="property">green</span> ? .<span class="property">green</span> : .<span class="property">red</span>)
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <div class="segmented">
+        <button id="s7-blue" class="active" onclick="s7_pick('Blue', this)">Blue</button>
+        <button id="s7-green" onclick="s7_pick('Green', this)">Green</button>
+        <button id="s7-red" onclick="s7_pick('Red', this)">Red</button>
+      </div>
+      <div id="s7-label" style="font-weight:700;color:#007bff">Selected: Blue</div>
+    </div>
+  `);
+}
+function s7_pick(name, btn){
+  // toggle active style
+  ['s7-blue','s7-green','s7-red'].forEach(id=>$(id).classList.remove('active'));
+  btn.classList.add('active');
+  // label + color
+  const map = {Blue:'#007bff', Green:'#28a745', Red:'#dc3545'};
+  $('s7-label').textContent = "Selected: " + name;
+  $('s7-label').style.color = map[name];
+}
+
+/* -------------------------
+   7.8 Binding to Child Views
+------------------------- */
+function renderBindingChild(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🔗 @Binding lets child views read & write parent state.</div>
+  <div class="explanation-content">Mutations in the child update the source of truth in the parent.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">ParentView</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> isOn = <span class="keyword">false</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span> {
+      <span class="type">Toggle</span>(<span class="string">"Parent Toggle"</span>, <span class="property">isOn</span>: <span class="string">$isOn</span>)
+      <span class="type">ChildView</span>(<span class="property">isOn</span>: <span class="string">$isOn</span>)
+    }
+  }
+}
+
+<span class="keyword">struct</span> <span class="type">ChildView</span>: <span class="type">View</span> {
+  <span class="keyword">@Binding</span> <span class="property">var</span> isOn: <span class="type">Bool</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">Button</span>(<span class="string">isOn ? "Turn Off" : "Turn On"</span>) { isOn.<span class="property">toggle</span>() }
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <div class="row" style="gap:12px;align-items:center">
+        <div style="font-weight:700">Parent Toggle</div>
+        <div id="s8-toggle" class="toggle" onclick="s8_toggle()"><div class="knob"></div></div>
+      </div>
+      <button id="s8-child-btn" class="btn" onclick="s8_child()">Turn On</button>
+      <div class="hint">Parent and child stay in sync (binding).</div>
+    </div>
+  `);
+}
+function s8_state(){ return $('s8-toggle').classList.contains('on'); }
+function s8_set(on){
+  const t=$('s8-toggle'), b=$('s8-child-btn');
+  t.classList.toggle('on', on);
+  b.textContent = on ? 'Turn Off' : 'Turn On';
+}
+function s8_toggle(){ s8_set(!s8_state()); }
+function s8_child(){ s8_set(!s8_state()); }
+
+/* -------------------------
+   7.9 Form & Validation
+------------------------- */
+function renderForm(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🧾 Validate bound fields and gate actions.</div>
+  <div class="explanation-content">Disable the submit button until inputs satisfy rules.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">FormValidation</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> email = <span class="string">""</span>
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> password = <span class="string">""</span>
+
+  <span class="keyword">var</span> <span class="property">isValid</span>: <span class="type">Bool</span> {
+    email.<span class="property">contains</span>(<span class="string">"@"</span>) && password.<span class="property">count</span> &gt;= <span class="number">6</span>
+  }
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">TextField</span>(<span class="string">"Email"</span>, <span class="property">text</span>: <span class="string">$email</span>)
+      <span class="type">SecureField</span>(<span class="string">"Password"</span>, <span class="property">text</span>: <span class="string">$password</span>)
+      <span class="type">Button</span>(<span class="string">"Sign In"</span>) { /* submit */ }
+        .<span class="modifier">disabled</span>(!isValid)
+    }
+    .<span class="modifier">padding</span>()
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <input id="s9-email" class="field" type="email" placeholder="Email" oninput="s9_validate()"/>
+      <input id="s9-pass" class="field" type="password" placeholder="Password (min 6)" oninput="s9_validate()"/>
+      <button id="s9-btn" class="btn" onclick="s9_submit()" disabled>Sign In</button>
+      <div id="s9-msg" class="hint">Enter a valid email and password.</div>
+    </div>
+  `);
+}
+function s9_validate(){
+  const email=$('s9-email'), pass=$('s9-pass'), btn=$('s9-btn');
+  const ok = email.value.includes('@') && pass.value.length>=6;
+  btn.disabled = !ok;
+  email.classList.toggle('error', !email.value.includes('@') && email.value.length>0);
+  pass.classList.toggle('error', pass.value.length>0 && pass.value.length<6);
+  $('s9-msg').textContent = ok ? "Looks good! You can sign in." : "Enter a valid email and password.";
+}
+function s9_submit(){ $('s9-msg').textContent = "Signed in ✅ (simulated)"; }
+
+/* -------------------------
+   7.10 Mini Settings (Combined)
+------------------------- */
+function renderCombined(){
+  setHTML('codeContent', `
+<div class="explanation">
+  <div class="explanation-title">🧩 Combine multiple @State values.</div>
+  <div class="explanation-content">Build a cohesive settings screen driven by bound inputs.</div>
+</div>
+
+<span class="keyword">struct</span> <span class="type">SettingsView</span>: <span class="type">View</span> {
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> username = <span class="string">""</span>
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> notifications = <span class="keyword">true</span>
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> volume: <span class="type">Double</span> = <span class="number">50</span>
+  <span class="keyword">@State</span> <span class="keyword">private</span> <span class="property">var</span> theme = <span class="string">"Blue"</span>
+
+  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
+      <span class="type">TextField</span>(<span class="string">"Username"</span>, <span class="property">text</span>: <span class="string">$username</span>)
+      <span class="type">Toggle</span>(<span class="string">"Notifications"</span>, <span class="property">isOn</span>: <span class="string">$notifications</span>)
+      <span class="type">Slider</span>(<span class="property">value</span>: <span class="string">$volume</span>, <span class="property">in</span>: <span class="number">0</span>...<span class="number">100</span>)
+      <span class="type">Picker</span>(<span class="string">"Theme"</span>, <span class="property">selection</span>: <span class="string">$theme</span>) { /* Blue / Green / Red */ }
+      <span class="type">PreviewCard</span>(<span class="property">username</span>: username, <span class="property">notifications</span>: notifications, <span class="property">volume</span>: volume, <span class="property">theme</span>: theme)
+    }
+  }
+}
+  `);
+
+  setHTML('simulator', `
+    <div class="col">
+      <input id="s10-user" class="field" type="text" placeholder="Username" oninput="s10_update()"/>
+
+      <div class="row" style="gap:12px;align-items:center" onclick="s10_toggle()">
+        <div id="s10-toggle" class="toggle on"><div class="knob"></div></div>
+        <div style="font-weight:700">Notifications</div>
+      </div>
+
+      <input id="s10-vol" class="slider" type="range" min="0" max="100" step="1" value="50" oninput="s10_update()"/>
+
+      <div class="segmented">
+        <button id="s10-blue" class="active" onclick="s10_theme('Blue', this)">Blue</button>
+        <button id="s10-green" onclick="s10_theme('Green', this)">Green</button>
+        <button id="s10-red" onclick="s10_theme('Red', this)">Red</button>
+      </div>
+
+      <div id="s10-preview" class="card" style="border-color:#cfe2ff;background:#e7f1ff">
+        <div style="font-weight:700">Preview</div>
+        <div id="s10-line1">User: (none)</div>
+        <div id="s10-line2">Notifications: On • Volume: 50</div>
+        <div id="s10-line3">Theme: Blue</div>
+      </div>
+    </div>
+  `);
+}
+function s10_state(){
+  return {
+    user: $('s10-user').value.trim(),
+    notif: $('s10-toggle').classList.contains('on'),
+    vol: parseInt($('s10-vol').value,10),
+    theme: (['s10-blue','s10-green','s10-red'].find(id=>$(id).classList.contains('active')) || 's10-blue').replace('s10-','').replace(/^\w/,c=>c.toUpperCase())
+  };
+}
+function s10_apply(){
+  const s=s10_state();
+  $('s10-line1').textContent = "User: " + (s.user || "(none)");
+  $('s10-line2').textContent = "Notifications: " + (s.notif?"On":"Off") + " • Volume: " + s.vol;
+  $('s10-line3').textContent = "Theme: " + s.theme;
+  // Theme colors
+  const map = {
+    Blue: {bg:'#e7f1ff', border:'#cfe2ff'},
+    Green:{bg:'#e6f4ea', border:'#c8eed6'},
+    Red:  {bg:'#fde7e9', border:'#f5c2c7'}
+  };
+  const card=$('s10-preview'); card.style.background = map[s.theme].bg; card.style.borderColor = map[s.theme].border;
+}
+function s10_update(){ s10_apply(); }
+function s10_toggle(){ $('s10-toggle').classList.toggle('on'); s10_apply(); }
+function s10_theme(name, btn){
+  ['s10-blue','s10-green','s10-red'].forEach(id=>$(id).classList.remove('active'));
+  btn.classList.add('active');
+  s10_apply();
+}
+
+/* -------------------------
+   Navigation
+------------------------- */
+function nextLesson(){ if(currentLesson<lessons.length-1){ currentLesson++; render(); } }
+function previousLesson(){ if(currentLesson>0){ currentLesson--; render(); } }
+
+/* -------------------------
+   Boot
+------------------------- */
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>

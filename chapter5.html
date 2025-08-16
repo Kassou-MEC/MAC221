@@ -1,153 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SwiftUI Chapter 5: Basic UI Elements</title>
-  <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      min-height:100vh; overflow-x:hidden;
-    }
-    .container { max-width:1400px; margin:0 auto; padding:20px; }
-    .header { text-align:center; color:#fff; margin-bottom:30px; animation:slideDown .8s ease-out; }
-    .header h1 { font-size:2.5em; font-weight:700; margin-bottom:10px; }
-    .header p { font-size:1.2em; opacity:.9; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 5: Basic UI Elements</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    .lesson-container {
-      background:#fff; border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,.1);
-      overflow:hidden; margin-bottom:30px; animation:slideUp .8s ease-out .2s both;
-    }
-    .lesson-header { background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%); color:#fff; padding:20px; text-align:center; }
-    .lesson-content { display:flex; min-height:600px; }
-    .code-panel {
-      flex:1; background:#1e1e1e; color:#d4d4d4; font-family:Monaco, Menlo, monospace;
-      font-size:14px; line-height:1.5; overflow:auto;
-    }
-    .code-header { background:#2d2d30; padding:15px; border-bottom:1px solid #3e3e42; font-weight:600; color:#ccc; display:flex; justify-content:space-between; align-items:center; }
-    .code-content { padding:20px; white-space:pre-wrap; max-height:500px; overflow-y:auto; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    .simulator-panel {
-      flex:1; background:#f8f9fa; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; padding:20px;
-    }
-    .phone-frame {
-      width:280px; height:560px; background:#000; border-radius:35px; padding:25px 15px; box-shadow:0 10px 30px rgba(0,0,0,.3); position:relative;
-    }
-    .phone-frame::before {
-      content:''; position:absolute; top:10px; left:50%; transform:translateX(-50%);
-      width:60px; height:4px; background:#333; border-radius:2px;
-    }
-    .screen { width:100%; height:100%; background:#fff; border-radius:25px; overflow:hidden; display:flex; flex-direction:column; position:relative; }
-    .status-bar { height:30px; background:rgba(0,0,0,.05); display:flex; justify-content:space-between; align-items:center; padding:0 15px; font-size:12px; color:#333; }
-    .app-content { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .navigation-buttons { display:flex; justify-content:center; align-items:center; gap:15px; padding:20px; flex-wrap:wrap; }
-    .nav-btn {
-      padding:12px 25px; border:none; border-radius:25px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      color:#fff; font-weight:600; cursor:pointer; transition:.3s; box-shadow:0 5px 15px rgba(0,0,0,.2);
-    }
-    .nav-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 25px rgba(0,0,0,.3); }
-    .nav-btn:disabled { opacity:.5; cursor:not-allowed; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
+        }
 
-    .lesson-objectives { background:rgba(76,175,80,.1); border-left:4px solid #4caf50; padding:15px; margin:20px; border-radius:5px; }
-    .lesson-objectives h4 { color:#2e7d32; margin-bottom:10px; }
-    .lesson-objectives ul { margin-left:20px; color:#333; }
-    .lesson-objectives li { margin:5px 0; }
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
 
-    .interactive-controls { background:rgba(255,255,255,.95); border-radius:15px; padding:15px; margin-top:20px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
-    .control-group { margin:10px 0; }
-    .control-label { font-size:12px; color:#666; margin-bottom:5px; display:block; }
-    .control-btn {
-      padding:8px 15px; margin:5px; border:none; border-radius:20px; background:#007bff; color:#fff; font-size:12px; cursor:pointer; transition:.2s;
-    }
-    .control-btn:hover { background:#0056b3; transform:scale(1.05); }
-    .control-btn.active { background:#28a745; }
-    input[type="range"] { width:100%; margin:5px 0; }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
 
-    .color-picker { display:flex; gap:10px; flex-wrap:wrap; }
-    .color-btn {
-      width:30px; height:30px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.2); cursor:pointer; transition:transform .2s;
-    }
-    .color-btn:hover { transform:scale(1.2); }
+        .lesson-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
 
-    /* Syntax accents (for look only) */
-    .keyword{color:#ff79c6;font-weight:bold;} .string{color:#f1fa8c;} .comment{color:#6272a4;font-style:italic;}
-    .type{color:#8be9fd;font-weight:bold;} .property{color:#bd93f9;} .modifier{color:#8be9fd;} .number{color:#ffb86c;}
-    .explanation{color:#f8f8f2;background:rgba(98,114,164,.3);padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #50fa7b;}
-    .explanation-title{color:#50fa7b;font-weight:bold;font-size:16px;margin-bottom:8px;}
-    .explanation-content{color:#f8f8f2;line-height:1.6;font-size:14px;}
-    .code-explanation{color:#f1fa8c;background:rgba(241,250,140,.15);padding:8px;border-radius:6px;margin:8px 0;border-left:3px solid #f1fa8c;}
+        .lesson-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-    .progress-bar { background:rgba(255,255,255,.2); height:4px; border-radius:2px; margin:0 20px; overflow:hidden; }
-    .progress-fill { background:#fff; height:100%; border-radius:2px; transition:width .3s ease; }
+        .lesson-content {
+            display: flex;
+            min-height: 600px;
+        }
 
-    /* Spacer/Divider demo */
-    .row { display:flex; align-items:center; width:100%; padding:0 12px; gap:12px; }
-    .box {
-      padding:10px 14px; background:#e9ecef; border-radius:10px; font-size:12px; white-space:nowrap;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
-    }
-    .spacer { flex:1; }
-    .divider { height:1px; width:100%; background:#dee2e6; margin:8px 0; }
+        .code-panel {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: auto;
+        }
 
-    @keyframes slideDown { from{opacity:0;transform:translateY(-50px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes slideUp { from{opacity:0;transform:translateY(50px)} to{opacity:1;transform:translateY(0)} }
+        .code-header {
+            background: #2d2d30;
+            padding: 15px;
+            border-bottom: 1px solid #3e3e42;
+            font-weight: 600;
+            color: #cccccc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    @media (max-width:768px){
-      .lesson-content{flex-direction:column;}
-      .phone-frame{width:250px;height:500px;}
-    }
-  </style>
+        .code-content {
+            padding: 20px;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .simulator-panel {
+            flex: 1;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .phone-frame {
+            width: 280px;
+            height: 560px;
+            background: #000;
+            border-radius: 35px;
+            padding: 25px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 30px;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .app-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .lesson-objectives {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        .lesson-objectives h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .lesson-objectives ul {
+            margin-left: 20px;
+            color: #333;
+        }
+
+        .lesson-objectives li {
+            margin: 5px 0;
+        }
+
+        /* Interactive controls */
+        .interactive-controls {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        .control-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .control-btn {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 20px;
+            background: #007bff;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: #28a745;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .color-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.2);
+        }
+
+        /* Syntax highlighting */
+        .keyword { color: #ff79c6; font-weight: bold; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; font-style: italic; }
+        .type { color: #8be9fd; font-weight: bold; }
+        .property { color: #bd93f9; }
+        .modifier { color: #8be9fd; }
+        .number { color: #ffb86c; }
+        
+        .explanation { 
+            color: #f8f8f2; 
+            background: rgba(98, 114, 164, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #50fa7b;
+        }
+        
+        .explanation-title {
+            color: #50fa7b;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .explanation-content {
+            color: #f8f8f2;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .code-explanation {
+            color: #f1fa8c;
+            background: rgba(241, 250, 140, 0.15);
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            border-left: 3px solid #f1fa8c;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 4px;
+            border-radius: 2px;
+            margin: 0 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .lesson-content {
+                flex-direction: column;
+            }
+            
+            .phone-frame {
+                width: 250px;
+                height: 500px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Chapter 5: Basic UI Elements</h1>
-      <p>Building Blocks for Your SwiftUI Interface</p>
-    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Chapter 5: Basic UI Elements</h1>
+            <p>Building Blocks for Your SwiftUI Interface</p>
+        </div>
 
-    <div class="lesson-container">
-      <div class="lesson-header">
-        <h2 id="lessonTitle">5.1 Text Views</h2>
-        <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:20%"></div></div>
-      </div>
-
-      <div class="lesson-content">
-        <!-- Code -->
-        <div class="code-panel">
-          <div class="code-header">
-            <span id="codeFileName">TextView.swift</span>
-            <span id="codeType">Text Element</span>
-          </div>
-          <div class="code-content" id="codeContent">
+        <div class="lesson-container">
+            <div class="lesson-header">
+                <h2 id="lessonTitle">5.1 Text Views</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 20%"></div>
+                </div>
+            </div>
+            
+            <div class="lesson-content">
+                <div class="code-panel">
+                    <div class="code-header">
+                        <span id="codeFileName">TextView.swift</span>
+                        <span id="codeType">Text Element</span>
+                    </div>
+                    <div class="code-content" id="codeContent">
 <div class="explanation">
-  <div class="explanation-title">📝 TEXT VIEWS</div>
-  <div class="explanation-content">
-    Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.
-  </div>
+<div class="explanation-title">📝 TEXT VIEWS</div>
+<div class="explanation-content">
+Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
 <span class="keyword">struct</span> <span class="type">TextExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-
-    <span class="comment">// Basic text</span>
-    <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
-
-    <span class="comment">// Text with modifiers</span>
-    <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
-      .<span class="modifier">font</span>(.<span class="property">title</span>)
-      .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
-      .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
-
-    <span class="comment">// Multi-line text</span>
-    <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines in your SwiftUI app"</span>)
-      .<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>)
-      .<span class="modifier">lineLimit</span>(<span class="number">2</span>)
-  }
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// Basic text</span>
+        <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
+        
+        <span class="comment">// Text with modifiers</span>
+        <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
+            .<span class="modifier">font</span>(.<span class="property">title</span>)
+            .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+        
+        <span class="comment">// Multi-line text</span>
+        <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines in your SwiftUI app"</span>)
+            .<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>)
+            .<span class="modifier">lineLimit</span>(<span class="number">2</span>)
+    }
 }
 
 <div class="code-explanation">
@@ -158,518 +410,611 @@
 • .multilineTextAlignment() - Aligns multi-line text
 • .lineLimit() - Limits number of lines
 </div>
-          </div>
-        </div>
-
-        <!-- Simulator -->
-        <div class="simulator-panel">
-          <div class="phone-frame">
-            <div class="screen">
-              <div class="status-bar">
-                <span>9:41</span>
-                <span>📶 📶 🔋</span>
-              </div>
-              <div class="app-content" id="simulator">
-                <div id="textDemo" style="text-align:center; font-size:24px; color:#007bff; font-weight:bold;">
-                  Hello, SwiftUI!
+                    </div>
                 </div>
-              </div>
+                
+                <div class="simulator-panel">
+                    <div class="phone-frame">
+                        <div class="screen">
+                            <div class="status-bar">
+                                <span>9:41</span>
+                                <span>📶 📶 🔋</span>
+                            </div>
+                            <div class="app-content" id="simulator">
+                                <div id="textDemo" style="text-align: center; font-size: 24px; color: #007bff; font-weight: bold;">
+                                    Hello, SwiftUI!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="interactive-controls" id="controls">
+                        <div class="control-group">
+                            <label class="control-label">Text Size:</label>
+                            <button class="control-btn" onclick="changeTextSize('small')">Small</button>
+                            <button class="control-btn active" onclick="changeTextSize('medium')">Medium</button>
+                            <button class="control-btn" onclick="changeTextSize('large')">Large</button>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Font Weight:</label>
+                            <button class="control-btn" onclick="changeTextWeight('normal')">Normal</button>
+                            <button class="control-btn active" onclick="changeTextWeight('bold')">Bold</button>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Text Color:</label>
+                            <div class="color-picker">
+                                <div class="color-btn" style="background: #007bff;" onclick="changeTextColor('#007bff')"></div>
+                                <div class="color-btn" style="background: #28a745;" onclick="changeTextColor('#28a745')"></div>
+                                <div class="color-btn" style="background: #dc3545;" onclick="changeTextColor('#dc3545')"></div>
+                                <div class="color-btn" style="background: #ffc107;" onclick="changeTextColor('#ffc107')"></div>
+                                <div class="color-btn" style="background: #6f42c1;" onclick="changeTextColor('#6f42c1')"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-objectives">
+                        <h4>Learning Objectives:</h4>
+                        <ul id="objectives">
+                            <li>Create and display text in SwiftUI</li>
+                            <li>Apply text modifiers for styling</li>
+                            <li>Control text size, weight, and color</li>
+                            <li>Handle multi-line text</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          <!-- Controls (initially for Text lesson) -->
-          <div class="interactive-controls" id="controls">
-            <div class="control-group">
-              <label class="control-label">Text Size:</label>
-              <button class="control-btn" onclick="changeTextSize('small', this)">Small</button>
-              <button class="control-btn active" onclick="changeTextSize('medium', this)">Medium</button>
-              <button class="control-btn" onclick="changeTextSize('large', this)">Large</button>
-            </div>
-            <div class="control-group">
-              <label class="control-label">Font Weight:</label>
-              <button class="control-btn" onclick="changeTextWeight('normal', this)">Normal</button>
-              <button class="control-btn active" onclick="changeTextWeight('bold', this)">Bold</button>
-            </div>
-            <div class="control-group">
-              <label class="control-label">Text Color:</label>
-              <div class="color-picker">
-                <div class="color-btn" style="background:#007bff" onclick="changeTextColor('#007bff')"></div>
-                <div class="color-btn" style="background:#28a745" onclick="changeTextColor('#28a745')"></div>
-                <div class="color-btn" style="background:#dc3545" onclick="changeTextColor('#dc3545')"></div>
-                <div class="color-btn" style="background:#ffc107" onclick="changeTextColor('#ffc107')"></div>
-                <div class="color-btn" style="background:#6f42c1" onclick="changeTextColor('#6f42c1')"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="lesson-objectives">
-            <h4>Learning Objectives:</h4>
-            <ul id="objectives">
-              <li>Create and display text in SwiftUI</li>
-              <li>Apply text modifiers for styling</li>
-              <li>Control text size, weight, and color</li>
-              <li>Handle multi-line text</li>
-            </ul>
-          </div>
         </div>
-      </div>
+
+        <div class="navigation-buttons">
+            <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
+            <span id="lessonCounter">1 / 5</span>
+            <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
+        </div>
     </div>
 
-    <!-- NAV -->
-    <div class="navigation-buttons">
-      <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
-      <span id="lessonCounter">1 / 5</span>
-      <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
-    </div>
-  </div>
+    <script>
+        var currentLesson = 0;
+        var totalLessons = 5;
 
-  <script>
-    let currentLesson = 0;
-    const totalLessons = 5;
+        // Lesson data
+        var lessons = [
+            {
+                title: "5.1 Text Views",
+                fileName: "TextView.swift",
+                fileType: "Text Element",
+                objectives: [
+                    "Create and display text in SwiftUI",
+                    "Apply text modifiers for styling",
+                    "Control text size, weight, and color",
+                    "Handle multi-line text"
+                ]
+            },
+            {
+                title: "5.2 Image Views",
+                fileName: "ImageView.swift",
+                fileType: "Image Element",
+                objectives: [
+                    "Display SF Symbols in your app",
+                    "Resize and style images",
+                    "Apply color to symbol images",
+                    "Use image modifiers effectively"
+                ]
+            },
+            {
+                title: "5.3 Shapes",
+                fileName: "Shapes.swift",
+                fileType: "Shape Elements",
+                objectives: [
+                    "Create basic shapes like Rectangle and Circle",
+                    "Apply fills and strokes to shapes",
+                    "Use RoundedRectangle for rounded corners",
+                    "Combine shapes in layouts"
+                ]
+            },
+            {
+                title: "5.4 Colors",
+                fileName: "Colors.swift",
+                fileType: "Color System",
+                objectives: [
+                    "Use system colors in SwiftUI",
+                    "Apply colors to views",
+                    "Create custom colors",
+                    "Understand color opacity"
+                ]
+            },
+            {
+                title: "5.5 Spacer and Divider",
+                fileName: "SpacerDivider.swift",
+                fileType: "Layout Helpers",
+                objectives: [
+                    "Use Spacer to push views apart",
+                    "Add Dividers between content",
+                    "Control spacing in layouts",
+                    "Create flexible interfaces"
+                ]
+            }
+        ];
 
-    // LESSON DATA
-    const lessons = [
-      {
-        title: "5.1 Text Views",
-        fileName: "TextView.swift",
-        fileType: "Text Element",
-        objectives: [
-          "Create and display text in SwiftUI",
-          "Apply text modifiers for styling",
-          "Control text size, weight, and color",
-          "Handle multi-line text"
-        ]
-      },
-      {
-        title: "5.2 Image Views",
-        fileName: "ImageView.swift",
-        fileType: "Image Element",
-        objectives: [
-          "Display SF Symbols in your app",
-          "Resize and style images",
-          "Apply color to symbol images",
-          "Use image modifiers effectively"
-        ]
-      },
-      {
-        title: "5.3 Shapes",
-        fileName: "Shapes.swift",
-        fileType: "Shape Elements",
-        objectives: [
-          "Create basic shapes like Rectangle and Circle",
-          "Apply fills and strokes",
-          "Use RoundedRectangle for corners",
-          "Combine shapes in layouts"
-        ]
-      },
-      {
-        title: "5.4 Colors",
-        fileName: "Colors.swift",
-        fileType: "Color System",
-        objectives: [
-          "Use system colors in SwiftUI",
-          "Apply colors to views",
-          "Create custom colors",
-          "Understand color opacity"
-        ]
-      },
-      {
-        title: "5.5 Spacer and Divider",
-        fileName: "SpacerDivider.swift",
-        fileType: "Layout Helpers",
-        objectives: [
-          "Use Spacer to push views apart",
-          "Add Dividers between content",
-          "Control spacing in layouts",
-          "Create flexible interfaces"
-        ]
-      }
-    ];
+        // Text demo functions
+        function changeTextSize(size) {
+            var textDemo = document.getElementById('textDemo');
+            if (size === 'small') {
+                textDemo.style.fontSize = '16px';
+            } else if (size === 'medium') {
+                textDemo.style.fontSize = '24px';
+            } else if (size === 'large') {
+                textDemo.style.fontSize = '32px';
+            }
+            updateActiveButton(event.target);
+        }
 
-    // ---------- UTILITIES ----------
-    function updateActiveButton(btn){
-      if(!btn) return;
-      const group = btn.closest('.control-group');
-      if(!group) return;
-      group.querySelectorAll('.control-btn').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-    }
+        function changeTextWeight(weight) {
+            var textDemo = document.getElementById('textDemo');
+            textDemo.style.fontWeight = weight === 'bold' ? 'bold' : 'normal';
+            updateActiveButton(event.target);
+        }
 
-    // ---------- TEXT DEMO ----------
-    function changeTextSize(size, btn){
-      const el = document.getElementById('textDemo');
-      if(!el) return;
-      el.style.fontSize = size==='small' ? '16px' : size==='large' ? '32px' : '24px';
-      updateActiveButton(btn);
-    }
-    function changeTextWeight(weight, btn){
-      const el = document.getElementById('textDemo');
-      if(!el) return;
-      el.style.fontWeight = (weight==='bold') ? '700' : '400';
-      updateActiveButton(btn);
-    }
-    function changeTextColor(color){
-      const el = document.getElementById('textDemo');
-      if(el) el.style.color = color;
-    }
+        function changeTextColor(color) {
+            var textDemo = document.getElementById('textDemo');
+            textDemo.style.color = color;
+        }
 
-    // ---------- IMAGE DEMO ----------
-    function changeImageSize(size, btn){
-      const el = document.getElementById('imageDemo');
-      if(!el) return;
-      el.style.fontSize = size==='small' ? '32px' : size==='large' ? '96px' : '64px';
-      updateActiveButton(btn);
-    }
-    function changeImageColor(color){
-      const el = document.getElementById('imageDemo');
-      if(el) el.style.color = color;
-    }
-    function changeImage(emoji, btn){
-      const el = document.getElementById('imageDemo');
-      if(el) el.textContent = emoji;
-      updateActiveButton(btn);
-    }
+        // Image demo functions
+        function changeImageSize(size) {
+            var imageDemo = document.getElementById('imageDemo');
+            if (size === 'small') {
+                imageDemo.style.fontSize = '32px';
+            } else if (size === 'medium') {
+                imageDemo.style.fontSize = '64px';
+            } else if (size === 'large') {
+                imageDemo.style.fontSize = '96px';
+            }
+            updateActiveButton(event.target);
+        }
 
-    // ---------- SHAPES DEMO ----------
-    function changeShapeSize(size){
-      document.querySelectorAll('.shape').forEach(s=>{
-        s.style.width = size + 'px';
-        s.style.height = size + 'px';
-      });
-      const out = document.getElementById('shapeSize');
-      if(out) out.textContent = size;
-    }
-    function changeShapeColor(color){
-      document.querySelectorAll('.shape').forEach(s=> s.style.background = color);
-    }
+        function changeImageColor(color) {
+            var imageDemo = document.getElementById('imageDemo');
+            imageDemo.style.color = color;
+        }
 
-    // ---------- COLOR DEMO ----------
-    function changeColorBlock(color){
-      const block = document.getElementById('colorDemo');
-      if(block) block.style.background = color;
-    }
-    function changeColorOpacity(opacity){
-      const block = document.getElementById('colorDemo');
-      if(!block) return;
-      const computed = getComputedStyle(block).backgroundColor;
-      const rgb = computed.match(/\d+/g);
-      if(rgb && rgb.length >= 3){
-        block.style.background = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${opacity})`;
-      }
-      const out = document.getElementById('opacityValue');
-      if(out) out.textContent = opacity;
-    }
+        function changeImage(emoji) {
+            var imageDemo = document.getElementById('imageDemo');
+            imageDemo.textContent = emoji;
+        }
 
-    // ---------- LESSON RENDERING ----------
-    function updateLesson(){
-      const lesson = lessons[currentLesson];
-      document.getElementById('lessonTitle').textContent = lesson.title;
-      document.getElementById('codeFileName').textContent = lesson.fileName;
-      document.getElementById('codeType').textContent = lesson.fileType;
+        // Shape demo functions
+        function changeShapeSize(size) {
+            var shapes = document.querySelectorAll('.shape');
+            shapes.forEach(function(shape) {
+                shape.style.width = size + 'px';
+                shape.style.height = size + 'px';
+            });
+            document.getElementById('shapeSize').textContent = size;
+        }
 
-      document.getElementById('lessonCounter').textContent = (currentLesson+1) + ' / ' + totalLessons;
-      const progressPercent = ((currentLesson+1)/totalLessons) * 100;
-      document.getElementById('progressBar').style.width = progressPercent + '%';
+        function changeShapeColor(color) {
+            var shapes = document.querySelectorAll('.shape');
+            shapes.forEach(function(shape) {
+                shape.style.background = color;
+            });
+        }
 
-      document.getElementById('prevBtn').disabled = currentLesson===0;
-      document.getElementById('nextBtn').disabled = currentLesson===totalLessons-1;
+        // Color demo functions
+        function changeColorOpacity(opacity) {
+            var colorDemo = document.getElementById('colorDemo');
+            var currentColor = colorDemo.style.background || 'rgba(0, 123, 255, 1)';
+            var rgb = currentColor.match(/\d+/g);
+            if (rgb && rgb.length >= 3) {
+                colorDemo.style.background = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + opacity + ')';
+            }
+            document.getElementById('opacityValue').textContent = opacity;
+        }
 
-      // Objectives
-      const objectivesList = document.getElementById('objectives');
-      objectivesList.innerHTML = '';
-      lesson.objectives.forEach(obj=>{
-        const li = document.createElement('li'); li.textContent = obj; objectivesList.appendChild(li);
-      });
+        // Helper function to update active button
+        function updateActiveButton(button) {
+            if (button) {
+                var siblings = button.parentElement.querySelectorAll('.control-btn');
+                siblings.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+            }
+        }
 
-      updateLessonContent();
-    }
+        // Update lesson content
+        function updateLesson() {
+            var lesson = lessons[currentLesson];
+            
+            // Update header
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('codeFileName').textContent = lesson.fileName;
+            document.getElementById('codeType').textContent = lesson.fileType;
+            
+            // Update counter and progress
+            document.getElementById('lessonCounter').textContent = (currentLesson + 1) + ' / ' + totalLessons;
+            var progressPercent = ((currentLesson + 1) / totalLessons) * 100;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = currentLesson === 0;
+            document.getElementById('nextBtn').disabled = currentLesson === totalLessons - 1;
+            
+            // Update objectives
+            var objectivesList = document.getElementById('objectives');
+            objectivesList.innerHTML = '';
+            lesson.objectives.forEach(function(obj) {
+                var li = document.createElement('li');
+                li.textContent = obj;
+                objectivesList.appendChild(li);
+            });
+            
+            // Update lesson-specific content
+            updateLessonContent();
+        }
 
-    function updateLessonContent(){
-      const code = document.getElementById('codeContent');
-      const sim = document.getElementById('simulator');
-      const controls = document.getElementById('controls');
-
-      if(currentLesson === 0){
-        // TEXT
-        code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">📝 TEXT VIEWS</div>
-  <div class="explanation-content">Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.</div>
+        function updateLessonContent() {
+            var codeContent = document.getElementById('codeContent');
+            var simulator = document.getElementById('simulator');
+            var controls = document.getElementById('controls');
+            
+            if (currentLesson === 0) {
+                // Text Views lesson
+                codeContent.innerHTML = `<div class="explanation">
+<div class="explanation-title">📝 TEXT VIEWS</div>
+<div class="explanation-content">
+Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
 <span class="keyword">struct</span> <span class="type">TextExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
-    <span class="type">Text</span>(<span class="string">"Styled Text"</span>).<span class="modifier">font</span>(.<span class="property">title</span>).<span class="modifier">fontWeight</span>(.<span class="property">bold</span>).<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
-    <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines"</span>).<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>).<span class="modifier">lineLimit</span>(<span class="number">2</span>)
-  }
-}
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// Basic text</span>
+        <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
+        
+        <span class="comment">// Text with modifiers</span>
+        <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
+            .<span class="modifier">font</span>(.<span class="property">title</span>)
+            .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+        
+        <span class="comment">// Multi-line text</span>
+        <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines"</span>)
+            .<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>)
+            .<span class="modifier">lineLimit</span>(<span class="number">2</span>)
+    }
+}`;
 
-<div class="code-explanation">📚 TEXT MODIFIERS: .font() • .fontWeight() • .foregroundColor() • .multilineTextAlignment() • .lineLimit()</div>`;
+                simulator.innerHTML = `<div id="textDemo" style="text-align: center; font-size: 24px; color: #007bff; font-weight: bold;">
+                    Hello, SwiftUI!
+                </div>`;
 
-        sim.innerHTML = `<div id="textDemo" style="text-align:center; font-size:24px; color:#007bff; font-weight:bold;">Hello, SwiftUI!</div>`;
+                controls.innerHTML = `
+                    <div class="control-group">
+                        <label class="control-label">Text Size:</label>
+                        <button class="control-btn" onclick="changeTextSize('small')">Small</button>
+                        <button class="control-btn active" onclick="changeTextSize('medium')">Medium</button>
+                        <button class="control-btn" onclick="changeTextSize('large')">Large</button>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Font Weight:</label>
+                        <button class="control-btn" onclick="changeTextWeight('normal')">Normal</button>
+                        <button class="control-btn active" onclick="changeTextWeight('bold')">Bold</button>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Text Color:</label>
+                        <div class="color-picker">
+                            <div class="color-btn" style="background: #007bff;" onclick="changeTextColor('#007bff')"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="changeTextColor('#28a745')"></div>
+                            <div class="color-btn" style="background: #dc3545;" onclick="changeTextColor('#dc3545')"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="changeTextColor('#ffc107')"></div>
+                            <div class="color-btn" style="background: #6f42c1;" onclick="changeTextColor('#6f42c1')"></div>
+                        </div>
+                    </div>`;
 
-        controls.innerHTML = `
-          <div class="control-group">
-            <label class="control-label">Text Size:</label>
-            <button class="control-btn" onclick="changeTextSize('small', this)">Small</button>
-            <button class="control-btn active" onclick="changeTextSize('medium', this)">Medium</button>
-            <button class="control-btn" onclick="changeTextSize('large', this)">Large</button>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Font Weight:</label>
-            <button class="control-btn" onclick="changeTextWeight('normal', this)">Normal</button>
-            <button class="control-btn active" onclick="changeTextWeight('bold', this)">Bold</button>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Text Color:</label>
-            <div class="color-picker">
-              <div class="color-btn" style="background:#007bff" onclick="changeTextColor('#007bff')"></div>
-              <div class="color-btn" style="background:#28a745" onclick="changeTextColor('#28a745')"></div>
-              <div class="color-btn" style="background:#dc3545" onclick="changeTextColor('#dc3545')"></div>
-              <div class="color-btn" style="background:#ffc107" onclick="changeTextColor('#ffc107')"></div>
-              <div class="color-btn" style="background:#6f42c1" onclick="changeTextColor('#6f42c1')"></div>
-            </div>
-          </div>`;
-      }
-      else if(currentLesson === 1){
-        // IMAGE
-        code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🖼️ IMAGE VIEWS</div>
-  <div class="explanation-content">SwiftUI includes SF Symbols—a huge library of icons you can style with size and color.</div>
+            } else if (currentLesson === 1) {
+                // Image Views lesson
+                codeContent.innerHTML = `<div class="explanation">
+<div class="explanation-title">🖼️ IMAGE VIEWS</div>
+<div class="explanation-content">
+Image views display images and icons. SwiftUI includes SF Symbols - a library of over 3,000 free icons you can use.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
 <span class="keyword">struct</span> <span class="type">ImageExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
-    <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"heart.fill"</span>).<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>)).<span class="modifier">foregroundColor</span>(.<span class="property">red</span>)
-    <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"cloud.sun.fill"</span>).<span class="modifier">font</span>(.<span class="property">largeTitle</span>).<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
-  }
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// SF Symbol image</span>
+        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
+        
+        <span class="comment">// Styled image</span>
+        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"heart.fill"</span>)
+            .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
+            .<span class="modifier">foregroundColor</span>(.<span class="property">red</span>)
+        
+        <span class="comment">// Resizable image</span>
+        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"cloud.sun.fill"</span>)
+            .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+    }
 }
 
-<div class="code-explanation">🎨 IMAGE MODIFIERS: .font() • .foregroundColor() • .imageScale()</div>`;
+<div class="code-explanation">
+🎨 IMAGE MODIFIERS:
+• .font() - Controls symbol size
+• .foregroundColor() - Changes symbol color
+• .imageScale() - Scales the image
+• systemName: uses SF Symbols library
+</div>`;
 
-        sim.innerHTML = `<div id="imageDemo" style="text-align:center; font-size:64px; color:#dc3545;">❤️</div>`;
+                simulator.innerHTML = `<div id="imageDemo" style="text-align: center; font-size: 64px; color: #dc3545;">
+                    ❤️
+                </div>`;
 
-        controls.innerHTML = `
-          <div class="control-group">
-            <label class="control-label">Choose Symbol:</label>
-            <button class="control-btn" onclick="changeImage('⭐', this)">Star</button>
-            <button class="control-btn active" onclick="changeImage('❤️', this)">Heart</button>
-            <button class="control-btn" onclick="changeImage('☁️', this)">Cloud</button>
-            <button class="control-btn" onclick="changeImage('🔔', this)">Bell</button>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Size:</label>
-            <button class="control-btn" onclick="changeImageSize('small', this)">Small</button>
-            <button class="control-btn active" onclick="changeImageSize('medium', this)">Medium</button>
-            <button class="control-btn" onclick="changeImageSize('large', this)">Large</button>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Color:</label>
-            <div class="color-picker">
-              <div class="color-btn" style="background:#dc3545" onclick="changeImageColor('#dc3545')"></div>
-              <div class="color-btn" style="background:#007bff" onclick="changeImageColor('#007bff')"></div>
-              <div class="color-btn" style="background:#28a745" onclick="changeImageColor('#28a745')"></div>
-              <div class="color-btn" style="background:#ffc107" onclick="changeImageColor('#ffc107')"></div>
-            </div>
-          </div>`;
-      }
-      else if(currentLesson === 2){
-        // SHAPES
-        code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🔷 SHAPES</div>
-  <div class="explanation-content">Use Rectangle, Circle, and RoundedRectangle to build backgrounds, buttons, and decorative UI.</div>
+                controls.innerHTML = `
+                    <div class="control-group">
+                        <label class="control-label">Choose Symbol:</label>
+                        <button class="control-btn" onclick="changeImage('⭐')">Star</button>
+                        <button class="control-btn active" onclick="changeImage('❤️')">Heart</button>
+                        <button class="control-btn" onclick="changeImage('☁️')">Cloud</button>
+                        <button class="control-btn" onclick="changeImage('🔔')">Bell</button>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Size:</label>
+                        <button class="control-btn" onclick="changeImageSize('small')">Small</button>
+                        <button class="control-btn active" onclick="changeImageSize('medium')">Medium</button>
+                        <button class="control-btn" onclick="changeImageSize('large')">Large</button>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Color:</label>
+                        <div class="color-picker">
+                            <div class="color-btn" style="background: #dc3545;" onclick="changeImageColor('#dc3545')"></div>
+                            <div class="color-btn" style="background: #007bff;" onclick="changeImageColor('#007bff')"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="changeImageColor('#28a745')"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="changeImageColor('#ffc107')"></div>
+                        </div>
+                    </div>`;
+
+            } else if (currentLesson === 2) {
+                // Shapes lesson
+                codeContent.innerHTML = `<div class="explanation">
+<div class="explanation-title">🔷 SHAPES</div>
+<div class="explanation-content">
+SwiftUI provides built-in shapes like Rectangle, Circle, and RoundedRectangle. These are perfect for creating backgrounds, buttons, and decorative elements.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">ShapesExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">16</span>) {
-      <span class="type">Rectangle</span>().<span class="modifier">fill</span>(.<span class="property">blue</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">120</span>, <span class="property">height</span>: <span class="number">60</span>)
-      <span class="type">Circle</span>().<span class="modifier">fill</span>(.<span class="property">red</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">80</span>, <span class="property">height</span>: <span class="number">80</span>)
-      <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">16</span>).<span class="modifier">stroke</span>(.<span class="property">green</span>, <span class="property">lineWidth</span>: <span class="number">4</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">140</span>, <span class="property">height</span>: <span class="number">60</span>)
+<span class="keyword">struct</span> <span class="type">ShapeExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// Rectangle shape</span>
+        <span class="type">Rectangle</span>()
+            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>)
+            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        
+        <span class="comment">// Circle shape</span>
+        <span class="type">Circle</span>()
+            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">red</span>)
+            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        
+        <span class="comment">// RoundedRectangle with corner radius</span>
+        <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">20</span>)
+            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">green</span>)
+            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        
+        <span class="comment">// Shape with stroke</span>
+        <span class="type">Circle</span>()
+            .<span class="modifier">stroke</span>(<span class="type">Color</span>.<span class="property">purple</span>, <span class="property">lineWidth</span>: <span class="number">3</span>)
+            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
     }
-  }
-}`;
+}
 
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:12px; align-items:center;">
-            <div class="shape" style="width:120px;height:60px;background:#007bff;border-radius:6px;"></div>
-            <div class="shape" style="width:80px;height:80px;background:#dc3545;border-radius:50%;"></div>
-            <div class="shape" style="width:140px;height:60px;background:transparent;border-radius:16px;border:4px solid #28a745;"></div>
-            <div style="font-size:12px;color:#6c757d">Size: <span id="shapeSize">Default</span></div>
-          </div>`;
+<div class="code-explanation">
+🎨 SHAPE MODIFIERS:
+• .fill() - Fills shape with color
+• .stroke() - Adds border to shape
+• .frame() - Sets shape size
+• cornerRadius - For rounded corners
+</div>`;
 
-        controls.innerHTML = `
-          <div class="control-group">
-            <label class="control-label">Shape Size (px):</label>
-            <button class="control-btn" onclick="changeShapeSize(60, this)">60</button>
-            <button class="control-btn active" onclick="changeShapeSize(80, this)">80</button>
-            <button class="control-btn" onclick="changeShapeSize(100, this)">100</button>
-            <button class="control-btn" onclick="changeShapeSize(140, this)">140</button>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Fill Color:</label>
-            <div class="color-picker">
-              <div class="color-btn" style="background:#007bff" onclick="changeShapeColor('#007bff')"></div>
-              <div class="color-btn" style="background:#28a745" onclick="changeShapeColor('#28a745')"></div>
-              <div class="color-btn" style="background:#dc3545" onclick="changeShapeColor('#dc3545')"></div>
-              <div class="color-btn" style="background:#6f42c1" onclick="changeShapeColor('#6f42c1')"></div>
-            </div>
-          </div>`;
-      }
-      else if(currentLesson === 3){
-        // COLORS
-        code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🎨 COLORS</div>
-  <div class="explanation-content">Apply system and custom colors. Adjust opacity to create depth and emphasis.</div>
+                simulator.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <div class="shape" style="width: 80px; height: 80px; background: #007bff; border-radius: 0;"></div>
+                    <div class="shape" style="width: 80px; height: 80px; background: #dc3545; border-radius: 50%;"></div>
+                    <div class="shape" style="width: 80px; height: 80px; background: #28a745; border-radius: 15px;"></div>
+                </div>`;
+
+                controls.innerHTML = `
+                    <div class="control-group">
+                        <label class="control-label">Shape Size: <span id="shapeSize">80</span>px</label>
+                        <input type="range" min="40" max="120" value="80" onchange="changeShapeSize(this.value)">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Shape Color:</label>
+                        <div class="color-picker">
+                            <div class="color-btn" style="background: #007bff;" onclick="changeShapeColor('#007bff')"></div>
+                            <div class="color-btn" style="background: #dc3545;" onclick="changeShapeColor('#dc3545')"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="changeShapeColor('#28a745')"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="changeShapeColor('#ffc107')"></div>
+                            <div class="color-btn" style="background: #6f42c1;" onclick="changeShapeColor('#6f42c1')"></div>
+                        </div>
+                    </div>`;
+
+            } else if (currentLesson === 3) {
+                // Colors lesson
+                codeContent.innerHTML = `<div class="explanation">
+<div class="explanation-title">🎨 COLORS</div>
+<div class="explanation-content">
+Colors in SwiftUI can be applied to any view. You can use system colors, custom colors, and adjust opacity for transparency effects.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">ColorsExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span> {
-      <span class="type">Text</span>(<span class="string">"Primary Color"</span>).<span class="modifier">padding</span>().<span class="modifier">background</span>(.<span class="property">blue</span>).<span class="modifier">foregroundColor</span>(.<span class="property">white</span>)
-      <span class="type">Color</span>.<span class="property">red</span>.<span class="modifier">opacity</span>(<span class="number">0.5</span>)
+<span class="keyword">struct</span> <span class="type">ColorExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// System colors</span>
+        <span class="type">Color</span>.<span class="property">blue</span>
+        <span class="type">Color</span>.<span class="property">red</span>
+        <span class="type">Color</span>.<span class="property">green</span>
+        
+        <span class="comment">// Color with opacity</span>
+        <span class="type">Color</span>.<span class="property">blue</span>
+            .<span class="modifier">opacity</span>(<span class="number">0.5</span>)
+        
+        <span class="comment">// Custom color</span>
+        <span class="type">Color</span>(<span class="property">red</span>: <span class="number">0.4</span>, <span class="property">green</span>: <span class="number">0.6</span>, <span class="property">blue</span>: <span class="number">0.8</span>)
+        
+        <span class="comment">// Background color</span>
+        <span class="type">Text</span>(<span class="string">"Colored Background"</span>)
+            .<span class="modifier">padding</span>()
+            .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">yellow</span>)
     }
-  }
-}`;
+}
 
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
-            <div id="colorDemo" style="width:180px; height:100px; background:rgba(0,123,255,1); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.15)"></div>
-            <div style="font-size:12px;color:#6c757d">Opacity: <span id="opacityValue">1</span></div>
-          </div>`;
+<div class="code-explanation">
+🌈 COLOR OPTIONS:
+• System colors: .blue, .red, .green, etc.
+• .opacity() - Makes colors transparent
+• Custom RGB values
+• .background() - Applies color behind views
+</div>`;
 
-        controls.innerHTML = `
-          <div class="control-group">
-            <label class="control-label">Base Color:</label>
-            <div class="color-picker">
-              <div class="color-btn" style="background:#007bff" onclick="changeColorBlock('#007bff')"></div>
-              <div class="color-btn" style="background:#28a745" onclick="changeColorBlock('#28a745')"></div>
-              <div class="color-btn" style="background:#dc3545" onclick="changeColorBlock('#dc3545')"></div>
-              <div class="color-btn" style="background:#ffc107" onclick="changeColorBlock('#ffc107')"></div>
-              <div class="color-btn" style="background:#6f42c1" onclick="changeColorBlock('#6f42c1')"></div>
-            </div>
-          </div>
-          <div class="control-group">
-            <label class="control-label">Opacity:</label>
-            <input type="range" min="0" max="1" step="0.05" value="1" oninput="changeColorOpacity(this.value)" />
-          </div>`;
-      }
-      else if(currentLesson === 4){
-        // SPACER & DIVIDER
-        code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">↔️ SPACER & DIVIDER</div>
-  <div class="explanation-content">Spacer pushes views apart; Divider draws a thin line between sections.</div>
+                simulator.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <div id="colorDemo" style="width: 150px; height: 150px; background: rgba(0, 123, 255, 1); border-radius: 15px;"></div>
+                    <div style="padding: 10px; background: #ffc107; border-radius: 8px; color: #333;">
+                        Colored Background
+                    </div>
+                </div>`;
+
+                controls.innerHTML = `
+                    <div class="control-group">
+                        <label class="control-label">Color Opacity: <span id="opacityValue">1</span></label>
+                        <input type="range" min="0" max="1" step="0.1" value="1" onchange="changeColorOpacity(this.value)">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Choose Color:</label>
+                        <div class="color-picker">
+                            <div class="color-btn" style="background: #007bff;" onclick="document.getElementById('colorDemo').style.background='rgba(0, 123, 255, 1)'"></div>
+                            <div class="color-btn" style="background: #dc3545;" onclick="document.getElementById('colorDemo').style.background='rgba(220, 53, 69, 1)'"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="document.getElementById('colorDemo').style.background='rgba(40, 167, 69, 1)'"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="document.getElementById('colorDemo').style.background='rgba(255, 193, 7, 1)'"></div>
+                            <div class="color-btn" style="background: #6f42c1;" onclick="document.getElementById('colorDemo').style.background='rgba(111, 66, 193, 1)'"></div>
+                        </div>
+                    </div>`;
+
+            } else if (currentLesson === 4) {
+                // Spacer and Divider lesson
+                codeContent.innerHTML = `<div class="explanation">
+<div class="explanation-title">↔️ SPACER AND DIVIDER</div>
+<div class="explanation-content">
+Spacer and Divider are layout helpers. Spacer pushes views apart by taking up available space, while Divider creates a visual separation line between content.
+</div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
 <span class="keyword">struct</span> <span class="type">SpacerDividerExample</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span> {
-      <span class="type">HStack</span> {
-        <span class="type">Text</span>(<span class="string">"Left"</span>)
-        <span class="type">Spacer</span>()
-        <span class="type">Text</span>(<span class="string">"Right"</span>)
-      }
-      <span class="type">Divider</span>()
-      <span class="type">Text</span>(<span class="string">"Below the divider"</span>)
-    }.<span class="modifier">padding</span>()
-  }
-}`;
-
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-            <div class="row">
-              <div class="box">Left</div>
-              <div class="spacer"></div>
-              <div class="box">Right</div>
-            </div>
-            <div class="divider"></div>
-            <div class="row">
-              <div class="box">Below the divider</div>
-            </div>
-          </div>`;
-
-        controls.innerHTML = `
-          <div class="control-group">
-            <label class="control-label">Try layout variants:</label>
-            <button class="control-btn active" onclick="renderSpacerVariant(1, this)">Left • Spacer • Right</button>
-            <button class="control-btn" onclick="renderSpacerVariant(2, this)">Icon • Spacer • Title • Spacer • Action</button>
-            <button class="control-btn" onclick="renderSpacerVariant(3, this)">Three items with equal gaps</button>
-          </div>`;
-      }
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        
+        <span class="comment">// Spacer pushes content apart</span>
+        <span class="type">HStack</span> {
+            <span class="type">Text</span>(<span class="string">"Left"</span>)
+            <span class="type">Spacer</span>()  <span class="comment">// Takes up all available space</span>
+            <span class="type">Text</span>(<span class="string">"Right"</span>)
+        }
+        
+        <span class="comment">// Divider creates a line</span>
+        <span class="type">VStack</span> {
+            <span class="type">Text</span>(<span class="string">"Section 1"</span>)
+            <span class="type">Divider</span>()  <span class="comment">// Horizontal line</span>
+            <span class="type">Text</span>(<span class="string">"Section 2"</span>)
+        }
+        
+        <span class="comment">// Multiple spacers distribute space</span>
+        <span class="type">HStack</span> {
+            <span class="type">Spacer</span>()
+            <span class="type">Text</span>(<span class="string">"Centered"</span>)
+            <span class="type">Spacer</span>()
+        }
     }
+}
 
-    // Spacer variants for lesson 5
-    function renderSpacerVariant(n, btn){
-      updateActiveButton(btn);
-      const sim = document.getElementById('simulator');
-      if(!sim) return;
-      if(n===1){
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-            <div class="row">
-              <div class="box">Left</div>
-              <div class="spacer"></div>
-              <div class="box">Right</div>
-            </div>
-            <div class="divider"></div>
-            <div class="row"><div class="box">Below the divider</div></div>
-          </div>`;
-      } else if(n===2){
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-            <div class="row">
-              <div class="box">🔔</div>
-              <div class="spacer"></div>
-              <div class="box">Notification</div>
-              <div class="spacer"></div>
-              <div class="box">Action</div>
-            </div>
-            <div class="divider"></div>
-            <div class="row"><div class="box">Secondary content</div></div>
-          </div>`;
-      } else {
-        sim.innerHTML = `
-          <div style="display:flex; flex-direction:column; gap:8px; width:100%;">
-            <div class="row">
-              <div class="box">One</div>
-              <div class="spacer"></div>
-              <div class="box">Two</div>
-              <div class="spacer"></div>
-              <div class="box">Three</div>
-            </div>
-            <div class="divider"></div>
-            <div class="row"><div class="box">Footer</div></div>
-          </div>`;
-      }
-    }
+<div class="code-explanation">
+📏 LAYOUT HELPERS:
+• Spacer() - Flexible space that expands
+• Divider() - Visual separator line
+• Use in HStack/VStack for layout control
+• Multiple Spacers share available space equally
+</div>`;
 
-    // ---------- NAV ----------
-    function nextLesson(){
-      if(currentLesson < totalLessons-1){
-        currentLesson++;
+                simulator.innerHTML = `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; gap: 30px; padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                        <span style="color: #333; font-weight: bold;">Left</span>
+                        <span style="flex: 1;"></span>
+                        <span style="color: #333; font-weight: bold;">Right</span>
+                    </div>
+                    
+                    <div style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                        <div style="color: #333; text-align: center; padding: 10px;">Section 1</div>
+                        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+                        <div style="color: #333; text-align: center; padding: 10px;">Section 2</div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                        <span style="flex: 1;"></span>
+                        <span style="color: #333; font-weight: bold;">Centered</span>
+                        <span style="flex: 1;"></span>
+                    </div>
+                </div>`;
+
+                controls.innerHTML = `
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                        <h4 style="color: #333; margin-bottom: 10px;">Interactive Demo</h4>
+                        <p style="color: #666; font-size: 14px;">
+                            Spacer creates flexible space between views.<br>
+                            Divider adds visual separation.<br>
+                            These are essential for creating polished layouts!
+                        </p>
+                        <div style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
+                            <span style="color: #2e7d32; font-weight: bold;">💡 Tip:</span>
+                            <span style="color: #2e7d32;"> Use Spacer() to push content to edges!</span>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < totalLessons - 1) {
+                currentLesson++;
+                updateLesson();
+            }
+        }
+
+        function previousLesson() {
+            if (currentLesson > 0) {
+                currentLesson--;
+                updateLesson();
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextLesson();
+            } else if (e.key === 'ArrowLeft') {
+                previousLesson();
+            }
+        });
+
+        // Initialize first lesson
         updateLesson();
-      }
-    }
-    function previousLesson(){
-      if(currentLesson > 0){
-        currentLesson--;
-        updateLesson();
-      }
-    }
-
-    // Initialize safely after DOM is ready
-    document.addEventListener('DOMContentLoaded', updateLesson);
-  </script>
+    </script>
 </body>
 </html>

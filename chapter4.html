@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftUI Chapter 4: Understanding Views</title>
+    <title>SwiftUI Chapter 5: Understanding Views - Complete Tutorial</title>
     <style>
         * {
             margin: 0;
@@ -28,6 +28,7 @@
             text-align: center;
             color: white;
             margin-bottom: 30px;
+            animation: slideDown 0.8s ease-out;
         }
 
         .header h1 {
@@ -47,6 +48,7 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
             margin-bottom: 30px;
+            animation: slideUp 0.8s ease-out 0.2s both;
         }
 
         .lesson-header {
@@ -67,7 +69,7 @@
             color: #d4d4d4;
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             overflow: auto;
         }
 
@@ -101,8 +103,8 @@
         }
 
         .phone-frame {
-            width: 280px;
-            height: 560px;
+            width: 300px;
+            height: 600px;
             background: #000;
             border-radius: 35px;
             padding: 25px 15px;
@@ -160,6 +162,7 @@
             align-items: center;
             gap: 15px;
             padding: 20px;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
@@ -184,7 +187,7 @@
             cursor: not-allowed;
         }
 
-        .lesson-objectives {
+        .lesson-info {
             background: rgba(76, 175, 80, 0.1);
             border-left: 4px solid #4caf50;
             padding: 15px;
@@ -192,18 +195,34 @@
             border-radius: 5px;
         }
 
-        .lesson-objectives h4 {
+        .lesson-info h4 {
             color: #2e7d32;
             margin-bottom: 10px;
         }
 
-        .lesson-objectives ul {
-            margin-left: 20px;
-            color: #333;
+        .interactive-controls {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .lesson-objectives li {
-            margin: 5px 0;
+        .control-btn {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 20px;
+            background: #007bff;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
         }
 
         /* Syntax highlighting */
@@ -213,36 +232,43 @@
         .type { color: #8be9fd; font-weight: bold; }
         .property { color: #bd93f9; }
         .modifier { color: #8be9fd; }
+        .number { color: #ffb86c; }
         
-        .explanation { 
-            color: #f8f8f2; 
-            background: rgba(98, 114, 164, 0.3);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
+        .definition {
+            background: rgba(80, 250, 123, 0.2);
             border-left: 4px solid #50fa7b;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 5px;
         }
-        
-        .explanation-title {
+
+        .definition-title {
             color: #50fa7b;
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
-        
-        .explanation-content {
+
+        .definition-content {
             color: #f8f8f2;
             line-height: 1.6;
-            font-size: 14px;
         }
-        
+
         .code-explanation {
-            color: #f1fa8c;
             background: rgba(241, 250, 140, 0.15);
-            padding: 8px;
-            border-radius: 6px;
-            margin: 8px 0;
             border-left: 3px solid #f1fa8c;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #f1fa8c;
+        }
+
+        .practice-box {
+            background: rgba(116, 185, 255, 0.15);
+            border-left: 3px solid #74b9ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #74b9ff;
         }
 
         .progress-bar {
@@ -258,6 +284,36 @@
             height: 100%;
             border-radius: 2px;
             transition: width 0.3s ease;
+        }
+
+        .view-hierarchy {
+            background: #2d2d30;
+            border: 2px solid #4facfe;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #f8f8f2;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .highlight {
+            animation: pulse 2s infinite;
         }
 
         @media (max-width: 768px) {
@@ -276,46 +332,25 @@
     <div class="container">
         <div class="header">
             <h1>Chapter 4: Understanding Views</h1>
-            <p>The Building Blocks of Every SwiftUI App</p>
+            <p>Master the Foundation of Every SwiftUI App</p>
         </div>
 
         <div class="lesson-container">
             <div class="lesson-header">
-                <h2 id="lessonTitle">4.1 What Is a View?</h2>
+                <h2 id="lessonTitle">Loading...</h2>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressBar" style="width: 25%"></div>
+                    <div class="progress-fill" id="progressBar" style="width: 10%"></div>
                 </div>
             </div>
             
             <div class="lesson-content">
                 <div class="code-panel">
                     <div class="code-header">
-                        <span id="codeFileName">ViewConcept.swift</span>
-                        <span id="codeType">Core Concept</span>
+                        <span id="codeFileName">Loading...</span>
+                        <span id="codeType">Loading...</span>
                     </div>
                     <div class="code-content" id="codeContent">
-<div class="explanation">
-<div class="explanation-title">🎨 WHAT IS A VIEW IN SWIFTUI?</div>
-<div class="explanation-content">
-A View is anything you can see on the screen - text, images, buttons, or even empty space. Think of Views as LEGO blocks that you combine to build your app's interface.
-</div>
-</div>
-
-<span class="comment">// Let's look at our simple app from Chapter 4</span>
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {  <span class="comment">// ContentView IS a View!</span>
-    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        <span class="type">Text</span>(<span class="string">"Hello, world!"</span>)  <span class="comment">// Text IS a View!</span>
-    }
-}
-
-<div class="code-explanation">
-🔍 BREAKDOWN:
-• ContentView: View → This means ContentView conforms to the View protocol
-• Text("Hello, world!") → This creates a Text view
-• Every View must have a body that returns another View
-</div>
+                        Loading...
                     </div>
                 </div>
                 
@@ -327,25 +362,18 @@ A View is anything you can see on the screen - text, images, buttons, or even em
                                 <span>📶 📶 🔋</span>
                             </div>
                             <div class="app-content" id="simulator">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">Everything is a View!</div>
-                                    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                                        <div style="font-size: 18px; color: #333;">Hello, world!</div>
-                                        <div style="font-size: 12px; color: #666; margin-top: 10px;">↑ This is a Text View</div>
-                                    </div>
-                                </div>
+                                Loading...
                             </div>
                         </div>
                     </div>
                     
-                    <div class="lesson-objectives">
-                        <h4>Learning Objectives:</h4>
-                        <ul id="objectives">
-                            <li>Understand what a View represents in SwiftUI</li>
-                            <li>Learn that everything on screen is a View</li>
-                            <li>Discover the View protocol</li>
-                            <li>See how Views describe UI</li>
-                        </ul>
+                    <div id="interactiveControls" class="interactive-controls">
+                        <!-- Interactive controls will be added here -->
+                    </div>
+                    
+                    <div class="lesson-info">
+                        <h4 id="lessonObjective">Loading...</h4>
+                        <p id="lessonDescription">Loading...</p>
                     </div>
                 </div>
             </div>
@@ -353,216 +381,709 @@ A View is anything you can see on the screen - text, images, buttons, or even em
 
         <div class="navigation-buttons">
             <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
-            <span id="lessonCounter">1 / 4</span>
+            <span id="lessonCounter">1 / 10</span>
             <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
         </div>
     </div>
 
     <script>
         var currentLesson = 0;
-        var totalLessons = 4;
+        var totalLessons = 10;
 
-        function updateLesson() {
-            var lessonTitles = [
-                "4.1 What Is a View?",
-                "4.2 The View Protocol", 
-                "4.3 How Views Work",
-                "4.4 Your First Custom View"
-            ];
+        // Store current view properties for interactive demos
+        var viewProperties = {
+            text: "Hello, World!",
+            color: "#007bff",
+            size: 24,
+            isVisible: true
+        };
 
-            var fileNames = [
-                "ViewConcept.swift",
-                "ViewProtocol.swift",
-                "ViewMechanics.swift",
-                "SimpleView.swift"
-            ];
-
-            var fileTypes = [
-                "Core Concept",
-                "Protocol Basics",
-                "View System",
-                "Custom View"
-            ];
-
-            // Update header
-            document.getElementById('lessonTitle').textContent = lessonTitles[currentLesson];
-            document.getElementById('codeFileName').textContent = fileNames[currentLesson];
-            document.getElementById('codeType').textContent = fileTypes[currentLesson];
-            
-            // Update counter
-            document.getElementById('lessonCounter').textContent = (currentLesson + 1) + ' / ' + totalLessons;
-            
-            // Update progress bar
-            var progressPercent = ((currentLesson + 1) / totalLessons) * 100;
-            document.getElementById('progressBar').style.width = progressPercent + '%';
-            
-            // Update buttons
-            document.getElementById('prevBtn').disabled = currentLesson === 0;
-            document.getElementById('nextBtn').disabled = currentLesson === totalLessons - 1;
-
-            // Update lesson content
-            updateLessonContent();
-        }
-
-        function updateLessonContent() {
-            var codeContent = document.getElementById('codeContent');
-            var simulator = document.getElementById('simulator');
-            var objectives = document.getElementById('objectives');
-
-            if (currentLesson === 0) {
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">🎨 WHAT IS A VIEW IN SWIFTUI?</div>
-<div class="explanation-content">
-A View is anything you can see on the screen - text, images, buttons, or even empty space. Think of Views as LEGO blocks that you combine to build your app's interface.
+        // All 10 lessons data
+        var lessons = [
+            {
+                // Lesson 1
+                title: "4.1 What is a View?",
+                fileName: "Introduction.swift",
+                fileType: "View Basics",
+                objective: "Understanding Views",
+                description: "A View is anything you see on screen - it's the visual building block of your app.",
+                code: `<div class="definition">
+<div class="definition-title">📖 DEFINITION: View</div>
+<div class="definition-content">
+A View in SwiftUI is a piece of user interface. It can be text, an image, a button, or any visual element that appears on screen.
 </div>
 </div>
 
-<span class="comment">// Let's look at our simple app from Chapter 4</span>
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {  <span class="comment">// ContentView IS a View!</span>
+<span class="comment">// Your first view!</span>
+<span class="keyword">struct</span> <span class="type">MyFirstView</span>: <span class="type">View</span> {
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        <span class="type">Text</span>(<span class="string">"Hello, world!"</span>)  <span class="comment">// Text IS a View!</span>
+        <span class="type">Text</span>(<span class="string">"I am a View!"</span>)
     }
 }
 
 <div class="code-explanation">
-🔍 BREAKDOWN:
-• ContentView: View → This means ContentView conforms to the View protocol
-• Text("Hello, world!") → This creates a Text view
-• Every View must have a body that returns another View
-</div>`;
+💡 EXPLANATION:
+• struct MyFirstView - Creates a new view type
+• : View - Says "this is a View"
+• body - Required property that describes the view
+• Text("...") - A built-in view that shows text
+</div>
 
-                simulator.innerHTML = `<div style="text-align: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">Everything is a View!</div>
-                    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                        <div style="font-size: 18px; color: #333;">Hello, world!</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 10px;">↑ This is a Text View</div>
+<div class="practice-box">
+🎯 TRY IT: Click the button below to see this view in action!
+</div>`,
+                simulator: `<div style="text-align: center;">
+                    <div style="font-size: 24px; color: #333; padding: 20px;">
+                        I am a View!
                     </div>
-                </div>`;
-
-                objectives.innerHTML = `
-                    <li>Understand what a View represents in SwiftUI</li>
-                    <li>Learn that everything on screen is a View</li>
-                    <li>Discover the View protocol</li>
-                    <li>See how Views describe UI</li>`;
-
-            } else if (currentLesson === 1) {
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">📜 THE VIEW PROTOCOL</div>
-<div class="explanation-content">
-Every View in SwiftUI must follow a set of rules defined by the View protocol. Think of a protocol as a contract.
+                </div>`,
+                controls: `<button class="control-btn" onclick="animateView()">See View Appear!</button>`
+            },
+            {
+                // Lesson 2
+                title: "4.2 Everything is a View",
+                fileName: "ViewExamples.swift",
+                fileType: "View Types",
+                objective: "Recognizing Views",
+                description: "Every UI element in SwiftUI is a View - Text, Images, Buttons, and more!",
+                code: `<div class="definition">
+<div class="definition-title">📖 EVERYTHING YOU SEE IS A VIEW</div>
+<div class="definition-content">
+In SwiftUI, every visual element is a View. Let's explore different types of views.
 </div>
 </div>
 
-<span class="comment">// The View protocol requires ONE thing: a body property</span>
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">DifferentViews</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// Text is a View</span>
+        <span class="type">Text</span>(<span class="string">"Hello"</span>)
+        
+        <span class="comment">// Image is a View</span>
+        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star"</span>)
+        
+        <span class="comment">// Button is a View</span>
+        <span class="type">Button</span>(<span class="string">"Tap Me"</span>) {
+            <span class="comment">// Action here</span>
+        }
+        
+        <span class="comment">// Even empty space is a View!</span>
+        <span class="type">Spacer</span>()
+    }
+}
+
+<div class="code-explanation">
+🎨 VIEW TYPES:
+• Text - Shows text on screen
+• Image - Displays images or icons
+• Button - Interactive view for taps
+• Spacer - Creates empty space
+</div>`,
+                simulator: `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <div style="font-size: 20px; color: #333;">Hello</div>
+                    <div style="font-size: 32px;">⭐</div>
+                    <button style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer;">Tap Me</button>
+                </div>`,
+                controls: `<button class="control-btn" onclick="highlightViews()">Highlight Each View</button>`
+            },
+            {
+                // Lesson 3
+                title: "4.3 The View Protocol",
+                fileName: "ViewProtocol.swift",
+                fileType: "Protocol Definition",
+                objective: "The View Contract",
+                description: "Every View must follow the View protocol - it's like a contract or set of rules.",
+                code: `<div class="definition">
+<div class="definition-title">📖 THE VIEW PROTOCOL</div>
+<div class="definition-content">
+A protocol is like a contract. The View protocol says: "If you want to be a View, you must have a body property."
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="comment">// This is what the View protocol looks like</span>
 <span class="keyword">protocol</span> <span class="type">View</span> {
+    <span class="keyword">associatedtype</span> <span class="type">Body</span>: <span class="type">View</span>
     <span class="keyword">var</span> <span class="property">body</span>: <span class="type">Body</span> { <span class="keyword">get</span> }
 }
 
-<span class="comment">// Every View follows this pattern:</span>
-<span class="keyword">struct</span> <span class="type">MyView</span>: <span class="type">View</span> {
-    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+<span class="comment">// Your view MUST have a body property</span>
+<span class="keyword">struct</span> <span class="type">MyView</span>: <span class="type">View</span> {  <span class="comment">// ": View" means follow View protocol</span>
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {  <span class="comment">// Required!</span>
         <span class="type">Text</span>(<span class="string">"I follow the rules!"</span>)
-    }
-}`;
-
-                simulator.innerHTML = `<div style="text-align: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">The View Protocol</div>
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px;">
-                        <div style="font-size: 16px; margin-bottom: 15px;">📜 View Contract:</div>
-                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
-                            <div>1. Must have a 'body' property ✓</div>
-                            <div>2. Body must return a View ✓</div>
-                        </div>
-                    </div>
-                </div>`;
-
-                objectives.innerHTML = `
-                    <li>Understand the View protocol requirement</li>
-                    <li>Learn about the body property</li>
-                    <li>Understand 'some View' return type</li>
-                    <li>See how SwiftUI renders views</li>`;
-
-            } else if (currentLesson === 2) {
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">⚙️ HOW VIEWS ACTUALLY WORK</div>
-<div class="explanation-content">
-Views in SwiftUI are not the actual buttons or text on screen - they're just instructions for what to draw.
-</div>
-</div>
-
-<span class="comment">// Views are STRUCTS, not classes - here's why:</span>
-<span class="keyword">struct</span> <span class="type">MyTextView</span>: <span class="type">View</span> {
-    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        <span class="type">Text</span>(<span class="string">"I'm efficient!"</span>)
     }
 }
 
 <div class="code-explanation">
-⚡ WHY STRUCTS?
-• Structs are VALUE types (copied when passed around)
-• Classes are REFERENCE types (shared when passed around)
-• Structs are faster and use less memory
-• SwiftUI can safely recreate Views thousands of times per second!
-</div>`;
+📜 THE RULES:
+• Every View must have a 'body' property
+• The body must return another View
+• "some View" means "any type of View"
+</div>
 
-                simulator.innerHTML = `<div style="text-align: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 20px;">How Views Work</div>
-                    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Step 1: You Write</div>
-                        <div style="font-family: monospace; background: #333; color: #4facfe; padding: 10px; border-radius: 5px;">Text("Hello")</div>
+<div class="practice-box">
+⚠️ Without 'body', your code won't compile!
+</div>`,
+                simulator: `<div style="text-align: center; padding: 20px;">
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 15px;">
+                        <div style="font-size: 18px; margin-bottom: 10px;">✅ View Protocol Rules:</div>
+                        <div style="font-size: 14px;">1. Must have 'body' property</div>
+                        <div style="font-size: 14px;">2. Body returns a View</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Result: "I follow the rules!"</div>
                     </div>
-                    <div style="font-size: 24px; margin: 10px;">↓</div>
-                    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px;">
-                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">Step 2: Screen Shows</div>
-                        <div style="font-size: 18px; font-weight: bold;">Hello</div>
-                    </div>
-                </div>`;
-
-                objectives.innerHTML = `
-                    <li>Learn that Views are descriptions, not the actual UI</li>
-                    <li>Understand View updates and refreshing</li>
-                    <li>See why Views are structs, not classes</li>
-                    <li>Learn about View identity</li>`;
-
-            } else if (currentLesson === 3) {
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">✨ CREATING YOUR FIRST CUSTOM VIEW</div>
-<div class="explanation-content">
-Let's create our own View from scratch! We'll make a simple greeting view.
+                </div>`,
+                controls: `<button class="control-btn" onclick="showProtocolCheck()">Check Protocol Compliance</button>`
+            },
+            {
+                // Lesson 4
+                title: "4.4 The Body Property",
+                fileName: "BodyProperty.swift",
+                fileType: "Core Concept",
+                objective: "Understanding 'body'",
+                description: "The body property is where you describe what your view looks like.",
+                code: `<div class="definition">
+<div class="definition-title">📖 THE BODY PROPERTY</div>
+<div class="definition-content">
+The 'body' property is a computed property that returns the content of your view. SwiftUI calls this to know what to display.
 </div>
 </div>
 
-<span class="comment">// Step 1: Import SwiftUI</span>
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="comment">// Step 2: Create a struct that conforms to View</span>
-<span class="keyword">struct</span> <span class="type">GreetingView</span>: <span class="type">View</span> {
+<span class="keyword">struct</span> <span class="type">BodyExample</span>: <span class="type">View</span> {
     
-    <span class="comment">// Step 3: Implement the required body property</span>
+    <span class="comment">// The body property is computed (calculated)</span>
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        <span class="comment">// Step 4: Return a View</span>
-        <span class="type">Text</span>(<span class="string">"Welcome to SwiftUI!"</span>)
+        <span class="comment">// SwiftUI calls this to get your view</span>
+        <span class="type">Text</span>(<span class="string">"Body returns this!"</span>)
     }
-}`;
+    
+    <span class="comment">// You can have other properties too</span>
+    <span class="keyword">var</span> <span class="property">myColor</span>: <span class="type">Color</span> = .<span class="property">blue</span>
+    <span class="keyword">var</span> <span class="property">myText</span>: <span class="type">String</span> = <span class="string">"Hello"</span>
+}
 
-                simulator.innerHTML = `<div style="text-align: center;">
-                    <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 30px;">Your Custom View!</div>
-                    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px;">
-                        <div style="font-size: 18px;">Welcome to SwiftUI!</div>
-                    </div>
-                    <div style="margin-top: 30px; padding: 15px; background: #e8f5e9; border-radius: 10px;">
-                        <div style="color: #2e7d32; font-weight: bold;">✅ You created a custom View!</div>
-                    </div>
-                </div>`;
+<div class="code-explanation">
+🎯 KEY POINTS:
+• body is computed - it runs when needed
+• body must return exactly ONE view
+• SwiftUI calls body to draw your view
+• body can use other properties
+</div>
 
-                objectives.innerHTML = `
-                    <li>Create your own View struct</li>
-                    <li>Implement the body property</li>
-                    <li>Return a simple Text view</li>
-                    <li>Understand View composition basics</li>`;
+<div class="practice-box">
+💡 The body is called many times as your app runs!
+</div>`,
+                simulator: `<div id="bodyDemo" style="text-align: center; padding: 20px;">
+                    <div style="font-size: 20px; color: #333; margin-bottom: 10px;">Body returns this!</div>
+                    <div style="font-size: 14px; color: #666;">Body called: <span id="bodyCallCount">1</span> time(s)</div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="refreshBody()">Refresh Body</button>`
+            },
+            {
+                // Lesson 5
+                title: "4.5 Creating Your First View",
+                fileName: "FirstView.swift",
+                fileType: "Practice",
+                objective: "Build a View",
+                description: "Let's create a complete view from scratch with multiple elements.",
+                code: `<div class="definition">
+<div class="definition-title">🛠️ CREATING A CUSTOM VIEW</div>
+<div class="definition-content">
+Let's build a complete view step by step. This is your first real SwiftUI view!
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">WelcomeView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// We can only return ONE view</span>
+        <span class="comment">// So we'll use VStack to group multiple views</span>
+        <span class="type">VStack</span> {  <span class="comment">// Vertical Stack</span>
+            <span class="type">Text</span>(<span class="string">"Welcome!"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+            
+            <span class="type">Text</span>(<span class="string">"to SwiftUI"</span>)
+                .<span class="modifier">font</span>(.<span class="property">title</span>)
+            
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"hand.wave"</span>)
+                .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
+        }
+    }
+}
+
+<div class="code-explanation">
+🏗️ BUILDING BLOCKS:
+• VStack groups views vertically
+• Multiple Text views for different text
+• Image for visual interest
+• Modifiers (.font) to style views
+</div>
+
+<div class="practice-box">
+✅ This is a complete, working SwiftUI view!
+</div>`,
+                simulator: `<div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <div style="font-size: 34px; font-weight: bold; color: #333;">Welcome!</div>
+                    <div style="font-size: 24px; color: #333;">to SwiftUI</div>
+                    <div style="font-size: 50px;">👋</div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="animateWelcome()">Animate Welcome</button>`
+            },
+            {
+                // Lesson 6
+                title: "4.6 View as a Blueprint",
+                fileName: "ViewBlueprint.swift",
+                fileType: "Concept",
+                objective: "Views are Descriptions",
+                description: "Views don't draw themselves - they're blueprints that tell SwiftUI what to draw.",
+                code: `<div class="definition">
+<div class="definition-title">📐 VIEWS ARE BLUEPRINTS</div>
+<div class="definition-content">
+A View is like a recipe or blueprint. It describes what should appear on screen, but doesn't actually draw pixels.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">BlueprintView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// This is just a description</span>
+        <span class="type">Text</span>(<span class="string">"I'm a blueprint!"</span>)
+            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            .<span class="modifier">font</span>(.<span class="property">title</span>)
+    }
+}
+
+<span class="comment">// Think of it like this:</span>
+<span class="comment">// View = Recipe 📝</span>
+<span class="comment">// SwiftUI = Chef 👨‍🍳</span>
+<span class="comment">// Screen = Finished Dish 🍽️</span>
+
+<div class="view-hierarchy">
+Your Code (Blueprint) → SwiftUI (Renderer) → Screen (Result)
+</div>
+
+<div class="code-explanation">
+🎨 THE PROCESS:
+1. You write view descriptions
+2. SwiftUI reads your descriptions
+3. SwiftUI draws pixels on screen
+4. User sees the final result
+</div>`,
+                simulator: `<div style="text-align: center; padding: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 14px; color: #666;">Blueprint says:</div>
+                        <div style="background: #f0f0f0; padding: 10px; border-radius: 8px; margin: 10px 0; font-family: monospace;">Text("I'm a blueprint!").blue.title</div>
+                    </div>
+                    <div style="font-size: 20px;">↓</div>
+                    <div style="margin-top: 20px;">
+                        <div style="font-size: 14px; color: #666;">SwiftUI renders:</div>
+                        <div style="font-size: 28px; color: #007bff; font-weight: bold;">I'm a blueprint!</div>
+                    </div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="showRenderProcess()">Show Render Process</button>`
+            },
+            {
+                // Lesson 7
+                title: "4.7 How SwiftUI Draws Views",
+                fileName: "DrawingProcess.swift",
+                fileType: "Rendering",
+                objective: "The Drawing Process",
+                description: "SwiftUI uses a smart system to draw and update views efficiently.",
+                code: `<div class="definition">
+<div class="definition-title">🎨 HOW SWIFTUI DRAWS</div>
+<div class="definition-content">
+SwiftUI has a smart rendering system that only updates what changes, making your app fast and efficient.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">DrawingExample</span>: <span class="type">View</span> {
+    <span class="keyword">@State</span> <span class="keyword">var</span> <span class="property">counter</span> = <span class="number">0</span>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span> {
+            <span class="comment">// This updates when counter changes</span>
+            <span class="type">Text</span>(<span class="string">"Count: \\(counter)"</span>)
+            
+            <span class="comment">// This stays the same</span>
+            <span class="type">Text</span>(<span class="string">"I don't change"</span>)
+            
+            <span class="type">Button</span>(<span class="string">"Increment"</span>) {
+                <span class="property">counter</span> += <span class="number">1</span>
+                <span class="comment">// SwiftUI redraws only what changed!</span>
             }
+        }
+    }
+}
+
+<div class="code-explanation">
+⚡ SMART UPDATES:
+• SwiftUI tracks what changes
+• Only redraws affected views
+• Other views stay the same
+• This makes apps fast!
+</div>
+
+<div class="practice-box">
+🔄 SwiftUI's diffing system compares old and new views
+</div>`,
+                simulator: `<div style="text-align: center; padding: 20px;">
+                    <div id="counterText" style="font-size: 20px; color: #333; margin-bottom: 10px; padding: 10px; background: #ffeb3b; border-radius: 8px;">Count: 0</div>
+                    <div style="font-size: 18px; color: #666; margin-bottom: 20px;">I don't change</div>
+                    <button onclick="incrementCounter()" style="padding: 10px 20px; background: #4caf50; color: white; border: none; border-radius: 8px; cursor: pointer;">Increment</button>
+                    <div style="margin-top: 20px; font-size: 12px; color: #999;">Yellow = Updated</div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="resetCounter()">Reset Counter</button>`
+            },
+            {
+                // Lesson 8
+                title: "4.8 View Hierarchy",
+                fileName: "ViewHierarchy.swift",
+                fileType: "Structure",
+                objective: "Parent-Child Relationships",
+                description: "Views can contain other views, creating a hierarchy like a family tree.",
+                code: `<div class="definition">
+<div class="definition-title">🌳 VIEW HIERARCHY</div>
+<div class="definition-content">
+Views can contain other views, creating a tree-like structure. Parent views contain child views.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">HierarchyExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// VStack is the parent</span>
+        <span class="type">VStack</span> {
+            <span class="comment">// Text views are children</span>
+            <span class="type">Text</span>(<span class="string">"Child 1"</span>)
+            <span class="type">Text</span>(<span class="string">"Child 2"</span>)
+            
+            <span class="comment">// HStack is a child that has its own children</span>
+            <span class="type">HStack</span> {
+                <span class="type">Text</span>(<span class="string">"Grandchild 1"</span>)
+                <span class="type">Text</span>(<span class="string">"Grandchild 2"</span>)
+            }
+        }
+    }
+}
+
+<div class="view-hierarchy">
+VStack (Parent)
+├── Text("Child 1")
+├── Text("Child 2")
+└── HStack
+    ├── Text("Grandchild 1")
+    └── Text("Grandchild 2")
+</div>
+
+<div class="code-explanation">
+🏗️ HIERARCHY RULES:
+• Views can contain other views
+• Parent views control child layout
+• Changes flow down the hierarchy
+• Each view has one parent (except root)
+</div>`,
+                simulator: `<div style="padding: 20px;">
+                    <div style="border: 2px solid #007bff; padding: 15px; border-radius: 10px;">
+                        <div style="text-align: center; color: #007bff; font-weight: bold; margin-bottom: 10px;">VStack (Parent)</div>
+                        <div style="margin-left: 20px;">
+                            <div style="padding: 5px; background: #e3f2fd; margin: 5px 0; border-radius: 5px;">Child 1</div>
+                            <div style="padding: 5px; background: #e3f2fd; margin: 5px 0; border-radius: 5px;">Child 2</div>
+                            <div style="border: 1px solid #4caf50; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                <div style="color: #4caf50; font-weight: bold; margin-bottom: 5px;">HStack</div>
+                                <div style="display: flex; gap: 10px; margin-left: 10px;">
+                                    <div style="padding: 5px; background: #e8f5e9; border-radius: 5px;">Grandchild 1</div>
+                                    <div style="padding: 5px; background: #e8f5e9; border-radius: 5px;">Grandchild 2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="highlightHierarchy()">Highlight Hierarchy Levels</button>`
+            },
+            {
+                // Lesson 9
+                title: "4.9 Parent and Child Views",
+                fileName: "ParentChild.swift",
+                fileType: "Relationships",
+                objective: "View Relationships",
+                description: "Understanding how parent views control and affect their child views.",
+                code: `<div class="definition">
+<div class="definition-title">👨‍👧‍👦 PARENT-CHILD RELATIONSHIPS</div>
+<div class="definition-content">
+Parent views control the layout and appearance of their children. Properties can flow from parent to child.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">ParentChildExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// Parent view with styling</span>
+        <span class="type">VStack</span> {
+            <span class="type">Text</span>(<span class="string">"I'm a child"</span>)
+            <span class="type">Text</span>(<span class="string">"Me too!"</span>)
+        }
+        .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)  <span class="comment">// Affects all children</span>
+        .<span class="modifier">font</span>(.<span class="property">title</span>)  <span class="comment">// Applies to all text</span>
+        .<span class="modifier">padding</span>()  <span class="comment">// Surrounds all content</span>
+    }
+}
+
+<span class="comment">// Parent modifiers affect children</span>
+<span class="comment">// This is called "Environment" in SwiftUI</span>
+
+<div class="code-explanation">
+🎨 PARENT INFLUENCE:
+• Parent modifiers can affect all children
+• Children inherit certain properties
+• Layout decisions come from parent
+• Parents control child positioning
+</div>
+
+<div class="practice-box">
+💡 Think of it like CSS inheritance in web development!
+</div>`,
+                simulator: `<div style="text-align: center; padding: 20px;">
+                    <div style="border: 2px dashed #007bff; padding: 20px; border-radius: 10px;">
+                        <div style="color: #007bff; font-size: 12px; margin-bottom: 10px;">Parent VStack (blue, title font, padding)</div>
+                        <div style="color: #007bff; font-size: 24px; font-weight: bold;">I'm a child</div>
+                        <div style="color: #007bff; font-size: 24px; font-weight: bold;">Me too!</div>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 12px; color: #666;">Children inherit blue color and title font from parent</div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="toggleParentStyle()">Toggle Parent Styling</button>`
+            },
+            {
+                // Lesson 10
+                title: "4.10 View Updates & Refresh",
+                fileName: "ViewUpdates.swift",
+                fileType: "Lifecycle",
+                objective: "View Refresh Cycle",
+                description: "How and when SwiftUI updates views on the screen.",
+                code: `<div class="definition">
+<div class="definition-title">🔄 VIEW UPDATES</div>
+<div class="definition-content">
+SwiftUI automatically updates views when their data changes. Views are lightweight and can be recreated thousands of times per second!
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">UpdateExample</span>: <span class="type">View</span> {
+    <span class="keyword">@State</span> <span class="keyword">var</span> <span class="property">name</span> = <span class="string">"World"</span>
+    <span class="keyword">@State</span> <span class="keyword">var</span> <span class="property">updateCount</span> = <span class="number">0</span>
+    
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="comment">// body is called whenever @State changes</span>
+        <span class="keyword">let</span> _ = <span class="property">updateCount</span> += <span class="number">1</span>
+        
+        <span class="type">VStack</span> {
+            <span class="type">Text</span>(<span class="string">"Hello, \\(name)!"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+            
+            <span class="type">TextField</span>(<span class="string">"Enter name"</span>, <span class="property">text</span>: <span class="property">$name</span>)
+                .<span class="modifier">textFieldStyle</span>(.<span class="property">roundedBorder</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Updates: \\(updateCount)"</span>)
+                .<span class="modifier">font</span>(.<span class="property">caption</span>)
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="code-explanation">
+⚡ UPDATE TRIGGERS:
+• @State changes trigger updates
+• User interactions cause refreshes
+• SwiftUI diffs old vs new views
+• Only changed parts are redrawn
+</div>
+
+<div class="practice-box">
+🎯 SUMMARY: You've learned how Views work in SwiftUI!
+</div>`,
+                simulator: `<div style="padding: 20px;">
+                    <div style="text-align: center;">
+                        <div id="greetingText" style="font-size: 28px; font-weight: bold; color: #333; margin-bottom: 20px;">Hello, World!</div>
+                        <input type="text" id="nameInput" placeholder="Enter name" style="padding: 10px; border: 1px solid #ddd; border-radius: 8px; width: 200px; margin-bottom: 15px;" oninput="updateGreeting(this.value)">
+                        <div style="font-size: 12px; color: #666;">Updates: <span id="updateCount">0</span></div>
+                    </div>
+                </div>`,
+                controls: `<button class="control-btn" onclick="resetGreeting()">Reset</button>`
+            }
+        ];
+
+        // Counter for lesson 7
+        var counter = 0;
+        var updateCount = 0;
+        var bodyCallCount = 1;
+
+        // Interactive functions
+        function animateView() {
+            var sim = document.getElementById('simulator');
+            sim.style.opacity = '0';
+            setTimeout(function() {
+                sim.style.opacity = '1';
+                sim.style.transition = 'opacity 0.5s ease';
+            }, 100);
+        }
+
+        function highlightViews() {
+            var elements = document.querySelectorAll('#simulator > div > *');
+            var index = 0;
+            var interval = setInterval(function() {
+                if (index > 0) elements[index-1].style.background = '';
+                if (index < elements.length) {
+                    elements[index].style.background = 'rgba(255, 235, 59, 0.3)';
+                    elements[index].style.transition = 'background 0.3s ease';
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        elements[elements.length-1].style.background = '';
+                    }, 500);
+                }
+            }, 500);
+        }
+
+        function showProtocolCheck() {
+            alert('✅ Protocol Check:\n\n1. Has body property? YES ✓\n2. Body returns View? YES ✓\n3. Conforms to View? YES ✓\n\nThis view is valid!');
+        }
+
+        function refreshBody() {
+            bodyCallCount++;
+            document.getElementById('bodyCallCount').textContent = bodyCallCount;
+            var bodyDemo = document.getElementById('bodyDemo');
+            bodyDemo.style.background = 'rgba(76, 175, 80, 0.2)';
+            setTimeout(function() {
+                bodyDemo.style.background = '';
+            }, 300);
+        }
+
+        function animateWelcome() {
+            var sim = document.getElementById('simulator');
+            sim.classList.add('highlight');
+            setTimeout(function() {
+                sim.classList.remove('highlight');
+            }, 2000);
+        }
+
+        function showRenderProcess() {
+            var steps = ['Reading blueprint...', 'Processing view...', 'Rendering...', 'Complete!'];
+            var index = 0;
+            var statusDiv = document.createElement('div');
+            statusDiv.style.cssText = 'position: absolute; top: 10px; right: 10px; background: #4caf50; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;';
+            document.getElementById('simulator').appendChild(statusDiv);
+            
+            var interval = setInterval(function() {
+                if (index < steps.length) {
+                    statusDiv.textContent = steps[index];
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(function() {
+                        statusDiv.remove();
+                    }, 1000);
+                }
+            }, 500);
+        }
+
+        function incrementCounter() {
+            counter++;
+            var counterText = document.getElementById('counterText');
+            counterText.textContent = 'Count: ' + counter;
+            counterText.style.background = '#ffeb3b';
+            setTimeout(function() {
+                counterText.style.background = '';
+                counterText.style.transition = 'background 0.3s ease';
+            }, 300);
+        }
+
+        function resetCounter() {
+            counter = 0;
+            document.getElementById('counterText').textContent = 'Count: 0';
+        }
+
+        function highlightHierarchy() {
+            var colors = ['#e3f2fd', '#c5e1a5', '#fff9c4'];
+            var elements = document.querySelectorAll('#simulator [style*="padding"]');
+            elements.forEach(function(el, index) {
+                el.style.background = colors[index % colors.length];
+                setTimeout(function() {
+                    el.style.background = '';
+                    el.style.transition = 'background 0.5s ease';
+                }, 2000);
+            });
+        }
+
+        function toggleParentStyle() {
+            var sim = document.getElementById('simulator');
+            var divs = sim.querySelectorAll('div');
+            divs.forEach(function(div) {
+                if (div.style.color === 'rgb(0, 123, 255)') {
+                    div.style.color = '#333';
+                    div.style.fontSize = '16px';
+                } else if (div.textContent.includes('child') || div.textContent.includes('too')) {
+                    div.style.color = '#007bff';
+                    div.style.fontSize = '24px';
+                }
+            });
+        }
+
+        function updateGreeting(value) {
+            updateCount++;
+            document.getElementById('greetingText').textContent = 'Hello, ' + (value || 'World') + '!';
+            document.getElementById('updateCount').textContent = updateCount;
+        }
+
+        function resetGreeting() {
+            document.getElementById('nameInput').value = '';
+            document.getElementById('greetingText').textContent = 'Hello, World!';
+            updateCount = 0;
+            document.getElementById('updateCount').textContent = '0';
+        }
+
+        // Update lesson function
+        function updateLesson() {
+            var lesson = lessons[currentLesson];
+            
+            // Update header
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('codeFileName').textContent = lesson.fileName;
+            document.getElementById('codeType').textContent = lesson.fileType;
+            
+            // Update content
+            document.getElementById('codeContent').innerHTML = lesson.code;
+            document.getElementById('simulator').innerHTML = lesson.simulator;
+            document.getElementById('interactiveControls').innerHTML = lesson.controls;
+            
+            // Update lesson info
+            document.getElementById('lessonObjective').textContent = lesson.objective;
+            document.getElementById('lessonDescription').textContent = lesson.description;
+            
+            // Update counter and progress
+            document.getElementById('lessonCounter').textContent = (currentLesson + 1) + ' / ' + totalLessons;
+            var progressPercent = ((currentLesson + 1) / totalLessons) * 100;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+            
+            // Update navigation
+            document.getElementById('prevBtn').disabled = currentLesson === 0;
+            document.getElementById('nextBtn').disabled = currentLesson === totalLessons - 1;
+            
+            // Reset counters for specific lessons
+            if (currentLesson === 3) bodyCallCount = 1;
+            if (currentLesson === 6) counter = 0;
+            if (currentLesson === 9) updateCount = 0;
         }
 
         function nextLesson() {
@@ -578,6 +1099,12 @@ Let's create our own View from scratch! We'll make a simple greeting view.
                 updateLesson();
             }
         }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') nextLesson();
+            if (e.key === 'ArrowLeft') previousLesson();
+        });
 
         // Initialize
         updateLesson();

@@ -1,686 +1,1483 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SwiftUI Chapter 6: Layout and Stacks</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{
-    font-family:-apple-system, BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-    min-height:100vh;overflow-x:hidden
-  }
-  .container{max-width:1400px;margin:0 auto;padding:20px}
-  .header{text-align:center;color:#fff;margin-bottom:30px;animation:slideDown .8s ease-out}
-  .header h1{font-size:2.5em;font-weight:700;margin-bottom:10px}
-  .header p{font-size:1.2em;opacity:.9}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Layout and Stacks - Chapter 6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  .lesson-container{background:#fff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden;margin-bottom:30px;animation:slideUp .8s ease-out .2s both}
-  .lesson-header{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:#fff;padding:20px;text-align:center}
-  .lesson-content{display:flex;min-height:600px}
-  .code-panel{flex:1;background:#1e1e1e;color:#d4d4d4;font-family:Monaco,Menlo,monospace;font-size:14px;line-height:1.5;overflow:auto}
-  .code-header{background:#2d2d30;padding:15px;border-bottom:1px solid #3e3e42;font-weight:600;color:#ccc;display:flex;justify-content:space-between;align-items:center}
-  .code-content{padding:20px;white-space:pre-wrap;max-height:500px;overflow-y:auto}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            color: #333;
+        }
 
-  .simulator-panel{flex:1;background:#f8f9fa;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;padding:20px}
-  .phone-frame{width:280px;height:560px;background:#000;border-radius:35px;padding:25px 15px;box-shadow:0 10px 30px rgba(0,0,0,.3);position:relative}
-  .phone-frame::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:#333;border-radius:2px}
-  .screen{width:100%;height:100%;background:#fff;border-radius:25px;overflow:hidden;display:flex;flex-direction:column;position:relative}
-  .status-bar{height:30px;background:rgba(0,0,0,.05);display:flex;justify-content:space-between;align-items:center;padding:0 15px;font-size:12px;color:#333}
-  .app-content{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+        .container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
+        }
 
-  .navigation-buttons{display:flex;justify-content:center;align-items:center;gap:15px;padding:20px;flex-wrap:wrap}
-  .nav-btn{padding:12px 25px;border:none;border-radius:25px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;font-weight:600;cursor:pointer;transition:.3s;box-shadow:0 5px 15px rgba(0,0,0,.2)}
-  .nav-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,0,0,.3)}
-  .nav-btn:disabled{opacity:.5;cursor:not-allowed}
+        .presentation-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-  .lesson-objectives{background:rgba(76,175,80,.1);border-left:4px solid #4caf50;padding:15px;margin:20px;border-radius:5px}
-  .lesson-objectives h4{color:#2e7d32;margin-bottom:10px}
-  .lesson-objectives ul{margin-left:20px;color:#333}
-  .lesson-objectives li{margin:5px 0}
+        .simulator-panel {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            max-height: 800px;
+        }
 
-  .interactive-controls{background:rgba(255,255,255,.95);border-radius:15px;padding:15px;margin-top:20px;box-shadow:0 5px 15px rgba(0,0,0,.1)}
-  .control-group{margin:10px 0}
-  .control-label{font-size:12px;color:#666;margin-bottom:5px;display:block}
-  .control-btn{padding:8px 15px;margin:5px;border:none;border-radius:20px;background:#007bff;color:#fff;font-size:12px;cursor:pointer;transition:.2s}
-  .control-btn:hover{background:#0056b3;transform:scale(1.05)}
-  .control-btn.active{background:#28a745}
-  input[type="range"]{width:100%;margin:5px 0}
+        .slide {
+            display: none;
+            padding: 40px;
+            height: 100%;
+            overflow-y: auto;
+        }
 
-  .color-picker{display:flex;gap:10px;flex-wrap:wrap}
-  .color-btn{width:30px;height:30px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer;transition:transform .2s}
-  .color-btn:hover{transform:scale(1.2)}
+        .slide.active {
+            display: block;
+        }
 
-  /* Pretty accents */
-  .keyword{color:#ff79c6;font-weight:bold}.string{color:#f1fa8c}.comment{color:#6272a4;font-style:italic}
-  .type{color:#8be9fd;font-weight:bold}.property{color:#bd93f9}.modifier{color:#8be9fd}.number{color:#ffb86c}
-  .explanation{color:#f8f8f2;background:rgba(98,114,164,.3);padding:12px;border-radius:8px;margin:10px 0;border-left:4px solid #50fa7b}
-  .explanation-title{color:#50fa7b;font-weight:bold;font-size:16px;margin-bottom:8px}
-  .explanation-content{color:#f8f8f2;line-height:1.6;font-size:14px}
-  .code-explanation{color:#f1fa8c;background:rgba(241,250,140,.15);padding:8px;border-radius:6px;margin:8px 0;border-left:3px solid #f1fa8c}
+        .slide h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  .progress-bar{background:rgba(255,255,255,.2);height:4px;border-radius:2px;margin:0 20px;overflow:hidden}
-  .progress-fill{background:#fff;height:100%;border-radius:2px;transition:width .3s ease}
+        .slide h2 {
+            color: #34495e;
+            font-size: 1.8em;
+            margin: 25px 0 15px 0;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
 
-  /* Demo blocks */
-  .demo-item{padding:10px 14px;border-radius:10px;background:#e9ecef;font-size:12px;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
-  .demo-area{width:100%;display:flex;align-items:center;justify-content:center}
-  .stack-preview{border:1px dashed #ced4da;border-radius:12px;padding:10px;min-height:160px;width:220px;background:#fff}
+        .slide h3 {
+            color: #2c3e50;
+            font-size: 1.3em;
+            margin: 20px 0 10px 0;
+        }
 
-  @keyframes slideDown{from{opacity:0;transform:translateY(-50px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes slideUp{from{opacity:0;transform:translateY(50px)}to{opacity:1;transform:translateY(0)}}
+        .slide p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
 
-  @media (max-width:768px){.lesson-content{flex-direction:column}.phone-frame{width:250px;height:500px}}
-</style>
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            border-left: 4px solid #667eea;
+        }
+
+        .highlight {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .definition-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+
+        .tip-box {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #fdcb6e;
+        }
+
+        .navigation {
+            background: #2c3e50;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .nav-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .simulator-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .code-editor {
+            flex: 1;
+            background: #2d3748;
+            color: #e2e8f0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            border: none;
+            padding: 20px;
+            outline: none;
+            resize: none;
+        }
+
+        .preview-area {
+            background: #f7fafc;
+            border-top: 2px solid #e2e8f0;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .phone-mockup {
+            width: 200px;
+            height: 400px;
+            background: #000;
+            border-radius: 25px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .example-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .example-button:hover {
+            background: #5a6fd8;
+        }
+
+        .vstack-demo, .hstack-demo, .zstack-demo {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .vstack-demo {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hstack-demo {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .zstack-demo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .demo-element {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .demo-element:nth-child(2) {
+            background: #fd79a8;
+        }
+
+        .demo-element:nth-child(3) {
+            background: #fdcb6e;
+        }
+
+        .zstack-demo .demo-element {
+            position: absolute;
+        }
+
+        .zstack-demo .demo-element:nth-child(1) {
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 80px;
+        }
+
+        .zstack-demo .demo-element:nth-child(2) {
+            top: 20px;
+            left: 20px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .zstack-demo .demo-element:nth-child(3) {
+            top: 40px;
+            left: 40px;
+            width: 80px;
+            height: 80px;
+        }
+
+        .keyword {
+            color: #e06c75;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .property {
+            color: #61dafb;
+        }
+
+        .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>Chapter 6: Layout and Stacks</h1>
-      <p>VStack • HStack • ZStack • Alignment • Spacing • Complex Layouts</p>
-    </div>
-
-    <div class="lesson-container">
-      <div class="lesson-header">
-        <h2 id="lessonTitle">6.1 VStack (Vertical Layouts)</h2>
-        <div class="progress-bar"><div class="progress-fill" id="progressBar" style="width:20%"></div></div>
-      </div>
-
-      <div class="lesson-content">
-        <!-- Code -->
-        <div class="code-panel">
-          <div class="code-header">
-            <span id="codeFileName">VStackDemo.swift</span>
-            <span id="codeType">Stack Layout</span>
-          </div>
-          <div class="code-content" id="codeContent">
-<div class="explanation">
-  <div class="explanation-title">📐 VSTACK</div>
-  <div class="explanation-content">
-    VStack arranges children vertically. Control spacing and alignment (leading, center, trailing).
-  </div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">VStackDemo</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">center</span>, <span class="property">spacing</span>: <span class="number">12</span>) {
-      <span class="type">Text</span>(<span class="string">"A"</span>)
-      <span class="type">Text</span>(<span class="string">"B"</span>)
-      <span class="type">Text</span>(<span class="string">"C"</span>)
-    }
-  }
-}
-          </div>
-        </div>
-
-        <!-- Simulator -->
-        <div class="simulator-panel">
-          <div class="phone-frame">
-            <div class="screen">
-              <div class="status-bar">
-                <span>9:41</span><span>📶 📶 🔋</span>
-              </div>
-              <div class="app-content" id="simulator">
-                <div class="demo-area">
-                  <div class="stack-preview" id="stackHost"></div>
+    <div class="container">
+        <!-- Presentation Panel -->
+        <div class="presentation-panel">
+            <!-- Slide 1: Introduction -->
+            <div class="slide active">
+                <h1>SwiftUI Layout and Stacks</h1>
+                <h2>Chapter 6: Building Beautiful User Interfaces</h2>
+                
+                <div class="definition-box">
+                    <h3>What are Stacks?</h3>
+                    <p><strong>Stacks</strong> are fundamental layout containers in SwiftUI that arrange views in specific patterns. Think of them as invisible boxes that organize your app's content.</p>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Controls (initial for VStack) -->
-          <div class="interactive-controls" id="controls">
-            <div class="control-group">
-              <label class="control-label">Alignment (VStack):</label>
-              <button class="control-btn active" onclick="setAlignment('center', this)">Center</button>
-              <button class="control-btn" onclick="setAlignment('leading', this)">Leading</button>
-              <button class="control-btn" onclick="setAlignment('trailing', this)">Trailing</button>
-            </div>
-            <div class="control-group">
-              <label class="control-label">Spacing:</label>
-              <input type="range" min="0" max="30" step="2" value="12" oninput="setSpacing(this.value)" />
-            </div>
-            <div class="control-group">
-              <label class="control-label">Items:</label>
-              <button class="control-btn" onclick="addItem(this)">Add</button>
-              <button class="control-btn" onclick="removeItem(this)">Remove</button>
-              <button class="control-btn" onclick="shuffleItems(this)">Shuffle</button>
-            </div>
-          </div>
+                <h2>Three Main Types of Stacks:</h2>
+                <p><span class="highlight">VStack</span> - Arranges views vertically (top to bottom)</p>
+                <p><span class="highlight">HStack</span> - Arranges views horizontally (left to right)</p>
+                <p><span class="highlight">ZStack</span> - Overlaps views on top of each other</p>
 
-          <div class="lesson-objectives">
-            <h4>Learning Objectives:</h4>
-            <ul id="objectives">
-              <li>Use VStack for vertical layouts</li>
-              <li>Adjust alignment and spacing</li>
-              <li>Dynamically add/remove children</li>
-              <li>Preview how changes affect layout</li>
-            </ul>
-          </div>
+                <div class="tip-box">
+                    <strong>💡 Tip:</strong> Stacks are like building blocks - you can combine them to create complex layouts!
+                </div>
+
+                <h2>Learning Objectives:</h2>
+                <p>• Understand how to use VStack, HStack, and ZStack</p>
+                <p>• Learn about alignment and spacing</p>
+                <p>• Practice building complex layouts</p>
+                <p>• Create beautiful, responsive user interfaces</p>
+            </div>
+
+            <!-- Slide 2: VStack Basics -->
+            <div class="slide">
+                <h1>VStack - Vertical Layouts</h1>
+                
+                <div class="definition-box">
+                    <h3>What is VStack?</h3>
+                    <p><strong>VStack</strong> arranges its child views in a vertical line, one below the other. It's perfect for creating forms, lists, or any vertical layout.</p>
+                </div>
+
+                <h2>Basic VStack Syntax:</h2>
+                <div class="code-block">
+<span class="keyword">VStack</span> { <br>
+    <span class="keyword">Text</span>(<span class="string">"First Item"</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Second Item"</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Third Item"</span>)<br>
+}
+                </div>
+
+                <h2>VStack with Spacing:</h2>
+                <div class="code-block">
+<span class="keyword">VStack</span>(<span class="property">spacing</span>: <span class="string">20</span>) { <br>
+    <span class="keyword">Text</span>(<span class="string">"Item 1"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Item 2"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Item 3"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Remember:</strong> Spacing is measured in points. Try different values like 10, 20, or 30 to see the difference!
+                </div>
+
+                <h2>Key Properties:</h2>
+                <p><span class="highlight">spacing</span> - Controls the gap between views</p>
+                <p><span class="highlight">alignment</span> - Controls how views align horizontally</p>
+            </div>
+
+            <!-- Slide 3: VStack Alignment -->
+            <div class="slide">
+                <h1>VStack Alignment Options</h1>
+                
+                <h2>Horizontal Alignment in VStack:</h2>
+                <p>Since VStack arranges views vertically, alignment controls how they line up horizontally.</p>
+
+                <h3>Leading Alignment:</h3>
+                <div class="code-block">
+<span class="keyword">VStack</span>(<span class="property">alignment</span>: .<span class="property">leading</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Short"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Medium Text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"This is a longer text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h3>Center Alignment (Default):</h3>
+                <div class="code-block">
+<span class="keyword">VStack</span>(<span class="property">alignment</span>: .<span class="property">center</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Short"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Medium Text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"This is a longer text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h3>Trailing Alignment:</h3>
+                <div class="code-block">
+<span class="keyword">VStack</span>(<span class="property">alignment</span>: .<span class="property">trailing</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Short"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Medium Text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"This is a longer text"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <div class="definition-box">
+                    <h3>Alignment Values:</h3>
+                    <p><strong>.leading</strong> - Aligns to the left (in left-to-right languages)</p>
+                    <p><strong>.center</strong> - Centers the views (default)</p>
+                    <p><strong>.trailing</strong> - Aligns to the right (in left-to-right languages)</p>
+                </div>
+            </div>
+
+            <!-- Slide 4: HStack Basics -->
+            <div class="slide">
+                <h1>HStack - Horizontal Layouts</h1>
+                
+                <div class="definition-box">
+                    <h3>What is HStack?</h3>
+                    <p><strong>HStack</strong> arranges its child views in a horizontal line, side by side. Perfect for creating navigation bars, buttons in a row, or any horizontal layout.</p>
+                </div>
+
+                <h2>Basic HStack Syntax:</h2>
+                <div class="code-block">
+<span class="keyword">HStack</span> {<br>
+    <span class="keyword">Text</span>(<span class="string">"Left"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Center"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Right"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h2>HStack with Spacing:</h2>
+                <div class="code-block">
+<span class="keyword">HStack</span>(<span class="property">spacing</span>: <span class="string">15</span>) {<br>
+    <span class="keyword">Button</span>(<span class="string">"Cancel"</span>) { <br>
+        <span class="comment">// Cancel action</span><br>
+    }
+    .<span class="property">padding</span>()<br>
+    .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">gray</span>)<br>
+    .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+    .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Button</span>(<span class="string">"Save"</span>) { <br>
+        <span class="comment">// Save action</span><br>
+    }
+    .<span class="property">padding</span>()<br>
+    .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+    .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+    .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h2>HStack Alignment (Vertical):</h2>
+                <div class="code-block">
+<span class="keyword">HStack</span>(<span class="property">alignment</span>: .<span class="property">top</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Short"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"This is a\nmulti-line\ntext"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"End"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Key Difference:</strong> In HStack, alignment controls vertical positioning since views are arranged horizontally!
+                </div>
+            </div>
+
+            <!-- Slide 5: HStack Alignment and Spacer -->
+            <div class="slide">
+                <h1>HStack Advanced Features</h1>
+                
+                <h2>Vertical Alignment Options:</h2>
+                
+                <h3>Top Alignment:</h3>
+                <div class="code-block">
+<span class="keyword">HStack</span>(<span class="property">alignment</span>: .<span class="property">top</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Top"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Aligned"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h3>Center Alignment (Default):</h3>
+                <div class="code-block">
+<span class="keyword">HStack</span>(<span class="property">alignment</span>: .<span class="property">center</span>) {<br>
+    <span class="keyword">Text</span>(<span class="string">"Center"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Aligned"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <h2>Using Spacer for Layout:</h2>
+                <div class="code-block">
+<span class="keyword">HStack</span> {<br>
+    <span class="keyword">Text</span>(<span class="string">"Left"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Spacer</span>() <span class="comment">// Pushes items apart</span><br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Right"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+
+                <div class="definition-box">
+                    <h3>What is Spacer?</h3>
+                    <p><strong>Spacer()</strong> is a flexible space that expands to push other views apart. It's like a spring that fills available space.</p>
+                </div>
+
+                <h2>Multiple Spacers:</h2>
+                <div class="code-block">
+<span class="keyword">HStack</span> {<br>
+    <span class="keyword">Text</span>(<span class="string">"Left"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Spacer</span>()<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Center"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">green</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Spacer</span>()<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Right"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">orange</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+}
+                </div>
+            </div>
+
+            <!-- Slide 6: ZStack Basics -->
+            <div class="slide">
+                <h1>ZStack - Overlapping Layouts</h1>
+                
+                <div class="definition-box">
+                    <h3>What is ZStack?</h3>
+                    <p><strong>ZStack</strong> layers views on top of each other along the Z-axis (depth). The first view is at the back, and subsequent views are layered on top.</p>
+                </div>
+
+                <h2>Basic ZStack Syntax:</h2>
+                <div class="code-block">
+<span class="keyword">ZStack</span> {<br>
+    <span class="keyword">Rectangle</span>()
+        .<span class="property">fill</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">frame</span>(<br>
+            <span class="property">width</span>: <span class="string">100</span>,
+            <span class="property">height</span>: <span class="string">100</span><br>
+        )
+        .<span class="property">cornerRadius</span>(<span class="string">15</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Hello"</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">font</span>(.<span class="property">headline</span>)<br>
+}
+                </div>
+
+                <h2>ZStack with Alignment:</h2>
+                <div class="code-block">
+<span class="keyword">ZStack</span>(<span class="property">alignment</span>: .<span class="property">topLeading</span>) {<br>
+    <span class="keyword">Rectangle</span>()<br>
+        .<span class="property">fill</span>(
+            <span class="keyword">Color</span>.<span class="property">gray</span>.<br><span class="property">opacity</span>(<span class="string">0.3</span>)<br>
+        )
+        .<span class="property">frame</span>(
+            <span class="property">width</span>: <span class="string">200</span>, 
+            <span class="property">height</span>: <span class="string">150</span>
+        )
+        .<span class="property">cornerRadius</span>(<span class="string">15</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Top Left"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">font</span>(.<span class="property">headline</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">blue</span>)<br>
+}
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Layer Order:</strong> Views are layered in the order they appear in code. Later views appear on top!
+                </div>
+
+                <h2>Common ZStack Alignments:</h2>
+                <p><span class="highlight">.center</span> - Centers all views (default)</p>
+                <p><span class="highlight">.topLeading</span> - Aligns to top-left corner</p>
+                <p><span class="highlight">.bottomTrailing</span> - Aligns to bottom-right corner</p>
+            </div>
+
+            <!-- Slide 7: ZStack Advanced Usage -->
+            <div class="slide">
+                <h1>ZStack Advanced Techniques</h1>
+                
+                <h2>Creating Card Layouts:</h2>
+                <div class="code-block">
+<span class="keyword">ZStack</span> {<br>
+    <span class="keyword">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="string">15</span>)<br>
+        .<span class="property">fill</span>(<span class="keyword">Color</span>.<span class="property">white</span>)<br>
+        .<span class="property">shadow</span>(<span class="property">radius</span>: <span class="string">5</span>)<br>
+    
+    <span class="keyword">VStack</span>(<span class="property">spacing</span>: <span class="string">8</span>) {<br>
+        <span class="keyword">Text</span>(<span class="string">"Card Title"</span>)<br>
+            .<span class="property">font</span>(.<span class="property">headline</span>)<br>
+            .<span class="property">foregroundColor</span>(.<span class="property">primary</span>)<br>
+        
+        <span class="keyword">Text</span>(<span class="string">"Card content goes here"</span>)<br>
+            .<span class="property">font</span>(.<span class="property">caption</span>)<br>
+            .<span class="property">foregroundColor</span>(.<span class="property">secondary</span>)<br>
+            .<span class="property">multilineTextAlignment</span>(.<span class="property">center</span>)<br>
+    }
+    .<span class="property">padding</span>()
+}
+.<span class="property">frame</span>(
+    <span class="property">width</span>: <span class="string">200</span>, 
+    <span class="property">height</span>: <span class="string">120</span>
+)
+                </div>
+
+                <h2>Background Images with Text:</h2>
+                <div class="code-block">
+<span class="keyword">ZStack</span>(<span class="property">alignment</span>: .<span class="property">bottomLeading</span>) {<br>
+    <span class="keyword">Image</span>(<span class="string">"background"</span>)<br>
+        .<span class="property">resizable</span>()<br>
+        .<span class="property">aspectRatio</span>(<br>
+            <span class="property">contentMode</span>: .<span class="property">fill</span><br>
+        )
+        .<span class="property">frame</span>(
+            <span class="property">width</span>: <span class="string">300</span>, 
+            <span class="property">height</span>: <span class="string">200</span>
+        )<br>
+        .<span class="property">clipped</span>()<br>
+        .<span class="property">cornerRadius</span>(<span class="string">12</span>)<br>
+    
+    <span class="keyword">Text</span>(<span class="string">"Photo Caption"</span>)<br>
+        .<span class="property">padding</span>()<br>
+        .<span class="property">background</span>(
+            <span class="keyword">Color</span>.<span class="property">black</span>.<br><span class="property">opacity</span>(<span class="string">0.7</span>)<br>
+        )
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+        .<span class="property">padding</span>()<br>
+}
+                </div>
+
+                <div class="definition-box">
+                    <h3>ZStack Use Cases:</h3>
+                    <p>• Adding text overlays on images</p>
+                    <p>• Creating custom buttons with backgrounds</p>
+                    <p>• Building complex card layouts</p>
+                    <p>• Positioning badges or notifications</p>
+                </div>
+
+                <h2>Badge Example:</h2>
+                <div class="code-block">
+<span class="keyword">ZStack</span>(<span class="property">alignment</span>: .<span class="property">topTrailing</span>) {<br>
+    <span class="keyword">Button</span>(<span class="string">"Messages"</span>) { <br>
+        <span class="comment">// Button action</span><br>
+    }
+    .<span class="property">padding</span>()<br>
+    .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+    .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+    .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    
+    <span class="keyword">Circle</span>()<br>
+        .<span class="property">fill</span>(<span class="keyword">Color</span>.<span class="property">red</span>)<br>
+        .<span class="property">frame</span>(
+            <span class="property">width</span>: <span class="string">20</span>, 
+            <span class="property">height</span>: <span class="string">20</span>
+        )<br>
+        .<span class="property">overlay</span>(<br>
+            <span class="keyword">Text</span>(<span class="string">"3"</span>)<br>
+                .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+                .<span class="property">font</span>(.<span class="property">caption</span>)<br>
+                .<span class="property">fontWeight</span>(.<span class="property">bold</span>)<br>
+        )
+        .<span class="property">offset</span>(
+            <span class="property">x</span>: <span class="string">5</span>, 
+            <span class="property">y</span>: <span class="string">-5</span>
+        )
+}
+                </div>
+            </div>
+
+            <!-- Slide 8: Combining Stacks -->
+            <div class="slide">
+                <h1>Combining Different Stacks</h1>
+                
+                <h2>The Power of Nested Stacks:</h2>
+                <p>Real-world apps rarely use just one type of stack. The magic happens when you combine them!</p>
+
+                <h2>Profile Card Example:</h2>
+                <div class="code-block">
+<span class="keyword">VStack</span>(<span class="property">spacing</span>: <span class="string">15</span>) {<br>
+    <span class="comment">// Header with profile image and info</span><br>
+    <span class="keyword">HStack</span>(<span class="property">spacing</span>: <span class="string">12</span>) {
+        <span class="keyword">Image</span>(<span class="string">"profile"</span>)<br>
+            .<span class="property">resizable</span>()<br>
+            .<span class="property">frame</span>(
+                <span class="property">width</span>: <span class="string">60</span>, 
+                <span class="property">height</span>: <span class="string">60</span>
+            )<br>
+            .<span class="property">clipShape</span>(<span class="keyword">Circle</span>())<br>
+            .<span class="property">overlay</span>(<br>
+                <span class="keyword">Circle</span>()<br>
+                    .<span class="property">stroke</span>(<br>
+                        <span class="keyword">Color</span>.<span class="property">blue</span>,<br>
+                        <span class="property">lineWidth</span>: <span class="string">2</span><br>
+                    )<br>
+            )
+        
+        <span class="keyword">VStack</span>(<br>
+            <span class="property">alignment</span>: .<span class="property">leading</span>, 
+            <span class="property">spacing</span>: <span class="string">4</span>
+        ) {
+            <span class="keyword">Text</span>(<span class="string">"John Doe"</span>)<br>
+                .<span class="property">font</span>(.<span class="property">headline</span>)<br>
+                .<span class="property">foregroundColor</span>(.<span class="property">primary</span>)<br>
+            
+            <span class="keyword">Text</span>(<span class="string">"iOS Developer"</span>)<br>
+                .<span class="property">font</span>(.<span class="property">caption</span>)<br>
+                .<span class="property">foregroundColor</span>(.<span class="property">secondary</span>)<br>
+        }<br>
+        
+        <span class="keyword">Spacer</span>()<br>
+    }<br>
+    
+    <span class="comment">// Action buttons</span>
+    <span class="keyword">HStack</span>(<span class="property">spacing</span>: <span class="string">20</span>) {<br>
+        <span class="keyword">Button</span>(<span class="string">"Follow"</span>) { <br>
+            <span class="comment">// Follow action</span><br>
+        }<br>
+        .<span class="property">padding</span>(.<span class="property">horizontal</span>, <span class="string">20</span>)<br>
+        .<span class="property">padding</span>(.<span class="property">vertical</span>, <span class="string">8</span>)<br>
+        .<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">blue</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">white</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+        
+        <span class="keyword">Button</span>(<span class="string">"Message"</span>) { <br>
+            <span class="comment">// Message action</span><br>
+        }<br>
+        .<span class="property">padding</span>(.<span class="property">horizontal</span>, <span class="string">20</span>)<br>
+        .<span class="property">padding</span>(.<span class="property">vertical</span>, <span class="string">8</span>)<br>
+        .<span class="property">background</span>(
+            <span class="keyword">Color</span>.<span class="property">gray</span>.<span class="property">opacity</span>(<span class="string">0.2</span>)<br>
+        )<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">blue</span>)<br>
+        .<span class="property">cornerRadius</span>(<span class="string">8</span>)<br>
+    }<br>
+}<br>
+.<span class="property">padding</span>()<br>
+.<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">white</span>)<br>
+.<span class="property">cornerRadius</span>(<span class="string">12</span>)<br>
+.<span class="property">shadow</span>(<span class="property">radius</span>: <span class="string">4</span>)<br>
+                </div>
+
+                <div class="tip-box">
+                    <strong>💡 Design Tip:</strong> Start with the main layout (VStack or HStack), then break down each section into smaller stacks.
+                </div>
+            </div>
+
+            <!-- Slide 9: Complex Layout Practice -->
+            <div class="slide">
+                <h1>Building a Complete Interface</h1>
+                
+                <h2>Social Media Post Layout:</h2>
+                <div class="code-block">
+<span class="keyword">VStack</span>(
+    <span class="property">alignment</span>: .<span class="property">leading</span>, 
+    <span class="property">spacing</span>: <span class="string">12</span>
+) {<br>
+    <span class="comment">// Post header</span><br>
+    <span class="keyword">HStack</span>(<span class="property">spacing</span>: <span class="string">10</span>) {<br>
+        <span class="keyword">Image</span>(<span class="string">"user_avatar"</span>)<br>
+            .<span class="property">resizable</span>()<br>
+            .<span class="property">frame</span>(
+                <span class="property">width</span>: <span class="string">40</span>, 
+                <span class="property">height</span>: <span class="string">40</span>
+            )<br>
+            .<span class="property">clipShape</span>(<span class="keyword">Circle</span>())<br>
+        
+        <span class="keyword">VStack</span>(
+            <span class="property">alignment</span>: .<span class="property">leading</span>, 
+            <span class="property">spacing</span>: <span class="string">2</span>
+        ) {<br>
+            <span class="keyword">Text</span>(<span class="string">"@username"</span>)<br>
+                .<span class="property">font</span>(.<span class="property">headline</span>)<br>
+                .<span class="property">foregroundColor</span>(.<span class="property">primary</span>)<br>
+            
+            <span class="keyword">Text</span>(<span class="string">"2 hours ago"</span>)<br>
+                .<span class="property">font</span>(.<span class="property">caption</span>)<br>
+                .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+        }<br>
+        
+        <span class="keyword">Spacer</span>()<br>
+        
+        <span class="keyword">Button</span>(<span class="string">"⋯"</span>) { <br>
+            <span class="comment">// More options</span><br>
+        }<br>
+        .<span class="property">font</span>(.<span class="property">title2</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+    }<br>
+    
+    <span class="comment">// Post content</span><br>
+    <span class="keyword">Text</span>(<span class="string">"Just learned about SwiftUI stacks! 🚀"</span>)<br>
+        .<span class="property">font</span>(.<span class="property">body</span>)<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">primary</span>)<br>
+        .<span class="property">padding</span>(.<span class="property">leading</span>, <span class="string">4</span>)<br>
+    
+    <span class="comment">// Post image</span><br>
+    <span class="keyword">ZStack</span> {<br>
+        <span class="keyword">Rectangle</span>()<br>
+            .<span class="property">fill</span>(<br>
+                <span class="keyword">Color</span>.<span class="property">gray</span>.<span class="property">opacity</span>(<span class="string">0.3</span>)
+            )<br>
+            .<span class="property">frame</span>(<span class="property">height</span>: <span class="string">200</span>)<br>
+            .<span class="property">cornerRadius</span>(<span class="string">12</span>)<br>
+        
+        <span class="keyword">Text</span>(<span class="string">"📱 App Screenshot"</span>)<br>
+            .<span class="property">font</span>(.<span class="property">title2</span>)<br>
+            .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+    }<br>
+    
+    <span class="comment">// Action buttons</span><br>
+    <span class="keyword">HStack</span>(<span class="property">spacing</span>: <span class="string">20</span>) {<br>
+        <span class="keyword">Button</span>(<span class="string">"❤️ 42"</span>) { <br>
+            <span class="comment">// Like action</span><br>
+        }<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+        
+        <span class="keyword">Button</span>(<span class="string">"💬 8"</span>) { <br>
+            <span class="comment">// Comment action</span><br>
+        }<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+        
+        <span class="keyword">Button</span>(<span class="string">"🔄 3"</span>) { <br>
+            <span class="comment">// Repost action</span><br>
+        }<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+        
+        <span class="keyword">Spacer</span>()<br>
+        
+        <span class="keyword">Button</span>(<span class="string">"📤"</span>) { <br>
+            <span class="comment">// Share action</span><br>
+        }<br>
+        .<span class="property">foregroundColor</span>(.<span class="property">gray</span>)<br>
+    }<br>
+    .<span class="property">padding</span>(.<span class="property">top</span>, <span class="string">4</span>)<br>
+}<br>
+.<span class="property">padding</span>()<br>
+.<span class="property">background</span>(<span class="keyword">Color</span>.<span class="property">white</span>)<br>
+.<span class="property">cornerRadius</span>(<span class="string">16</span>)<br>
+.<span class="property">shadow</span>(
+    <span class="property">color</span>: <span class="keyword">Color</span>.<span class="property">black</span>.<span class="property">opacity</span>(<span class="string">0.1</span>),
+    <span class="property">radius</span>: <span class="string">4</span>,
+    <span class="property">x</span>: <span class="string">0</span>, 
+    <span class="property">y</span>: <span class="string">2</span>
+)
+                </div>
+            </div>
+
+            <!-- Slide 10: Best Practices and Summary -->
+            <div class="slide">
+                <h1>Best Practices & Summary</h1>
+                
+                <h2>🎯 Key Takeaways:</h2>
+                
+                <div class="definition-box">
+                    <h3>When to Use Each Stack:</h3>
+                    <p><strong>VStack:</strong> Forms, lists, vertical content flow</p>
+                    <p><strong>HStack:</strong> Navigation bars, button groups, horizontal layouts</p>
+                    <p><strong>ZStack:</strong> Overlays, badges, background images with text</p>
+                </div>
+
+                <h2>✅ Best Practices:</h2>
+                <p><strong>1. Start Simple:</strong> Begin with basic stacks, then combine them</p>
+                <p><strong>2. Use Spacing Consistently:</strong> Maintain consistent spacing throughout your app</p>
+                <p><strong>3. Choose Appropriate Alignment:</strong> Consider your content when selecting alignment</p>
+                <p><strong>4. Use Spacer Wisely:</strong> Great for pushing content apart or filling space</p>
+                <p><strong>5. Combine Stacks Thoughtfully:</strong> Plan your layout hierarchy</p>
+
+                <h2>🚀 Practice Exercises:</h2>
+                <div class="tip-box">
+                    <strong>Try These Challenges:</strong><br>
+                    1. Create a settings screen with VStack and HStack<br>
+                    2. Build a photo gallery grid using nested HStacks<br>
+                    3. Design a login form with proper spacing and alignment<br>
+                    4. Create a card-based interface using ZStack
+                </div>
+
+                <h2>🔗 What's Next:</h2>
+                <p>• Learn about ScrollView for scrollable content</p>
+                <p>• Explore LazyVStack and LazyHStack for performance</p>
+                <p>• Discover GeometryReader for custom layouts</p>
+                <p>• Master List and NavigationView</p>
+
+                <div class="definition-box">
+                    <h3>Remember:</h3>
+                    <p>Great interfaces are built by combining simple stacks in creative ways. Keep practicing and experimenting!</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button class="nav-button" id="prevBtn" onclick="changeSlide(-1)">Previous</button>
+                <span class="slide-counter" id="slideCounter">1 / 10</span>
+                <button class="nav-button" id="nextBtn" onclick="changeSlide(1)">Next</button>
+            </div>
         </div>
-      </div>
+
+        <!-- Simulator Panel -->
+        <div class="simulator-panel">
+            <div class="simulator-header">
+                SwiftUI Code Simulator
+            </div>
+            
+            <textarea class="code-editor" id="codeEditor" placeholder="Type your SwiftUI code here...">VStack(spacing: 20) {
+    Text("Hello SwiftUI!")
+        .font(.title)
+        .foregroundColor(.blue)
+    
+    HStack {
+        Text("Left")
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+        
+        Spacer()
+        
+        Text("Right")
+            .padding()
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+    }
+    
+    ZStack {
+        Circle()
+            .fill(Color.purple)
+            .frame(width: 100, height: 100)
+        
+        Text("Center")
+            .foregroundColor(.white)
+            .font(.headline)
+    }
+}</textarea>
+            
+            <div class="preview-area">
+                <div class="phone-mockup">
+                    <div class="phone-screen" id="phoneScreen">
+                        <div class="vstack-demo">
+                            <div class="demo-element">Hello SwiftUI!</div>
+                            <div class="hstack-demo">
+                                <div class="demo-element">Left</div>
+                                <div class="demo-element">Right</div>
+                            </div>
+                            <div class="zstack-demo">
+                                <div class="demo-element">Center</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- NAV -->
-    <div class="navigation-buttons">
-      <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
-      <span id="lessonCounter">1 / 5</span>
-      <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
-    </div>
-  </div>
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 10;
 
-<script>
-  let currentLesson = 0;
-  const totalLessons = 5;
-
-  // Shared demo state
-  let axis = 'vertical';           // 'vertical' (VStack) or 'horizontal' (HStack)
-  let alignment = 'center';        // center/leading/trailing for V/H stacks
-  let spacing = 12;                // px
-  let items = ['A','B','C'];       // demo items
-  let layers = ['🔵','🟢','🟣'];   // for ZStack
-  let zOrderTopIndex = 2;          // which layer sits on top
-
-  const lessons = [
-    {
-      title: "6.1 VStack (Vertical Layouts)",
-      fileName: "VStackDemo.swift",
-      fileType: "Stack Layout",
-      objectives: [
-        "Use VStack for vertical layouts",
-        "Adjust alignment and spacing",
-        "Dynamically add/remove children",
-        "Preview how changes affect layout"
-      ]
-    },
-    {
-      title: "6.2 HStack (Horizontal Layouts)",
-      fileName: "HStackDemo.swift",
-      fileType: "Stack Layout",
-      objectives: [
-        "Use HStack for horizontal layouts",
-        "Align content on cross-axis",
-        "Control spacing",
-        "Build navigation bars/rows"
-      ]
-    },
-    {
-      title: "6.3 ZStack (Overlapping Layouts)",
-      fileName: "ZStackDemo.swift",
-      fileType: "Stack Layout",
-      objectives: [
-        "Layer views with ZStack",
-        "Reorder layers (front/back)",
-        "Position elements with offsets",
-        "Create badges/overlays"
-      ]
-    },
-    {
-      title: "6.4 Alignment and Spacing",
-      fileName: "AlignmentSpacing.swift",
-      fileType: "Layout Controls",
-      objectives: [
-        "Master alignment options",
-        "Use custom spacing values",
-        "Mix stacks with nested layouts",
-        "Understand cross-axis behavior"
-      ]
-    },
-    {
-      title: "6.5 Building Complex Layouts",
-      fileName: "ComplexLayouts.swift",
-      fileType: "Composition",
-      objectives: [
-        "Combine VStack/HStack/ZStack",
-        "Create card-style UIs",
-        "Balance whitespace and density",
-        "Design flexible, readable screens"
-      ]
+        // Example code snippets for each slide
+        const slideExamples = [
+            // Slide 1
+            `VStack(spacing: 15) {
+    Text("Welcome to SwiftUI!")
+        .font(.largeTitle)
+        .fontWeight(.bold)
+        .foregroundColor(.blue)
+    
+    Text("Let's learn about stacks!")
+        .font(.subheadline)
+        .foregroundColor(.gray)
+        .multilineTextAlignment(.center)
+}
+.padding()`,
+            
+            // Slide 2 - VStack
+            `VStack(spacing: 20) {
+    Text("First Item")
+        .padding()
+        .background(Color.blue)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("Second Item")
+        .padding()
+        .background(Color.green)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("Third Item")
+        .padding()
+        .background(Color.orange)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+}`,
+            
+            // Slide 3 - VStack Alignment
+            `VStack(alignment: .leading, spacing: 15) {
+    Text("Short")
+        .padding()
+        .background(Color.blue)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("Medium Length Text")
+        .padding()
+        .background(Color.green)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("This is a much longer text example")
+        .padding()
+        .background(Color.orange)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+}`,
+            
+            // Slide 4 - HStack
+            `HStack(spacing: 15) {
+    Text("Left")
+        .padding()
+        .background(Color.red)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("Center")
+        .padding()
+        .background(Color.blue)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Text("Right")
+        .padding()
+        .background(Color.green)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+}`,
+            
+            // Slide 5 - HStack with Spacer
+            `HStack {
+    Text("Left")
+        .padding()
+        .background(Color.blue)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+    
+    Spacer()
+    
+    Text("Right")
+        .padding()
+        .background(Color.green)
+        .foregroundColor(.white)
+        .cornerRadius(8)
+}
+.padding()`,
+            
+            // Slide 6 - ZStack
+            `ZStack {
+    Rectangle()
+        .fill(Color.blue)
+        .frame(width: 120, height: 120)
+        .cornerRadius(15)
+    
+    Text("Overlay Text")
+        .font(.headline)
+        .foregroundColor(.white)
+        .fontWeight(.bold)
+}`,
+            
+            // Slide 7 - ZStack Advanced
+            `ZStack(alignment: .topTrailing) {
+    RoundedRectangle(cornerRadius: 15)
+        .fill(Color.gray.opacity(0.3))
+        .frame(width: 150, height: 100)
+    
+    VStack(spacing: 5) {
+        Text("Card Title")
+            .font(.headline)
+            .foregroundColor(.primary)
+        
+        Text("Card Content")
+            .font(.caption)
+            .foregroundColor(.secondary)
     }
-  ];
-
-  // ---------- UTIL ----------
-  function updateActiveButton(btn){
-    if(!btn) return;
-    const group = btn.closest('.control-group');
-    if(!group) return;
-    group.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
-  // Basic helpers
-  function addItem(btn){
-    const nextChar = String.fromCharCode(65 + items.length); // A, B, C...
-    items.push(nextChar);
-    renderStack();
-    updateActiveButton(btn);
-  }
-  function removeItem(btn){
-    if(items.length>0) items.pop();
-    renderStack();
-    updateActiveButton(btn);
-  }
-  function shuffleItems(btn){
-    for(let i=items.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [items[i],items[j]] = [items[j],items[i]];
+    .padding()
+    
+    Circle()
+        .fill(Color.red)
+        .frame(width: 20, height: 20)
+        .overlay(
+            Text("5")
+                .foregroundColor(.white)
+                .font(.caption)
+                .fontWeight(.bold)
+        )
+        .offset(x: -5, y: 5)
+}`,
+            
+            // Slide 8 - Combined Stacks
+            `VStack(spacing: 15) {
+    HStack(spacing: 12) {
+        Circle()
+            .fill(Color.blue)
+            .frame(width: 50, height: 50)
+            .overlay(
+                Text("JD")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                    .fontWeight(.bold)
+            )
+        
+        VStack(alignment: .leading, spacing: 2) {
+            Text("John Doe")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            Text("iOS Developer")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        
+        Spacer()
     }
-    renderStack();
-    updateActiveButton(btn);
-  }
-
-  // Alignment/Spacing controls
-  function setAlignment(a, btn){
-    alignment = a;
-    renderStack();
-    updateActiveButton(btn);
-  }
-  function setSpacing(val){
-    spacing = Number(val);
-    renderStack();
-  }
-
-  // Axis switcher
-  function setAxis(ax, btn){
-    axis = ax;
-    renderStack();
-    updateActiveButton(btn);
-  }
-
-  // ZStack layer controls
-  function bringLayerToFront(index, btn){
-    zOrderTopIndex = index;
-    renderZStack();
-    updateActiveButton(btn);
-  }
-
-  function nudgeLayer(index, dx, dy){
-    // store offsets on dataset
-    const el = document.getElementById('zlayer-'+index);
-    if(!el) return;
-    const x = Number(el.dataset.x || 0) + dx;
-    const y = Number(el.dataset.y || 0) + dy;
-    el.dataset.x = x;
-    el.dataset.y = y;
-    el.style.transform = `translate(${x}px, ${y}px)`;
-  }
-
-  // ---------- RENDERERS ----------
-  function renderStack(){
-    const host = document.getElementById('stackHost');
-    if(!host) return;
-    host.innerHTML = ''; // clear
-
-    // container to simulate VStack/HStack
-    const cont = document.createElement('div');
-    cont.style.display = 'flex';
-    cont.style.flexDirection = axis === 'vertical' ? 'column' : 'row';
-    cont.style.alignItems = (()=>{
-      if(alignment === 'leading')  return axis==='vertical' ? 'flex-start' : 'flex-start';
-      if(alignment === 'trailing') return axis==='vertical' ? 'flex-end'   : 'flex-end';
-      return 'center';
-    })();
-    cont.style.justifyContent = 'center';
-    cont.style.gap = spacing + 'px';
-    cont.style.width = '100%';
-    cont.style.minHeight = '160px';
-
-    items.forEach(label=>{
-      const item = document.createElement('div');
-      item.className = 'demo-item';
-      item.textContent = label;
-      cont.appendChild(item);
-    });
-
-    host.appendChild(cont);
-  }
-
-  function renderZStack(){
-    const host = document.getElementById('stackHost');
-    if(!host) return;
-    host.innerHTML = '';
-
-    const z = document.createElement('div');
-    z.style.position = 'relative';
-    z.style.width = '200px';
-    z.style.height = '160px';
-    z.style.margin = '0 auto';
-    z.style.border = '1px dashed #ced4da';
-    z.style.borderRadius = '12px';
-    z.style.background = '#fff';
-
-    // base positions
-    const base = [
-      {left: 20, top: 20},
-      {left: 60, top: 60},
-      {left: 100, top: 30}
-    ];
-
-    layers.forEach((emoji, i)=>{
-      const layer = document.createElement('div');
-      layer.id = 'zlayer-'+i;
-      layer.className = 'demo-item';
-      layer.textContent = emoji;
-      layer.style.position = 'absolute';
-      layer.style.left = base[i].left + 'px';
-      layer.style.top  = base[i].top  + 'px';
-      layer.style.borderRadius = '999px';
-      layer.style.padding = '10px 12px';
-      layer.style.userSelect = 'none';
-      // stacking
-      layer.style.zIndex = (i === zOrderTopIndex) ? 3 : (i===((zOrderTopIndex+1)%3) ? 2 : 1);
-      // preserved manual nudges
-      const x = Number(layer.dataset?.x || 0);
-      const y = Number(layer.dataset?.y || 0);
-      layer.dataset.x = x; layer.dataset.y = y;
-      layer.style.transform = `translate(${x}px, ${y}px)`;
-
-      z.appendChild(layer);
-    });
-
-    host.appendChild(z);
-  }
-
-  // ---------- LESSON CONTENT SWAPPER ----------
-  function updateLesson(){
-    const lesson = lessons[currentLesson];
-    document.getElementById('lessonTitle').textContent = lesson.title;
-    document.getElementById('codeFileName').textContent = lesson.fileName;
-    document.getElementById('codeType').textContent = lesson.fileType;
-
-    document.getElementById('lessonCounter').textContent = (currentLesson+1) + ' / ' + totalLessons;
-    const progressPercent = ((currentLesson+1)/totalLessons) * 100;
-    document.getElementById('progressBar').style.width = progressPercent + '%';
-
-    document.getElementById('prevBtn').disabled = currentLesson===0;
-    document.getElementById('nextBtn').disabled = currentLesson===totalLessons-1;
-
-    // Objectives
-    const objectivesList = document.getElementById('objectives');
-    objectivesList.innerHTML = '';
-    lesson.objectives.forEach(o=>{
-      const li = document.createElement('li');
-      li.textContent = o;
-      objectivesList.appendChild(li);
-    });
-
-    updateLessonContent();
-  }
-
-  function updateLessonContent(){
-    const code = document.getElementById('codeContent');
-    const controls = document.getElementById('controls');
-    const host = document.getElementById('stackHost');
-
-    // reset defaults per lesson
-    items = ['A','B','C'];
-    spacing = 12;
-    alignment = 'center';
-    axis = 'vertical';
-    zOrderTopIndex = 2;
-
-    if(currentLesson === 0){
-      // VStack
-      code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">📐 VSTACK</div>
-  <div class="explanation-content">VStack arranges children vertically. Control spacing and alignment (leading, center, trailing).</div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">VStackDemo</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">center</span>, <span class="property">spacing</span>: <span class="number">12</span>) {
-      <span class="type">Text</span>(<span class="string">"A"</span>)
-      <span class="type">Text</span>(<span class="string">"B"</span>)
-      <span class="type">Text</span>(<span class="string">"C"</span>)
+    
+    HStack(spacing: 20) {
+        Button("Follow") { }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+        
+        Button("Message") { }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(Color.gray.opacity(0.2))
+            .foregroundColor(.blue)
+            .cornerRadius(8)
     }
-  }
-}`;
-
-      controls.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Alignment (VStack):</label>
-          <button class="control-btn active" onclick="setAlignment('center', this)">Center</button>
-          <button class="control-btn" onclick="setAlignment('leading', this)">Leading</button>
-          <button class="control-btn" onclick="setAlignment('trailing', this)">Trailing</button>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Spacing:</label>
-          <input type="range" min="0" max="30" step="2" value="12" oninput="setSpacing(this.value)" />
-        </div>
-        <div class="control-group">
-          <label class="control-label">Items:</label>
-          <button class="control-btn" onclick="addItem(this)">Add</button>
-          <button class="control-btn" onclick="removeItem(this)">Remove</button>
-          <button class="control-btn" onclick="shuffleItems(this)">Shuffle</button>
-        </div>`;
-
-      host.parentElement.style.justifyContent = 'center';
-      renderStack();
+}
+.padding()`,
+            
+            // Slide 9 - Complex Layout
+            `VStack(alignment: .leading, spacing: 12) {
+    HStack(spacing: 10) {
+        Circle()
+            .fill(Color.purple)
+            .frame(width: 40, height: 40)
+            .overlay(
+                Text("U")
+                    .foregroundColor(.white)
+                    .font(.headline)
+                    .fontWeight(.bold)
+            )
+        
+        VStack(alignment: .leading, spacing: 2) {
+            Text("@username")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            Text("2 hours ago")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        
+        Spacer()
     }
-    else if(currentLesson === 1){
-      // HStack
-      code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">📏 HSTACK</div>
-  <div class="explanation-content">HStack arranges children horizontally. Alignment controls the vertical alignment of items.</div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">HStackDemo</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">HStack</span>(<span class="property">alignment</span>: .<span class="property">center</span>, <span class="property">spacing</span>: <span class="number">12</span>) {
-      <span class="type">Text</span>(<span class="string">"Left"</span>)
-      <span class="type">Text</span>(<span class="string">"Middle"</span>)
-      <span class="type">Text</span>(<span class="string">"Right"</span>)
+    
+    Text("Just learned SwiftUI stacks! 🚀")
+        .font(.body)
+        .foregroundColor(.primary)
+    
+    ZStack {
+        Rectangle()
+            .fill(Color.gray.opacity(0.3))
+            .frame(height: 100)
+            .cornerRadius(12)
+        
+        Text("📱 App Screenshot")
+            .font(.title2)
+            .foregroundColor(.gray)
     }
-  }
-}`;
-
-      controls.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Alignment (HStack):</label>
-          <button class="control-btn active" onclick="setAlignment('center', this)">Center (vertical)</button>
-          <button class="control-btn" onclick="setAlignment('leading', this)">Top</button>
-          <button class="control-btn" onclick="setAlignment('trailing', this)">Bottom</button>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Spacing:</label>
-          <input type="range" min="0" max="30" step="2" value="12" oninput="setSpacing(this.value)" />
-        </div>
-        <div class="control-group">
-          <label class="control-label">Items:</label>
-          <button class="control-btn" onclick="setAxis('horizontal', this)">HStack Mode</button>
-          <button class="control-btn" onclick="addItem(this)">Add</button>
-          <button class="control-btn" onclick="removeItem(this)">Remove</button>
-          <button class="control-btn" onclick="shuffleItems(this)">Shuffle</button>
-        </div>`;
-
-      axis = 'horizontal';
-      // remap alignment semantics for horizontal axis (top/center/bottom)
-      renderStack();
+    
+    HStack(spacing: 20) {
+        Text("❤️ 42")
+            .foregroundColor(.gray)
+        
+        Text("💬 8")
+            .foregroundColor(.gray)
+        
+        Text("🔄 3")
+            .foregroundColor(.gray)
+        
+        Spacer()
     }
-    else if(currentLesson === 2){
-      // ZStack
-      code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🧅 ZSTACK</div>
-  <div class="explanation-content">ZStack layers views on the Z axis (front-to-back). Great for overlays, badges, and floating buttons.</div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">ZStackDemo</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">ZStack</span> {
-      <span class="type">Circle</span>().<span class="modifier">fill</span>(.<span class="property">blue</span>).<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">80</span>, <span class="property">height</span>: <span class="number">80</span>)
-      <span class="type">Circle</span>().<span class="modifier">fill</span>(.<span class="property">green</span>).<span class="modifier">offset</span>(<span class="property">x</span>: <span class="number">20</span>, <span class="property">y</span>: <span class="number">20</span>)
-      <span class="type">Text</span>(<span class="string">"Top"</span>)
+}
+.padding()`,
+            
+            // Slide 10 - Summary
+            `VStack(spacing: 25) {
+    Text("SwiftUI Stacks Summary")
+        .font(.largeTitle)
+        .fontWeight(.bold)
+        .foregroundColor(.primary)
+    
+    HStack(spacing: 20) {
+        VStack(spacing: 8) {
+            Text("VStack")
+                .font(.headline)
+                .foregroundColor(.blue)
+            
+            Text("Vertical")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(10)
+        
+        VStack(spacing: 8) {
+            Text("HStack")
+                .font(.headline)
+                .foregroundColor(.green)
+            
+            Text("Horizontal")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.green.opacity(0.1))
+        .cornerRadius(10)
+        
+        VStack(spacing: 8) {
+            Text("ZStack")
+                .font(.headline)
+                .foregroundColor(.orange)
+            
+            Text("Overlapping")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(10)
     }
-  }
-}`;
+    
+    Text("Keep practicing! 🎯")
+        .font(.title2)
+        .foregroundColor(.purple)
+        .fontWeight(.semibold)
+}`
+        ];
 
-      controls.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Layer Order:</label>
-          <button class="control-btn" onclick="bringLayerToFront(0, this)">🔵 Front</button>
-          <button class="control-btn" onclick="bringLayerToFront(1, this)">🟢 Front</button>
-          <button class="control-btn active" onclick="bringLayerToFront(2, this)">🟣 Front</button>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Nudge Top Layer:</label>
-          <button class="control-btn" onclick="nudgeLayer(zOrderTopIndex, -6, 0)">←</button>
-          <button class="control-btn" onclick="nudgeLayer(zOrderTopIndex, 6, 0)">→</button>
-          <button class="control-btn" onclick="nudgeLayer(zOrderTopIndex, 0, -6)">↑</button>
-          <button class="control-btn" onclick="nudgeLayer(zOrderTopIndex, 0, 6)">↓</button>
-        </div>`;
+        function changeSlide(direction) {
+            const slides = document.querySelectorAll('.slide');
+            slides[currentSlide].classList.remove('active');
+            
+            currentSlide += direction;
+            
+            if (currentSlide >= totalSlides) {
+                currentSlide = 0;
+            } else if (currentSlide < 0) {
+                currentSlide = totalSlides - 1;
+            }
+            
+            slides[currentSlide].classList.add('active');
+            updateNavigation();
+            updateCodeExample();
+        }
 
-      renderZStack();
-    }
-    else if(currentLesson === 3){
-      // Alignment & Spacing (mixed)
-      code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🎯 ALIGNMENT & SPACING</div>
-  <div class="explanation-content">Alignment affects cross-axis positioning. Spacing sets the gap between siblings.</div>
-</div>
+        function updateNavigation() {
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
 
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
+        function updateCodeExample() {
+            const codeEditor = document.getElementById('codeEditor');
+            codeEditor.value = slideExamples[currentSlide];
+            updatePreview();
+        }
 
-<span class="keyword">struct</span> <span class="type">AlignmentSpacing</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span>(<span class="property">alignment</span>: .<span class="property">leading</span>, <span class="property">spacing</span>: <span class="number">4</span>) {
-      <span class="type">Text</span>(<span class="string">"Title"</span>).<span class="modifier">font</span>(.<span class="property">headline</span>)
-      <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">16</span>) {
-        <span class="type">Text</span>(<span class="string">"Label"</span>)
-        <span class="type">Text</span>(<span class="string">"Value"</span>)
-      }
-    }
-  }
-}`;
+        function updatePreview() {
+            const code = document.getElementById('codeEditor').value;
+            const phoneScreen = document.getElementById('phoneScreen');
+            
+            // Simple preview generation based on code content
+            let previewHTML = '';
+            
+            if (code.includes('VStack')) {
+                previewHTML += '<div class="vstack-demo">';
+                const textMatches = code.match(/Text\("([^"]+)"\)/g);
+                if (textMatches) {
+                    textMatches.slice(0, 3).forEach((match, index) => {
+                        const text = match.match(/Text\("([^"]+)"\)/)[1];
+                        previewHTML += `<div class="demo-element">${text}</div>`;
+                    });
+                }
+                previewHTML += '</div>';
+            }
+            
+            if (code.includes('HStack')) {
+                previewHTML += '<div class="hstack-demo">';
+                const textMatches = code.match(/Text\("([^"]+)"\)/g);
+                if (textMatches) {
+                    textMatches.slice(0, 3).forEach((match, index) => {
+                        const text = match.match(/Text\("([^"]+)"\)/)[1];
+                        previewHTML += `<div class="demo-element">${text}</div>`;
+                    });
+                }
+                previewHTML += '</div>';
+            }
+            
+            if (code.includes('ZStack')) {
+                previewHTML += '<div class="zstack-demo">';
+                const textMatches = code.match(/Text\("([^"]+)"\)/g);
+                if (textMatches) {
+                    textMatches.slice(0, 3).forEach((match, index) => {
+                        const text = match.match(/Text\("([^"]+)"\)/)[1];
+                        previewHTML += `<div class="demo-element">${text}</div>`;
+                    });
+                }
+                previewHTML += '</div>';
+            }
+            
+            if (!previewHTML) {
+                previewHTML = '<div class="demo-element">Enter SwiftUI code to see preview</div>';
+            }
+            
+            phoneScreen.innerHTML = previewHTML;
+        }
 
-      controls.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Axis:</label>
-          <button class="control-btn active" onclick="setAxis('vertical', this)">VStack</button>
-          <button class="control-btn" onclick="setAxis('horizontal', this)">HStack</button>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Alignment:</label>
-          <button class="control-btn active" onclick="setAlignment('center', this)">Center</button>
-          <button class="control-btn" onclick="setAlignment('leading', this)">Leading/Top</button>
-          <button class="control-btn" onclick="setAlignment('trailing', this)">Trailing/Bottom</button>
-        </div>
-        <div class="control-group">
-          <label class="control-label">Spacing:</label>
-          <input type="range" min="0" max="40" step="2" value="12" oninput="setSpacing(this.value)" />
-        </div>
-        <div class="control-group">
-          <label class="control-label">Items:</label>
-          <button class="control-btn" onclick="addItem(this)">Add</button>
-          <button class="control-btn" onclick="removeItem(this)">Remove</button>
-        </div>`;
+        // Initialize
+        updateNavigation();
+        updateCodeExample();
 
-      renderStack();
-    }
-    else if(currentLesson === 4){
-      // Complex Layouts
-      code.innerHTML = `<div class="explanation">
-  <div class="explanation-title">🧩 COMPLEX LAYOUTS</div>
-  <div class="explanation-content">Compose VStack, HStack, and ZStack to build real UI sections like cards and headers.</div>
-</div>
+        // Update preview when code changes
+        document.getElementById('codeEditor').addEventListener('input', updatePreview);
 
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">ComplexLayout</span>: <span class="type">View</span> {
-  <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-    <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">12</span>) {
-      <span class="type">HStack</span> {
-        <span class="type">Text</span>(<span class="string">"Title"</span>).<span class="modifier">font</span>(.<span class="property">headline</span>)
-        <span class="type">Spacer</span>()
-        <span class="type">Text</span>(<span class="string">"Action"</span>).<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
-      }
-      <span class="type">ZStack</span> {
-        <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">12</span>).<span class="modifier">fill</span>(.<span class="property">gray</span>.<span class="property">opacity</span>(<span class="number">0.1</span>))
-        <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">8</span>) {
-          <span class="type">Text</span>(<span class="string">"Left"</span>)
-          <span class="type">Spacer</span>()
-          <span class="type">Text</span>(<span class="string">"Right"</span>)
-        }.<span class="modifier">padding</span>()
-      }.<span class="modifier">frame</span>(<span class="property">height</span>: <span class="number">100</span>)
-    }.<span class="modifier">padding</span>()
-  }
-}`;
-
-      controls.innerHTML = `
-        <div class="control-group">
-          <label class="control-label">Preset Cards:</label>
-          <button class="control-btn active" onclick="renderCard(1, this)">Header + Card</button>
-          <button class="control-btn" onclick="renderCard(2, this)">Image Left + Text</button>
-          <button class="control-btn" onclick="renderCard(3, this)">Stats Grid</button>
-        </div>`;
-
-      renderCard(1);
-    }
-  }
-
-  // Complex presets
-  function renderCard(n, btn){
-    if(btn) updateActiveButton(btn);
-    const host = document.getElementById('stackHost');
-    if(!host) return;
-    host.innerHTML = '';
-
-    if(n===1){
-      host.innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:12px;width:220px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="demo-item">🏷️ Title</div>
-            <div style="flex:1"></div>
-            <div class="demo-item">Action</div>
-          </div>
-          <div style="position:relative;border-radius:12px;background:#f1f3f5;height:120px;display:flex;align-items:center;justify-content:center">
-            <div class="demo-item">Content</div>
-          </div>
-        </div>`;
-    } else if(n===2){
-      host.innerHTML = `
-        <div style="display:flex;flex-direction:row;gap:10px;width:220px;align-items:center">
-          <div class="demo-item" style="width:64px;height:64px;display:flex;align-items:center;justify-content:center">🖼️</div>
-          <div style="display:flex;flex-direction:column;gap:6px;flex:1">
-            <div class="demo-item">Title</div>
-            <div class="demo-item">Subtitle</div>
-          </div>
-        </div>`;
-    } else {
-      host.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:220px">
-          <div class="demo-item">📊 12</div>
-          <div class="demo-item">⭐ 4.5</div>
-          <div class="demo-item">👤 23</div>
-          <div class="demo-item">⏱️ 3m</div>
-        </div>`;
-    }
-  }
-
-  // ---------- NAV ----------
-  function nextLesson(){
-    if(currentLesson < totalLessons-1){
-      currentLesson++;
-      updateLesson();
-    }
-  }
-  function previousLesson(){
-    if(currentLesson > 0){
-      currentLesson--;
-      updateLesson();
-    }
-  }
-
-  // Init
-  document.addEventListener('DOMContentLoaded', updateLesson);
-</script>
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeSlide(1);
+            }
+        });
+    </script>
 </body>
 </html>

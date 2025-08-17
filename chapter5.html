@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftUI Chapter 5: Basic UI Elements</title>
+    <title>SwiftUI Chapter 5: Basic UI Elements - Complete Tutorial</title>
     <style>
         * {
             margin: 0;
@@ -60,7 +60,7 @@
 
         .lesson-content {
             display: flex;
-            min-height: 600px;
+            min-height: 650px;
         }
 
         .code-panel {
@@ -69,7 +69,7 @@
             color: #d4d4d4;
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             overflow: auto;
         }
 
@@ -87,7 +87,7 @@
         .code-content {
             padding: 20px;
             white-space: pre-wrap;
-            max-height: 500px;
+            max-height: 550px;
             overflow-y: auto;
         }
 
@@ -103,8 +103,8 @@
         }
 
         .phone-frame {
-            width: 280px;
-            height: 560px;
+            width: 300px;
+            height: 600px;
             background: #000;
             border-radius: 35px;
             padding: 25px 15px;
@@ -187,34 +187,11 @@
             cursor: not-allowed;
         }
 
-        .lesson-objectives {
-            background: rgba(76, 175, 80, 0.1);
-            border-left: 4px solid #4caf50;
-            padding: 15px;
-            margin: 20px;
-            border-radius: 5px;
-        }
-
-        .lesson-objectives h4 {
-            color: #2e7d32;
-            margin-bottom: 10px;
-        }
-
-        .lesson-objectives ul {
-            margin-left: 20px;
-            color: #333;
-        }
-
-        .lesson-objectives li {
-            margin: 5px 0;
-        }
-
-        /* Interactive controls */
         .interactive-controls {
             background: rgba(255,255,255,0.95);
             border-radius: 15px;
             padding: 15px;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
@@ -227,6 +204,7 @@
             color: #666;
             margin-bottom: 5px;
             display: block;
+            font-weight: 600;
         }
 
         .control-btn {
@@ -250,15 +228,11 @@
             background: #28a745;
         }
 
-        input[type="range"] {
-            width: 100%;
-            margin: 5px 0;
-        }
-
         .color-picker {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            margin-top: 5px;
         }
 
         .color-btn {
@@ -275,6 +249,19 @@
             transform: scale(1.2);
         }
 
+        input[type="range"] {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+
         /* Syntax highlighting */
         .keyword { color: #ff79c6; font-weight: bold; }
         .string { color: #f1fa8c; }
@@ -284,35 +271,41 @@
         .modifier { color: #8be9fd; }
         .number { color: #ffb86c; }
         
-        .explanation { 
-            color: #f8f8f2; 
-            background: rgba(98, 114, 164, 0.3);
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
+        .definition {
+            background: rgba(80, 250, 123, 0.2);
             border-left: 4px solid #50fa7b;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 5px;
         }
-        
-        .explanation-title {
+
+        .definition-title {
             color: #50fa7b;
             font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
-        
-        .explanation-content {
+
+        .definition-content {
             color: #f8f8f2;
             line-height: 1.6;
-            font-size: 14px;
         }
-        
+
         .code-explanation {
-            color: #f1fa8c;
             background: rgba(241, 250, 140, 0.15);
-            padding: 8px;
-            border-radius: 6px;
-            margin: 8px 0;
             border-left: 3px solid #f1fa8c;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #f1fa8c;
+        }
+
+        .practice-box {
+            background: rgba(116, 185, 255, 0.15);
+            border-left: 3px solid #74b9ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #74b9ff;
         }
 
         .progress-bar {
@@ -356,60 +349,25 @@
     <div class="container">
         <div class="header">
             <h1>Chapter 5: Basic UI Elements</h1>
-            <p>Building Blocks for Your SwiftUI Interface</p>
+            <p>Building Beautiful Interfaces with SwiftUI Components</p>
         </div>
 
         <div class="lesson-container">
             <div class="lesson-header">
-                <h2 id="lessonTitle">5.1 Text Views</h2>
+                <h2 id="lessonTitle">Loading...</h2>
                 <div class="progress-bar">
-                    <div class="progress-fill" id="progressBar" style="width: 20%"></div>
+                    <div class="progress-fill" id="progressBar" style="width: 10%"></div>
                 </div>
             </div>
             
             <div class="lesson-content">
                 <div class="code-panel">
                     <div class="code-header">
-                        <span id="codeFileName">TextView.swift</span>
-                        <span id="codeType">Text Element</span>
+                        <span id="codeFileName">Loading...</span>
+                        <span id="codeType">Loading...</span>
                     </div>
                     <div class="code-content" id="codeContent">
-<div class="explanation">
-<div class="explanation-title">📝 TEXT VIEWS</div>
-<div class="explanation-content">
-Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.
-</div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">TextExample</span>: <span class="type">View</span> {
-    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        
-        <span class="comment">// Basic text</span>
-        <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
-        
-        <span class="comment">// Text with modifiers</span>
-        <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
-            .<span class="modifier">font</span>(.<span class="property">title</span>)
-            .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
-            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
-        
-        <span class="comment">// Multi-line text</span>
-        <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines in your SwiftUI app"</span>)
-            .<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>)
-            .<span class="modifier">lineLimit</span>(<span class="number">2</span>)
-    }
-}
-
-<div class="code-explanation">
-📚 TEXT MODIFIERS:
-• .font() - Changes text size and style
-• .fontWeight() - Makes text bold, light, etc.
-• .foregroundColor() - Changes text color
-• .multilineTextAlignment() - Aligns multi-line text
-• .lineLimit() - Limits number of lines
-</div>
+                        Loading...
                     </div>
                 </div>
                 
@@ -421,45 +379,13 @@ Text views display strings of text in your app. They're the most basic and commo
                                 <span>📶 📶 🔋</span>
                             </div>
                             <div class="app-content" id="simulator">
-                                <div id="textDemo" style="text-align: center; font-size: 24px; color: #007bff; font-weight: bold;">
-                                    Hello, SwiftUI!
-                                </div>
+                                Loading...
                             </div>
                         </div>
                     </div>
                     
-                    <div class="interactive-controls" id="controls">
-                        <div class="control-group">
-                            <label class="control-label">Text Size:</label>
-                            <button class="control-btn" onclick="changeTextSize('small')">Small</button>
-                            <button class="control-btn active" onclick="changeTextSize('medium')">Medium</button>
-                            <button class="control-btn" onclick="changeTextSize('large')">Large</button>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Font Weight:</label>
-                            <button class="control-btn" onclick="changeTextWeight('normal')">Normal</button>
-                            <button class="control-btn active" onclick="changeTextWeight('bold')">Bold</button>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Text Color:</label>
-                            <div class="color-picker">
-                                <div class="color-btn" style="background: #007bff;" onclick="changeTextColor('#007bff')"></div>
-                                <div class="color-btn" style="background: #28a745;" onclick="changeTextColor('#28a745')"></div>
-                                <div class="color-btn" style="background: #dc3545;" onclick="changeTextColor('#dc3545')"></div>
-                                <div class="color-btn" style="background: #ffc107;" onclick="changeTextColor('#ffc107')"></div>
-                                <div class="color-btn" style="background: #6f42c1;" onclick="changeTextColor('#6f42c1')"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="lesson-objectives">
-                        <h4>Learning Objectives:</h4>
-                        <ul id="objectives">
-                            <li>Create and display text in SwiftUI</li>
-                            <li>Apply text modifiers for styling</li>
-                            <li>Control text size, weight, and color</li>
-                            <li>Handle multi-line text</li>
-                        </ul>
+                    <div id="interactiveControls" class="interactive-controls">
+                        <!-- Interactive controls will be added here -->
                     </div>
                 </div>
             </div>
@@ -467,390 +393,371 @@ Text views display strings of text in your app. They're the most basic and commo
 
         <div class="navigation-buttons">
             <button class="nav-btn" id="prevBtn" onclick="previousLesson()" disabled>← Previous</button>
-            <span id="lessonCounter">1 / 5</span>
+            <span id="lessonCounter">1 / 10</span>
             <button class="nav-btn" id="nextBtn" onclick="nextLesson()">Next →</button>
         </div>
     </div>
 
     <script>
         var currentLesson = 0;
-        var totalLessons = 5;
+        var totalLessons = 10;
+        var currentText = "Hello, SwiftUI!";
+        var currentFontSize = 24;
+        var currentColor = "#007bff";
 
-        // Lesson data
+        // All 10 lessons data
         var lessons = [
             {
-                title: "5.1 Text Views",
-                fileName: "TextView.swift",
-                fileType: "Text Element",
-                objectives: [
-                    "Create and display text in SwiftUI",
-                    "Apply text modifiers for styling",
-                    "Control text size, weight, and color",
-                    "Handle multi-line text"
-                ]
-            },
-            {
-                title: "5.2 Image Views",
-                fileName: "ImageView.swift",
-                fileType: "Image Element",
-                objectives: [
-                    "Display SF Symbols in your app",
-                    "Resize and style images",
-                    "Apply color to symbol images",
-                    "Use image modifiers effectively"
-                ]
-            },
-            {
-                title: "5.3 Shapes",
-                fileName: "Shapes.swift",
-                fileType: "Shape Elements",
-                objectives: [
-                    "Create basic shapes like Rectangle and Circle",
-                    "Apply fills and strokes to shapes",
-                    "Use RoundedRectangle for rounded corners",
-                    "Combine shapes in layouts"
-                ]
-            },
-            {
-                title: "5.4 Colors",
-                fileName: "Colors.swift",
-                fileType: "Color System",
-                objectives: [
-                    "Use system colors in SwiftUI",
-                    "Apply colors to views",
-                    "Create custom colors",
-                    "Understand color opacity"
-                ]
-            },
-            {
-                title: "5.5 Spacer and Divider",
-                fileName: "SpacerDivider.swift",
-                fileType: "Layout Helpers",
-                objectives: [
-                    "Use Spacer to push views apart",
-                    "Add Dividers between content",
-                    "Control spacing in layouts",
-                    "Create flexible interfaces"
-                ]
-            }
-        ];
-
-        // Text demo functions
-        function changeTextSize(size) {
-            var textDemo = document.getElementById('textDemo');
-            if (size === 'small') {
-                textDemo.style.fontSize = '16px';
-            } else if (size === 'medium') {
-                textDemo.style.fontSize = '24px';
-            } else if (size === 'large') {
-                textDemo.style.fontSize = '32px';
-            }
-            updateActiveButton(event.target);
-        }
-
-        function changeTextWeight(weight) {
-            var textDemo = document.getElementById('textDemo');
-            textDemo.style.fontWeight = weight === 'bold' ? 'bold' : 'normal';
-            updateActiveButton(event.target);
-        }
-
-        function changeTextColor(color) {
-            var textDemo = document.getElementById('textDemo');
-            textDemo.style.color = color;
-        }
-
-        // Image demo functions
-        function changeImageSize(size) {
-            var imageDemo = document.getElementById('imageDemo');
-            if (size === 'small') {
-                imageDemo.style.fontSize = '32px';
-            } else if (size === 'medium') {
-                imageDemo.style.fontSize = '64px';
-            } else if (size === 'large') {
-                imageDemo.style.fontSize = '96px';
-            }
-            updateActiveButton(event.target);
-        }
-
-        function changeImageColor(color) {
-            var imageDemo = document.getElementById('imageDemo');
-            imageDemo.style.color = color;
-        }
-
-        function changeImage(emoji) {
-            var imageDemo = document.getElementById('imageDemo');
-            imageDemo.textContent = emoji;
-        }
-
-        // Shape demo functions
-        function changeShapeSize(size) {
-            var shapes = document.querySelectorAll('.shape');
-            shapes.forEach(function(shape) {
-                shape.style.width = size + 'px';
-                shape.style.height = size + 'px';
-            });
-            document.getElementById('shapeSize').textContent = size;
-        }
-
-        function changeShapeColor(color) {
-            var shapes = document.querySelectorAll('.shape');
-            shapes.forEach(function(shape) {
-                shape.style.background = color;
-            });
-        }
-
-        // Color demo functions
-        function changeColorOpacity(opacity) {
-            var colorDemo = document.getElementById('colorDemo');
-            var currentColor = colorDemo.style.background || 'rgba(0, 123, 255, 1)';
-            var rgb = currentColor.match(/\d+/g);
-            if (rgb && rgb.length >= 3) {
-                colorDemo.style.background = 'rgba(' + rgb[0] + ', ' + rgb[1] + ', ' + rgb[2] + ', ' + opacity + ')';
-            }
-            document.getElementById('opacityValue').textContent = opacity;
-        }
-
-        // Helper function to update active button
-        function updateActiveButton(button) {
-            if (button) {
-                var siblings = button.parentElement.querySelectorAll('.control-btn');
-                siblings.forEach(function(btn) {
-                    btn.classList.remove('active');
-                });
-                button.classList.add('active');
-            }
-        }
-
-        // Update lesson content
-        function updateLesson() {
-            var lesson = lessons[currentLesson];
-            
-            // Update header
-            document.getElementById('lessonTitle').textContent = lesson.title;
-            document.getElementById('codeFileName').textContent = lesson.fileName;
-            document.getElementById('codeType').textContent = lesson.fileType;
-            
-            // Update counter and progress
-            document.getElementById('lessonCounter').textContent = (currentLesson + 1) + ' / ' + totalLessons;
-            var progressPercent = ((currentLesson + 1) / totalLessons) * 100;
-            document.getElementById('progressBar').style.width = progressPercent + '%';
-            
-            // Update navigation buttons
-            document.getElementById('prevBtn').disabled = currentLesson === 0;
-            document.getElementById('nextBtn').disabled = currentLesson === totalLessons - 1;
-            
-            // Update objectives
-            var objectivesList = document.getElementById('objectives');
-            objectivesList.innerHTML = '';
-            lesson.objectives.forEach(function(obj) {
-                var li = document.createElement('li');
-                li.textContent = obj;
-                objectivesList.appendChild(li);
-            });
-            
-            // Update lesson-specific content
-            updateLessonContent();
-        }
-
-        function updateLessonContent() {
-            var codeContent = document.getElementById('codeContent');
-            var simulator = document.getElementById('simulator');
-            var controls = document.getElementById('controls');
-            
-            if (currentLesson === 0) {
-                // Text Views lesson
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">📝 TEXT VIEWS</div>
-<div class="explanation-content">
-Text views display strings of text in your app. They're the most basic and commonly used UI element in SwiftUI.
+                // Lesson 1: Introduction to Text Views
+                title: "5.1 Introduction to Text Views",
+                fileName: "BasicText.swift",
+                fileType: "Text Basics",
+                code: `<div class="definition">
+<div class="definition-title">📖 DEFINITION: Text View</div>
+<div class="definition-content">
+Text view is the most basic UI element in SwiftUI. It displays one or more lines of text on the screen.
 </div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">TextExample</span>: <span class="type">View</span> {
+<span class="keyword">struct</span> <span class="type">BasicTextView</span>: <span class="type">View</span> {
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        
-        <span class="comment">// Basic text</span>
+        <span class="comment">// Simple text view</span>
         <span class="type">Text</span>(<span class="string">"Hello, SwiftUI!"</span>)
         
-        <span class="comment">// Text with modifiers</span>
-        <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
-            .<span class="modifier">font</span>(.<span class="property">title</span>)
-            .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
-            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+        <span class="comment">// Text with different content</span>
+        <span class="type">Text</span>(<span class="string">"Welcome to iOS Development"</span>)
         
-        <span class="comment">// Multi-line text</span>
-        <span class="type">Text</span>(<span class="string">"This is a longer text that can span multiple lines"</span>)
-            .<span class="modifier">multilineTextAlignment</span>(.<span class="property">center</span>)
-            .<span class="modifier">lineLimit</span>(<span class="number">2</span>)
-    }
-}`;
-
-                simulator.innerHTML = `<div id="textDemo" style="text-align: center; font-size: 24px; color: #007bff; font-weight: bold;">
-                    Hello, SwiftUI!
-                </div>`;
-
-                controls.innerHTML = `
-                    <div class="control-group">
-                        <label class="control-label">Text Size:</label>
-                        <button class="control-btn" onclick="changeTextSize('small')">Small</button>
-                        <button class="control-btn active" onclick="changeTextSize('medium')">Medium</button>
-                        <button class="control-btn" onclick="changeTextSize('large')">Large</button>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Font Weight:</label>
-                        <button class="control-btn" onclick="changeTextWeight('normal')">Normal</button>
-                        <button class="control-btn active" onclick="changeTextWeight('bold')">Bold</button>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Text Color:</label>
-                        <div class="color-picker">
-                            <div class="color-btn" style="background: #007bff;" onclick="changeTextColor('#007bff')"></div>
-                            <div class="color-btn" style="background: #28a745;" onclick="changeTextColor('#28a745')"></div>
-                            <div class="color-btn" style="background: #dc3545;" onclick="changeTextColor('#dc3545')"></div>
-                            <div class="color-btn" style="background: #ffc107;" onclick="changeTextColor('#ffc107')"></div>
-                            <div class="color-btn" style="background: #6f42c1;" onclick="changeTextColor('#6f42c1')"></div>
-                        </div>
-                    </div>`;
-
-            } else if (currentLesson === 1) {
-                // Image Views lesson
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">🖼️ IMAGE VIEWS</div>
-<div class="explanation-content">
-Image views display images and icons. SwiftUI includes SF Symbols - a library of over 3,000 free icons you can use.
-</div>
-</div>
-
-<span class="keyword">import</span> <span class="type">SwiftUI</span>
-
-<span class="keyword">struct</span> <span class="type">ImageExample</span>: <span class="type">View</span> {
-    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        
-        <span class="comment">// SF Symbol image</span>
-        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
-        
-        <span class="comment">// Styled image</span>
-        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"heart.fill"</span>)
-            .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
-            .<span class="modifier">foregroundColor</span>(.<span class="property">red</span>)
-        
-        <span class="comment">// Resizable image</span>
-        <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"cloud.sun.fill"</span>)
-            .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
-            .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+        <span class="comment">// Text can display numbers too</span>
+        <span class="type">Text</span>(<span class="string">"Age: 25"</span>)
     }
 }
 
 <div class="code-explanation">
-🎨 IMAGE MODIFIERS:
-• .font() - Controls symbol size
-• .foregroundColor() - Changes symbol color
-• .imageScale() - Scales the image
-• systemName: uses SF Symbols library
-</div>`;
+💡 KEY POINTS:
+• Text() creates a text view
+• Put your text inside quotes ""
+• Text can display any string
+• Each Text is a separate view
+</div>
 
-                simulator.innerHTML = `<div id="imageDemo" style="text-align: center; font-size: 64px; color: #dc3545;">
-                    ❤️
-                </div>`;
-
-                controls.innerHTML = `
+<div class="practice-box">
+🎯 TRY IT: Change the text using the input below!
+</div>`,
+                simulator: `<div id="textDisplay" style="text-align: center; font-size: 24px; color: #007bff;">
+                    Hello, SwiftUI!
+                </div>`,
+                controls: `
                     <div class="control-group">
-                        <label class="control-label">Choose Symbol:</label>
-                        <button class="control-btn" onclick="changeImage('⭐')">Star</button>
-                        <button class="control-btn active" onclick="changeImage('❤️')">Heart</button>
-                        <button class="control-btn" onclick="changeImage('☁️')">Cloud</button>
-                        <button class="control-btn" onclick="changeImage('🔔')">Bell</button>
+                        <label class="control-label">Enter Your Text:</label>
+                        <input type="text" id="textInput" placeholder="Type something..." oninput="updateText(this.value)">
+                    </div>`
+            },
+            {
+                // Lesson 2: Styling Text
+                title: "5.2 Styling Text",
+                fileName: "StyledText.swift",
+                fileType: "Text Styling",
+                code: `<div class="definition">
+<div class="definition-title">🎨 STYLING TEXT</div>
+<div class="definition-content">
+Text views can be styled using modifiers. Modifiers change how the text looks - its size, color, weight, and more.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">StyledTextView</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span> {
+            <span class="comment">// Large title text</span>
+            <span class="type">Text</span>(<span class="string">"Large Title"</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+            
+            <span class="comment">// Bold text</span>
+            <span class="type">Text</span>(<span class="string">"Bold Text"</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+            
+            <span class="comment">// Colored text</span>
+            <span class="type">Text</span>(<span class="string">"Colorful Text"</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            
+            <span class="comment">// Multiple modifiers</span>
+            <span class="type">Text</span>(<span class="string">"Styled Text"</span>)
+                .<span class="modifier">font</span>(.<span class="property">title</span>)
+                .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">red</span>)
+        }
+    }
+}
+
+<div class="code-explanation">
+🎨 TEXT MODIFIERS:
+• .font() - Changes text size
+• .fontWeight() - Makes text bold/light
+• .foregroundColor() - Changes text color
+• Chain multiple modifiers with dots
+</div>`,
+                simulator: `<div id="styledTextDisplay" style="text-align: center; font-size: 24px; color: #007bff; font-weight: normal;">
+                    Styled Text
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Font Size:</label>
+                        <button class="control-btn" onclick="changeFontSize(16)">Small</button>
+                        <button class="control-btn active" onclick="changeFontSize(24)">Medium</button>
+                        <button class="control-btn" onclick="changeFontSize(34)">Large</button>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">Size:</label>
-                        <button class="control-btn" onclick="changeImageSize('small')">Small</button>
-                        <button class="control-btn active" onclick="changeImageSize('medium')">Medium</button>
-                        <button class="control-btn" onclick="changeImageSize('large')">Large</button>
+                        <label class="control-label">Font Weight:</label>
+                        <button class="control-btn" onclick="changeFontWeight('normal')">Regular</button>
+                        <button class="control-btn" onclick="changeFontWeight('bold')">Bold</button>
                     </div>
                     <div class="control-group">
                         <label class="control-label">Color:</label>
                         <div class="color-picker">
-                            <div class="color-btn" style="background: #dc3545;" onclick="changeImageColor('#dc3545')"></div>
-                            <div class="color-btn" style="background: #007bff;" onclick="changeImageColor('#007bff')"></div>
-                            <div class="color-btn" style="background: #28a745;" onclick="changeImageColor('#28a745')"></div>
-                            <div class="color-btn" style="background: #ffc107;" onclick="changeImageColor('#ffc107')"></div>
+                            <div class="color-btn" style="background: #007bff;" onclick="changeTextColor('#007bff')"></div>
+                            <div class="color-btn" style="background: #dc3545;" onclick="changeTextColor('#dc3545')"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="changeTextColor('#28a745')"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="changeTextColor('#ffc107')"></div>
                         </div>
-                    </div>`;
-
-            } else if (currentLesson === 2) {
-                // Shapes lesson
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">🔷 SHAPES</div>
-<div class="explanation-content">
-SwiftUI provides built-in shapes like Rectangle, Circle, and RoundedRectangle. These are perfect for creating backgrounds, buttons, and decorative elements.
+                    </div>`
+            },
+            {
+                // Lesson 3: Introduction to Images
+                title: "5.3 Image Views - SF Symbols",
+                fileName: "ImageViews.swift",
+                fileType: "Images",
+                code: `<div class="definition">
+<div class="definition-title">🖼️ DEFINITION: Image View</div>
+<div class="definition-content">
+Image views display pictures or icons. SwiftUI includes SF Symbols - a library of over 3,000 free icons you can use.
 </div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">ShapeExample</span>: <span class="type">View</span> {
+<span class="keyword">struct</span> <span class="type">ImageViewExample</span>: <span class="type">View</span> {
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        
-        <span class="comment">// Rectangle shape</span>
-        <span class="type">Rectangle</span>()
-            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>)
-            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
-        
-        <span class="comment">// Circle shape</span>
-        <span class="type">Circle</span>()
-            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">red</span>)
-            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
-        
-        <span class="comment">// RoundedRectangle with corner radius</span>
-        <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">20</span>)
-            .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">green</span>)
-            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
-        
-        <span class="comment">// Shape with stroke</span>
-        <span class="type">Circle</span>()
-            .<span class="modifier">stroke</span>(<span class="type">Color</span>.<span class="property">purple</span>, <span class="property">lineWidth</span>: <span class="number">3</span>)
-            .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// SF Symbol image</span>
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
+            
+            <span class="comment">// Larger image</span>
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"heart.fill"</span>)
+                .<span class="modifier">font</span>(.<span class="property">system</span>(<span class="property">size</span>: <span class="number">50</span>))
+            
+            <span class="comment">// Colored image</span>
+            <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"bell.fill"</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+                .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+        }
     }
 }
 
 <div class="code-explanation">
-🎨 SHAPE MODIFIERS:
-• .fill() - Fills shape with color
-• .stroke() - Adds border to shape
-• .frame() - Sets shape size
-• cornerRadius - For rounded corners
-</div>`;
+🎨 SF SYMBOLS:
+• systemName: uses Apple's icon library
+• .font() controls symbol size
+• .foregroundColor() changes symbol color
+• Free to use in all apps!
+</div>
 
-                simulator.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                    <div class="shape" style="width: 80px; height: 80px; background: #007bff; border-radius: 0;"></div>
-                    <div class="shape" style="width: 80px; height: 80px; background: #dc3545; border-radius: 50%;"></div>
-                    <div class="shape" style="width: 80px; height: 80px; background: #28a745; border-radius: 15px;"></div>
-                </div>`;
-
-                controls.innerHTML = `
+<div class="practice-box">
+💡 Popular symbols: star, heart, bell, house, gear, person
+</div>`,
+                simulator: `<div id="imageDisplay" style="text-align: center; font-size: 50px; color: #007bff;">
+                    ⭐
+                </div>`,
+                controls: `
                     <div class="control-group">
-                        <label class="control-label">Shape Size: <span id="shapeSize">80</span>px</label>
-                        <input type="range" min="40" max="120" value="80" onchange="changeShapeSize(this.value)">
+                        <label class="control-label">Choose Symbol:</label>
+                        <button class="control-btn" onclick="changeSymbol('⭐')">Star</button>
+                        <button class="control-btn" onclick="changeSymbol('❤️')">Heart</button>
+                        <button class="control-btn" onclick="changeSymbol('🔔')">Bell</button>
+                        <button class="control-btn" onclick="changeSymbol('🏠')">House</button>
                     </div>
                     <div class="control-group">
-                        <label class="control-label">Shape Color:</label>
-                        <div class="color-picker">
-                            <div class="color-btn" style="background: #007bff;" onclick="changeShapeColor('#007bff')"></div>
-                            <div class="color-btn" style="background: #dc3545;" onclick="changeShapeColor('#dc3545')"></div>
-                            <div class="color-btn" style="background: #28a745;" onclick="changeShapeColor('#28a745')"></div>
-                            <div class="color-btn" style="background: #ffc107;" onclick="changeShapeColor('#ffc107')"></div>
-                            <div class="color-btn" style="background: #6f42c1;" onclick="changeShapeColor('#6f42c1')"></div>
-                        </div>
-                    </div>`;
+                        <label class="control-label">Size:</label>
+                        <input type="range" min="20" max="80" value="50" oninput="changeImageSize(this.value)">
+                    </div>`
+            },
+            {
+                // Lesson 4: Rectangle Shape
+                title: "5.4 Rectangle Shape",
+                fileName: "RectangleShape.swift",
+                fileType: "Shapes",
+                code: `<div class="definition">
+<div class="definition-title">▭ DEFINITION: Rectangle</div>
+<div class="definition-content">
+Rectangle is a basic shape view that creates a rectangular area. It's perfect for backgrounds, buttons, and layout elements.
+</div>
+</div>
 
-            } else if (currentLesson === 3) {
-                // Colors lesson
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">🎨 COLORS</div>
-<div class="explanation-content">
-Colors in SwiftUI can be applied to any view. You can use system colors, custom colors, and adjust opacity for transparency effects.
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">RectangleExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// Basic rectangle</span>
+            <span class="type">Rectangle</span>()
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">200</span>, <span class="property">height</span>: <span class="number">100</span>)
+            
+            <span class="comment">// Colored rectangle</span>
+            <span class="type">Rectangle</span>()
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">150</span>, <span class="property">height</span>: <span class="number">75</span>)
+            
+            <span class="comment">// Rectangle with border</span>
+            <span class="type">Rectangle</span>()
+                .<span class="modifier">stroke</span>(<span class="type">Color</span>.<span class="property">red</span>, <span class="property">lineWidth</span>: <span class="number">3</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        }
+    }
+}
+
+<div class="code-explanation">
+📐 RECTANGLE MODIFIERS:
+• .frame() - Sets width and height
+• .fill() - Fills with color
+• .stroke() - Adds border outline
+• Can be used as backgrounds
+</div>`,
+                simulator: `<div style="display: flex; justify-content: center; align-items: center;">
+                    <div id="rectangleShape" style="width: 150px; height: 100px; background: #007bff;"></div>
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Width: <span id="widthLabel">150</span>px</label>
+                        <input type="range" min="50" max="250" value="150" oninput="changeRectWidth(this.value)">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Height: <span id="heightLabel">100</span>px</label>
+                        <input type="range" min="50" max="200" value="100" oninput="changeRectHeight(this.value)">
+                    </div>`
+            },
+            {
+                // Lesson 5: Circle Shape
+                title: "5.5 Circle Shape",
+                fileName: "CircleShape.swift",
+                fileType: "Shapes",
+                code: `<div class="definition">
+<div class="definition-title">⭕ DEFINITION: Circle</div>
+<div class="definition-content">
+Circle creates a perfect circular shape. Great for profile pictures, buttons, and decorative elements.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">CircleExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// Basic circle</span>
+            <span class="type">Circle</span>()
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+            
+            <span class="comment">// Filled circle</span>
+            <span class="type">Circle</span>()
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">green</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">80</span>, <span class="property">height</span>: <span class="number">80</span>)
+            
+            <span class="comment">// Circle with gradient</span>
+            <span class="type">Circle</span>()
+                .<span class="modifier">fill</span>(
+                    <span class="type">LinearGradient</span>(
+                        <span class="property">colors</span>: [.<span class="property">blue</span>, .<span class="property">purple</span>],
+                        <span class="property">startPoint</span>: .<span class="property">top</span>,
+                        <span class="property">endPoint</span>: .<span class="property">bottom</span>
+                    )
+                )
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+        }
+    }
+}
+
+<div class="code-explanation">
+⭕ CIRCLE PROPERTIES:
+• Always maintains perfect circle
+• Width and height should be equal
+• Can use gradients for effects
+• Perfect for avatars
+</div>`,
+                simulator: `<div style="display: flex; justify-content: center; align-items: center;">
+                    <div id="circleShape" style="width: 100px; height: 100px; background: #28a745; border-radius: 50%;"></div>
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Size: <span id="circleSize">100</span>px</label>
+                        <input type="range" min="50" max="150" value="100" oninput="changeCircleSize(this.value)">
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Fill Type:</label>
+                        <button class="control-btn" onclick="setCircleFill('solid')">Solid</button>
+                        <button class="control-btn" onclick="setCircleFill('gradient')">Gradient</button>
+                    </div>`
+            },
+            {
+                // Lesson 6: RoundedRectangle
+                title: "5.6 RoundedRectangle Shape",
+                fileName: "RoundedRectangle.swift",
+                fileType: "Shapes",
+                code: `<div class="definition">
+<div class="definition-title">🔲 DEFINITION: RoundedRectangle</div>
+<div class="definition-content">
+RoundedRectangle creates a rectangle with rounded corners. Perfect for modern UI designs, cards, and buttons.
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">RoundedRectangleExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// Rounded rectangle with corner radius</span>
+            <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">20</span>)
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">200</span>, <span class="property">height</span>: <span class="number">100</span>)
+            
+            <span class="comment">// Card-like appearance</span>
+            <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">15</span>)
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">white</span>)
+                .<span class="modifier">shadow</span>(<span class="property">radius</span>: <span class="number">5</span>)
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">180</span>, <span class="property">height</span>: <span class="number">80</span>)
+        }
+    }
+}
+
+<div class="code-explanation">
+🔲 CORNER RADIUS:
+• cornerRadius: controls roundness
+• 0 = sharp corners (rectangle)
+• Higher values = more rounded
+• Great for modern UI design
+</div>
+
+<div class="practice-box">
+💡 TIP: Use cornerRadius of 10-20 for cards
+</div>`,
+                simulator: `<div style="display: flex; justify-content: center; align-items: center;">
+                    <div id="roundedRect" style="width: 180px; height: 100px; background: #6f42c1; border-radius: 15px;"></div>
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Corner Radius: <span id="radiusLabel">15</span>px</label>
+                        <input type="range" min="0" max="50" value="15" oninput="changeCornerRadius(this.value)">
+                    </div>`
+            },
+            {
+                // Lesson 7: Colors in SwiftUI
+                title: "5.7 Working with Colors",
+                fileName: "Colors.swift",
+                fileType: "Colors",
+                code: `<div class="definition">
+<div class="definition-title">🎨 DEFINITION: Colors</div>
+<div class="definition-content">
+Colors in SwiftUI can be applied to any view. You can use system colors, custom colors, and adjust opacity.
 </div>
 </div>
 
@@ -858,86 +765,94 @@ Colors in SwiftUI can be applied to any view. You can use system colors, custom 
 
 <span class="keyword">struct</span> <span class="type">ColorExample</span>: <span class="type">View</span> {
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
-        
-        <span class="comment">// System colors</span>
-        <span class="type">Color</span>.<span class="property">blue</span>
-        <span class="type">Color</span>.<span class="property">red</span>
-        <span class="type">Color</span>.<span class="property">green</span>
-        
-        <span class="comment">// Color with opacity</span>
-        <span class="type">Color</span>.<span class="property">blue</span>
-            .<span class="modifier">opacity</span>(<span class="number">0.5</span>)
-        
-        <span class="comment">// Custom color</span>
-        <span class="type">Color</span>(<span class="property">red</span>: <span class="number">0.4</span>, <span class="property">green</span>: <span class="number">0.6</span>, <span class="property">blue</span>: <span class="number">0.8</span>)
-        
-        <span class="comment">// Background color</span>
-        <span class="type">Text</span>(<span class="string">"Colored Background"</span>)
-            .<span class="modifier">padding</span>()
-            .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">yellow</span>)
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// System colors</span>
+            <span class="type">Text</span>(<span class="string">"Blue Text"</span>)
+                .<span class="modifier">foregroundColor</span>(.<span class="property">blue</span>)
+            
+            <span class="comment">// Background color</span>
+            <span class="type">Text</span>(<span class="string">"Highlighted"</span>)
+                .<span class="modifier">padding</span>()
+                .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">yellow</span>)
+            
+            <span class="comment">// Color with opacity</span>
+            <span class="type">Rectangle</span>()
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">red</span>.<span class="modifier">opacity</span>(<span class="number">0.5</span>))
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">100</span>, <span class="property">height</span>: <span class="number">100</span>)
+            
+            <span class="comment">// Custom RGB color</span>
+            <span class="type">Circle</span>()
+                .<span class="modifier">fill</span>(<span class="type">Color</span>(
+                    <span class="property">red</span>: <span class="number">0.5</span>,
+                    <span class="property">green</span>: <span class="number">0.8</span>,
+                    <span class="property">blue</span>: <span class="number">0.3</span>
+                ))
+                .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">80</span>, <span class="property">height</span>: <span class="number">80</span>)
+        }
     }
 }
 
 <div class="code-explanation">
 🌈 COLOR OPTIONS:
 • System colors: .blue, .red, .green, etc.
-• .opacity() - Makes colors transparent
-• Custom RGB values
-• .background() - Applies color behind views
-</div>`;
-
-                simulator.innerHTML = `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                    <div id="colorDemo" style="width: 150px; height: 150px; background: rgba(0, 123, 255, 1); border-radius: 15px;"></div>
-                    <div style="padding: 10px; background: #ffc107; border-radius: 8px; color: #333;">
-                        Colored Background
-                    </div>
-                </div>`;
-
-                controls.innerHTML = `
-                    <div class="control-group">
-                        <label class="control-label">Color Opacity: <span id="opacityValue">1</span></label>
-                        <input type="range" min="0" max="1" step="0.1" value="1" onchange="changeColorOpacity(this.value)">
-                    </div>
+• .opacity() for transparency (0-1)
+• RGB values for custom colors
+• Can apply to text, shapes, backgrounds
+</div>`,
+                simulator: `<div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <div id="colorBox" style="width: 120px; height: 120px; background: rgba(0, 123, 255, 1); border-radius: 10px;"></div>
+                    <div>Opacity: <span id="opacityValue">1.0</span></div>
+                </div>`,
+                controls: `
                     <div class="control-group">
                         <label class="control-label">Choose Color:</label>
                         <div class="color-picker">
-                            <div class="color-btn" style="background: #007bff;" onclick="document.getElementById('colorDemo').style.background='rgba(0, 123, 255, 1)'"></div>
-                            <div class="color-btn" style="background: #dc3545;" onclick="document.getElementById('colorDemo').style.background='rgba(220, 53, 69, 1)'"></div>
-                            <div class="color-btn" style="background: #28a745;" onclick="document.getElementById('colorDemo').style.background='rgba(40, 167, 69, 1)'"></div>
-                            <div class="color-btn" style="background: #ffc107;" onclick="document.getElementById('colorDemo').style.background='rgba(255, 193, 7, 1)'"></div>
-                            <div class="color-btn" style="background: #6f42c1;" onclick="document.getElementById('colorDemo').style.background='rgba(111, 66, 193, 1)'"></div>
+                            <div class="color-btn" style="background: #007bff;" onclick="setBoxColor(0, 123, 255)"></div>
+                            <div class="color-btn" style="background: #dc3545;" onclick="setBoxColor(220, 53, 69)"></div>
+                            <div class="color-btn" style="background: #28a745;" onclick="setBoxColor(40, 167, 69)"></div>
+                            <div class="color-btn" style="background: #ffc107;" onclick="setBoxColor(255, 193, 7)"></div>
+                            <div class="color-btn" style="background: #6f42c1;" onclick="setBoxColor(111, 66, 193)"></div>
                         </div>
-                    </div>`;
-
-            } else if (currentLesson === 4) {
-                // Spacer and Divider lesson
-                codeContent.innerHTML = `<div class="explanation">
-<div class="explanation-title">↔️ SPACER AND DIVIDER</div>
-<div class="explanation-content">
-Spacer and Divider are layout helpers. Spacer pushes views apart by taking up available space, while Divider creates a visual separation line between content.
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Opacity:</label>
+                        <input type="range" min="0" max="1" step="0.1" value="1" oninput="changeOpacity(this.value)">
+                    </div>`
+            },
+            {
+                // Lesson 8: Spacer
+                title: "5.8 Using Spacer",
+                fileName: "Spacer.swift",
+                fileType: "Layout",
+                code: `<div class="definition">
+<div class="definition-title">↔️ DEFINITION: Spacer</div>
+<div class="definition-content">
+Spacer is a flexible space that expands to push other views apart. It's invisible but takes up space in layouts.
 </div>
 </div>
 
 <span class="keyword">import</span> <span class="type">SwiftUI</span>
 
-<span class="keyword">struct</span> <span class="type">SpacerDividerExample</span>: <span class="type">View</span> {
+<span class="keyword">struct</span> <span class="type">SpacerExample</span>: <span class="type">View</span> {
     <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span> {
+            <span class="comment">// Spacer pushes content apart</span>
+            <span class="type">Text</span>(<span class="string">"Top"</span>)
+            
+            <span class="type">Spacer</span>()  <span class="comment">// Flexible space</span>
+            
+            <span class="type">Text</span>(<span class="string">"Bottom"</span>)
+        }
         
-        <span class="comment">// Spacer pushes content apart</span>
         <span class="type">HStack</span> {
             <span class="type">Text</span>(<span class="string">"Left"</span>)
-            <span class="type">Spacer</span>()  <span class="comment">// Takes up all available space</span>
+            
+            <span class="type">Spacer</span>()  <span class="comment">// Pushes to sides</span>
+            
             <span class="type">Text</span>(<span class="string">"Right"</span>)
         }
         
-        <span class="comment">// Divider creates a line</span>
-        <span class="type">VStack</span> {
-            <span class="type">Text</span>(<span class="string">"Section 1"</span>)
-            <span class="type">Divider</span>()  <span class="comment">// Horizontal line</span>
-            <span class="type">Text</span>(<span class="string">"Section 2"</span>)
-        }
-        
-        <span class="comment">// Multiple spacers distribute space</span>
+        <span class="comment">// Center content with spacers</span>
         <span class="type">HStack</span> {
             <span class="type">Spacer</span>()
             <span class="type">Text</span>(<span class="string">"Centered"</span>)
@@ -947,47 +862,340 @@ Spacer and Divider are layout helpers. Spacer pushes views apart by taking up av
 }
 
 <div class="code-explanation">
-📏 LAYOUT HELPERS:
-• Spacer() - Flexible space that expands
-• Divider() - Visual separator line
-• Use in HStack/VStack for layout control
-• Multiple Spacers share available space equally
-</div>`;
+↔️ SPACER BEHAVIOR:
+• Takes up all available space
+• Invisible - no visual appearance
+• Pushes views to edges
+• Multiple spacers share space equally
+</div>
 
-                simulator.innerHTML = `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; gap: 30px; padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; background: #f0f0f0; padding: 15px; border-radius: 8px;">
-                        <span style="color: #333; font-weight: bold;">Left</span>
-                        <span style="flex: 1;"></span>
-                        <span style="color: #333; font-weight: bold;">Right</span>
+<div class="practice-box">
+💡 Use Spacer() to align content to edges or center
+</div>`,
+                simulator: `<div style="height: 300px; display: flex; flex-direction: column; padding: 20px; border: 2px dashed #ccc; border-radius: 10px;">
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; text-align: center;">Top</div>
+                    <div id="spacerDemo" style="flex: 1; background: rgba(255, 235, 59, 0.2); margin: 10px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #ffc107;">
+                        <span style="color: #999; font-size: 12px;">Spacer (flexible space)</span>
                     </div>
-                    
-                    <div style="background: #f0f0f0; padding: 15px; border-radius: 8px;">
-                        <div style="color: #333; text-align: center; padding: 10px;">Section 1</div>
-                        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
-                        <div style="color: #333; text-align: center; padding: 10px;">Section 2</div>
-                    </div>
-                    
-                    <div style="display: flex; align-items: center; background: #f0f0f0; padding: 15px; border-radius: 8px;">
-                        <span style="flex: 1;"></span>
-                        <span style="color: #333; font-weight: bold;">Centered</span>
-                        <span style="flex: 1;"></span>
-                    </div>
-                </div>`;
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; text-align: center;">Bottom</div>
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Layout Direction:</label>
+                        <button class="control-btn" onclick="showVerticalSpacer()">Vertical</button>
+                        <button class="control-btn" onclick="showHorizontalSpacer()">Horizontal</button>
+                    </div>`
+            },
+            {
+                // Lesson 9: Divider
+                title: "5.9 Using Divider",
+                fileName: "Divider.swift",
+                fileType: "Layout",
+                code: `<div class="definition">
+<div class="definition-title">➖ DEFINITION: Divider</div>
+<div class="definition-content">
+Divider creates a visual separation line between content. It's like a horizontal rule that helps organize your UI.
+</div>
+</div>
 
-                controls.innerHTML = `
-                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                        <h4 style="color: #333; margin-bottom: 10px;">Interactive Demo</h4>
-                        <p style="color: #666; font-size: 14px;">
-                            Spacer creates flexible space between views.<br>
-                            Divider adds visual separation.<br>
-                            These are essential for creating polished layouts!
-                        </p>
-                        <div style="margin-top: 15px; padding: 15px; background: #e8f5e9; border-radius: 8px;">
-                            <span style="color: #2e7d32; font-weight: bold;">💡 Tip:</span>
-                            <span style="color: #2e7d32;"> Use Spacer() to push content to edges!</span>
-                        </div>
-                    </div>`;
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">DividerExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="type">Text</span>(<span class="string">"Section 1"</span>)
+                .<span class="modifier">font</span>(.<span class="property">headline</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Content for section 1"</span>)
+            
+            <span class="type">Divider</span>()  <span class="comment">// Horizontal line</span>
+            
+            <span class="type">Text</span>(<span class="string">"Section 2"</span>)
+                .<span class="modifier">font</span>(.<span class="property">headline</span>)
+            
+            <span class="type">Text</span>(<span class="string">"Content for section 2"</span>)
+            
+            <span class="type">Divider</span>()
+                .<span class="modifier">background</span>(<span class="type">Color</span>.<span class="property">blue</span>)  <span class="comment">// Colored divider</span>
+            
+            <span class="type">Text</span>(<span class="string">"Section 3"</span>)
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="code-explanation">
+➖ DIVIDER FEATURES:
+• Creates horizontal line
+• Automatic width to fit container
+• Can be colored with .background()
+• Great for separating sections
+</div>`,
+                simulator: `<div style="padding: 20px;">
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Section 1</div>
+                        <div style="color: #666;">Content for section 1</div>
+                    </div>
+                    <hr id="divider1" style="border: none; height: 1px; background: #ccc; margin: 15px 0;">
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">Section 2</div>
+                        <div style="color: #666;">Content for section 2</div>
+                    </div>
+                    <hr id="divider2" style="border: none; height: 2px; background: #007bff; margin: 15px 0;">
+                    <div>
+                        <div style="font-weight: bold; font-size: 18px;">Section 3</div>
+                    </div>
+                </div>`,
+                controls: `
+                    <div class="control-group">
+                        <label class="control-label">Divider Style:</label>
+                        <button class="control-btn" onclick="setDividerStyle('thin')">Thin</button>
+                        <button class="control-btn" onclick="setDividerStyle('thick')">Thick</button>
+                        <button class="control-btn" onclick="setDividerStyle('colored')">Colored</button>
+                    </div>`
+            },
+            {
+                // Lesson 10: Combining All Elements
+                title: "5.10 Combining UI Elements",
+                fileName: "CombinedUI.swift",
+                fileType: "Complete Example",
+                code: `<div class="definition">
+<div class="definition-title">🎯 COMBINING ELEMENTS</div>
+<div class="definition-content">
+Now let's combine all the UI elements we've learned to create a complete, beautiful interface!
+</div>
+</div>
+
+<span class="keyword">import</span> <span class="type">SwiftUI</span>
+
+<span class="keyword">struct</span> <span class="type">CompleteUIExample</span>: <span class="type">View</span> {
+    <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="property">spacing</span>: <span class="number">20</span>) {
+            <span class="comment">// Header with text and icon</span>
+            <span class="type">HStack</span> {
+                <span class="type">Image</span>(<span class="property">systemName</span>: <span class="string">"star.fill"</span>)
+                    .<span class="modifier">foregroundColor</span>(.<span class="property">yellow</span>)
+                    .<span class="modifier">font</span>(.<span class="property">title</span>)
+                
+                <span class="type">Text</span>(<span class="string">"My App"</span>)
+                    .<span class="modifier">font</span>(.<span class="property">largeTitle</span>)
+                    .<span class="modifier">fontWeight</span>(.<span class="property">bold</span>)
+                
+                <span class="type">Spacer</span>()
             }
+            
+            <span class="type">Divider</span>()
+            
+            <span class="comment">// Card with rounded rectangle</span>
+            <span class="type">RoundedRectangle</span>(<span class="property">cornerRadius</span>: <span class="number">15</span>)
+                .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>.<span class="modifier">opacity</span>(<span class="number">0.2</span>))
+                .<span class="modifier">frame</span>(<span class="property">height</span>: <span class="number">100</span>)
+                .<span class="modifier">overlay</span>(
+                    <span class="type">Text</span>(<span class="string">"Welcome!"</span>)
+                        .<span class="modifier">font</span>(.<span class="property">title2</span>)
+                )
+            
+            <span class="comment">// Row of circles</span>
+            <span class="type">HStack</span>(<span class="property">spacing</span>: <span class="number">30</span>) {
+                <span class="type">Circle</span>()
+                    .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">red</span>)
+                    .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">50</span>, <span class="property">height</span>: <span class="number">50</span>)
+                
+                <span class="type">Circle</span>()
+                    .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">green</span>)
+                    .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">50</span>, <span class="property">height</span>: <span class="number">50</span>)
+                
+                <span class="type">Circle</span>()
+                    .<span class="modifier">fill</span>(<span class="type">Color</span>.<span class="property">blue</span>)
+                    .<span class="modifier">frame</span>(<span class="property">width</span>: <span class="number">50</span>, <span class="property">height</span>: <span class="number">50</span>)
+            }
+            
+            <span class="type">Spacer</span>()
+        }
+        .<span class="modifier">padding</span>()
+    }
+}
+
+<div class="code-explanation">
+🎨 COMPLETE UI:
+• Combines Text, Image, Shapes, Colors
+• Uses Spacer for layout
+• Divider for separation
+• Everything works together!
+</div>
+
+<div class="practice-box">
+🎉 Congratulations! You've mastered basic UI elements!
+</div>`,
+                simulator: `<div style="height: 100%; display: flex; flex-direction: column; padding: 20px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <span style="font-size: 24px; color: #ffc107; margin-right: 10px;">⭐</span>
+                        <span style="font-size: 28px; font-weight: bold;">My App</span>
+                        <span style="flex: 1;"></span>
+                    </div>
+                    <hr style="border: none; height: 1px; background: #ccc; margin-bottom: 20px;">
+                    <div style="background: rgba(0, 123, 255, 0.2); border-radius: 15px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                        <span style="font-size: 24px;">Welcome!</span>
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
+                        <div style="width: 50px; height: 50px; background: #dc3545; border-radius: 50%;"></div>
+                        <div style="width: 50px; height: 50px; background: #28a745; border-radius: 50%;"></div>
+                        <div style="width: 50px; height: 50px; background: #007bff; border-radius: 50%;"></div>
+                    </div>
+                    <div style="flex: 1;"></div>
+                </div>`,
+                controls: `
+                    <div style="text-align: center; padding: 20px; background: #e8f5e9; border-radius: 10px;">
+                        <div style="font-size: 20px; margin-bottom: 10px;">🎉</div>
+                        <div style="color: #2e7d32; font-weight: bold;">You've completed Chapter 5!</div>
+                        <div style="color: #666; margin-top: 10px; font-size: 14px;">You can now create beautiful UIs with SwiftUI</div>
+                    </div>`
+            }
+        ];
+
+        // Current color values for opacity demo
+        var currentR = 0, currentG = 123, currentB = 255;
+        var currentOpacity = 1;
+
+        // Interactive functions
+        function updateText(value) {
+            document.getElementById('textDisplay').textContent = value || "Hello, SwiftUI!";
+        }
+
+        function changeFontSize(size) {
+            document.getElementById('styledTextDisplay').style.fontSize = size + 'px';
+        }
+
+        function changeFontWeight(weight) {
+            document.getElementById('styledTextDisplay').style.fontWeight = weight;
+        }
+
+        function changeTextColor(color) {
+            document.getElementById('styledTextDisplay').style.color = color;
+        }
+
+        function changeSymbol(symbol) {
+            document.getElementById('imageDisplay').textContent = symbol;
+        }
+
+        function changeImageSize(size) {
+            document.getElementById('imageDisplay').style.fontSize = size + 'px';
+        }
+
+        function changeRectWidth(width) {
+            document.getElementById('rectangleShape').style.width = width + 'px';
+            document.getElementById('widthLabel').textContent = width;
+        }
+
+        function changeRectHeight(height) {
+            document.getElementById('rectangleShape').style.height = height + 'px';
+            document.getElementById('heightLabel').textContent = height;
+        }
+
+        function changeCircleSize(size) {
+            document.getElementById('circleShape').style.width = size + 'px';
+            document.getElementById('circleShape').style.height = size + 'px';
+            document.getElementById('circleSize').textContent = size;
+        }
+
+        function setCircleFill(type) {
+            var circle = document.getElementById('circleShape');
+            if (type === 'gradient') {
+                circle.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+            } else {
+                circle.style.background = '#28a745';
+            }
+        }
+
+        function changeCornerRadius(radius) {
+            document.getElementById('roundedRect').style.borderRadius = radius + 'px';
+            document.getElementById('radiusLabel').textContent = radius;
+        }
+
+        function setBoxColor(r, g, b) {
+            currentR = r;
+            currentG = g;
+            currentB = b;
+            updateColorBox();
+        }
+
+        function changeOpacity(opacity) {
+            currentOpacity = opacity;
+            document.getElementById('opacityValue').textContent = opacity;
+            updateColorBox();
+        }
+
+        function updateColorBox() {
+            document.getElementById('colorBox').style.background = 
+                `rgba(${currentR}, ${currentG}, ${currentB}, ${currentOpacity})`;
+        }
+
+        function showVerticalSpacer() {
+            document.getElementById('simulator').innerHTML = `
+                <div style="height: 300px; display: flex; flex-direction: column; padding: 20px; border: 2px dashed #ccc; border-radius: 10px;">
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; text-align: center;">Top</div>
+                    <div style="flex: 1; background: rgba(255, 235, 59, 0.2); margin: 10px 0; display: flex; align-items: center; justify-content: center; border: 1px dashed #ffc107;">
+                        <span style="color: #999; font-size: 12px;">Spacer (flexible space)</span>
+                    </div>
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; text-align: center;">Bottom</div>
+                </div>`;
+        }
+
+        function showHorizontalSpacer() {
+            document.getElementById('simulator').innerHTML = `
+                <div style="height: 300px; display: flex; padding: 20px; border: 2px dashed #ccc; border-radius: 10px;">
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; display: flex; align-items: center;">Left</div>
+                    <div style="flex: 1; background: rgba(255, 235, 59, 0.2); margin: 0 10px; display: flex; align-items: center; justify-content: center; border: 1px dashed #ffc107;">
+                        <span style="color: #999; font-size: 12px;">Spacer</span>
+                    </div>
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 5px; display: flex; align-items: center;">Right</div>
+                </div>`;
+        }
+
+        function setDividerStyle(style) {
+            var divider1 = document.getElementById('divider1');
+            var divider2 = document.getElementById('divider2');
+            
+            if (style === 'thin') {
+                divider1.style.height = '1px';
+                divider1.style.background = '#ccc';
+                divider2.style.height = '1px';
+                divider2.style.background = '#ccc';
+            } else if (style === 'thick') {
+                divider1.style.height = '3px';
+                divider1.style.background = '#999';
+                divider2.style.height = '3px';
+                divider2.style.background = '#999';
+            } else if (style === 'colored') {
+                divider1.style.height = '2px';
+                divider1.style.background = '#dc3545';
+                divider2.style.height = '2px';
+                divider2.style.background = '#007bff';
+            }
+        }
+
+        // Update lesson function
+        function updateLesson() {
+            var lesson = lessons[currentLesson];
+            
+            // Update header
+            document.getElementById('lessonTitle').textContent = lesson.title;
+            document.getElementById('codeFileName').textContent = lesson.fileName;
+            document.getElementById('codeType').textContent = lesson.fileType;
+            
+            // Update content
+            document.getElementById('codeContent').innerHTML = lesson.code;
+            document.getElementById('simulator').innerHTML = lesson.simulator;
+            document.getElementById('interactiveControls').innerHTML = lesson.controls;
+            
+            // Update counter and progress
+            document.getElementById('lessonCounter').textContent = (currentLesson + 1) + ' / ' + totalLessons;
+            var progressPercent = ((currentLesson + 1) / totalLessons) * 100;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+            
+            // Update navigation
+            document.getElementById('prevBtn').disabled = currentLesson === 0;
+            document.getElementById('nextBtn').disabled = currentLesson === totalLessons - 1;
         }
 
         function nextLesson() {
@@ -1006,14 +1214,11 @@ Spacer and Divider are layout helpers. Spacer pushes views apart by taking up av
 
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight') {
-                nextLesson();
-            } else if (e.key === 'ArrowLeft') {
-                previousLesson();
-            }
+            if (e.key === 'ArrowRight') nextLesson();
+            if (e.key === 'ArrowLeft') previousLesson();
         });
 
-        // Initialize first lesson
+        // Initialize
         updateLesson();
     </script>
 </body>

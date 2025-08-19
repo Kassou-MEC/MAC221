@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 9: Pickers and Date Pickers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .presentation-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-counter {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .simulator {
+            width: 350px;
+            background: #f8f9fa;
+            border-left: 2px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .type { color: #4ec9b0; }
+        .code-block .property { color: #9cdcfe; }
+        .code-block .comment { color: #6a9955; }
+
+        .definition-box {
+            background: linear-gradient(135deg, #ffeef7, #e8f4ff);
+            border-left: 4px solid #FF6B6B;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .definition-box h3 {
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+
+        .simulator-phone {
+            background: #000;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            min-height: 400px;
+        }
+
+        .practice-exercise {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .exercise-title {
+            color: #d63031;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Simulator Picker Styles */
+        .sim-picker-container {
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .sim-menu-picker {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            color: #333;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23333' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        .sim-wheel-picker {
+            background: #fff;
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+            height: 150px;
+            font-size: 16px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            scroll-snap-type: y mandatory;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sim-wheel-picker div {
+            padding: 12px;
+            text-align: center;
+            scroll-snap-align: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sim-wheel-picker div:hover,
+        .sim-wheel-picker div.selected {
+            background: #007AFF;
+            color: white;
+        }
+
+        .sim-segmented-picker {
+            display: flex;
+            background: #e0e0e0;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .sim-segmented-picker div {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .sim-segmented-picker div.selected {
+            background: #007AFF;
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sim-date-picker {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .sim-display {
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .sim-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .lms-header {
+            background-color: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .lms-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .lms-icon {
+            margin-right: 10px;
+        }
+
+        .lms-date {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .lms-gear {
+            cursor: pointer;
+        }
+
+        .role-selection {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .role-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .role-subtitle {
+            color: #4a5568;
+            margin-bottom: 40px;
+        }
+
+        .role-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .student-btn {
+            background-color: #48bb78;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .instructor-btn {
+            background-color: #4299e1;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .btn-icon {
+            margin-right: 10px;
+        }
+
+        .lms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .faculty-panel, .student-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .faculty-panel {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
+        .student-panel {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .quiz-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-active {
+            background: #00b894;
+            color: white;
+        }
+
+        .status-ended {
+            background: #e17055;
+            color: white;
+        }
+
+        .timer {
+            font-size: 24px;
+            text-align: center;
+            color: #d63031;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .quiz-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        .question h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            margin: 8px 0;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .analytics {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .analytics h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            transition: width 0.3s ease;
+        }
+
+        .download-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="header">
+            <h1>SwiftUI Chapter 9: Pickers and Date Pickers</h1>
+            <div class="page-counter">
+                <span id="currentPage">1</span> / 10
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="main-content">
+                <!-- Page 1: Introduction to Part 1: Pickers -->
+                <div class="page active" id="page1">
+                    <h2>Part 1: SwiftUI Pickers</h2>
+                    <div class="definition-box">
+                        <h3>What are Pickers?</h3>
+                        <p><strong>Pickers</strong> allow users to select from a predefined set of options, ideal for apps like a City Guide for choosing destinations.</p>
+                    </div>
+                    <h3>What You'll Learn in Part 1:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Creating basic <span class="keyword">Picker</span> components</li>
+                        <li>Exploring Picker styles: menu, wheel, segmented</li>
+                        <li>Building a city selection feature</li>
+                        <li>Applying intuitive UI principles from the Moroccan Tech Leadership Podcast</li>
+                    </ul>
+                    <div style="background: #e8f4ff; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                        <h4 style="color: #0066cc;">💡 Key Concept</h4>
+                        <p>Pickers provide a seamless way to select options, enhancing user experience in apps like travel planners for US or Moroccan cities.</p>
+                    </div>
+                </div>
+
+                <!-- Page 2: Basic Picker -->
+                <div class="page" id="page2">
+                    <h2>Creating a Basic Picker</h2>
+                    <div class="definition-box">
+                        <h3>Picker Definition</h3>
+                        <p><strong>Picker</strong> displays a selectable list of options, binding to a state variable for dynamic updates.</p>
+                    </div>
+                    <h3>Basic Picker Syntax:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">CityPickerView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedCity</span> = <span class="string">"New York"</span><br>
+                            <span class="keyword">let</span> cities = [<span class="string">"New York"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Chicago"</span>, <span class="string">"Boston"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">Picker</span>(<span class="string">"Select City"</span>, selection: $selectedCity) {<br>
+                                        <span class="type">ForEach</span>(cities, id: \.<span class="keyword">self</span>) { city <span class="keyword">in</span><br>
+                                            <span class="type">Text</span>(city)<br>
+                                        }<br>
+                                    }<br>
+                                    <span class="type">Text</span>(<span class="string">"Selected: \(selectedCity)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Key Components:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>Picker</strong> - Displays selectable options</li>
+                        <li><strong>@State</strong> - Binds selection to a variable</li>
+                        <li><strong>ForEach</strong> - Iterates over options</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🏋️ Practice Exercise</div>
+                        <p>Create a Picker with 5 US states and display the selected state.</p>
+                    </div>
+                </div>
+
+                <!-- Page 3: Picker Styles -->
+                <div class="page" id="page3">
+                    <h2>Picker Styles</h2>
+                    <div class="definition-box">
+                        <h3>Picker Styles</h3>
+                        <p>SwiftUI offers <strong>.menu</strong>, <strong>.wheel</strong>, and <strong>.segmented</strong> styles to customize Picker appearance.</p>
+                    </div>
+                    <h3>Styled Picker Syntax:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">StyledPickerView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedCity</span> = <span class="string">"New York"</span><br>
+                            <span class="keyword">let</span> cities = [<span class="string">"New York"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Chicago"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">Picker</span>(<span class="string">"Select City"</span>, selection: $selectedCity) {<br>
+                                        <span class="type">ForEach</span>(cities, id: \.<span class="keyword">self</span>) { city <span class="keyword">in</span><br>
+                                            <span class="type">Text</span>(city)<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">pickerStyle</span>(.<span class="property">segmented</span>)<br>
+                                    <span class="type">Text</span>(<span class="string">"Selected: \(selectedCity)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Key Styles:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>.menu</strong> - Dropdown menu style</li>
+                        <li><strong>.wheel</strong> - Scrollable wheel style</li>
+                        <li><strong>.segmented</strong> - Segmented control style</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🎨 Practice Exercise</div>
+                        <p>Create a Picker with a wheel style for selecting travel activities.</p>
+                    </div>
+                </div>
+
+                <!-- Page 4: City Guide Picker -->
+                <div class="page" id="page4">
+                    <h2>City Guide: Picker Implementation</h2>
+                    <div class="definition-box">
+                        <h3>City Picker</h3>
+                        <p>Use a Picker to select cities in a City Guide app, with styles tailored for user experience.</p>
+                    </div>
+                    <h3>City Picker Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">CityGuidePickerView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedCity</span> = <span class="string">"New York"</span><br>
+                            <span class="keyword">let</span> cities = [<span class="string">"New York"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Chicago"</span>, <span class="string">"Boston"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">Picker</span>(<span class="string">"City"</span>, selection: $selectedCity) {<br>
+                                        <span class="type">ForEach</span>(cities, id: \.<span class="keyword">self</span>) { city <span class="keyword">in</span><br>
+                                            <span class="type">Text</span>(city)<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">pickerStyle</span>(.<span class="property">menu</span>)<br>
+                                    <span class="type">Text</span>(<span class="string">"Selected: \(selectedCity)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }
+                    </div>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🛒 Practice Exercise</div>
+                        <p>Build a Picker for selecting Moroccan cities (e.g., Marrakech, Casablanca) with a segmented style.</p>
+                    </div>
+                    <button class="download-btn" onclick="downloadCityPickerCode()">Download City Picker Code</button>
+                </div>
+
+                <!-- Page 5: Debugging Pickers -->
+                <div class="page" id="page5">
+                    <h2>Debugging Pickers</h2>
+                    <div class="definition-box">
+                        <h3>Debugging Pickers</h3>
+                        <p>Use <span class="keyword">onChange</span> to monitor Picker state changes for debugging.</p>
+                    </div>
+                    <h3>Debugging Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">DebugPickerView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedCity</span> = <span class="string">"New York"</span><br>
+                            <span class="keyword">let</span> cities = [<span class="string">"New York"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Chicago"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">Picker</span>(<span class="string">"City"</span>, selection: $selectedCity) {<br>
+                                        <span class="type">ForEach</span>(cities, id: \.<span class="keyword">self</span>) { city <span class="keyword">in</span><br>
+                                            <span class="type">Text</span>(city)<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">pickerStyle</span>(.<span class="property">wheel</span>)<br>
+                                    .<span class="property">onChange</span>(of: selectedCity) { newCity <span class="keyword">in</span><br>
+                                        <span class="keyword">print</span>(<span class="string">"Selected city: \(newCity)"</span>)<br>
+                                    }<br>
+                                    <span class="type">Text</span>(<span class="string">"Selected: \(selectedCity)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Tips:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Use Xcode’s preview to test Picker UI</li>
+                        <li>Log selections with <span class="keyword">print</span></li>
+                        <li>Verify state updates with <span class="keyword">onChange</span></li>
+                    </ul>
+                </div>
+
+                <!-- Page 6: Introduction to Part 2: Date Pickers -->
+                <div class="page" id="page6">
+                    <h2>Part 2: SwiftUI Date Pickers</h2>
+                    <div class="definition-box">
+                        <h3>What are Date Pickers?</h3>
+                        <p><strong>Date Pickers</strong> allow users to select dates or times, perfect for scheduling in a City Guide app.</p>
+                    </div>
+                    <h3>What You'll Learn in Part 2:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Creating <span class="keyword">DatePicker</span> components</li>
+                        <li>Customizing DatePicker styles and components</li>
+                        <li>Integrating DatePicker into the City Guide app</li>
+                        <li>Debugging DatePicker selections</li>
+                    </ul>
+                    <div style="background: #e8f4ff; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                        <h4 style="color: #0066cc;">💡 Key Concept</h4>
+                        <p>Date Pickers enhance apps by allowing precise date/time selection, inspired by global UI design principles from the Moroccan Tech Leadership Podcast.</p>
+                    </div>
+                </div>
+
+                <!-- Page 7: Basic Date Picker -->
+                <div class="page" id="page7">
+                    <h2>Creating a Date Picker</h2>
+                    <div class="definition-box">
+                        <h3>Date Picker Definition</h3>
+                        <p><strong>DatePicker</strong> enables date or time selection with customizable ranges and styles.</p>
+                    </div>
+                    <h3>Date Picker Syntax:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">DatePickerView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedDate</span> = <span class="type">Date</span>()<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">DatePicker</span>(<br>
+                                        <span class="string">"Select Date"</span>,<br>
+                                        selection: $selectedDate,<br>
+                                        displayedComponents: [.<span class="property">date</span>]<br>
+                                    )<br>
+                                    .<span class="property">datePickerStyle</span>(.<span class="property">graphical</span>)<br>
+                                    <span class="type">Text</span>(<span class="string">"Selected: \(selectedDate, formatter: dateFormatter)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }<br><br>
+                        <span class="keyword">private</span> <span class="keyword">let</span> dateFormatter: <span class="type">DateFormatter</span> = {<br>
+                            <span class="keyword">let</span> formatter = <span class="type">DateFormatter</span>()<br>
+                            formatter.<span class="property">dateStyle</span> = .<span class="property">medium</span><br>
+                            <span class="keyword">return</span> formatter<br>
+                        }()
+                    </div>
+                    <h3>Key Features:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>DatePicker</strong> - Selects dates or times</li>
+                        <li><strong>displayedComponents</strong> - Limits to date or time</li>
+                        <li><strong>datePickerStyle</strong> - Customizes appearance</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">📅 Practice Exercise</div>
+                        <p>Create a DatePicker for selecting a time with a compact style.</p>
+                    </div>
+                </div>
+
+                <!-- Page 8: City Guide Date Picker -->
+                <div class="page" id="page8">
+                    <h2>City Guide: Date Picker Implementation</h2>
+                    <div class="definition-box">
+                        <h3>Travel Date Picker</h3>
+                        <p>Use a DatePicker to schedule travel dates in the City Guide app.</p>
+                    </div>
+                    <h3>Date Picker Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">CityGuideDateView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedDate</span> = <span class="type">Date</span>()<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">DatePicker</span>(<span class="string">"Travel Date"</span>, selection: $selectedDate, displayedComponents: [.<span class="property">date</span>])<br>
+                                    .<span class="property">datePickerStyle</span>(.<span class="property">graphical</span>)<br>
+                                    <span class="type">Text</span>(<span class="string">"Travel on: \(selectedDate, formatter: dateFormatter)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }<br><br>
+                        <span class="keyword">private</span> <span class="keyword">let</span> dateFormatter: <span class="type">DateFormatter</span> = {<br>
+                            <span class="keyword">let</span> formatter = <span class="type">DateFormatter</span>()<br>
+                            formatter.<span class="property">dateStyle</span> = .<span class="property">medium</span><br>
+                            <span class="keyword">return</span> formatter<br>
+                        }()
+                    </div>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🗓 Practice Exercise</div>
+                        <p>Add a DatePicker to select a time for a city tour with a compact style.</p>
+                    </div>
+                    <button class="download-btn" onclick="downloadDatePickerCode()">Download Date Picker Code</button>
+                </div>
+
+                <!-- Page 9: Interactive Simulator -->
+                <div class="page" id="page9">
+                    <h2>Interactive Simulator: City Guide App</h2>
+                    <div class="definition-box">
+                        <h3>Simulator Overview</h3>
+                        <p>Test Picker styles and DatePicker or run code in <a href="https://swiftfiddle.com" target="_blank" style="color: #0066cc;">SwiftFiddle</a>.</p>
+                    </div>
+                    <h3>City Guide App Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br>
+                        <span class="keyword">import</span> PlaygroundSupport<br><br>
+                        <span class="keyword">struct</span> <span class="type">CityGuideView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedCity</span> = <span class="string">"New York"</span><br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> <span class="property">selectedDate</span> = <span class="type">Date</span>()<br>
+                            <span class="keyword">let</span> cities = [<span class="string">"New York"</span>, <span class="string">"San Francisco"</span>, <span class="string">"Chicago"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">VStack</span> {<br>
+                                    <span class="type">Picker</span>(<span class="string">"City"</span>, selection: $selectedCity) {<br>
+                                        <span class="type">ForEach</span>(cities, id: \.<span class="keyword">self</span>) { city <span class="keyword">in</span><br>
+                                            <span class="type">Text</span>(city)<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">pickerStyle</span>(.<span class="property">menu</span>)<br>
+                                    <span class="type">DatePicker</span>(<span class="string">"Travel Date"</span>, selection: $selectedDate, displayedComponents: [.<span class="property">date</span>])<br>
+                                    .<span class="property">datePickerStyle</span>(.<span class="property">graphical</span>)<br>
+                                    <span class="type">Text</span>(<span class="string">"Plan for \(selectedCity) on \(selectedDate, formatter: dateFormatter)"</span>)<br>
+                                }<br>
+                                .<span class="property">padding</span>()<br>
+                            }<br>
+                        }<br><br>
+                        <span class="keyword">private</span> <span class="keyword">let</span> dateFormatter: <span class="type">DateFormatter</span> = {<br>
+                            <span class="keyword">let</span> formatter = <span class="type">DateFormatter</span>()<br>
+                            formatter.<span class="property">dateStyle</span> = .<span class="property">medium</span><br>
+                            <span class="keyword">return</span> formatter<br>
+                        }() <br><br>
+                        PlaygroundPage.<span class="property">current</span>.<span class="property">setLiveView</span>(<span class="type">CityGuideView</span>())<br>
+                    </div>
+                    <button class="download-btn" onclick="downloadCityGuideCode()">Download City Guide Code</button>
+                </div>
+
+                <!-- Page 10: Learning Management System -->
+                <div class="page" id="page10">
+                    <div class="lms-header">
+                        <div class="lms-title">
+                            <span class="lms-icon">📚</span>
+                            SwiftUI Learning Management System - Chapter 9 Assessment
+                        </div>
+                        <div class="lms-date" id="lmsDate"></div>
+                        <div class="lms-gear" onclick="toggleSettings()">⚙️</div>
+                    </div>
+
+                    <div id="roleSelection">
+                        <div class="role-title">Welcome to SwiftUI Pickers & Date Pickers Assessment</div>
+                        <div class="role-subtitle">Please select your role to continue</div>
+                        <div class="role-buttons">
+                            <div class="student-btn" onclick="selectStudentRole()">
+                                <span class="btn-icon">🎓</span>
+                                Student<br>Take Assessment
+                            </div>
+                            <div class="instructor-btn" onclick="selectInstructorRole()">
+                                <span class="btn-icon">👨‍🏫</span>
+                                Instructor<br>View Dashboard
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="lmsContainer" class="lms-container hidden">
+                        <div id="facultyPanel" class="faculty-panel hidden">
+                            <h3>Faculty Dashboard</h3>
+                            <div id="settingsPanel" class="hidden">
+                                <h4>Quiz Settings</h4>
+                                <div class="form-group">
+                                    <label>Quiz Title:</label>
+                                    <input type="text" id="quizTitle" value="SwiftUI Pickers & Date Pickers Quiz" placeholder="Enter quiz title">
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Date:</label>
+                                    <input type="datetime-local" id="startDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>End Date:</label>
+                                    <input type="datetime-local" id="endDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>Duration (minutes):</label>
+                                    <input type="number" id="duration" value="20" min="5" max="60">
+                                </div>
+                                <div class="form-group">
+                                    <label>Access Password:</label>
+                                    <input type="password" id="accessPassword" placeholder="Set quiz password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Instructor Password:</label>
+                                    <input type="password" id="instructorCode" placeholder="Set instructor password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Max Attempts:</label>
+                                    <select id="maxAttempts">
+                                        <option value="1">1 Attempt</option>
+                                        <option value="2">2 Attempts</option>
+                                        <option value="3" selected>3 Attempts</option>
+                                        <option value="unlimited">Unlimited</option>
+                                    </select>
+                                </div>
+                                <button class="submit-btn" onclick="saveAssessmentSettings()">Save Settings</button>
+                            </div>
+                            <div class="analytics">
+                                <h4>📊 Quiz Analytics</h4>
+                                <p>Students Attempted: <span id="attemptCount">0</span></p>
+                                <p>Average Score: <span id="averageScore">0%</span></p>
+                                <p>Completion Rate: <span id="completionRate">0%</span></p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="analytics">
+                                <h4>🎯 Question Performance</h4>
+                                <div id="questionStats">
+                                    <p>Q1 - Picker Basics: 0% correct</p>
+                                    <p>Q2 - Picker Styles: 0% correct</p>
+                                    <p>Q3 - Date Picker: 0% correct</p>
+                                </div>
+                            </div>
+                            <div class="analytics">
+                                <h4>👩‍🎓 Student Performance</h4>
+                                <div id="studentStats">
+                                    <p>No student data available.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="studentPanel" class="student-panel hidden">
+                            <div id="loginSection">
+                                <div class="form-group">
+                                    <label>Student Name:</label>
+                                    <input type="text" id="studentName" placeholder="Enter your name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Quiz Password:</label>
+                                    <input type="password" id="studentPassword" placeholder="Enter quiz password">
+                                </div>
+                                <button class="submit-btn" onclick="startAssessment()">Access Quiz</button>
+                            </div>
+                            <div id="quizSection" class="hidden">
+                                <div id="quizStatus" class="quiz-status status-pending">
+                                    Quiz will be available soon
+                                </div>
+                                <div class="timer" id="timer">20:00</div>
+                                <div class="quiz-content">
+                                    <div class="question">
+                                        <h4>Question 1: What is the purpose of Picker in SwiftUI?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q1" value="a"> Displays static text</li>
+                                            <li><input type="radio" name="q1" value="b"> Allows selection from a list</li>
+                                            <li><input type="radio" name="q1" value="c"> Fetches API data</li>
+                                            <li><input type="radio" name="q1" value="d"> Animates views</li>
+                                        </ul>
+                                    </div>
+                                    <div class="question">
+                                        <h4>Question 2: Which Picker style creates a segmented control?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q2" value="a"> wheel</li>
+                                            <li><input type="radio" name="q2" value="b"> menu</li>
+                                            <li><input type="radio" name="q2" value="c"> segmented</li>
+                                            <li><input type="radio" name="q2" value="d"> graphical</li>
+                                        </ul>
+                                    </div>
+                                    <div class="question">
+                                        <h4>Question 3: What does displayedComponents do in DatePicker?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q3" value="a"> Styles the picker</li>
+                                            <li><input type="radio" name="q3" value="b"> Limits date or time selection</li>
+                                            <li><input type="radio" name="q3" value="c"> Fetches dates</li>
+                                            <li><input type="radio" name="q3" value="d"> Animates transitions</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button class="submit-btn" onclick="submitAssessment()">Submit Quiz</button>
+                            </div>
+                            <div id="resultsSection" class="hidden">
+                                <h4>Quiz Results</h4>
+                                <div id="scoreDisplay" class="quiz-status status-active">
+                                    Your Score: 0/3 (0%)
+                                </div>
+                                <div class="analytics">
+                                    <h4>📈 Performance Breakdown</h4>
+                                    <div id="detailedResults">
+                                        <p>Q1: ✓ Correct</p>
+                                        <p>Q2: ✗ Incorrect</p>
+                                        <p>Q3: ✓ Correct</p>
+                                    </div>
+                                    <div style="margin-top: 15px;">
+                                        <p><strong>Recommended Study Areas:</strong></p>
+                                        <ul id="studyRecommendations" style="margin-left: 20px;">
+                                            <li>Review Picker styles</li>
+                                            <li>Practice DatePicker usage</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button class="submit-btn" onclick="retakeAssessment()" id="retakeBtn">Retake Quiz</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulator -->
+            <div class="simulator">
+                <h3>📱 SwiftUI Simulator</h3>
+                <div class="simulator-phone" id="simulatorContent">
+                    <!-- Pages 1-5: Picker Demo with Styles -->
+                    <div class="sim-demo" id="sim1">
+                        <h4 style="color: #4ECDC4; text-align: center;">Picker Demo</h4>
+                        <div class="sim-picker-container">
+                            <select class="sim-menu-picker" id="stylePicker" onchange="updatePickerStyle(this.value)">
+                                <option value="menu">Menu Style</option>
+                                <option value="wheel">Wheel Style</option>
+                                <option value="segmented">Segmented Style</option>
+                            </select>
+                        </div>
+                        <!-- Menu Picker -->
+                        <div class="sim-picker-container" id="menuPickerContainer">
+                            <select class="sim-menu-picker" id="cityMenuPicker" onchange="updateCityPicker()">
+                                <option value="New York">New York</option>
+                                <option value="San Francisco">San Francisco</option>
+                                <option value="Chicago">Chicago</option>
+                                <option value="Boston">Boston</option>
+                            </select>
+                        </div>
+                        <!-- Wheel Picker -->
+                        <div class="sim-picker-container hidden" id="wheelPickerContainer">
+                            <div class="sim-wheel-picker" id="cityWheelPicker">
+                                <div data-value="New York" class="selected">New York</div>
+                                <div data-value="San Francisco">San Francisco</div>
+                                <div data-value="Chicago">Chicago</div>
+                                <div data-value="Boston">Boston</div>
+                            </div>
+                        </div>
+                        <!-- Segmented Picker -->
+                        <div class="sim-picker-container hidden" id="segmentedPickerContainer">
+                            <div class="sim-segmented-picker" id="citySegmentedPicker">
+                                <div data-value="New York" class="selected">New York</div>
+                                <div data-value="San Francisco">San Francisco</div>
+                                <div data-value="Chicago">Chicago</div>
+                            </div>
+                        </div>
+                        <div class="sim-display" id="pickerDisplay">Selected: New York</div>
+                    </div>
+                    <!-- Pages 6-8: Date Picker Demo -->
+                    <div class="sim-demo hidden" id="sim2">
+                        <h4 style="color: #4ECDC4; text-align: center;">Date Picker Demo</h4>
+                        <div class="sim-picker-container">
+                            <input type="date" class="sim-date-picker" id="datePicker" onchange="updateDatePicker()">
+                        </div>
+                        <div class="sim-display" id="dateDisplay">Select a date</div>
+                    </div>
+                    <!-- Page 9: City Guide Demo -->
+                    <div class="sim-demo hidden" id="sim3">
+                        <h4 style="color: #4ECDC4; text-align: center;">City Guide Demo</h4>
+                        <div class="sim-picker-container">
+                            <select class="sim-menu-picker" id="cityGuidePicker" onchange="updateCityGuide()">
+                                <option value="New York">New York</option>
+                                <option value="San Francisco">San Francisco</option>
+                                <option value="Chicago">Chicago</option>
+                                <option value="Boston">Boston</option>
+                            </select>
+                        </div>
+                        <div class="sim-picker-container">
+                            <input type="date" class="sim-date-picker" id="cityGuideDate" onchange="updateCityGuide()">
+                        </div>
+                        <div class="sim-display" id="cityGuideDisplay">Plan for New York</div>
+                    </div>
+                    <!-- Page 10: LMS Features -->
+                    <div class="sim-demo hidden" id="sim4">
+                        <h4 style="color: #4ECDC4; text-align: center;">LMS Features</h4>
+                        <div class="sim-display">
+                            <p>Quiz Management</p>
+                            <p>Analytics Dashboard</p>
+                            <p>Student Progress Tracking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="prevPage()" disabled aria-label="Go to previous page">Previous</button>
+            <div style="display: flex; gap: 10px;">
+                <span style="color: #666;">Page Navigation:</span>
+                <span id="pageIndicator">1 of 10</span>
+            </div>
+            <button class="nav-btn" id="nextBtn" onclick="nextPage()" aria-label="Go to next page">Next</button>
+        </div>
+    </div>
+
+    <script>
+/* --------------------------------------------------------
+   Pager Logic
+---------------------------------------------------------*/
+(function(){
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+    let currentPageNum = 1;
+
+    const pages = [1,2,3,4,5,6,7,8,9,10].map(i => 'page' + i);
+    const sims = [1,2,3,4].map(i => 'sim' + i);
+
+    const currentIndex = () => Number(($('#currentPage')?.textContent || '1'));
+
+    const updateSim = (pageNum) => {
+        sims.forEach(id => {
+            const el = $('#' + id);
+            if (el) el.classList.add('hidden');
+        });
+        if (pageNum <= 5) {
+            $('#sim1')?.classList.remove('hidden');
+        } else if (pageNum <= 8) {
+            $('#sim2')?.classList.remove('hidden');
+        } else if (pageNum === 9) {
+            $('#sim3')?.classList.remove('hidden');
+        } else if (pageNum === 10) {
+            $('#sim4')?.classList.remove('hidden');
+        }
+    };
+
+    const setActive = (pageId) => {
+        const pageNum = Number(pageId.replace('page', '')) || 1;
+        currentPageNum = pageNum;
+
+        pages.forEach(id => {
+            const el = $('#' + id);
+            if (el) el.classList.remove('active');
+        });
+        const target = $('#' + pageId);
+        if (target) target.classList.add('active');
+
+        const cp = $('#currentPage');
+        if (cp) cp.textContent = pageNum;
+        const pi = $('#pageIndicator');
+        if (pi) pi.textContent = `${pageNum} of ${pages.length}`;
+        const prev = $('#prevBtn');
+        if (prev) prev.disabled = pageNum === 1;
+        const next = $('#nextBtn');
+        if (next) next.disabled = pageNum === pages.length;
+
+        updateSim(pageNum);
+        location.hash = pageId;
+    };
+
+    window.nextPage = () => {
+        const i = currentIndex();
+        if (i < pages.length) {
+            setActive('page' + (i + 1));
+        }
+    };
+
+    window.prevPage = () => {
+        const i = currentIndex();
+        if (i > 1) {
+            setActive('page' + (i - 1));
+        }
+    };
+
+    const boot = () => {
+        const fromHash = (location.hash || '').replace('#', '');
+        if (fromHash && document.getElementById(fromHash)) {
+            setActive(fromHash);
+        } else {
+            setActive('page1');
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();
+
+/* --------------------------------------------------------
+   Simulator Functions
+---------------------------------------------------------*/
+let selectedCity = "New York";
+let selectedDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+let currentPickerStyle = "menu";
+
+function updatePickerStyle(style) {
+    currentPickerStyle = style;
+    document.getElementById('menuPickerContainer').classList.add('hidden');
+    document.getElementById('wheelPickerContainer').classList.add('hidden');
+    document.getElementById('segmentedPickerContainer').classList.add('hidden');
+    if (style === 'menu') {
+        document.getElementById('menuPickerContainer').classList.remove('hidden');
+        document.getElementById('cityMenuPicker').value = selectedCity;
+    } else if (style === 'wheel') {
+        document.getElementById('wheelPickerContainer').classList.remove('hidden');
+        updateWheelPicker();
+    } else if (style === 'segmented') {
+        document.getElementById('segmentedPickerContainer').classList.remove('hidden');
+        updateSegmentedPicker();
+    }
+    updateCityPicker();
+}
+
+function updateWheelPicker() {
+    const options = document.querySelectorAll('#cityWheelPicker div');
+    options.forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.getAttribute('data-value') === selectedCity) {
+            opt.classList.add('selected');
+            opt.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+        opt.onclick = () => {
+            selectedCity = opt.getAttribute('data-value');
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            updateCityPicker();
+        };
+    });
+}
+
+function updateSegmentedPicker() {
+    const options = document.querySelectorAll('#citySegmentedPicker div');
+    options.forEach(opt => {
+        opt.classList.remove('selected');
+        if (opt.getAttribute('data-value') === selectedCity) {
+            opt.classList.add('selected');
+        }
+        opt.onclick = () => {
+            selectedCity = opt.getAttribute('data-value');
+            options.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            updateCityPicker();
+        };
+    });
+}
+
+function updateCityPicker() {
+    if (currentPickerStyle === 'menu') {
+        selectedCity = document.getElementById('cityMenuPicker').value;
+    }
+    document.getElementById('pickerDisplay').textContent = `Selected: ${selectedCity}`;
+}
+
+function updateDatePicker() {
+    const inputDate = document.getElementById('datePicker').value;
+    if (inputDate) {
+        // Parse the input date as UTC to avoid timezone shifts
+        const date = new Date(inputDate + 'T00:00:00Z');
+        // Format the date in local timezone with medium style (e.g., "August 19, 2025")
+        selectedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('dateDisplay').textContent = `Selected: ${selectedDate}`;
+    } else {
+        document.getElementById('dateDisplay').textContent = 'Select a date';
+    }
+}
+
+function updateCityGuide() {
+    selectedCity = document.getElementById('cityGuidePicker').value;
+    const inputDate = document.getElementById('cityGuideDate').value;
+    if (inputDate) {
+        // Parse the input date as UTC to avoid timezone shifts
+        const date = new Date(inputDate + 'T00:00:00Z');
+        // Format the date in local timezone with medium style
+        selectedDate = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('cityGuideDisplay').textContent = `Plan for ${selectedCity} on ${selectedDate}`;
+    } else {
+        document.getElementById('cityGuideDisplay').textContent = `Plan for ${selectedCity}`;
+    }
+}
+
+function downloadCityPickerCode() {
+    const code = `import SwiftUI
+
+struct CityGuidePickerView: View {
+    @State private var selectedCity = "New York"
+    let cities = ["New York", "San Francisco", "Chicago", "Boston"]
+    
+    var body: some View {
+        VStack {
+            Picker("City", selection: $selectedCity) {
+                ForEach(cities, id: \\.self) { city in
+                    Text(city)
+                }
+            }
+            .pickerStyle(.menu)
+            Text("Selected: \\(selectedCity)")
+        }
+        .padding()
+    }
+}
+
+struct CityGuidePickerView_Previews: PreviewProvider {
+    static var previews: some View {
+        CityGuidePickerView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CityGuidePickerView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadDatePickerCode() {
+    const code = `import SwiftUI
+
+struct CityGuideDateView: View {
+    @State private var selectedDate = Date()
+    
+    var body: some View {
+        VStack {
+            DatePicker("Travel Date", selection: $selectedDate, displayedComponents: [.date])
+            .datePickerStyle(.graphical)
+            Text("Travel on: \\(selectedDate, formatter: dateFormatter)")
+        }
+        .padding()
+    }
+}
+
+private let dateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    return formatter
+}()
+
+struct CityGuideDateView_Previews: PreviewProvider {
+    static var previews: some View {
+        CityGuideDateView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CityGuideDateView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadCityGuideCode() {
+    const code = `import SwiftUI
+
+struct CityGuideView: View {
+    @State private var selectedCity = "New York"
+    @State private var selectedDate = Date()
+    let cities = ["New York", "San Francisco", "Chicago"]
+    
+    var body: some View {
+        VStack {
+            Picker("City", selection: $selectedCity) {
+                ForEach(cities, id: \\.self) { city in
+                    Text(city)
+                }
+            }
+            .pickerStyle(.menu)
+            DatePicker("Travel Date", selection: $selectedDate, displayedComponents: [.date])
+            .datePickerStyle(.graphical)
+            Text("Plan for \\(selectedCity) on \\(selectedDate, formatter: dateFormatter)")
+        }
+        .padding()
+    }
+}
+
+private let dateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    return formatter
+}()
+
+struct CityGuideView_Previews: PreviewProvider {
+    static var previews: some View {
+        CityGuideView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CityGuideView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* --------------------------------------------------------
+   LMS Assessment Logic
+---------------------------------------------------------*/
+(function(){
+    const QUIZ_KEY = 'lms:pickers-date-pickers';
+    const SETTINGS_KEY = QUIZ_KEY + ':settings';
+    const RESULTS_KEY = QUIZ_KEY + ':results';
+    const STARTS_KEY = QUIZ_KEY + ':starts';
+
+    const defaultSettings = {
+        title: 'SwiftUI Pickers & Date Pickers Quiz',
+        startISO: '',
+        endISO: '',
+        durationMin: 20,
+        accessCode: 'picker123',
+        instructorCode: 'teach456',
+        maxAttempts: '3'
+    };
+
+    const correctAnswers = { q1: 'b', q2: 'c', q3: 'b' };
+
+    let timerId = null;
+    let remainingSec = 0;
+    let activeStudent = null;
+    let currentRole = null;
+
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+
+    const getJSON = (key, fallback) => {
+        try { const v = JSON.parse(localStorage.getItem(key) || ''); return (v == null ? fallback : v); } catch { return fallback; }
+    };
+    const setJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+    const loadSettings = () => Object.assign({}, defaultSettings, getJSON(SETTINGS_KEY, {}));
+    const saveSettings = (s) => setJSON(SETTINGS_KEY, s);
+
+    const fmt = (sec) => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+
+    function isWithinWindow() {
+        const s = loadSettings();
+        const now = new Date();
+        if (s.startISO) {
+            const start = new Date(s.startISO);
+            if (now < start) return { ok: false, msg: `Quiz will open on ${start.toLocaleString()}.` };
+        }
+        if (s.endISO) {
+            const end = new Date(s.endISO);
+            if (now > end) return { ok: false, msg: `Quiz closed on ${end.toLocaleString()}.` };
+        }
+        return { ok: true, msg: '' };
+    }
+
+    function applySettingsToUI() {
+        const s = loadSettings();
+        const q = $('#quizTitle'); if (q) q.value = s.title;
+        const d = $('#duration'); if (d) d.value = s.durationMin;
+        const ap = $('#accessPassword'); if (ap) ap.value = s.accessCode;
+        const ic = $('#instructorCode'); if (ic) ic.value = s.instructorCode;
+        const ma = $('#maxAttempts'); if (ma) ma.value = s.maxAttempts;
+        const sd = $('#startDate'); if (sd && s.startISO) sd.value = s.startISO.slice(0, 16);
+        const ed = $('#endDate'); if (ed && s.endISO) ed.value = s.endISO.slice(0, 16);
+        const ld = $('#lmsDate');
+        if (ld) {
+            ld.textContent = s.startISO ? `Starts: ${new Date(s.startISO).toLocaleString()}` : 'Not scheduled';
+        }
+    }
+
+    function toggleSettings() {
+        if (currentRole !== 'instructor') return alert('Only instructors can access settings.');
+        const sp = $('#settingsPanel');
+        if (sp) sp.classList.toggle('hidden');
+    }
+    window.toggleSettings = toggleSettings;
+
+    function saveAssessmentSettings() {
+        if (currentRole !== 'instructor') return alert('Only instructors can save settings.');
+        const s = loadSettings();
+        s.title = ($('#quizTitle')?.value || '').trim() || defaultSettings.title;
+        s.durationMin = Math.max(5, Math.min(60, Number($('#duration')?.value || defaultSettings.durationMin)));
+        s.accessCode = ($('#accessPassword')?.value || '').trim() || defaultSettings.accessCode;
+        s.instructorCode = ($('#instructorCode')?.value || '').trim() || defaultSettings.instructorCode;
+        s.maxAttempts = $('#maxAttempts')?.value || defaultSettings.maxAttempts;
+        s.startISO = ($('#startDate')?.value || '').trim();
+        s.endISO = ($('#endDate')?.value || '').trim();
+        saveSettings(s);
+        applySettingsToUI();
+        alert('Settings saved!');
+    }
+    window.saveAssessmentSettings = saveAssessmentSettings;
+
+    function selectStudentRole() {
+        currentRole = 'student';
+        $('#roleSelection').classList.add('hidden');
+        $('#lmsContainer').classList.remove('hidden');
+        $('#studentPanel').classList.remove('hidden');
+        $('#facultyPanel').classList.add('hidden');
+        applySettingsToUI();
+    }
+    window.selectStudentRole = selectStudentRole;
+
+    function selectInstructorRole() {
+        const code = prompt('Enter instructor password:');
+        const s = loadSettings();
+        if (code === s.instructorCode) {
+            currentRole = 'instructor';
+            $('#roleSelection').classList.add('hidden');
+            $('#lmsContainer').classList.remove('hidden');
+            $('#facultyPanel').classList.remove('hidden');
+            $('#studentPanel').classList.add('hidden');
+            applySettingsToUI();
+            updateAnalytics();
+        } else {
+            alert('Invalid instructor password.');
+        }
+    }
+    window.selectInstructorRole = selectInstructorRole;
+
+    function startAssessment() {
+        const name = ($('#studentName')?.value || '').trim();
+        const pass = ($('#studentPassword')?.value || '').trim();
+        const s = loadSettings();
+
+        if (!name) return alert('Please enter your name.');
+        if (pass !== s.accessCode) return alert('Invalid quiz password.');
+
+        const starts = getJSON(STARTS_KEY, {});
+        const attempts = (starts[name] || []).length;
+        const maxAttempts = s.maxAttempts === 'unlimited' ? Infinity : Number(s.maxAttempts);
+        if (attempts >= maxAttempts) return alert('Maximum attempts reached.');
+
+        const windowCheck = isWithinWindow();
+        if (!windowCheck.ok) return alert(windowCheck.msg);
+
+        activeStudent = name;
+        remainingSec = s.durationMin * 60;
+        $('#loginSection').classList.add('hidden');
+        $('#quizSection').classList.remove('hidden');
+        $('#quizStatus').classList.remove('status-pending');
+        $('#quizStatus').classList.add('status-active');
+        $('#quizStatus').textContent = 'Quiz in Progress';
+        $('#timer').textContent = fmt(remainingSec);
+
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => {
+            remainingSec--;
+            $('#timer').textContent = fmt(remainingSec);
+            if (remainingSec <= 0) {
+                clearInterval(timerId);
+                submitAssessment();
+            }
+        }, 1000);
+    }
+    window.startAssessment = startAssessment;
+
+    function submitAssessment() {
+        if (!activeStudent) return;
+
+        clearInterval(timerId);
+        const answers = {
+            q1: $all('input[name="q1"]:checked')[0]?.value,
+            q2: $all('input[name="q2"]:checked')[0]?.value,
+            q3: $all('input[name="q3"]:checked')[0]?.value
+        };
+
+        let score = 0;
+        const results = {};
+        for (const [q, a] of Object.entries(answers)) {
+            results[q] = a === correctAnswers[q];
+            if (results[q]) score++;
+        }
+
+        const percentage = Math.round((score / 3) * 100);
+        const resultsData = getJSON(RESULTS_KEY, {});
+        if (!resultsData[activeStudent]) resultsData[activeStudent] = [];
+        resultsData[activeStudent].push({ score, percentage, answers, timestamp: new Date().toISOString() });
+        setJSON(RESULTS_KEY, resultsData);
+
+        const starts = getJSON(STARTS_KEY, {});
+        if (!starts[activeStudent]) starts[activeStudent] = [];
+        starts[activeStudent].push(new Date().toISOString());
+        setJSON(STARTS_KEY, starts);
+
+        $('#quizSection').classList.add('hidden');
+        $('#resultsSection').classList.remove('hidden');
+        $('#scoreDisplay').textContent = `Your Score: ${score}/3 (${percentage}%)`;
+
+        const detailed = $('#detailedResults');
+        detailed.innerHTML = `
+            <p>Q1: ${results.q1 ? '✓ Correct' : '✗ Incorrect'}</p>
+            <p>Q2: ${results.q2 ? '✓ Correct' : '✗ Incorrect'}</p>
+            <p>Q3: ${results.q3 ? '✓ Correct' : '✗ Incorrect'}</p>
+        `;
+
+        const recommendations = [];
+        if (!results.q1) recommendations.push('Review Picker basics');
+        if (!results.q2) recommendations.push('Study Picker styles');
+        if (!results.q3) recommendations.push('Practice DatePicker components');
+        $('#studyRecommendations').innerHTML = recommendations.length ? recommendations.map(r => `<li>${r}</li>`).join('') : '<li>Great job! Review all topics.</li>';
+
+        const s = loadSettings();
+        const maxAttempts = s.maxAttempts === 'unlimited' ? Infinity : Number(s.maxAttempts);
+        if (starts[activeStudent].length >= maxAttempts) {
+            $('#retakeBtn').style.display = 'none';
+        }
+
+        updateAnalytics();
+    }
+    window.submitAssessment = submitAssessment;
+
+    function retakeAssessment() {
+        activeStudent = null;
+        $all('input[type="radio"]').forEach(input => input.checked = false);
+        $('#resultsSection').classList.add('hidden');
+        $('#loginSection').classList.remove('hidden');
+        $('#studentName').value = '';
+        $('#studentPassword').value = '';
+    }
+    window.retakeAssessment = retakeAssessment;
+
+    function updateAnalytics() {
+        const results = getJSON(RESULTS_KEY, {});
+        const starts = getJSON(STARTS_KEY, {});
+        const studentCount = Object.keys(starts).length;
+        const attempts = Object.values(starts).reduce((sum, arr) => sum + arr.length, 0);
+        const scores = Object.values(results).flat().map(r => r.percentage);
+        const avgScore = scores.length ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length) : 0;
+        const completionRate = studentCount ? Math.round((attempts / studentCount) * 100) : 0;
+
+        $('#attemptCount').textContent = attempts;
+        $('#averageScore').textContent = `${avgScore}%`;
+        $('#completionRate').textContent = `${completionRate}%`;
+        $('#progressFill').style.width = `${completionRate}%`;
+
+        const questionStats = { q1: 0, q2: 0, q3: 0 };
+        for (const studentResults of Object.values(results)) {
+            for (const result of studentResults) {
+                for (const [q, a] of Object.entries(result.answers)) {
+                    if (a === correctAnswers[q]) questionStats[q]++;
+                }
+            }
+        }
+        const totalAttempts = Object.values(results).flat().length;
+        $('#questionStats').innerHTML = `
+            <p>Q1 - Picker Basics: ${totalAttempts ? Math.round((questionStats.q1 / totalAttempts) * 100) : 0}% correct</p>
+            <p>Q2 - Picker Styles: ${totalAttempts ? Math.round((questionStats.q2 / totalAttempts) * 100) : 0}% correct</p>
+            <p>Q3 - Date Picker: ${totalAttempts ? Math.round((questionStats.q3 / totalAttempts) * 100) : 0}% correct</p>
+        `;
+
+        const studentStats = Object.entries(results).map(([name, results]) => {
+            const avg = results.length ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length) : 0;
+            return `<p>${name}: ${results.length} attempt(s), Avg Score: ${avg}%</p>`;
+        }).join('');
+        $('#studentStats').innerHTML = studentStats || '<p>No student data available.</p>';
+    }
+
+    applySettingsToUI();
+})();
+    </script>
+</body>
+</html>

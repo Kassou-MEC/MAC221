@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 8: Navigation and Data Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .presentation-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-counter {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .simulator {
+            width: 350px;
+            background: #f8f9fa;
+            border-left: 2px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, #ffeef7, #e8f4ff);
+            border-left: 4px solid #FF6B6B;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .definition-box h3 {
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+
+        .simulator-phone {
+            background: #000;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            min-height: 400px;
+        }
+
+        .practice-exercise {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .exercise-title {
+            color: #d63031;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Simulator Components */
+        .sim-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .sim-textfield {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .sim-counter {
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+            color: #007AFF;
+            font-weight: bold;
+        }
+
+        /* Learning Management System Styles */
+        .lms-header {
+            background-color: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .lms-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .lms-icon {
+            margin-right: 10px;
+        }
+
+        .lms-date {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .lms-gear {
+            cursor: pointer;
+        }
+
+        .role-selection {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .role-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .role-subtitle {
+            color: #4a5568;
+            margin-bottom: 40px;
+        }
+
+        .role-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .student-btn {
+            background-color: #48bb78;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .instructor-btn {
+            background-color: #4299e1;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .btn-icon {
+            margin-right: 10px;
+        }
+
+        .lms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .faculty-panel, .student-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .faculty-panel {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
+        .student-panel {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .quiz-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-active {
+            background: #00b894;
+            color: white;
+        }
+
+        .status-ended {
+            background: #e17055;
+            color: white;
+        }
+
+        .timer {
+            font-size: 24px;
+            text-align: center;
+            color: #d63031;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .quiz-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        .question h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            margin: 8px 0;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .analytics {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .analytics h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="header">
+            <h1>SwiftUI Chapter 8: Navigation and Data Flow</h1>
+            <div class="page-counter">
+                <span id="currentPage">1</span> / 10
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="main-content">
+                <!-- Page 1: Introduction -->
+                <div class="page active" id="page1">
+                    <h2>Welcome to SwiftUI Navigation and Data Flow!</h2>
+                    
+                    <div class="definition-box">
+                        <h3>What is Navigation in SwiftUI?</h3>
+                        <p><strong>Navigation</strong> allows users to move between different views in an app, creating a seamless experience. Data flow ensures information is passed efficiently between views.</p>
+                    </div>
+
+                    <h3>What You'll Learn Today:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Implementing NavigationStack and NavigationLink</li>
+                        <li>Passing data between views</li>
+                        <li>Using NavigationPath for dynamic navigation</li>
+                        <li>Managing complex data flow with @Environment and @Binding</li>
+                        <li>Building a complete navigation-based app</li>
+                    </ul>
+
+                    <div style="background: #e8f4ff; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                        <h4 style="color: #0066cc;">💡 Key Concept</h4>
+                        <p>SwiftUI's navigation system is declarative, allowing you to define navigation paths that update automatically based on state changes.</p>
+                    </div>
+                </div>
+
+                <!-- Page 2: Navigation Basics -->
+                <div class="page" id="page2">
+                    <h2>Understanding Navigation Basics</h2>
+                    
+                    <div class="definition-box">
+                        <h3>NavigationStack Definition</h3>
+                        <p><strong>NavigationStack</strong> is a container that manages a stack of views, enabling navigation with a back button automatically.</p>
+                    </div>
+
+                    <h3>Basic NavigationStack Syntax:</h3>
+                    <div class="code-block">
+NavigationStack {
+    NavigationLink("Go to Detail", destination: DetailView())
+        .navigationTitle("Home")
+}</div>
+
+                    <h3>Key Components:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>NavigationLink</strong> - Triggers navigation to a new view</li>
+                        <li><strong>.navigationTitle</strong> - Sets the title of the navigation bar</li>
+                        <li><strong>Destination</strong> - The view to navigate to</li>
+                    </ul>
+
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🏋️ Practice Exercise</div>
+                        <p>Create a NavigationLink that navigates from a "Home" view to a "Profile" view when tapped.</p>
+                    </div>
+                </div>
+
+                <!-- Page 3: Passing Data with Navigation -->
+                <div class="page" id="page3">
+                    <h2>Passing Data with Navigation</h2>
+                    
+                    <div class="definition-box">
+                        <h3>Data Passing Definition</h3>
+                        <p>Data can be passed to destination views using NavigationLink with parameters, ensuring the new view has the necessary information.</p>
+                    </div>
+
+                    <h3>Basic Data Passing Syntax:</h3>
+                    <div class="code-block">
+struct ContentView: View {
+    var userName = "John Doe"
+    
+    var body: some View {
+        NavigationLink("View Profile", destination: ProfileView(name: userName))
+            .navigationTitle("Home")
+    }
+}
+
+struct ProfileView: View {
+    let name: String
+    var body: some View {
+        Text("Hello, \(name)!")
+    }
+}</div>
+
+                    <h3>Key Points:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Use parameters to pass data to the destination view</li>
+                        <li>Destination views should be immutable for passed data</li>
+                        <li>Supports simple types like String, Int, etc.</li>
+                    </ul>
+                </div>
+
+                <!-- Page 4: NavigationPath -->
+                <div class="page" id="page4">
+                    <h2>Using NavigationPath</h2>
+                    
+                    <div class="definition-box">
+                        <h3>NavigationPath Definition</h3>
+                        <p><strong>NavigationPath</strong> allows dynamic navigation by maintaining a stack of destinations, enabling programmatic control.</p>
+                    </div>
+
+                    <h3>Basic NavigationPath Syntax:</h3>
+                    <div class="code-block">
+struct ContentView: View {
+    @State private var path = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $path) {
+            VStack {
+                NavigationLink("Go to Screen 1", value: "Screen1")
+                Button("Push Programmatically") {
+                    path.append("Screen2")
+                }
+            }
+            .navigationDestination(for: String.self) { value in
+                if value == "Screen1" { Text("Screen 1") }
+                else if value == "Screen2" { Text("Screen 2") }
+            }
+        }
+    }
+}</div>
+
+                    <h3>Key Features:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Programmatic navigation with .append()</li>
+                        <li>Supports custom data types</li>
+                        <li>Back navigation managed automatically</li>
+                    </ul>
+                </div>
+
+                <!-- Page 5: Advanced Data Flow -->
+                <div class="page" id="page5">
+                    <h2>Advanced Data Flow</h2>
+                    
+                    <div class="definition-box">
+                        <h3>Data Flow Definition</h3>
+                        <p>Advanced data flow uses @Environment and @Binding to manage data across multiple views efficiently.</p>
+                    </div>
+
+                    <h3>Using @Binding for Two-Way Data:</h3>
+                    <div class="code-block">
+struct ParentView: View {
+    @State private var sharedText = "Hello"
+    
+    var body: some View {
+        ChildView(text: $sharedText)
+    }
+}
+
+struct ChildView: View {
+    @Binding var text: String
+    var body: some View {
+        TextField("Edit Text", text: $text)
+    }
+}</div>
+
+                    <h3>Using @Environment:</h3>
+                    <div class="code-block">
+struct ContentView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        Button("Dismiss") {
+            dismiss()
+        }
+    }
+}</div>
+                </div>
+
+                <!-- Page 6: Building a Navigation App -->
+                <div class="page" id="page6">
+                    <h2>Building a Navigation-Based App</h2>
+                    
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🛠️ Build a Navigation App</div>
+                        <p>Create an app with multiple screens using NavigationStack and data passing.</p>
+                    </div>
+
+                    <h3>Requirements:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Home view with a list of items</li>
+                        <li>Navigation to a Detail view for each item</li>
+                        <li>Pass item data to the Detail view</li>
+                        <li>Include a back button</li>
+                    </ul>
+
+                    <h3>Starter Code:</h3>
+                    <div class="code-block">
+struct ContentView: View {
+    @State private var items = ["Item 1", "Item 2", "Item 3"]
+    
+    var body: some View {
+        NavigationStack {
+            List(items, id: \.self) { item in
+                NavigationLink(item, value: item)
+            }
+            .navigationDestination(for: String.self) { item in
+                DetailView(item: item)
+            }
+            .navigationTitle("Home")
+        }
+    }
+}
+
+struct DetailView: View {
+    let item: String
+    var body: some View {
+        Text("Detail for \(item)")
+    }
+}</div>
+                </div>
+
+                <!-- Page 7: Practice Exercise 1 -->
+                <div class="page" id="page7">
+                    <h2>Practice Exercise: Shopping List App</h2>
+                    
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🛒 Build a Shopping List App</div>
+                        <p>Create an app to manage a shopping list with navigation.</p>
+                    </div>
+
+                    <h3>Requirements:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>List view showing items</li>
+                        <li>Navigation to add/edit item details</li>
+                        <li>Two-way data binding for item names</li>
+                        <li>Save button to update the list</li>
+                    </ul>
+
+                    <h3>Starter Code:</h3>
+                    <div class="code-block">
+struct ShoppingListView: View {
+    @State private var items = ["Milk", "Bread"]
+    @State private var selectedItem: String?
+    
+    var body: some View {
+        NavigationStack {
+            List(items, id: \.self) { item in
+                NavigationLink(item, value: item)
+            }
+            .navigationDestination(for: String.self) { item in
+                EditItemView(item: $items.first { $0 == item } ?? "")
+            }
+            .navigationTitle("Shopping List")
+        }
+    }
+}
+
+struct EditItemView: View {
+    @Binding var item: String
+    var body: some View {
+        TextField("Item Name", text: $item)
+        Button("Save") {
+            // Save logic
+        }
+    }
+}</div>
+                </div>
+
+                <!-- Page 8: Practice Exercise 2 -->
+                <div class="page" id="page8">
+                    <h2>Practice Exercise: Multi-Level Navigation</h2>
+                    
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🌐 Build a Multi-Level Navigation App</div>
+                        <p>Create an app with multiple levels of navigation.</p>
+                    </div>
+
+                    <h3>Requirements:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Home view with categories</li>
+                        <li>Subcategory view for each category</li>
+                        <li>Detail view for each subcategory item</li>
+                        <li>Use NavigationPath for dynamic navigation</li>
+                    </ul>
+
+                    <h3>Complete Solution:</h3>
+                    <div class="code-block">
+struct ContentView: View {
+    @State private var path = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $path) {
+            List(["Category 1", "Category 2"], id: \.self) { category in
+                NavigationLink(category, value: category)
+            }
+            .navigationDestination(for: String.self) { value in
+                if value.contains("Category") {
+                    SubcategoryView(category: value, path: $path)
+                } else {
+                    DetailView(item: value)
+                }
+            }
+            .navigationTitle("Home")
+        }
+    }
+}
+
+struct SubcategoryView: View {
+    let category: String
+    @Binding var path: NavigationPath
+    
+    var body: some View {
+        List(["Item A", "Item B"], id: \.self) { item in
+            NavigationLink(item, value: "\(category): \(item)")
+        }
+    }
+}
+
+struct DetailView: View {
+    let item: String
+    var body: some View {
+        Text("Detail: \(item)")
+    }
+}</div>
+                </div>
+
+                <!-- Page 9: Learning Management System -->
+                <div class="page" id="page9">
+                    <div class="lms-header">
+                        <div class="lms-title">
+                            <span class="lms-icon">📚</span>
+                            SwiftUI Learning Management System - Chapter 8 Assessment
+                        </div>
+                        <div class="lms-date" id="lmsDate"></div>
+                        <div class="lms-gear" onclick="toggleSettings()">⚙️</div>
+                    </div>
+
+                    <div id="roleSelection">
+                        <div class="role-title">Welcome to SwiftUI Navigation Assessment</div>
+                        <div class="role-subtitle">Please select your role to continue</div>
+                        <div class="role-buttons">
+                            <div class="student-btn" onclick="selectStudentRole()">
+                                <span class="btn-icon">🎓</span>
+                                Student<br>Take Assessment
+                            </div>
+                            <div class="instructor-btn" onclick="selectInstructorRole()">
+                                <span class="btn-icon">👨‍🏫</span>
+                                Instructor<br>View Dashboard
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lms-container hidden" id="lmsContainer">
+                        <div id="facultyPanel" class="faculty-panel">
+                            <h3>Faculty Dashboard</h3>
+                            
+                            <div id="settingsPanel" class="hidden">
+                                <h4>Quiz Settings</h4>
+                                
+                                <div class="form-group">
+                                    <label>Quiz Title:</label>
+                                    <input type="text" id="quizTitle" value="SwiftUI Navigation & Data Flow Quiz" placeholder="Enter quiz title">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Start Date:</label>
+                                    <input type="datetime-local" id="startDate">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>End Date:</label>
+                                    <input type="datetime-local" id="endDate">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Duration (minutes):</label>
+                                    <input type="number" id="duration" value="30" min="5" max="180">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Access Password:</label>
+                                    <input type="password" id="accessPassword" placeholder="Set quiz password">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Instructor Password:</label>
+                                    <input type="password" id="instructorCode" placeholder="Set instructor password">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Max Attempts:</label>
+                                    <select id="maxAttempts">
+                                        <option value="1">1 Attempt</option>
+                                        <option value="2">2 Attempts</option>
+                                        <option value="3" selected>3 Attempts</option>
+                                        <option value="unlimited">Unlimited</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="submit-btn" onclick="saveAssessmentSettings()">Save Settings</button>
+                            </div>
+                            
+                            <div class="analytics">
+                                <h4>📊 Quiz Analytics</h4>
+                                <p>Students Attempted: <span id="attemptCount">0</span></p>
+                                <p>Average Score: <span id="averageScore">0%</span></p>
+                                <p>Completion Rate: <span id="completionRate">0%</span></p>
+                                
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="analytics">
+                                <h4>🎯 Question Performance</h4>
+                                <div id="questionStats">
+                                    <p>Q1 - NavigationStack: 0% correct</p>
+                                    <p>Q2 - Data Passing: 0% correct</p>
+                                    <p>Q3 - NavigationPath: 0% correct</p>
+                                    <p>Q4 - Data Flow: 0% correct</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="studentPanel" class="student-panel">
+                            <h3>Student Portal</h3>
+                            
+                            <div id="loginSection">
+                                <div class="form-group">
+                                    <label>Student Name:</label>
+                                    <input type="text" id="studentName" placeholder="Enter your name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Quiz Password:</label>
+                                    <input type="password" id="studentPassword" placeholder="Enter quiz password">
+                                </div>
+                                
+                                <button class="submit-btn" onclick="startAssessment()">Access Quiz</button>
+                            </div>
+                            
+                            <div id="quizSection" class="hidden">
+                                <div id="quizStatus" class="quiz-status status-pending">
+                                    Quiz will be available soon
+                                </div>
+                                
+                                <div class="timer" id="timer">30:00</div>
+                                
+                                <div class="quiz-content">
+                                    <div class="question">
+                                        <h4>Question 1: What does NavigationStack do in SwiftUI?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q1" value="a"> Displays static content</li>
+                                            <li><input type="radio" name="q1" value="b"> Manages a stack of views for navigation</li>
+                                            <li><input type="radio" name="q1" value="c"> Handles animations only</li>
+                                            <li><input type="radio" name="q1" value="d"> Manages app settings</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="question">
+                                        <h4>Question 2: How do you pass data to a destination view?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q2" value="a"> Using @State only</li>
+                                            <li><input type="radio" name="q2" value="b"> As parameters in NavigationLink</li>
+                                            <li><input type="radio" name="q2" value="c"> Using global variables</li>
+                                            <li><input type="radio" name="q2" value="d"> With @Environment only</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="question">
+                                        <h4>Question 3: What is NavigationPath used for?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q3" value="a"> Static navigation only</li>
+                                            <li><input type="radio" name="q3" value="b"> Dynamic navigation with a stack</li>
+                                            <li><input type="radio" name="q3" value="c"> Displaying images</li>
+                                            <li><input type="radio" name="q3" value="d"> Managing timers</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="question">
+                                        <h4>Question 4: Which property wrapper supports two-way data binding?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q4" value="a"> @State</li>
+                                            <li><input type="radio" name="q4" value="b"> @Binding</li>
+                                            <li><input type="radio" name="q4" value="c"> @Environment</li>
+                                            <li><input type="radio" name="q4" value="d"> @ObservedObject</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <button class="submit-btn" onclick="submitAssessment()">Submit Quiz</button>
+                            </div>
+                            
+                            <div id="resultsSection" class="hidden">
+                                <h4>Quiz Results</h4>
+                                <div id="scoreDisplay" class="quiz-status status-active">
+                                    Your Score: 0/4 (0%)
+                                </div>
+                                
+                                <div class="analytics">
+                                    <h4>📈 Performance Breakdown</h4>
+                                    <div id="detailedResults">
+                                        <p>Q1: ✓ Correct</p>
+                                        <p>Q2: ✗ Incorrect</p>
+                                        <p>Q3: ✓ Correct</p>
+                                        <p>Q4: ✓ Correct</p>
+                                    </div>
+                                    
+                                    <div style="margin-top: 15px;">
+                                        <p><strong>Recommended Study Areas:</strong></p>
+                                        <ul id="studyRecommendations" style="margin-left: 20px;">
+                                            <li>Review data passing techniques</li>
+                                            <li>Practice with NavigationPath</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <button class="submit-btn" onclick="retakeAssessment()" id="retakeBtn">Retake Quiz</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulator -->
+            <div class="simulator">
+                <h3>📱 SwiftUI Simulator</h3>
+                <div class="simulator-phone" id="simulatorContent">
+                    <!-- Page 1-2: Navigation Demo -->
+                    <div class="sim-demo" id="sim1">
+                        <h4 style="color: #4ECDC4; text-align: center;">Navigation Demo</h4>
+                        <button class="sim-button" onclick="navigateTo('Detail')">Go to Detail</button>
+                        <div id="navDisplay" style="color: #4ECDC4; text-align: center; margin: 20px 0;">Home</div>
+                    </div>
+
+                    <!-- Page 3-4: Data Passing Demo -->
+                    <div class="sim-demo" id="sim2" class="hidden">
+                        <h4 style="color: #4ECDC4; text-align: center;">Data Passing Demo</h4>
+                        <input class="sim-textfield" id="dataInput" placeholder="Enter Data" oninput="updateData()">
+                        <button class="sim-button" onclick="navigateWithData()">Navigate</button>
+                        <div id="dataDisplay" style="color: #4ECDC4; text-align: center; margin: 20px 0;">No Data</div>
+                    </div>
+
+                    <!-- Page 5-6: NavigationPath Demo -->
+                    <div class="sim-demo" id="sim3" class="hidden">
+                        <h4 style="color: #4ECDC4; text-align: center;">NavigationPath Demo</h4>
+                        <button class="sim-button" onclick="pushPath('Screen1')">Push Screen 1</button>
+                        <button class="sim-button" onclick="pushPath('Screen2')">Push Screen 2</button>
+                        <div id="pathDisplay" style="color: #4ECDC4; text-align: center; margin: 20px 0;">Home</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="prevPage()" disabled aria-label="Go to previous page">Previous</button>
+            <div style="display: flex; gap: 10px;">
+                <span style="color: #666;">Page Navigation:</span>
+                <span id="pageIndicator">1 of 10</span>
+            </div>
+            <button class="nav-btn" id="nextBtn" onclick="nextPage()" aria-label="Go to next page">Next</button>
+        </div>
+    </div>
+
+    <script>
+/* --------------------------------------------------------
+   Simulator Functions
+---------------------------------------------------------*/
+let navState = "Home";
+let dataValue = "";
+let pathStack = ["Home"];
+
+function navigateTo(destination) {
+    navState = destination;
+    document.getElementById('navDisplay').textContent = destination;
+}
+
+function updateData() {
+    dataValue = document.getElementById('dataInput').value;
+}
+
+function navigateWithData() {
+    document.getElementById('dataDisplay').textContent = dataValue || "No Data";
+}
+
+function pushPath(screen) {
+    pathStack.push(screen);
+    document.getElementById('pathDisplay').textContent = pathStack[pathStack.length - 1];
+}
+
+/* --------------------------------------------------------
+   LMS Assessment Logic (Self-contained)
+---------------------------------------------------------*/
+(function(){
+    const QUIZ_KEY = 'lms:nav';
+    const SETTINGS_KEY = QUIZ_KEY + ':settings';
+    const RESULTS_KEY = QUIZ_KEY + ':results';
+    const STARTS_KEY = QUIZ_KEY + ':starts';
+
+    const defaultSettings = {
+        title: 'SwiftUI Navigation & Data Flow Quiz',
+        startISO: '',
+        endISO: '',
+        durationMin: 30,
+        accessCode: 'nav123',
+        instructorCode: 'teach456',
+        maxAttempts: '3'
+    };
+
+    const correctAnswers = { q1: 'b', q2: 'b', q3: 'b', q4: 'b' };
+
+    let timerId = null;
+    let remainingSec = 0;
+    let activeStudent = null;
+    let currentRole = null;
+
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+
+    const getJSON = (key, fallback) => {
+        try { const v = JSON.parse(localStorage.getItem(key) || ''); return (v == null ? fallback : v); } catch { return fallback; }
+    };
+    const setJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+    const loadSettings = () => Object.assign({}, defaultSettings, getJSON(SETTINGS_KEY, {}));
+    const saveSettings = (s) => setJSON(SETTINGS_KEY, s);
+
+    const fmt = (sec) => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+
+    function isWithinWindow(){
+        const s = loadSettings();
+        const now = new Date();
+        if (s.startISO) {
+            const start = new Date(s.startISO);
+            if (now < start) return { ok: false, msg: `Quiz will open on ${start.toLocaleString()}.` };
+        }
+        if (s.endISO) {
+            const end = new Date(s.endISO);
+            if (now > end) return { ok: false, msg: `Quiz closed on ${end.toLocaleString()}.` };
+        }
+        return { ok: true, msg: '' };
+    }
+
+    function applySettingsToUI(){
+        const s = loadSettings();
+        const q = $('#quizTitle'); if (q) q.value = s.title;
+        const d = $('#duration'); if (d) d.value = s.durationMin;
+        const ap = $('#accessPassword'); if (ap) ap.value = s.accessCode;
+        const ic = $('#instructorCode'); if (ic) ic.value = s.instructorCode;
+        const ma = $('#maxAttempts'); if (ma) ma.value = s.maxAttempts;
+        const sd = $('#startDate'); if (sd && s.startISO) sd.value = s.startISO;
+        const ed = $('#endDate'); if (ed && s.endISO) ed.value = s.endISO;
+    }
+
+    function toggleSettings(){ 
+        if (currentRole !== 'instructor') return;
+        const sp = $('#settingsPanel'); 
+        if (sp) sp.classList.toggle('hidden'); 
+        console.log('Settings panel toggled');
+    }
+    window.toggleSettings = toggleSettings;
+
+    function saveAssessmentSettings(){
+        if (currentRole !== 'instructor') return alert('Only instructors can save settings.');
+        const s = loadSettings();
+        s.title = ($('#quizTitle')?.value || '').trim() || defaultSettings.title;
+        s.durationMin = Math.max(5, Math.min(180, Number($('#duration')?.value || defaultSettings.durationMin)));
+        s.startISO = $('#startDate')?.value || '';
+        s.endISO = $('#endDate')?.value || '';
+        s.accessCode = ($('#accessPassword')?.value || '').trim() || defaultSettings.accessCode;
+        s.instructorCode = ($('#instructorCode')?.value || '').trim() || defaultSettings.instructorCode;
+        s.maxAttempts = $('#maxAttempts')?.value || '3';
+        saveSettings(s);
+        applySettingsToUI();
+        alert('Settings saved.');
+    }
+    window.saveAssessmentSettings = saveAssessmentSettings;
+
+    function selectStudentRole() {
+        currentRole = 'student';
+        document.getElementById('roleSelection').classList.add('hidden');
+        document.getElementById('lmsContainer').classList.remove('hidden');
+        document.getElementById('facultyPanel').classList.add('hidden');
+        document.getElementById('studentPanel').classList.remove('hidden');
+        document.getElementById('lmsContainer').style.gridTemplateColumns = '1fr';
+        console.log('Student role selected');
+    }
+    window.selectStudentRole = selectStudentRole;
+
+    function selectInstructorRole() {
+        const s = loadSettings();
+        const password = prompt('Enter instructor password:');
+        if (password !== s.instructorCode) {
+            alert('Incorrect instructor password.');
+            return;
+        }
+        currentRole = 'instructor';
+        document.getElementById('roleSelection').classList.add('hidden');
+        document.getElementById('lmsContainer').classList.remove('hidden');
+        document.getElementById('studentPanel').classList.add('hidden');
+        document.getElementById('facultyPanel').classList.remove('hidden');
+        document.getElementById('lmsContainer').style.gridTemplateColumns = '1fr';
+        document.getElementById('settingsPanel').classList.remove('hidden');
+        console.log('Instructor role selected');
+    }
+    window.selectInstructorRole = selectInstructorRole;
+
+    const attemptsFor = (name) => getJSON(RESULTS_KEY, []).filter(r => (r.name || '').toLowerCase() === (name || '').toLowerCase()).length;
+    const trackStart = () => { const a = getJSON(STARTS_KEY, []); a.push(Date.now()); setJSON(STARTS_KEY, a); };
+
+    function startAssessment(){
+        const name = ($('#studentName')?.value || '').trim();
+        const pwd = ($('#studentPassword')?.value || '').trim();
+        const s = loadSettings();
+
+        if (!name) return alert('Please enter your full name.');
+        const gate = isWithinWindow(); 
+        if (!gate.ok) return alert(gate.msg);
+        if (pwd !== s.accessCode) return alert('Invalid access code.');
+
+        if (s.maxAttempts !== 'unlimited' && attemptsFor(name) >= Number(s.maxAttempts)) {
+            return alert(`You have reached the maximum attempts (${s.maxAttempts}).`);
+        }
+
+        activeStudent = name;
+        const ls = $('#loginSection'); if (ls) ls.classList.add('hidden');
+        const rs = $('#resultsSection'); if (rs) rs.classList.add('hidden');
+        const qs = $('#quizSection'); if (qs) qs.classList.remove('hidden');
+
+        ['q1', 'q2', 'q3', 'q4'].forEach(q => $all(`input[name="${q}"]`).forEach(el => el.checked = false));
+
+        remainingSec = (Number(s.durationMin) || 30) * 60;
+        const timerEl = $('#timer'); if (timerEl) timerEl.textContent = fmt(remainingSec);
+        const statusEl = $('#quizStatus'); if (statusEl) statusEl.textContent = `Quiz Active – Good luck, ${activeStudent.split(' ')[0]}!`;
+
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => {
+            remainingSec--;
+            if (timerEl) timerEl.textContent = fmt(Math.max(0, remainingSec));
+            if (remainingSec <= 0) { clearInterval(timerId); timerId = null; submitAssessment(true); }
+        }, 1000);
+
+        trackStart();
+    }
+    window.startAssessment = startAssessment;
+
+    function computeScore(){
+        const sel = (q) => (document.querySelector(`input[name="${q}"]:checked`) || {}).value || '';
+        const selections = { q1: sel('q1'), q2: sel('q2'), q3: sel('q3'), q4: sel('q4') };
+        let correctCount = 0;
+        const detail = {};
+        Object.keys(correctAnswers).forEach(k => {
+            const ok = selections[k] === correctAnswers[k];
+            detail[k] = { ok };
+            if (ok) correctCount++;
+        });
+        return { total: 4, correct: correctCount, detail };
+    }
+
+    function submitAssessment(auto = false){
+        if (!activeStudent) return alert('No active student session. Please start the quiz.');
+        const res = computeScore();
+        if (timerId) { clearInterval(timerId); timerId = null; }
+
+        const results = getJSON(RESULTS_KEY, []);
+        results.push({ name: activeStudent, correct: res.correct, total: res.total, detail: res.detail, ts: Date.now() });
+        setJSON(RESULTS_KEY, results);
+
+        const pct = Math.round((res.correct / res.total) * 100);
+        const scoreEl = $('#scoreDisplay');
+        if (scoreEl) {
+            scoreEl.textContent = `Your Score: ${res.correct}/${res.total} (${pct}%)`;
+            scoreEl.style.background = pct >= 70 ? '#48bb78' : '#ed8936';
+        }
+
+        const labels = [
+            'NavigationStack usage',
+            'Data passing techniques',
+            'NavigationPath functionality',
+            'Data flow with bindings'
+        ];
+        const dr = $('#detailedResults');
+        if (dr) dr.innerHTML = ['q1', 'q2', 'q3', 'q4'].map((k, i) => `<p>Q${i + 1}: ${res.detail[k].ok ? '✓' : '✗'} ${labels[i]}</p>`).join('');
+
+        const recs = [];
+        if (!res.detail.q1.ok) recs.push('Review NavigationStack basics.');
+        if (!res.detail.q2.ok) recs.push('Practice data passing with NavigationLink.');
+        if (!res.detail.q3.ok) recs.push('Study NavigationPath usage.');
+        if (!res.detail.q4.ok) recs.push('Explore advanced data flow with @Binding.');
+        const sr = $('#studyRecommendations');
+        if (sr) sr.innerHTML = (recs.length ? recs : ['Excellent work! Move to advanced navigation concepts.']).map(r => `<li>${r}</li>`).join('');
+
+        const s = loadSettings();
+        const used = attemptsFor(activeStudent);
+        const btn = $('#retakeBtn');
+        if (btn) {
+            if (s.maxAttempts === 'unlimited') {
+                btn.textContent = 'Retake Quiz (Unlimited)';
+                btn.disabled = false;
+                btn.classList.remove('hidden');
+            } else {
+                const max = Number(s.maxAttempts);
+                if (used >= max) { btn.textContent = `No more attempts (${used}/${max})`; btn.disabled = true; }
+                else { btn.textContent = `Retake Quiz (${used}/${max})`; btn.disabled = false; }
+                btn.classList.remove('hidden');
+            }
+        }
+
+        const qs = $('#quizSection'); if (qs) qs.classList.add('hidden');
+        const rs = $('#resultsSection'); if (rs) rs.classList.remove('hidden');
+
+        updateInstructorDashboard();
+        if (auto) alert('Time is up! Your quiz was submitted automatically.');
+    }
+    window.submitAssessment = submitAssessment;
+
+    function retakeAssessment(){
+        const s = loadSettings();
+        if (!activeStudent) { return alert('No active student session. Please start the quiz.'); }
+        const used = attemptsFor(activeStudent);
+        if (s.maxAttempts !== 'unlimited' && used >= Number(s.maxAttempts)) return alert('No attempts remaining.');
+
+        ['q1', 'q2', 'q3', 'q4'].forEach(q => $all(`input[name="${q}"]`).forEach(el => el.checked = false));
+        const rs = $('#resultsSection'); if (rs) rs.classList.add('hidden');
+        const qs = $('#quizSection'); if (qs) qs.classList.remove('hidden');
+
+        remainingSec = (Number(s.durationMin) || 30) * 60;
+        const timerEl = $('#timer'); if (timerEl) timerEl.textContent = fmt(remainingSec);
+        const statusEl = $('#quizStatus'); if (statusEl) statusEl.textContent = `Quiz Active – Attempt ${used + 1}`;
+
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => {
+            remainingSec--;
+            if (timerEl) timerEl.textContent = fmt(Math.max(0, remainingSec));
+            if (remainingSec <= 0) { clearInterval(timerId); timerId = null; submitAssessment(true); }
+        }, 1000);
+
+        const starts = getJSON(STARTS_KEY, []);
+        starts.push(Date.now()); setJSON(STARTS_KEY, starts);
+    }
+    window.retakeAssessment = retakeAssessment;
+
+    function updateInstructorDashboard(){
+        if (currentRole !== 'instructor') return;
+        const results = getJSON(RESULTS_KEY, []);
+        const starts = getJSON(STARTS_KEY, []);
+        const attempts = results.length;
+        const avg = attempts ? Math.round(results.reduce((a, r) => a + (r.correct / r.total) * 100, 0) / attempts) : 0;
+        const completionRate = starts.length ? Math.round((attempts / starts.length) * 100) : (attempts ? 100 : 0);
+
+        const ac = $('#attemptCount'); if (ac) ac.textContent = attempts;
+        const as = $('#averageScore'); if (as) as.textContent = `${avg}%`;
+        const cr = $('#completionRate'); if (cr) cr.textContent = `${completionRate}%`;
+        const pf = $('#progressFill'); if (pf) pf.style.width = `${completionRate}%`;
+
+        const byQ = {
+            q1: { ok: 0, n: 0, l: 'Q1 - NavigationStack' },
+            q2: { ok: 0, n: 0, l: 'Q2 - Data Passing' },
+            q3: { ok: 0, n: 0, l: 'Q3 - NavigationPath' },
+            q4: { ok: 0, n: 0, l: 'Q4 - Data Flow' }
+        };
+        results.forEach(r => Object.keys(byQ).forEach(k => { byQ[k].n++; if (r.detail?.[k]?.ok) byQ[k].ok++; }));
+        const qs = $('#questionStats');
+        if (qs) qs.innerHTML = Object.values(byQ).map(q => `<p>${q.l}: <strong>${q.n ? Math.round(100 * q.ok / q.n) : 0}% correct</strong></p>`).join('');
+    }
+    window.updateInstructorDashboard = updateInstructorDashboard;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const sd = $('#startDate'); 
+        const ed = $('#endDate');
+        if (sd && !sd.value) sd.value = new Date().toISOString().slice(0, 16);
+        if (ed && !ed.value) ed.value = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16);
+        applySettingsToUI();
+        updateInstructorDashboard();
+        document.getElementById('lmsDate').textContent = new Date().toLocaleString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true }).replace(', ', ' ');
+    });
+
+    applySettingsToUI();
+    updateInstructorDashboard();
+})();
+
+/* --------------------------------------------------------
+   Pager (Prev / Next / Jump)
+---------------------------------------------------------*/
+(function(){
+    const pages = Array.from(document.querySelectorAll('.page'));
+    const totalPages = 10;
+    let currentPageNum = 1;
+
+    function setActive(id){
+        try {
+            console.log('setActive called with id:', id);
+            pages.forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+            const el = document.getElementById(id);
+            if (!el) {
+                console.error('Page not found:', id);
+                return;
+            }
+            el.classList.add('active');
+            el.style.display = 'block';
+            currentPageNum = Number(id.replace('page', '')) || 1;
+            
+            const currentPageEl = document.getElementById('currentPage');
+            const pageIndicatorEl = document.getElementById('pageIndicator');
+            if (currentPageEl) currentPageEl.textContent = currentPageNum;
+            if (pageIndicatorEl) pageIndicatorEl.textContent = `${currentPageNum} of ${totalPages}`;
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            if (prevBtn) prevBtn.disabled = currentPageNum === 1;
+            if (nextBtn) nextBtn.disabled = currentPageNum === totalPages;
+            
+            updateSimulator();
+            location.hash = id;
+        } catch (error) {
+            console.error('Error in setActive:', error);
+        }
+    }
+
+    function currentIndex(){
+        const act = document.querySelector('.page.active');
+        if (act) return Number(act.id.replace('page', '')) || 1;
+        const fromHash = (location.hash || '').replace('#', '');
+        if (fromHash && document.getElementById(fromHash)) return Number(fromHash.replace('page', '')) || 1;
+        return 1;
+    }
+
+    function updateSimulator() {
+        try {
+            console.log('updateSimulator called for page:', currentPageNum);
+            document.querySelectorAll('.sim-demo').forEach(demo => {
+                demo.style.display = 'none';
+            });
+            const simulatorContent = document.getElementById('simulatorContent');
+            if (currentPageNum <= 2) {
+                document.getElementById('sim1').style.display = 'block';
+            } else if (currentPageNum <= 4) {
+                document.getElementById('sim2').style.display = 'block';
+            } else if (currentPageNum <= 6) {
+                document.getElementById('sim3').style.display = 'block';
+            } else {
+                simulatorContent.innerHTML = `
+                    <h4 style="color: #4ECDC4; text-align: center;">LMS Features</h4>
+                    <div style="color: #4ECDC4; padding: 15px; text-align: center;">
+                        <p>✅ Quiz Creation & Management</p>
+                        <p>📅 Date/Time Controls</p>
+                        <p>🔐 Password Protection</p>
+                        <p>📊 Real-time Analytics</p>
+                        <p>🎯 Performance Tracking</p>
+                        <p>🔄 Multiple Attempts</p>
+                        <p>📈 Progress Visualization</p>
+                        <p>💡 Study Recommendations</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error in updateSimulator:', error);
+        }
+    }
+
+    window.nextPage = () => { 
+        console.log('nextPage called, currentPageNum:', currentPageNum);
+        const i = currentIndex();
+        if (i < totalPages) {
+            setActive('page' + (i + 1));
+        }
+    };
+
+    window.prevPage = () => { 
+        console.log('prevPage called, currentPageNum:', currentPageNum);
+        const i = currentIndex();
+        if (i > 1) {
+            setActive('page' + (i - 1));
+        }
+    };
+
+    const boot = () => {
+        console.log('Booting pager');
+        const fromHash = (location.hash || '').replace('#', '');
+        if (fromHash && document.getElementById(fromHash)) {
+            setActive(fromHash);
+        } else {
+            setActive('page1');
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();
+
+/* --------------------------------------------------------
+   Keyboard Navigation
+---------------------------------------------------------*/
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') {
+        nextPage();
+    } else if (e.key === 'ArrowLeft') {
+        prevPage();
+    }
+});
+    </script>
+</body>
+</html>

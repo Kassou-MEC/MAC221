@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Chapter 10: Category Lists</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .presentation-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .page-counter {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .simulator {
+            width: 350px;
+            background: #f8f9fa;
+            border-left: 2px solid #e9ecef;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .type { color: #4ec9b0; }
+        .code-block .property { color: #9cdcfe; }
+        .code-block .comment { color: #6a9955; }
+
+        .definition-box {
+            background: linear-gradient(135deg, #ffeef7, #e8f4ff);
+            border-left: 4px solid #FF6B6B;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .definition-box h3 {
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+
+        .simulator-phone {
+            background: #000;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            min-height: 400px;
+        }
+
+        .practice-exercise {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .exercise-title {
+            color: #d63031;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .sim-list-container {
+            margin: 10px 0;
+        }
+
+        .sim-list {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .sim-list-item {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .sim-list-item:hover,
+        .sim-list-item.selected {
+            background: #007AFF;
+            color: white;
+        }
+
+        .sim-display {
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        .sim-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .lms-header {
+            background-color: #2d3748;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .lms-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .lms-icon {
+            margin-right: 10px;
+        }
+
+        .lms-date {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .lms-gear {
+            cursor: pointer;
+        }
+
+        .role-selection {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .role-title {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .role-subtitle {
+            color: #4a5568;
+            margin-bottom: 40px;
+        }
+
+        .role-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .student-btn {
+            background-color: #48bb78;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .instructor-btn {
+            background-color: #4299e1;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            text-align: center;
+        }
+
+        .btn-icon {
+            margin-right: 10px;
+        }
+
+        .lms-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        .faculty-panel, .student-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .faculty-panel {
+            background: linear-gradient(135deg, #ff9a9e, #fecfef);
+        }
+
+        .student-panel {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .quiz-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-active {
+            background: #00b894;
+            color: white;
+        }
+
+        .status-ended {
+            background: #e17055;
+            color: white;
+        }
+
+        .timer {
+            font-size: 24px;
+            text-align: center;
+            color: #d63031;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .quiz-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .question {
+            margin-bottom: 20px;
+        }
+
+        .question h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            margin: 8px 0;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .submit-btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .analytics {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .analytics h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            transition: width 0.3s ease;
+        }
+
+        .download-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="header">
+            <h1>SwiftUI Chapter 10: Category Lists</h1>
+            <div class="page-counter">
+                <span id="currentPage">1</span> / 10
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="main-content">
+                <!-- Page 1: Introduction to Category Lists -->
+                <div class="page active" id="page1">
+                    <h2>Part 1: SwiftUI Category Lists</h2>
+                    <div class="definition-box">
+                        <h3>What are Category Lists?</h3>
+                        <p><strong>Category Lists</strong> organize items into groups, enabling users to browse and select content efficiently in apps like City Guides for activities or destinations.</p>
+                    </div>
+                    <h3>What You'll Learn in Part 1:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Creating <span class="keyword">List</span> components for categories</li>
+                        <li>Using dynamic data with <span class="keyword">ForEach</span></li>
+                        <li>Implementing navigation with <span class="keyword">NavigationView</span></li>
+                        <li>Applying UI principles from the Moroccan Tech Leadership Podcast</li>
+                    </ul>
+                    <div style="background: #e8f4ff; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                        <h4 style="color: #0066cc;">💡 Key Concept</h4>
+                        <p>Category Lists enhance app navigation by grouping related items, improving user experience in travel or e-commerce apps.</p>
+                    </div>
+                </div>
+
+                <!-- Page 2: Basic List -->
+                <div class="page" id="page2">
+                    <h2>Creating a Basic List</h2>
+                    <div class="definition-box">
+                        <h3>List Definition</h3>
+                        <p><strong>List</strong> displays a scrollable list of items, binding to a data source for dynamic rendering.</p>
+                    </div>
+                    <h3>Basic List Syntax:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">CategoryListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">let</span> categories = [<span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>, <span class="string">"Events"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">List</span> {<br>
+                                    <span class="type">ForEach</span>(categories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                        <span class="type">Text</span>(category)<br>
+                                    }<br>
+                                }<br>
+                                .<span class="property">listStyle</span>(.<span class="property">plain</span>)<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Key Components:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>List</strong> - Displays scrollable items</li>
+                        <li><strong>ForEach</span> - Iterates over data</li>
+                        <li><strong>listStyle</span> - Customizes appearance</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🏋️ Practice Exercise</div>
+                        <p>Create a List with 5 travel activities and apply the insetGrouped style.</p>
+                    </div>
+                </div>
+
+                <!-- Page 3: Navigation with Lists -->
+                <div class="page" id="page3">
+                    <h2>Navigation with Lists</h2>
+                    <div class="definition-box">
+                        <h3>NavigationView</h3>
+                        <p><strong>NavigationView</strong> enables navigation to detail views when selecting list items.</p>
+                    </div>
+                    <h3>Navigation List Syntax:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">NavCategoryListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">let</span> categories = [<span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">NavigationView</span> {<br>
+                                    <span class="type">List</span> {<br>
+                                        <span class="type">ForEach</span>(categories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                            <span class="type">NavigationLink</span>(destination: <span class="type">Text</span>(<span class="string">"Details for \(category)"</span>)) {<br>
+                                                <span class="type">Text</span>(category)<br>
+                                            }<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">navigationTitle</span>(<span class="string">"Categories"</span>)<br>
+                                }<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Key Features:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>NavigationView</strong> - Provides navigation stack</li>
+                        <li><strong>NavigationLink</strong> - Links to detail views</li>
+                        <li><strong>navigationTitle</strong> - Sets the title</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🎨 Practice Exercise</div>
+                        <p>Create a List with NavigationLinks for Moroccan cities, showing a detail view for each.</p>
+                    </div>
+                </div>
+
+                <!-- Page 4: Dynamic Category List -->
+                <div class="page" id="page4">
+                    <h2>Dynamic Category List</h2>
+                    <div class="definition-box">
+                        <h3>Dynamic Lists</h3>
+                        <p>Use <strong>@State</strong> and data models to create dynamic, editable category lists.</p>
+                    </div>
+                    <h3>Dynamic List Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">Category</span>: <span class="type">Identifiable</span> {<br>
+                            <span class="keyword">let</span> id = <span class="type">UUID</span>()<br>
+                            <span class="keyword">var</span> name: <span class="type">String</span><br>
+                        }<br><br>
+                        <span class="keyword">struct</span> <span class="type">DynamicCategoryListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> categories = [<br>
+                                <span class="type">Category</span>(name: <span class="string">"Restaurants"</span>),<br>
+                                <span class="type">Category</span>(name: <span class="string">"Museums"</span>),<br>
+                                <span class="type">Category</span>(name: <span class="string">"Parks"</span>)<br>
+                            ]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">NavigationView</span> {<br>
+                                    <span class="type">List</span> {<br>
+                                        <span class="type">ForEach</span>(categories) { category <span class="keyword">in</span><br>
+                                            <span class="type">NavigationLink</span>(destination: <span class="type">Text</span>(<span class="string">"Details for \(category.name)"</span>)) {<br>
+                                                <span class="type">Text</span>(category.name)<br>
+                                            }<br>
+                                        }<br>
+                                        .<span class="property">onDelete</span>(perform: deleteCategory)<br>
+                                    }<br>
+                                    .<span class="property">navigationTitle</span>(<span class="string">"Categories"</span>)<br>
+                                    .<span class="property">toolbar</span> {<br>
+                                        <span class="type">ToolbarItem</span> {<br>
+                                            <span class="type">Button</span>(<span class="string">"Add"</span>) { addCategory() }<br>
+                                        }<br>
+                                    }<br>
+                                }<br>
+                            }<br><br>
+                            <span class="keyword">private</span> <span class="keyword">func</span> addCategory() {<br>
+                                categories.append(<span class="type">Category</span>(name: <span class="string">"New Category"</span>))<br>
+                            }<br><br>
+                            <span class="keyword">private</span> <span class="keyword">func</span> deleteCategory(at offsets: <span class="type">IndexSet</span>) {<br>
+                                categories.remove(atOffsets: offsets)<br>
+                            }<br>
+                        }
+                    </div>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🛒 Practice Exercise</div>
+                        <p>Create a dynamic List for Moroccan activities with add and delete functionality.</p>
+                    </div>
+                    <button class="download-btn" onclick="downloadDynamicListCode()">Download Dynamic List Code</button>
+                </div>
+
+                <!-- Page 5: Debugging Lists -->
+                <div class="page" id="page5">
+                    <h2>Debugging Category Lists</h2>
+                    <div class="definition-box">
+                        <h3>Debugging Lists</h3>
+                        <p>Use <span class="keyword">onAppear</span> and <span class="keyword">print</span> to monitor List state changes.</p>
+                    </div>
+                    <h3>Debugging Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">DebugListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> categories = [<span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">List</span> {<br>
+                                    <span class="type">ForEach</span>(categories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                        <span class="type">Text</span>(category)<br>
+                                            .<span class="property">onAppear</span> {<br>
+                                                <span class="keyword">print</span>(<span class="string">"Displayed: \(category)"</span>)<br>
+                                            }<br>
+                                    }<br>
+                                }<br>
+                                .<span class="property">listStyle</span>(.<span class="property">insetGrouped</span>)<br>
+                                .<span class="property">onAppear</span> {<br>
+                                    <span class="keyword">print</span>(<span class="string">"List loaded with \(categories.count) items"</span>)<br>
+                                }<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Tips:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li>Verify data source integrity</li>
+                        <li>Log item rendering with <span class="keyword">onAppear</span></li>
+                        <li>Test navigation in Xcode previews</li>
+                    </ul>
+                </div>
+
+                <!-- Page 6: City Guide Category List -->
+                <div class="page" id="page6">
+                    <h2>City Guide: Category List Implementation</h2>
+                    <div class="definition-box">
+                        <h3>City Guide List</h3>
+                        <p>Use a List to display travel categories with navigation to details.</p>
+                    </div>
+                    <h3>City Guide List Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">CityGuideListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> categories = [<br>
+                                <span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>, <span class="string">"Events"</span><br>
+                            ]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">NavigationView</span> {<br>
+                                    <span class="type">List</span> {<br>
+                                        <span class="type">ForEach</span>(categories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                            <span class="type">NavigationLink</span>(destination: <span class="type">Text</span>(<span class="string">"Explore \(category) in the City"</span>)) {<br>
+                                                <span class="type">Text</span>(category)<br>
+                                            }<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">navigationTitle</span>(<span class="string">"City Guide"</span>)<br>
+                                    .<span class="property">listStyle</span>(.<span class="property">insetGrouped</span>)<br>
+                                }<br>
+                            }<br>
+                        }
+                    </div>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🗺 Practice Exercise</div>
+                        <p>Create a List for a City Guide with categories for Moroccan cultural activities.</p>
+                    </div>
+                    <button class="download-btn" onclick="downloadCityGuideListCode()">Download City Guide List Code</button>
+                </div>
+
+                <!-- Page 7: Customizing List Appearance -->
+                <div class="page" id="page7">
+                    <h2>Customizing List Appearance</h2>
+                    <div class="definition-box">
+                        <h3>List Styling</h3>
+                        <p>Customize Lists with <span class="keyword">listStyle</span> and view modifiers for better UX.</p>
+                    </div>
+                    <h3>Styled List Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">StyledListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">let</span> categories = [<span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">List</span> {<br>
+                                    <span class="type">ForEach</span>(categories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                        <span class="type">HStack</span> {<br>
+                                            <span class="type">Image</span>(systemName: <span class="string">"star.fill"</span>)<br>
+                                                .<span class="property">foregroundColor</span>(.<span class="property">yellow</span>)<br>
+                                            <span class="type">Text</span>(category)<br>
+                                            <span class="type">Spacer</span>()<br>
+                                            <span class="type">Image</span>(systemName: <span class="string">"chevron.right"</span>)<br>
+                                        }<br>
+                                        .<span class="property">padding</span>()<br>
+                                        .<span class="property">background</span>(<span class="type">Color</span>.<span class="property">gray</span>.<span class="property">opacity</span>(0.1))<br>
+                                        .<span class="property">cornerRadius</span>(10)<br>
+                                    }<br>
+                                }<br>
+                                .<span class="property">listStyle</span>(.<span class="property">plain</span>)<br>
+                            }<br>
+                        }
+                    </div>
+                    <h3>Key Styling Options:</h3>
+                    <ul style="margin: 20px 0; padding-left: 30px; line-height: 2;">
+                        <li><strong>listStyle</strong> - Plain, grouped, or insetGrouped</li>
+                        <li><strong>HStack</strong> - Combine icons and text</li>
+                        <li><strong>View Modifiers</strong> - Padding, background, cornerRadius</li>
+                    </ul>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🎨 Practice Exercise</div>
+                        <p>Style a List with icons and colors for a travel app category list.</p>
+                    </div>
+                </div>
+
+                <!-- Page 8: Advanced List Features -->
+                <div class="page" id="page8">
+                    <h2>Advanced List Features</h2>
+                    <div class="definition-box">
+                        <h3>Advanced Lists</h3>
+                        <p>Add search, filtering, and swipe actions to enhance List functionality.</p>
+                    </div>
+                    <h3>Advanced List Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">AdvancedListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> searchText = <span class="string">""</span><br>
+                            <span class="keyword">let</span> categories = [<span class="string">"Restaurants"</span>, <span class="string">"Museums"</span>, <span class="string">"Parks"</span>, <span class="string">"Events"</span>]<br><br>
+                            <span class="keyword">var</span> <span class="property">filteredCategories</span>: [<span class="type">String</span>] {<br>
+                                searchText.<span class="property">isEmpty</span> ? categories : categories.<span class="property">filter</span> { $0.<span class="property">lowercased</span>().<span class="property">contains</span>(searchText.<span class="property">lowercased</span>()) }<br>
+                            }<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">NavigationView</span> {<br>
+                                    <span class="type">List</span> {<br>
+                                        <span class="type">TextField</span>(<span class="string">"Search"</span>, text: $searchText)<br>
+                                        <span class="type">ForEach</span>(filteredCategories, id: \.<span class="keyword">self</span>) { category <span class="keyword">in</span><br>
+                                            <span class="type">NavigationLink</span>(destination: <span class="type">Text</span>(<span class="string">"Details for \(category)"</span>)) {<br>
+                                                <span class="type">Text</span>(category)<br>
+                                            }<br>
+                                            .<span class="property">swipeActions</span> {<br>
+                                                <span class="type">Button</span>(<span class="string">"Favorite"</span>) { <span class="keyword">print</span>(<span class="string">"Favorited \(category)"</span>) }<br>
+                                                .<span class="property">tint</span>(.<span class="property">yellow</span>)<br>
+                                            }<br>
+                                        }<br>
+                                    }<br>
+                                    .<span class="property">navigationTitle</span>(<span class="string">"Categories"</span>)<br>
+                                    .<span class="property">listStyle</span>(.<span class="property">grouped</span>)<br>
+                                }<br>
+                            }<br>
+                        }
+                    </div>
+                    <div class="practice-exercise">
+                        <div class="exercise-title">🔍 Practice Exercise</div>
+                        <p>Add a search bar and swipe-to-delete to a List of travel destinations.</p>
+                    </div>
+                </div>
+
+                <!-- Page 9: Interactive Simulator -->
+                <div class="page" id="page9">
+                    <h2>Interactive Simulator: Category List</h2>
+                    <div class="definition-box">
+                        <h3>Simulator Overview</h3>
+                        <p>Test a dynamic Category List or run code in <a href="https://swiftfiddle.com" target="_blank" style="color: #0066cc;">SwiftFiddle</a>.</p>
+                    </div>
+                    <h3>Simulator List Code:</h3>
+                    <div class="code-block">
+                        <span class="keyword">import</span> SwiftUI<br><br>
+                        <span class="keyword">struct</span> <span class="type">Category</span>: <span class="type">Identifiable</span> {<br>
+                            <span class="keyword">let</span> id = <span class="type">UUID</span>()<br>
+                            <span class="keyword">var</span> name: <span class="type">String</span><br>
+                        }<br><br>
+                        <span class="keyword">struct</span> <span class="type">SimulatorListView</span>: <span class="type">View</span> {<br>
+                            <span class="keyword">@State</span> <span class="keyword">private</span> <span class="keyword">var</span> categories = [<br>
+                                <span class="type">Category</span>(name: <span class="string">"Restaurants"</span>),<br>
+                                <span class="type">Category</span>(name: <span class="string">"Museums"</span>),<br>
+                                <span class="type">Category</span>(name: <span class="string">"Parks"</span>)<br>
+                            ]<br><br>
+                            <span class="keyword">var</span> <span class="property">body</span>: <span class="keyword">some</span> <span class="type">View</span> {<br>
+                                <span class="type">NavigationView</span> {<br>
+                                    <span class="type">List</span> {<br>
+                                        <span class="type">ForEach</span>(categories) { category <span class="keyword">in</span><br>
+                                            <span class="type">NavigationLink</span>(destination: <span class="type">Text</span>(<span class="string">"Explore \(category.name)"</span>)) {<br>
+                                                <span class="type">Text</span>(category.name)<br>
+                                            }<br>
+                                        }<br>
+                                        .<span class="property">onDelete</span>(perform: deleteCategory)<br>
+                                    }<br>
+                                    .<span class="property">navigationTitle</span>(<span class="string">"City Guide"</span>)<br>
+                                    .<span class="property">toolbar</span> {<br>
+                                        <span class="type">ToolbarItem</span> {<br>
+                                            <span class="type">Button</span>(<span class="string">"Add"</span>) { addCategory() }<br>
+                                        }<br>
+                                    }<br>
+                                }<br>
+                            }<br><br>
+                            <span class="keyword">private</span> <span class="keyword">func</span> addCategory() {<br>
+                                categories.append(<span class="type">Category</span>(name: <span class="string">"New Category"</span>))<br>
+                            }<br><br>
+                            <span class="keyword">private</span> <span class="keyword">func</span> deleteCategory(at offsets: <span class="type">IndexSet</span>) {<br>
+                                categories.remove(atOffsets: offsets)<br>
+                            }<br>
+                        }
+                    </div>
+                    <button class="download-btn" onclick="downloadSimulatorListCode()">Download Simulator List Code</button>
+                </div>
+
+                <!-- Page 10: Learning Management System -->
+                <div class="page" id="page10">
+                    <div class="lms-header">
+                        <div class="lms-title">
+                            <span class="lms-icon">📚</span>
+                            SwiftUI Learning Management System - Chapter 10 Assessment
+                        </div>
+                        <div class="lms-date" id="lmsDate"></div>
+                        <div class="lms-gear" onclick="toggleSettings()">⚙️</div>
+                    </div>
+
+                    <div id="roleSelection">
+                        <div class="role-title">Welcome to SwiftUI Category Lists Assessment</div>
+                        <div class="role-subtitle">Please select your role to continue</div>
+                        <div class="role-buttons">
+                            <div class="student-btn" onclick="selectStudentRole()">
+                                <span class="btn-icon">🎓</span>
+                                Student<br>Take Assessment
+                            </div>
+                            <div class="instructor-btn" onclick="selectInstructorRole()">
+                                <span class="btn-icon">👨‍🏫</span>
+                                Instructor<br>View Dashboard
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="lmsContainer" class="lms-container hidden">
+                        <div id="facultyPanel" class="faculty-panel hidden">
+                            <h3>Faculty Dashboard</h3>
+                            <div id="settingsPanel" class="hidden">
+                                <h4>Quiz Settings</h4>
+                                <div class="form-group">
+                                    <label>Quiz Title:</label>
+                                    <input type="text" id="quizTitle" value="SwiftUI Category Lists Quiz" placeholder="Enter quiz title">
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Date:</label>
+                                    <input type="datetime-local" id="startDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>End Date:</label>
+                                    <input type="datetime-local" id="endDate">
+                                </div>
+                                <div class="form-group">
+                                    <label>Duration (minutes):</label>
+                                    <input type="number" id="duration" value="20" min="5" max="60">
+                                </div>
+                                <div class="form-group">
+                                    <label>Access Password:</label>
+                                    <input type="password" id="accessPassword" placeholder="Set quiz password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Instructor Password:</label>
+                                    <input type="password" id="instructorCode" placeholder="Set instructor password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Max Attempts:</label>
+                                    <select id="maxAttempts">
+                                        <option value="1">1 Attempt</option>
+                                        <option value="2">2 Attempts</option>
+                                        <option value="3" selected>3 Attempts</option>
+                                        <option value="unlimited">Unlimited</option>
+                                    </select>
+                                </div>
+                                <button class="submit-btn" onclick="saveAssessmentSettings()">Save Settings</button>
+                            </div>
+                            <div class="analytics">
+                                <h4>📊 Quiz Analytics</h4>
+                                <p>Students Attempted: <span id="attemptCount">0</span></p>
+                                <p>Average Score: <span id="averageScore">0%</span></p>
+                                <p>Completion Rate: <span id="completionRate">0%</span></p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="analytics">
+                                <h4>🎯 Question Performance</h4>
+                                <div id="questionStats">
+                                    <p>Q1 - List Basics: 0% correct</p>
+                                    <p>Q2 - Navigation: 0% correct</p>
+                                    <p>Q3 - Dynamic Lists: 0% correct</p>
+                                </div>
+                            </div>
+                            <div class="analytics">
+                                <h4>👩‍🎓 Student Performance</h4>
+                                <div id="studentStats">
+                                    <p>No student data available.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="studentPanel" class="student-panel hidden">
+                            <div id="loginSection">
+                                <div class="form-group">
+                                    <label>Student Name:</label>
+                                    <input type="text" id="studentName" placeholder="Enter your name">
+                                </div>
+                                <div class="form-group">
+                                    <label>Quiz Password:</label>
+                                    <input type="password" id="studentPassword" placeholder="Enter quiz password">
+                                </div>
+                                <button class="submit-btn" onclick="startAssessment()">Access Quiz</button>
+                            </div>
+                            <div id="quizSection" class="hidden">
+                                <div id="quizStatus" class="quiz-status status-pending">
+                                    Quiz will be available soon
+                                </div>
+                                <div class="timer" id="timer">20:00</div>
+                                <div class="quiz-content">
+                                    <div class="question">
+                                        <h4>Question 1: What is the purpose of List in SwiftUI?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q1" value="a"> Displays static text</li>
+                                            <li><input type="radio" name="q1" value="b"> Shows scrollable items</li>
+                                            <li><input type="radio" name="q1" value="c"> Fetches API data</li>
+                                            <li><input type="radio" name="q1" value="d"> Animates views</li>
+                                        </ul>
+                                    </div>
+                                    <div class="question">
+                                        <h4>Question 2: What does NavigationLink do in a List?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q2" value="a"> Styles the list</li>
+                                            <li><input type="radio" name="q2" value="b"> Links to detail views</li>
+                                            <li><input type="radio" name="q2" value="c"> Filters data</li>
+                                            <li><input type="radio" name="q2" value="d"> Deletes items</li>
+                                        </ul>
+                                    </div>
+                                    <div class="question">
+                                        <h4>Question 3: How do you enable swipe-to-delete in a List?</h4>
+                                        <ul class="options">
+                                            <li><input type="radio" name="q3" value="a"> Use onAppear</li>
+                                            <li><input type="radio" name="q3" value="b"> Use onDelete</li>
+                                            <li><input type="radio" name="q3" value="c"> Use listStyle</li>
+                                            <li><input type="radio" name="q3" value="d"> Use swipeActions</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button class="submit-btn" onclick="submitAssessment()">Submit Quiz</button>
+                            </div>
+                            <div id="resultsSection" class="hidden">
+                                <h4>Quiz Results</h4>
+                                <div id="scoreDisplay" class="quiz-status status-active">
+                                    Your Score: 0/3 (0%)
+                                </div>
+                                <div class="analytics">
+                                    <h4>📈 Performance Breakdown</h4>
+                                    <div id="detailedResults">
+                                        <p>Q1: ✓ Correct</p>
+                                        <p>Q2: ✗ Incorrect</p>
+                                        <p>Q3: ✓ Correct</p>
+                                    </div>
+                                    <div style="margin-top: 15px;">
+                                        <p><strong>Recommended Study Areas:</strong></p>
+                                        <ul id="studyRecommendations" style="margin-left: 20px;">
+                                            <li>Review List basics</li>
+                                            <li>Practice NavigationView</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <button class="submit-btn" onclick="retakeAssessment()" id="retakeBtn">Retake Quiz</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulator -->
+            <div class="simulator">
+                <h3>📱 SwiftUI Simulator</h3>
+                <div class="simulator-phone" id="simulatorContent">
+                    <!-- Pages 1-8: Category List Demo -->
+                    <div class="sim-demo" id="sim1">
+                        <h4 style="color: #4ECDC4; text-align: center;">Category List Demo</h4>
+                        <div class="sim-list-container">
+                            <div class="sim-list" id="categoryList">
+                                <div class="sim-list-item selected" data-value="Restaurants">Restaurants</div>
+                                <div class="sim-list-item" data-value="Museums">Museums</div>
+                                <div class="sim-list-item" data-value="Parks">Parks</div>
+                                <div class="sim-list-item" data-value="Events">Events</div>
+                            </div>
+                        </div>
+                        <div class="sim-display" id="listDisplay">Selected: Restaurants</div>
+                        <button class="sim-button" onclick="addCategory()">Add Category</button>
+                        <button class="sim-button" onclick="deleteCategory()">Delete Selected</button>
+                    </div>
+                    <!-- Page 9: Dynamic List Demo -->
+                    <div class="sim-demo hidden" id="sim2">
+                        <h4 style="color: #4ECDC4; text-align: center;">Dynamic List Demo</h4>
+                        <div class="sim-list-container">
+                            <div class="sim-list" id="dynamicList">
+                                <div class="sim-list-item selected" data-value="Restaurants">Restaurants</div>
+                                <div class="sim-list-item" data-value="Museums">Museums</div>
+                                <div class="sim-list-item" data-value="Parks">Parks</div>
+                            </div>
+                        </div>
+                        <div class="sim-display" id="dynamicDisplay">Selected: Restaurants</div>
+                        <button class="sim-button" onclick="addDynamicCategory()">Add Category</button>
+                        <button class="sim-button" onclick="deleteDynamicCategory()">Delete Selected</button>
+                    </div>
+                    <!-- Page 10: LMS Features -->
+                    <div class="sim-demo hidden" id="sim3">
+                        <h4 style="color: #4ECDC4; text-align: center;">LMS Features</h4>
+                        <div class="sim-display">
+                            <p>Quiz Management</p>
+                            <p>Analytics Dashboard</p>
+                            <p>Student Progress Tracking</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn" onclick="prevPage()" disabled aria-label="Go to previous page">Previous</button>
+            <div style="display: flex; gap: 10px;">
+                <span style="color: #666;">Page Navigation:</span>
+                <span id="pageIndicator">1 of 10</span>
+            </div>
+            <button class="nav-btn" id="nextBtn" onclick="nextPage()" aria-label="Go to next page">Next</button>
+        </div>
+    </div>
+
+    <script>
+/* --------------------------------------------------------
+   Pager Logic
+---------------------------------------------------------*/
+(function(){
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+    let currentPageNum = 1;
+
+    const pages = [1,2,3,4,5,6,7,8,9,10].map(i => 'page' + i);
+    const sims = [1,2,3].map(i => 'sim' + i);
+
+    const currentIndex = () => Number(($('#currentPage')?.textContent || '1'));
+
+    const updateSim = (pageNum) => {
+        sims.forEach(id => {
+            const el = $('#' + id);
+            if (el) el.classList.add('hidden');
+        });
+        if (pageNum <= 8) {
+            $('#sim1')?.classList.remove('hidden');
+        } else if (pageNum === 9) {
+            $('#sim2')?.classList.remove('hidden');
+        } else if (pageNum === 10) {
+            $('#sim3')?.classList.remove('hidden');
+        }
+    };
+
+    const setActive = (pageId) => {
+        const pageNum = Number(pageId.replace('page', '')) || 1;
+        currentPageNum = pageNum;
+
+        pages.forEach(id => {
+            const el = $('#' + id);
+            if (el) el.classList.remove('active');
+        });
+        const target = $('#' + pageId);
+        if (target) target.classList.add('active');
+
+        const cp = $('#currentPage');
+        if (cp) cp.textContent = pageNum;
+        const pi = $('#pageIndicator');
+        if (pi) pi.textContent = `${pageNum} of ${pages.length}`;
+        const prev = $('#prevBtn');
+        if (prev) prev.disabled = pageNum === 1;
+        const next = $('#nextBtn');
+        if (next) next.disabled = pageNum === pages.length;
+
+        updateSim(pageNum);
+        location.hash = pageId;
+    };
+
+    window.nextPage = () => {
+        const i = currentIndex();
+        if (i < pages.length) {
+            setActive('page' + (i + 1));
+        }
+    };
+
+    window.prevPage = () => {
+        const i = currentIndex();
+        if (i > 1) {
+            setActive('page' + (i - 1));
+        }
+    };
+
+    const boot = () => {
+        const fromHash = (location.hash || '').replace('#', '');
+        if (fromHash && document.getElementById(fromHash)) {
+            setActive(fromHash);
+        } else {
+            setActive('page1');
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+})();
+
+/* --------------------------------------------------------
+   Simulator Functions
+---------------------------------------------------------*/
+let selectedCategory = "Restaurants";
+let dynamicCategories = ["Restaurants", "Museums", "Parks"];
+let dynamicSelectedCategory = "Restaurants";
+
+function updateList() {
+    const items = document.querySelectorAll('#categoryList .sim-list-item');
+    items.forEach(item => {
+        item.classList.remove('selected');
+        if (item.getAttribute('data-value') === selectedCategory) {
+            item.classList.add('selected');
+        }
+        item.onclick = () => {
+            selectedCategory = item.getAttribute('data-value');
+            updateList();
+        };
+    });
+    document.getElementById('listDisplay').textContent = `Selected: ${selectedCategory}`;
+}
+
+function addCategory() {
+    const list = document.getElementById('categoryList');
+    const newItem = document.createElement('div');
+    const newCategory = `New Category ${document.querySelectorAll('#categoryList .sim-list-item').length + 1}`;
+    newItem.className = 'sim-list-item';
+    newItem.setAttribute('data-value', newCategory);
+    newItem.textContent = newCategory;
+    newItem.onclick = () => {
+        selectedCategory = newItem.getAttribute('data-value');
+        updateList();
+    };
+    list.appendChild(newItem);
+    updateList();
+}
+
+function deleteCategory() {
+    const items = document.querySelectorAll('#categoryList .sim-list-item');
+    items.forEach(item => {
+        if (item.getAttribute('data-value') === selectedCategory) {
+            item.remove();
+        }
+    });
+    selectedCategory = document.querySelector('#categoryList .sim-list-item')?.getAttribute('data-value') || '';
+    updateList();
+}
+
+function updateDynamicList() {
+    const list = document.getElementById('dynamicList');
+    list.innerHTML = '';
+    dynamicCategories.forEach(category => {
+        const item = document.createElement('div');
+        item.className = 'sim-list-item';
+        item.setAttribute('data-value', category);
+        item.textContent = category;
+        if (category === dynamicSelectedCategory) {
+            item.classList.add('selected');
+        }
+        item.onclick = () => {
+            dynamicSelectedCategory = category;
+            updateDynamicList();
+        };
+        list.appendChild(item);
+    });
+    document.getElementById('dynamicDisplay').textContent = `Selected: ${dynamicSelectedCategory}`;
+}
+
+function addDynamicCategory() {
+    dynamicCategories.push(`New Category ${dynamicCategories.length + 1}`);
+    updateDynamicList();
+}
+
+function deleteDynamicCategory() {
+    dynamicCategories = dynamicCategories.filter(category => category !== dynamicSelectedCategory);
+    dynamicSelectedCategory = dynamicCategories[0] || '';
+    updateDynamicList();
+}
+
+function downloadDynamicListCode() {
+    const code = `import SwiftUI
+
+struct Category: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+struct DynamicCategoryListView: View {
+    @State private var categories = [
+        Category(name: "Restaurants"),
+        Category(name: "Museums"),
+        Category(name: "Parks")
+    ]
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(categories) { category in
+                    NavigationLink(destination: Text("Details for \\(category.name)")) {
+                        Text(category.name)
+                    }
+                }
+                .onDelete(perform: deleteCategory)
+            }
+            .navigationTitle("Categories")
+            .toolbar {
+                ToolbarItem {
+                    Button("Add") { addCategory() }
+                }
+            }
+        }
+    }
+    
+    private func addCategory() {
+        categories.append(Category(name: "New Category"))
+    }
+    
+    private func deleteCategory(at offsets: IndexSet) {
+        categories.remove(atOffsets: offsets)
+    }
+}
+
+struct DynamicCategoryListView_Previews: PreviewProvider {
+    static var previews: some View {
+        DynamicCategoryListView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'DynamicCategoryListView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadCityGuideListCode() {
+    const code = `import SwiftUI
+
+struct CityGuideListView: View {
+    @State private var categories = ["Restaurants", "Museums", "Parks", "Events"]
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(categories, id: \\.self) { category in
+                    NavigationLink(destination: Text("Explore \\(category) in the City")) {
+                        Text(category)
+                    }
+                }
+            }
+            .navigationTitle("City Guide")
+            .listStyle(.insetGrouped)
+        }
+    }
+}
+
+struct CityGuideListView_Previews: PreviewProvider {
+    static var previews: some View {
+        CityGuideListView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CityGuideListView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function downloadSimulatorListCode() {
+    const code = `import SwiftUI
+
+struct Category: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+struct SimulatorListView: View {
+    @State private var categories = [
+        Category(name: "Restaurants"),
+        Category(name: "Museums"),
+        Category(name: "Parks")
+    ]
+    
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(categories) { category in
+                    NavigationLink(destination: Text("Explore \\(category.name)")) {
+                        Text(category.name)
+                    }
+                }
+                .onDelete(perform: deleteCategory)
+            }
+            .navigationTitle("City Guide")
+            .toolbar {
+                ToolbarItem {
+                    Button("Add") { addCategory() }
+                }
+            }
+        }
+    }
+    
+    private func addCategory() {
+        categories.append(Category(name: "New Category"))
+    }
+    
+    private func deleteCategory(at offsets: IndexSet) {
+        categories.remove(atOffsets: offsets)
+    }
+}
+
+struct SimulatorListView_Previews: PreviewProvider {
+    static var previews: some View {
+        SimulatorListView()
+    }
+}
+`;
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'SimulatorListView.swift';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+/* --------------------------------------------------------
+   LMS Assessment Logic
+---------------------------------------------------------*/
+(function(){
+    const QUIZ_KEY = 'lms:category-lists';
+    const SETTINGS_KEY = QUIZ_KEY + ':settings';
+    const RESULTS_KEY = QUIZ_KEY + ':results';
+    const STARTS_KEY = QUIZ_KEY + ':starts';
+
+    const defaultSettings = {
+        title: 'SwiftUI Category Lists Quiz',
+        startISO: '',
+        endISO: '',
+        durationMin: 20,
+        accessCode: 'list123',
+        instructorCode: 'teach456',
+        maxAttempts: '3'
+    };
+
+    const correctAnswers = { q1: 'b', q2: 'b', q3: 'b' };
+
+    let timerId = null;
+    let remainingSec = 0;
+    let activeStudent = null;
+    let currentRole = null;
+
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+
+    const getJSON = (key, fallback) => {
+        try { const v = JSON.parse(localStorage.getItem(key) || ''); return (v == null ? fallback : v); } catch { return fallback; }
+    };
+    const setJSON = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+    const loadSettings = () => Object.assign({}, defaultSettings, getJSON(SETTINGS_KEY, {}));
+    const saveSettings = (s) => setJSON(SETTINGS_KEY, s);
+
+    const fmt = (sec) => `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+
+    function isWithinWindow() {
+        const s = loadSettings();
+        const now = new Date();
+        if (s.startISO) {
+            const start = new Date(s.startISO);
+            if (now < start) return { ok: false, msg: `Quiz will open on ${start.toLocaleString()}.` };
+        }
+        if (s.endISO) {
+            const end = new Date(s.endISO);
+            if (now > end) return { ok: false, msg: `Quiz closed on ${end.toLocaleString()}.` };
+        }
+        return { ok: true, msg: '' };
+    }
+
+    function applySettingsToUI() {
+        const s = loadSettings();
+        const q = $('#quizTitle'); if (q) q.value = s.title;
+        const d = $('#duration'); if (d) d.value = s.durationMin;
+        const ap = $('#accessPassword'); if (ap) ap.value = s.accessCode;
+        const ic = $('#instructorCode'); if (ic) ic.value = s.instructorCode;
+        const ma = $('#maxAttempts'); if (ma) ma.value = s.maxAttempts;
+        const sd = $('#startDate'); if (sd && s.startISO) sd.value = s.startISO.slice(0, 16);
+        const ed = $('#endDate'); if (ed && s.endISO) ed.value = s.endISO.slice(0, 16);
+        const ld = $('#lmsDate');
+        if (ld) {
+            ld.textContent = s.startISO ? `Starts: ${new Date(s.startISO).toLocaleString()}` : 'Not scheduled';
+        }
+    }
+
+    function toggleSettings() {
+        if (currentRole !== 'instructor') return alert('Only instructors can access settings.');
+        const sp = $('#settingsPanel');
+        if (sp) sp.classList.toggle('hidden');
+    }
+    window.toggleSettings = toggleSettings;
+
+    function saveAssessmentSettings() {
+        if (currentRole !== 'instructor') return alert('Only instructors can save settings.');
+        const s = loadSettings();
+        s.title = ($('#quizTitle')?.value || '').trim() || defaultSettings.title;
+        s.durationMin = Math.max(5, Math.min(60, Number($('#duration')?.value || defaultSettings.durationMin)));
+        s.accessCode = ($('#accessPassword')?.value || '').trim() || defaultSettings.accessCode;
+        s.instructorCode = ($('#instructorCode')?.value || '').trim() || defaultSettings.instructorCode;
+        s.maxAttempts = $('#maxAttempts')?.value || defaultSettings.maxAttempts;
+        s.startISO = ($('#startDate')?.value || '').trim();
+        s.endISO = ($('#endDate')?.value || '').trim();
+        saveSettings(s);
+        applySettingsToUI();
+        alert('Settings saved!');
+    }
+    window.saveAssessmentSettings = saveAssessmentSettings;
+
+    function selectStudentRole() {
+        currentRole = 'student';
+        $('#roleSelection').classList.add('hidden');
+        $('#lmsContainer').classList.remove('hidden');
+        $('#studentPanel').classList.remove('hidden');
+        $('#facultyPanel').classList.add('hidden');
+        applySettingsToUI();
+    }
+    window.selectStudentRole = selectStudentRole;
+
+    function selectInstructorRole() {
+        const code = prompt('Enter instructor password:');
+        const s = loadSettings();
+        if (code === s.instructorCode) {
+            currentRole = 'instructor';
+            $('#roleSelection').classList.add('hidden');
+            $('#lmsContainer').classList.remove('hidden');
+            $('#facultyPanel').classList.remove('hidden');
+            $('#studentPanel').classList.add('hidden');
+            applySettingsToUI();
+            updateAnalytics();
+        } else {
+            alert('Invalid instructor password.');
+        }
+    }
+    window.selectInstructorRole = selectInstructorRole;
+
+    function startAssessment() {
+        const name = ($('#studentName')?.value || '').trim();
+        const pass = ($('#studentPassword')?.value || '').trim();
+        const s = loadSettings();
+
+        if (!name) return alert('Please enter your name.');
+        if (pass !== s.accessCode) return alert('Invalid quiz password.');
+
+        const starts = getJSON(STARTS_KEY, {});
+        const attempts = (starts[name] || []).length;
+        const maxAttempts = s.maxAttempts === 'unlimited' ? Infinity : Number(s.maxAttempts);
+        if (attempts >= maxAttempts) return alert('Maximum attempts reached.');
+
+        const windowCheck = isWithinWindow();
+        if (!windowCheck.ok) return alert(windowCheck.msg);
+
+        activeStudent = name;
+        remainingSec = s.durationMin * 60;
+        $('#loginSection').classList.add('hidden');
+        $('#quizSection').classList.remove('hidden');
+        $('#quizStatus').classList.remove('status-pending');
+        $('#quizStatus').classList.add('status-active');
+        $('#quizStatus').textContent = 'Quiz in Progress';
+        $('#timer').textContent = fmt(remainingSec);
+
+        if (timerId) clearInterval(timerId);
+        timerId = setInterval(() => {
+            remainingSec--;
+            $('#timer').textContent = fmt(remainingSec);
+            if (remainingSec <= 0) {
+                clearInterval(timerId);
+                submitAssessment();
+            }
+        }, 1000);
+    }
+    window.startAssessment = startAssessment;
+
+    function submitAssessment() {
+        if (!activeStudent) return;
+
+        clearInterval(timerId);
+        const answers = {
+            q1: $all('input[name="q1"]:checked')[0]?.value,
+            q2: $all('input[name="q2"]:checked')[0]?.value,
+            q3: $all('input[name="q3"]:checked')[0]?.value
+        };
+
+        let score = 0;
+        const results = {};
+        for (const [q, a] of Object.entries(answers)) {
+            results[q] = a === correctAnswers[q];
+            if (results[q]) score++;
+        }
+
+        const percentage = Math.round((score / 3) * 100);
+        const resultsData = getJSON(RESULTS_KEY, {});
+        if (!resultsData[activeStudent]) resultsData[activeStudent] = [];
+        resultsData[activeStudent].push({ score, percentage, answers, timestamp: new Date().toISOString() });
+        setJSON(RESULTS_KEY, resultsData);
+
+        const starts = getJSON(STARTS_KEY, {});
+        if (!starts[activeStudent]) starts[activeStudent] = [];
+        starts[activeStudent].push(new Date().toISOString());
+        setJSON(STARTS_KEY, starts);
+
+        $('#quizSection').classList.add('hidden');
+        $('#resultsSection').classList.remove('hidden');
+        $('#scoreDisplay').textContent = `Your Score: ${score}/3 (${percentage}%)`;
+
+        const detailed = $('#detailedResults');
+        detailed.innerHTML = `
+            <p>Q1: ${results.q1 ? '✓ Correct' : '✗ Incorrect'}</p>
+            <p>Q2: ${results.q2 ? '✓ Correct' : '✗ Incorrect'}</p>
+            <p>Q3: ${results.q3 ? '✓ Correct' : '✗ Incorrect'}</p>
+        `;
+
+        const recommendations = [];
+        if (!results.q1) recommendations.push('Review List basics');
+        if (!results.q2) recommendations.push('Study NavigationView');
+        if (!results.q3) recommendations.push('Practice dynamic List features');
+        $('#studyRecommendations').innerHTML = recommendations.length ? recommendations.map(r => `<li>${r}</li>`).join('') : '<li>Great job! Review all topics.</li>';
+
+        const s = loadSettings();
+        const maxAttempts = s.maxAttempts === 'unlimited' ? Infinity : Number(s.maxAttempts);
+        if (starts[activeStudent].length >= maxAttempts) {
+            $('#retakeBtn').style.display = 'none';
+        }
+
+        updateAnalytics();
+    }
+    window.submitAssessment = submitAssessment;
+
+    function retakeAssessment() {
+        activeStudent = null;
+        $all('input[type="radio"]').forEach(input => input.checked = false);
+        $('#resultsSection').classList.add('hidden');
+        $('#loginSection').classList.remove('hidden');
+        $('#studentName').value = '';
+        $('#studentPassword').value = '';
+    }
+    window.retakeAssessment = retakeAssessment;
+
+    function updateAnalytics() {
+        const results = getJSON(RESULTS_KEY, {});
+        const starts = getJSON(STARTS_KEY, {});
+        const studentCount = Object.keys(starts).length;
+        const attempts = Object.values(starts).reduce((sum, arr) => sum + arr.length, 0);
+        const scores = Object.values(results).flat().map(r => r.percentage);
+        const avgScore = scores.length ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length) : 0;
+        const completionRate = studentCount ? Math.round((attempts / studentCount) * 100) : 0;
+
+        $('#attemptCount').textContent = attempts;
+        $('#averageScore').textContent = `${avgScore}%`;
+        $('#completionRate').textContent = `${completionRate}%`;
+        $('#progressFill').style.width = `${completionRate}%`;
+
+        const questionStats = { q1: 0, q2: 0, q3: 0 };
+        for (const studentResults of Object.values(results)) {
+            for (const result of studentResults) {
+                for (const [q, a] of Object.entries(result.answers)) {
+                    if (a === correctAnswers[q]) questionStats[q]++;
+                }
+            }
+        }
+        const totalAttempts = Object.values(results).flat().length;
+        $('#questionStats').innerHTML = `
+            <p>Q1 - List Basics: ${totalAttempts ? Math.round((questionStats.q1 / totalAttempts) * 100) : 0}% correct</p>
+            <p>Q2 - Navigation: ${totalAttempts ? Math.round((questionStats.q2 / totalAttempts) * 100) : 0}% correct</p>
+            <p>Q3 - Dynamic Lists: ${totalAttempts ? Math.round((questionStats.q3 / totalAttempts) * 100) : 0}% correct</p>
+        `;
+
+        const studentStats = Object.entries(results).map(([name, results]) => {
+            const avg = results.length ? Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / results.length) : 0;
+            return `<p>${name}: ${results.length} attempt(s), Avg Score: ${avg}%</p>`;
+        }).join('');
+        $('#studentStats').innerHTML = studentStats || '<p>No student data available.</p>';
+    }
+
+    applySettingsToUI();
+})();
+    </script>
+</body>
+</html>

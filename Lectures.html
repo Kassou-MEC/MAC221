@@ -1,0 +1,2700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Learning Platform</title>
+    <style>
+        /*
+        SWIFT LEARNING PLATFORM - CUSTOMIZATION GUIDE
+        =============================================
+        
+        TO ADD NEW CHAPTERS:
+        1. Add chapter object to 'chapters' array in JavaScript
+        2. Include: title, content with definition, examples, mistakes, practice, quiz
+        3. Update TOTAL_CHAPTERS constant
+        4. Add chapter card to homepage grid
+        
+        TO MODIFY STYLING:
+        - Update CSS custom properties in :root
+        - Modify .card, .chapter-content classes for layout
+        - Update .code-block for syntax highlighting colors
+        
+        TO EXTEND FUNCTIONALITY:
+        - Add new quiz question types in showQuiz()
+        - Modify code runner integration in runCode()
+        - Extend localStorage saving in saveProgress()
+        */
+        
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --accent-color: #FF6B35;
+            --success-color: #34C759;
+            --error-color: #FF3B30;
+            --warning-color: #FF9500;
+            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border-color: #d2d2d7;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --card-bg: #1c1c1e;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1a6;
+            --border-color: #38383a;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--background);
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.primary {
+            background: var(--primary-color);
+        }
+
+        .btn.secondary {
+            background: var(--secondary-color);
+        }
+
+        .btn.success {
+            background: var(--success-color);
+        }
+
+        .btn.error {
+            background: var(--error-color);
+        }
+
+        .main-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 20px 0;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .chapter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .chapter-content {
+            padding: 40px;
+        }
+
+        .chapter-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            box-shadow: var(--shadow);
+        }
+
+        .code-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .mistakes-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .mistakes-list li {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 10px;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        [data-theme="dark"] .mistakes-list li {
+            background: #2d1b1b;
+            border-color: #e53e3e;
+            color: #fed7d7;
+        }
+
+        .mistakes-list li::before {
+            content: "⚠️";
+            position: absolute;
+            left: 15px;
+            font-size: 1.2rem;
+        }
+
+        .practice-editor {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .editor-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            resize: vertical;
+        }
+
+        .editor-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .output-area {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            font-family: monospace;
+            margin-top: 15px;
+            min-height: 60px;
+            white-space: pre-wrap;
+        }
+
+        .quiz-container {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .question {
+            margin-bottom: 30px;
+        }
+
+        .question h4 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .options {
+            list-style: none;
+        }
+
+        .options li {
+            margin-bottom: 10px;
+        }
+
+        .options label {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .options label:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .options input[type="radio"] {
+            margin-right: 12px;
+        }
+
+        .quiz-feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+        }
+
+        .quiz-feedback.correct {
+            background: #f0fff4;
+            border: 2px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .quiz-feedback.incorrect {
+            background: #fff5f5;
+            border: 2px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        [data-theme="dark"] .quiz-feedback.correct {
+            background: #1a2e1a;
+            color: #68d391;
+        }
+
+        [data-theme="dark"] .quiz-feedback.incorrect {
+            background: #2d1b1b;
+            color: #fc8181;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-top: 20px;
+        }
+
+        .navigation {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 100;
+        }
+
+        [data-theme="dark"] .navigation {
+            background: rgba(28, 28, 30, 0.95);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .instructor-notes {
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-top: 40px;
+            overflow: hidden;
+        }
+
+        [data-theme="dark"] .instructor-notes {
+            background: #2d2d2f;
+        }
+
+        .instructor-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .instructor-content {
+            padding: 20px;
+            display: none;
+        }
+
+        .instructor-content.active {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Syntax Highlighting */
+        .swift-keyword {
+            color: #ff6b9d;
+            font-weight: bold;
+        }
+        .swift-string {
+            color: #95e1d3;
+        }
+        .swift-comment {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .swift-number {
+            color: #f8b500;
+        }
+        .swift-type {
+            color: #5dade2;
+            font-weight: bold;
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .chapter-content {
+                padding: 20px;
+            }
+            
+            .chapter-title {
+                font-size: 2rem;
+            }
+            
+            .chapter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .editor-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .editor-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        🌙
+    </button>
+
+    <div class="navigation hidden" id="navigation">
+        <div class="nav-content">
+            <div class="nav-title" id="nav-title">Swift Learning Platform</div>
+            <div class="nav-buttons">
+                <button class="btn" onclick="showHome()" aria-label="Go to home">🏠 Home</button>
+                <button class="btn" onclick="previousChapter()" aria-label="Previous chapter">⬅️ Previous</button>
+                <button class="btn" onclick="nextChapter()" aria-label="Next chapter">Next ➡️</button>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="homepage">
+            <div class="header">
+                <h1>Swift Learning Platform</h1>
+                <p class="subtitle">Master Swift programming through interactive lessons, practice, and quizzes</p>
+                <div class="controls">
+                    <button class="btn primary" onclick="startLearning()">🚀 Start Learning</button>
+                    <button class="btn secondary" onclick="loadProgress()">📚 Continue Learning</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="chapter-grid" id="chapter-grid">
+                    <!-- Chapter cards will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div id="chapter-view" class="main-content hidden">
+            <div class="chapter-content" id="chapter-content">
+                <!-- Chapter content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global constants and variables
+        const TOTAL_CHAPTERS = 7;
+        let currentChapter = 0;
+        let quizScores = {};
+        let editorContent = {};
+
+        // Chapter data structure
+        const chapters = [
+            {
+                title: "Variables & Constants",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Variables and Constants?</h3>
+                            <p><strong>Variables</strong> in Swift are named containers that store data which can change during the program's execution. Variables are declared with the <code>var</code> keyword. They allow you to reassign values, making them useful for dynamic data like counters, user input, or scores in a game.</p>
+                            <p><strong>Constants</strong> are named containers that store data which cannot be changed once set. Constants are declared with the <code>let</code> keyword. They are useful for fixed values like Pi, configuration settings, or maximum limits that shouldn't change during program execution.</p>
+                            <p><strong>Why use them?</strong> Variables and constants make your code readable, maintainable, and help prevent errors by clearly indicating whether a value should change or remain fixed.</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Declaring Variables and Constants",
+                            code: `// Variables can change their value
+var playerScore = 0
+var playerName = "Alice"
+var isGameActive = true
+
+// Constants cannot change their value
+let maxLives = 3
+let pi = 3.14159
+let appName = "Swift Game"
+
+// Using the variables
+playerScore = 100  // ✅ This is allowed
+playerName = "Bob" // ✅ This is allowed
+
+// maxLives = 5     // ❌ This would cause an error`,
+                            explanation: "Variables use 'var' and can be reassigned. Constants use 'let' and cannot be changed after initial assignment."
+                        },
+                        {
+                            title: "When to Use Variables vs Constants",
+                            code: `// Use constants for values that won't change
+let welcomeMessage = "Welcome to our app!"
+let maxRetries = 5
+
+// Use variables for values that will change
+var currentLevel = 1
+var score = 0
+
+// In a game loop
+for round in 1...10 {
+    score += 10        // Variable changes
+    currentLevel += 1  // Variable changes
+    // welcomeMessage stays the same (constant)
+}`,
+                            explanation: "Choose 'let' for values that remain constant throughout your program's execution, and 'var' for values that need to change."
+                        }
+                    ],
+                    mistakes: [
+                        "Using 'var' when 'let' would be more appropriate - prefer constants when values don't change",
+                        "Trying to modify a constant after declaration - this will cause a compile error",
+                        "Not initializing variables before use - Swift requires initialization",
+                        "Forgetting that constants must be set when declared or during initialization"
+                    ],
+                    practice: {
+                        prompt: "Create a simple program that demonstrates variables and constants. Declare constants for a game's maximum score and player name, and variables for current score and level.",
+                        starter: `// Declare constants for fixed values
+let maxScore = 1000
+let playerName = "Player1"
+
+// Declare variables for changing values
+var currentScore = 0
+var level = 1
+
+// Your code here - try changing the variables and see what happens`,
+                        solution: `let maxScore = 1000
+let playerName = "Player1"
+
+var currentScore = 0
+var level = 1
+
+print("Welcome \\(playerName)!")
+print("Max possible score: \\(maxScore)")
+
+// Simulate gameplay
+currentScore = 150
+level = 2
+
+print("Current score: \\(currentScore)")
+print("Current level: \\(level)")
+print("Remaining points to max: \\(maxScore - currentScore)")`
+                    }
+                }
+            },
+            {
+                title: "Types & Type Inference",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Types and Type Inference?</h3>
+                            <p><strong>Types</strong> in Swift define what kind of data a variable or constant can hold. Common types include Int (whole numbers), Double (decimal numbers), String (text), and Bool (true/false values). Every value in Swift has a specific type that determines what operations can be performed on it.</p>
+                            <p><strong>Type Inference</strong> is Swift's ability to automatically determine the type of a variable or constant based on the value you assign to it. This means you often don't need to explicitly declare types - Swift figures it out for you.</p>
+                            <p><strong>Why does this matter?</strong> Swift's type system prevents many common programming errors by catching type mismatches at compile time, while type inference keeps your code clean and readable.</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Basic Types and Type Inference",
+                            code: `// Swift infers types automatically
+let age = 25           // Swift infers: Int
+let price = 19.99      // Swift infers: Double
+let name = "Sarah"     // Swift infers: String
+let isActive = true    // Swift infers: Bool
+
+// You can also specify types explicitly
+let count: Int = 42
+let temperature: Double = 98.6
+let message: String = "Hello"
+let isComplete: Bool = false
+
+// Check types (for demonstration)
+print(type(of: age))        // Int
+print(type(of: price))      // Double`,
+                            explanation: "Swift automatically determines types based on the values you assign. Explicit type annotations are optional but sometimes useful for clarity."
+                        },
+                        {
+                            title: "Working with Different Types",
+                            code: `// Numbers
+let wholeNumber = 42        // Int
+let decimal = 3.14159      // Double
+let largeNumber = 1_000_000 // Int (underscores for readability)
+
+// Text
+let greeting = "Hello, World!"
+let multiline = """
+This is a
+multi-line string
+in Swift
+"""
+
+// Boolean
+let isLearning = true
+let isConfused = false
+
+// Type conversion when needed
+let intValue = 10
+let doubleValue = 3.14
+let result = Double(intValue) + doubleValue  // Convert Int to Double`,
+                            explanation: "Swift has strict typing - you can't mix types without explicit conversion. Use type conversion functions when needed."
+                        }
+                    ],
+                    mistakes: [
+                        "Trying to perform operations between different number types without conversion (e.g., Int + Double)",
+                        "Assuming Swift will automatically convert between types - it won't",
+                        "Over-using explicit type annotations when inference would work fine",
+                        "Forgetting that string concatenation requires same types or string interpolation"
+                    ],
+                    practice: {
+                        prompt: "Create variables of different types and practice type conversion. Calculate a person's BMI using their weight (Int) and height (Double).",
+                        starter: `// Create variables for a BMI calculator
+let weightInKg = 70        // Int
+let heightInM = 1.75      // Double
+
+// Your task: Calculate BMI = weight / (height * height)
+// Remember: you'll need to convert the weight to Double!`,
+                        solution: `let weightInKg = 70
+let heightInM = 1.75
+
+// Convert Int to Double for calculation
+let weightAsDouble = Double(weightInKg)
+let bmi = weightAsDouble / (heightInM * heightInM)
+
+print("Weight: \\(weightInKg) kg")
+print("Height: \\(heightInM) m")
+print("BMI: \\(String(format: "%.1f", bmi))")
+
+// Alternative: convert at calculation time
+let bmi2 = Double(weightInKg) / (heightInM * heightInM)
+print("BMI (method 2): \\(bmi2)")`
+                    }
+                }
+            },
+            {
+                title: "Control Flow",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What is Control Flow?</h3>
+                            <p><strong>Control Flow</strong> refers to the order in which your code executes. By default, code runs line by line from top to bottom, but control flow statements let you change this behavior based on conditions or repeat code multiple times.</p>
+                            <p><strong>Conditional Statements</strong> (if, else, switch) let you execute different code paths based on whether certain conditions are true or false. This allows your program to make decisions and respond to different situations.</p>
+                            <p><strong>Loops</strong> (for, while) let you repeat code multiple times, either for a specific number of iterations or while a condition remains true. This is essential for processing collections of data or creating repetitive behaviors.</p>
+                            <p><strong>Why use control flow?</strong> Without control flow, programs would be linear and couldn't respond to user input, process data collections, or make decisions - making them very limited.</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "If-Else Statements",
+                            code: `let temperature = 72
+let isRaining = false
+
+// Simple if statement
+if temperature > 70 {
+    print("It's warm today!")
+}
+
+// If-else
+if temperature > 80 {
+    print("It's hot!")
+} else if temperature > 60 {
+    print("It's pleasant!")
+} else {
+    print("It's cool!")
+}
+
+// Combining conditions
+if temperature > 70 && !isRaining {
+    print("Perfect weather for a walk!")
+} else {
+    print("Maybe stay inside today.")
+}`,
+                            explanation: "Use if-else to make decisions in your code. Combine conditions with && (and) and || (or) operators."
+                        },
+                        {
+                            title: "Loops and Ranges",
+                            code: `// For-in loop with range
+print("Countdown:")
+for number in (1...5).reversed() {
+    print(number)
+}
+print("Launch! 🚀")
+
+// For-in loop with array
+let fruits = ["apple", "banana", "orange"]
+for fruit in fruits {
+    print("I like \\(fruit)s")
+}
+
+// While loop
+var countdown = 3
+while countdown > 0 {
+    print("\\(countdown)...")
+    countdown -= 1
+}
+
+// Switch statement
+let grade = "B"
+switch grade {
+case "A":
+    print("Excellent!")
+case "B":
+    print("Good job!")
+case "C":
+    print("Average")
+default:
+    print("Keep trying!")
+}`,
+                            explanation: "Loops repeat code efficiently. Switch statements provide clean multi-way conditionals with pattern matching."
+                        }
+                    ],
+                    mistakes: [
+                        "Forgetting to include 'default' case in switch statements - Swift requires exhaustive cases",
+                        "Creating infinite loops by forgetting to update loop conditions",
+                        "Using '=' instead of '==' in if conditions (assignment vs comparison)",
+                        "Not understanding that Swift ranges are inclusive (1...5 includes 5, 1..<5 excludes 5)"
+                    ],
+                    practice: {
+                        prompt: "Create a program that uses loops and conditions to analyze a list of test scores. Find the average, count passing scores (≥70), and print a grade summary.",
+                        starter: `let testScores = [85, 92, 78, 65, 90, 72, 88]
+
+// Your tasks:
+// 1. Calculate the average score
+// 2. Count how many scores are 70 or above (passing)
+// 3. Print a summary with the results`,
+                        solution: `let testScores = [85, 92, 78, 65, 90, 72, 88]
+
+var totalScore = 0
+var passingCount = 0
+
+// Calculate total and count passing scores
+for score in testScores {
+    totalScore += score
+    if score >= 70 {
+        passingCount += 1
+    }
+}
+
+let average = Double(totalScore) / Double(testScores.count)
+let passingRate = Double(passingCount) / Double(testScores.count) * 100
+
+print("Test Results Summary:")
+print("Total tests: \\(testScores.count)")
+print("Average score: \\(String(format: "%.1f", average))")
+print("Passing scores: \\(passingCount)")
+print("Passing rate: \\(String(format: "%.1f", passingRate))%")
+
+// Grade the average
+if average >= 90 {
+    print("Class grade: A")
+} else if average >= 80 {
+    print("Class grade: B")
+} else if average >= 70 {
+    print("Class grade: C")
+} else {
+    print("Class grade: Need improvement")
+}`
+                    }
+                }
+            },
+            {
+                title: "Functions",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Functions?</h3>
+                            <p><strong>Functions</strong> are self-contained blocks of code that perform a specific task. They take input values (called parameters), process them, and can return a result. Functions are like mini-programs that you can call whenever you need to perform that specific task.</p>
+                            <p><strong>Why use functions?</strong> Functions help you organize code, avoid repetition (DRY - Don't Repeat Yourself), make code easier to test and debug, and allow you to break complex problems into smaller, manageable pieces.</p>
+                            <p><strong>Key concepts:</strong> Parameters are the inputs a function accepts, return types specify what kind of value the function gives back, and function calls are how you actually execute the function with specific arguments.</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Basic Function Syntax",
+                            code: `// Function with no parameters, no return value
+func sayHello() {
+    print("Hello, World!")
+}
+
+// Function with parameters
+func greet(name: String) {
+    print("Hello, \\(name)!")
+}
+
+// Function with parameters and return value
+func addNumbers(a: Int, b: Int) -> Int {
+    return a + b
+}
+
+// Function with multiple parameters and return
+func calculateArea(width: Double, height: Double) -> Double {
+    return width * height
+}
+
+// Using the functions
+sayHello()                          // "Hello, World!"
+greet(name: "Alice")               // "Hello, Alice!"
+let sum = addNumbers(a: 5, b: 3)   // returns 8
+let area = calculateArea(width: 10.0, height: 5.0)  // returns 50.0`,
+                            explanation: "Functions are defined with 'func', can take parameters, and can return values. The arrow '->' indicates the return type."
+                        },
+                        {
+                            title: "Advanced Function Features",
+                            code: `// Function with default parameter values
+func greetUser(name: String, greeting: String = "Hello") {
+    print("\\(greeting), \\(name)!")
+}
+
+// External and internal parameter names
+func calculateTip(for billAmount: Double, at tipRate: Double = 0.18) -> Double {
+    return billAmount * tipRate
+}
+
+// Function returning multiple values (tuple)
+func getNameAndAge() -> (name: String, age: Int) {
+    return ("John", 25)
+}
+
+// Using the functions
+greetUser(name: "Bob")                    // Uses default greeting
+greetUser(name: "Alice", greeting: "Hi")  // Custom greeting
+
+let tip = calculateTip(for: 50.0)         // Using default tip rate
+let tip2 = calculateTip(for: 50.0, at: 0.20)  // Custom tip rate
+
+let person = getNameAndAge()
+print("Name: \\(person.name), Age: \\(person.age)")`,
+                            explanation: "Functions can have default parameters, external parameter names for readability, and can return multiple values using tuples."
+                        }
+                    ],
+                    mistakes: [
+                        "Forgetting to specify parameter names when calling functions (Swift requires them by default)",
+                        "Not specifying return type when function returns a value",
+                        "Creating functions that are too long or try to do too many things - keep them focused",
+                        "Not using default parameters when they would make the function more convenient to use"
+                    ],
+                    practice: {
+                        prompt: "Create a temperature converter with functions for Celsius to Fahrenheit, Fahrenheit to Celsius, and a function that determines if temperature is comfortable for outdoor activities.",
+                        starter: `// Create temperature conversion functions
+// Formula: F = (C × 9/5) + 32
+// Formula: C = (F - 32) × 5/9
+
+// Your tasks:
+// 1. Create celsiusToFahrenheit function
+// 2. Create fahrenheitToCelsius function  
+// 3. Create isComfortableTemperature function (comfortable: 65-75°F)
+// 4. Test your functions with different temperatures`,
+                        solution: `// Temperature conversion functions
+func celsiusToFahrenheit(_ celsius: Double) -> Double {
+    return (celsius * 9/5) + 32
+}
+
+func fahrenheitToCelsius(_ fahrenheit: Double) -> Double {
+    return (fahrenheit - 32) * 5/9
+}
+
+func isComfortableTemperature(_ fahrenheit: Double) -> Bool {
+    return fahrenheit >= 65 && fahrenheit <= 75
+}
+
+// Enhanced function with description
+func describeTemperature(celsius: Double) -> String {
+    let fahrenheit = celsiusToFahrenheit(celsius)
+    let comfortable = isComfortableTemperature(fahrenheit)
+    
+    let comfortDescription = comfortable ? "comfortable" : "not comfortable"
+    
+    return "\\(celsius)°C = \\(String(format: "%.1f", fahrenheit))°F - \\(comfortDescription) for outdoor activities"
+}
+
+// Test the functions
+let temperatures = [0.0, 15.0, 20.0, 25.0, 30.0]
+
+for temp in temperatures {
+    print(describeTemperature(celsius: temp))
+}
+
+// Direct conversions
+print("\\n100°C = \\(celsiusToFahrenheit(100))°F")  // Boiling point
+print("32°F = \\(fahrenheitToCelsius(32))°C")        // Freezing point`
+                    }
+                }
+            },
+            {
+                title: "Optionals",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Optionals?</h3>
+                            <p><strong>Optionals</strong> are Swift's way of handling values that might not exist. An optional can either contain a value or be nil (nothing). This prevents many common programming crashes that occur when trying to use values that don't exist.</p>
+                            <p><strong>Why do optionals exist?</strong> In many programming languages, trying to use a non-existent value causes crashes. Swift's optionals make this explicit and safe - you must check if a value exists before using it, preventing unexpected crashes.</p>
+                            <p><strong>Optional syntax:</strong> You declare an optional by adding '?' after the type name. To use the value inside, you must 'unwrap' it safely using techniques like optional binding (if let) or nil coalescing (??).</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Creating and Using Optionals",
+                            code: `// Declaring optionals
+var optionalName: String? = "Alice"
+var optionalAge: Int? = nil
+
+// Converting strings to numbers returns optionals
+let possibleNumber = Int("123")  // Optional(123)
+let invalidNumber = Int("abc")   // nil
+
+// Safe unwrapping with if let
+if let name = optionalName {
+    print("Hello, \\(name)!")  // Only runs if optionalName has a value
+} else {
+    print("No name provided")
+}
+
+// Nil coalescing operator - provide default value
+let displayName = optionalName ?? "Guest"
+print("Welcome, \\(displayName)!")
+
+// Guard let for early exit
+func greetUser(name: String?) {
+    guard let userName = name else {
+        print("No name provided")
+        return
+    }
+    print("Hello, \\(userName)!")
+}`,
+                            explanation: "Optionals safely handle missing values. Use if let or guard let to unwrap them safely, or ?? to provide defaults."
+                        },
+                        {
+                            title: "Real-World Optional Patterns",
+                            code: `// Dictionary lookups return optionals
+let scores = ["Alice": 95, "Bob": 87, "Carol": 92]
+let aliceScore = scores["Alice"]  // Optional(95)
+let davidScore = scores["David"]  // nil
+
+// Safe way to use dictionary values
+if let score = scores["Alice"] {
+    print("Alice scored \\(score)")
+}
+
+// Chaining optionals
+struct Person {
+    var name: String
+    var age: Int?
+}
+
+var people: [Person]? = [
+    Person(name: "Alice", age: 25),
+    Person(name: "Bob", age: nil)
+]
+
+// Optional chaining
+let firstPersonAge = people?[0].age
+print("First person's age: \\(firstPersonAge ?? 0)")
+
+// Multiple unwrapping
+if let peopleArray = people,
+   let firstPerson = peopleArray.first,
+   let age = firstPerson.age {
+    print("\\(firstPerson.name) is \\(age) years old")
+}`,
+                            explanation: "Optionals are common with dictionary lookups, array access, and when data might be missing. Chain operations safely with optional chaining."
+                        }
+                    ],
+                    mistakes: [
+                        "Force unwrapping with '!' without checking if the value exists - this can crash your app",
+                        "Not understanding that many built-in functions return optionals (like Int(string))",
+                        "Creating unnecessarily complex optional handling when simple patterns would work",
+                        "Forgetting to handle the nil case when unwrapping optionals"
+                    ],
+                    practice: {
+                        prompt: "Create a user profile system that safely handles optional data. Parse user input and create profiles with optional fields like age and email.",
+                        starter: `// User profile with optional data
+struct UserProfile {
+    let username: String
+    var age: Int?
+    var email: String?
+}
+
+// Sample user data (some might be invalid)
+let userData = [
+    ("alice", "25", "alice@email.com"),
+    ("bob", "invalid", "bob@email.com"),
+    ("carol", "30", ""),
+    ("david", "22", "not-an-email")
+]
+
+// Your task: Create UserProfile objects, safely converting strings to appropriate types`,
+                        solution: `struct UserProfile {
+    let username: String
+    var age: Int?
+    var email: String?
+}
+
+// Helper function to validate email
+func isValidEmail(_ email: String) -> Bool {
+    return email.contains("@") && email.contains(".")
+}
+
+// Create user profiles safely
+func createUserProfile(username: String, ageString: String, emailString: String) -> UserProfile {
+    // Safely convert age string to Int
+    let age = Int(ageString)
+    
+    // Validate email
+    let email = isValidEmail(emailString) ? emailString : nil
+    
+    return UserProfile(username: username, age: age, email: email)
+}
+
+// Process the user data
+let userData = [
+    ("alice", "25", "alice@email.com"),
+    ("bob", "invalid", "bob@email.com"),
+    ("carol", "30", ""),
+    ("david", "22", "not-an-email")
+]
+
+var userProfiles: [UserProfile] = []
+
+for (username, ageString, emailString) in userData {
+    let profile = createUserProfile(username: username, 
+                                  ageString: ageString, 
+                                  emailString: emailString)
+    userProfiles.append(profile)
+}
+
+// Display profiles with safe unwrapping
+for profile in userProfiles {
+    print("Username: \\(profile.username)")
+    
+    if let age = profile.age {
+        print("  Age: \\(age)")
+    } else {
+        print("  Age: Not provided")
+    }
+    
+    let email = profile.email ?? "No valid email"
+    print("  Email: \\(email)")
+    print("---")
+}`
+                    }
+                }
+            },
+            {
+                title: "Collections",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Collections?</h3>
+                            <p><strong>Collections</strong> are data structures that hold multiple values of the same type. Swift provides three main collection types: Arrays (ordered lists), Dictionaries (key-value pairs), and Sets (unique unordered values).</p>
+                            <p><strong>Arrays</strong> store values in a specific order and allow duplicates. Use arrays when order matters and you need to access items by index. Examples: shopping lists, high scores, steps in a recipe.</p>
+                            <p><strong>Dictionaries</strong> store key-value pairs with fast lookups by key. Use dictionaries when you need to associate related values, like storing user preferences or mapping names to phone numbers.</p>
+                            <p><strong>Sets</strong> store unique values with no specific order but very fast membership testing. Use sets when you need to ensure uniqueness or perform set operations like unions and intersections.</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Working with Arrays",
+                            code: `// Creating arrays
+var fruits = ["apple", "banana", "orange"]
+var numbers: [Int] = [1, 2, 3, 4, 5]
+var emptyArray: [String] = []
+
+// Adding elements
+fruits.append("grape")
+fruits.insert("strawberry", at: 0)
+numbers += [6, 7, 8]
+
+// Accessing elements
+let firstFruit = fruits[0]              // "strawberry"
+let lastNumber = numbers.last ?? 0      // 8 (safely get last)
+
+// Iterating
+for (index, fruit) in fruits.enumerated() {
+    print("\\(index): \\(fruit)")
+}
+
+// Array methods
+print("Fruit count: \\(fruits.count)")
+print("Contains apple: \\(fruits.contains("apple"))")
+print("Numbers sorted: \\(numbers.sorted())")
+
+// Filtering and mapping
+let longFruits = fruits.filter { $0.count > 5 }
+let uppercaseFruits = fruits.map { $0.uppercased() }`,
+                            explanation: "Arrays maintain order and allow duplicates. Use subscript notation to access by index, and many helpful methods for manipulation."
+                        },
+                        {
+                            title: "Dictionaries and Sets",
+                            code: `// Dictionaries - key-value pairs
+var studentGrades = ["Alice": 95, "Bob": 87, "Carol": 92]
+var capitals: [String: String] = [:]  // Empty dictionary
+
+// Adding and updating
+studentGrades["David"] = 89
+studentGrades["Alice"] = 97  // Updates existing
+
+// Safe access
+if let bobGrade = studentGrades["Bob"] {
+    print("Bob's grade: \\(bobGrade)")
+}
+
+// Iterating dictionaries
+for (student, grade) in studentGrades {
+    print("\\(student): \\(grade)")
+}
+
+// Sets - unique values
+var uniqueNumbers = Set([1, 2, 3, 2, 1])  // {1, 2, 3}
+var colors: Set<String> = ["red", "blue", "green"]
+
+// Set operations
+colors.insert("yellow")
+colors.remove("blue")
+
+let primaryColors: Set = ["red", "blue", "yellow"]
+let secondaryColors: Set = ["orange", "green", "purple"]
+
+let allColors = primaryColors.union(secondaryColors)
+let common = primaryColors.intersection(secondaryColors)`,
+                            explanation: "Dictionaries provide fast key-based lookup. Sets ensure uniqueness and provide mathematical set operations."
+                        }
+                    ],
+                    mistakes: [
+                        "Trying to access array elements with invalid indices - this will crash (use safe methods)",
+                        "Confusing dictionary keys and values when iterating",
+                        "Not understanding that Sets are unordered - don't rely on insertion order",
+                        "Using arrays when Sets would be more appropriate for uniqueness requirements"
+                    ],
+                    practice: {
+                        prompt: "Create a student grade tracking system using all three collection types. Track student grades, find statistics, and manage unique subjects.",
+                        starter: `// Student grade tracking system
+// Use arrays for grade history, dictionaries for student records, sets for subjects
+
+// Sample data
+let gradeEntries = [
+    ("Alice", "Math", 95),
+    ("Bob", "Math", 87),
+    ("Alice", "Science", 92),
+    ("Carol", "Math", 88),
+    ("Bob", "Science", 90),
+    ("Alice", "English", 96)
+]
+
+// Your tasks:
+// 1. Create a dictionary to store each student's grades by subject
+// 2. Create a set of all unique subjects
+// 3. Calculate average grade for each student
+// 4. Find which subjects each student is taking`,
+                        solution: `let gradeEntries = [
+    ("Alice", "Math", 95),
+    ("Bob", "Math", 87),
+    ("Alice", "Science", 92),
+    ("Carol", "Math", 88),
+    ("Bob", "Science", 90),
+    ("Alice", "English", 96)
+]
+
+// Dictionary to store student grades: [Student: [Subject: Grade]]
+var studentGrades: [String: [String: Int]] = [:]
+var allSubjects = Set<String>()
+
+// Process the grade entries
+for (student, subject, grade) in gradeEntries {
+    // Initialize student record if needed
+    if studentGrades[student] == nil {
+        studentGrades[student] = [:]
+    }
+    
+    // Add the grade
+    studentGrades[student]![subject] = grade
+    
+    // Add subject to our set
+    allSubjects.insert(subject)
+}
+
+print("=== STUDENT GRADE SYSTEM ===\\n")
+
+print("All Subjects: \\(allSubjects.sorted())")
+print()
+
+// Calculate and display student information
+for (student, grades) in studentGrades.sorted(by: { $0.key < $1.key }) {
+    print("\\(student):")
+    
+    // Show grades by subject
+    for (subject, grade) in grades.sorted(by: { $0.key < $1.key }) {
+        print("  \\(subject): \\(grade)")
+    }
+    
+    // Calculate average
+    let total = grades.values.reduce(0, +)
+    let average = Double(total) / Double(grades.count)
+    print("  Average: \\(String(format: "%.1f", average))")
+    
+    // Show subjects taking
+    let subjects = Set(grades.keys)
+    print("  Subjects: \\(subjects.sorted().joined(separator: ", "))")
+    print()
+}
+
+// Subject statistics
+print("=== SUBJECT STATISTICS ===")
+for subject in allSubjects.sorted() {
+    let gradesInSubject = studentGrades.values.compactMap { $0[subject] }
+    let average = Double(gradesInSubject.reduce(0, +)) / Double(gradesInSubject.count)
+    print("\\(subject): \\(gradesInSubject.count) students, avg \\(String(format: "%.1f", average))")
+}`
+                    }
+                }
+            },
+            {
+                title: "Structs vs Classes",
+                content: {
+                    definition: `
+                        <div class="definition-box">
+                            <h3>What are Structs and Classes?</h3>
+                            <p><strong>Structs</strong> and <strong>Classes</strong> are both ways to define custom data types with properties and methods, but they have fundamentally different behaviors in how they handle memory and copying.</p>
+                            <p><strong>Value Semantics (Structs):</strong> When you assign a struct to a new variable or pass it to a function, Swift creates a complete copy. Changes to the copy don't affect the original. This is like photocopying a document - you have two separate documents.</p>
+                            <p><strong>Reference Semantics (Classes):</strong> When you assign a class instance to a new variable or pass it to a function, both variables point to the same object in memory. Changes through either variable affect the same object. This is like sharing a document - everyone sees the same changes.</p>
+                            <p><strong>When to use each:</strong> Use structs for simple data containers where you want independent copies (coordinates, colors, user settings). Use classes for complex objects that should be shared and have identity (user accounts, network connections, game objects).</p>
+                        </div>
+                    `,
+                    examples: [
+                        {
+                            title: "Value Semantics with Structs",
+                            code: `// Struct example - value semantics
+struct Point {
+    var x: Double
+    var y: Double
+    
+    func distanceFromOrigin() -> Double {
+        return (x * x + y * y).squareRoot()
+    }
+}
+
+// Creating struct instances
+var pointA = Point(x: 3.0, y: 4.0)
+var pointB = pointA  // Creates a COPY
+
+// Modifying one doesn't affect the other
+pointB.x = 10.0
+
+print("Point A: (\\(pointA.x), \\(pointA.y))")  // (3.0, 4.0)
+print("Point B: (\\(pointB.x), \\(pointB.y))")  // (10.0, 4.0)
+
+// They are completely independent
+print("A distance: \\(pointA.distanceFromOrigin())")  // 5.0
+print("B distance: \\(pointB.distanceFromOrigin())")  // ~10.77`,
+                            explanation: "Structs create independent copies when assigned. Each variable owns its own data and changes don't affect other copies."
+                        },
+                        {
+                            title: "Reference Semantics with Classes",
+                            code: `// Class example - reference semantics
+class BankAccount {
+    var owner: String
+    var balance: Double
+    
+    init(owner: String, balance: Double) {
+        self.owner = owner
+        self.balance = balance
+    }
+    
+    func deposit(_ amount: Double) {
+        balance += amount
+    }
+    
+    func withdraw(_ amount: Double) -> Bool {
+        if balance >= amount {
+            balance -= amount
+            return true
+        }
+        return false
+    }
+}
+
+// Creating class instances
+let accountA = BankAccount(owner: "Alice", balance: 1000.0)
+let accountB = accountA  // Both variables point to SAME object
+
+// Modifying through either variable affects the same account
+accountB.deposit(200.0)
+
+print("Account A balance: \\(accountA.balance)")  // 1200.0
+print("Account B balance: \\(accountB.balance)")  // 1200.0
+
+// They reference the same object
+print("Same object? \\(accountA === accountB)")  // true`,
+                            explanation: "Classes create references to the same object. Multiple variables can point to the same instance, sharing all changes."
+                        },
+                        {
+                            title: "When to Use Structs vs Classes",
+                            code: `// Use STRUCTS for:
+
+// 1. Simple data containers
+struct Color {
+    let red, green, blue: Double
+}
+
+struct Size {
+    var width, height: Double
+}
+
+// 2. Mathematical concepts
+struct Vector3D {
+    var x, y, z: Double
+    
+    func magnitude() -> Double {
+        return (x*x + y*y + z*z).squareRoot()
+    }
+}
+
+// Use CLASSES for:
+
+// 1. Complex objects with identity
+class User {
+    let id: String
+    var name: String
+    var friends: [User] = []
+    
+    init(id: String, name: String) {
+        self.id = id
+        self.name = name
+    }
+}
+
+// 2. Shared resources
+class DatabaseConnection {
+    private var isConnected = false
+    
+    func connect() { isConnected = true }
+    func disconnect() { isConnected = false }
+}
+
+// Example of appropriate usage
+var redColor = Color(red: 1.0, green: 0.0, blue: 0.0)
+var blueColor = redColor  // Independent copy - good for colors
+
+let user1 = User(id: "123", name: "Alice")
+let aliasToUser1 = user1  // Same user object - good for users`,
+                            explanation: "Choose structs for independent data values and classes for shared objects with identity. Consider copying behavior."
+                        }
+                    ],
+                    mistakes: [
+                        "Using classes when structs would be more appropriate - leads to unexpected shared mutations",
+                        "Using structs for objects that should have shared identity - leads to confusing copies",
+                        "Not understanding that struct methods that modify properties need 'mutating' keyword",
+                        "Comparing class instances with == instead of === (identity vs equality)"
+                    ],
+                    practice: {
+                        prompt: "Create both a struct and class to represent a game character. Compare their behavior when copying and modifying instances.",
+                        starter: `// Create a struct for character stats (should be independent copies)
+struct CharacterStats {
+    var health: Int
+    var strength: Int
+    var experience: Int
+}
+
+// Create a class for game player (should share identity)
+class GamePlayer {
+    let playerId: String
+    var stats: CharacterStats
+    var inventory: [String]
+    
+    init(playerId: String, stats: CharacterStats) {
+        // Complete this initializer
+    }
+}
+
+// Test the copying behavior and see the differences`,
+                        solution: `// Struct for character stats (value semantics)
+struct CharacterStats {
+    var health: Int
+    var strength: Int
+    var experience: Int
+    
+    mutating func levelUp() {
+        health += 10
+        strength += 5
+        experience += 100
+    }
+    
+    func displayStats() -> String {
+        return "HP: \\(health), STR: \\(strength), EXP: \\(experience)"
+    }
+}
+
+// Class for game player (reference semantics)
+class GamePlayer {
+    let playerId: String
+    var stats: CharacterStats
+    var inventory: [String]
+    
+    init(playerId: String, stats: CharacterStats) {
+        self.playerId = playerId
+        self.stats = stats
+        self.inventory = []
+    }
+    
+    func addItem(_ item: String) {
+        inventory.append(item)
+    }
+    
+    func levelUp() {
+        stats.levelUp()  // Modifies the struct inside the class
+    }
+}
+
+// Test struct behavior (value semantics)
+print("=== STRUCT BEHAVIOR (Value Semantics) ===")
+var originalStats = CharacterStats(health: 100, strength: 10, experience: 0)
+var copiedStats = originalStats  // Creates independent copy
+
+print("Original: \\(originalStats.displayStats())")
+print("Copy: \\(copiedStats.displayStats())")
+
+// Modify the copy
+copiedStats.levelUp()
+copiedStats.health = 150
+
+print("After modifying copy:")
+print("Original: \\(originalStats.displayStats())")  // Unchanged
+print("Copy: \\(copiedStats.displayStats())")        // Changed
+
+// Test class behavior (reference semantics)  
+print("\\n=== CLASS BEHAVIOR (Reference Semantics) ===")
+let player1 = GamePlayer(playerId: "P001", stats: CharacterStats(health: 100, strength: 10, experience: 0))
+let player2 = player1  // Both point to same object
+
+print("Player 1: \\(player1.stats.displayStats())")
+print("Player 2: \\(player2.stats.displayStats())")
+
+// Modify through player2
+player2.levelUp()
+player2.addItem("Sword")
+
+print("After modifying through player2:")
+print("Player 1: \\(player1.stats.displayStats())")  // Also changed!
+print("Player 2: \\(player2.stats.displayStats())")  // Changed
+print("Player 1 inventory: \\(player1.inventory)")    // Also has sword!
+print("Same object? \\(player1 === player2)")         // true
+
+print("\\n=== KEY TAKEAWAY ===")
+print("Structs: Independent copies, changes don't affect original")
+print("Classes: Shared references, changes affect all references")`
+                    }
+                }
+            }
+        ];
+
+        // Quiz questions for each chapter
+        const quizzes = [
+            // Variables & Constants
+            [
+                {
+                    question: "Which keyword is used to declare a variable in Swift?",
+                    options: ["let", "var", "const", "variable"],
+                    correct: 1,
+                    explanation: "'var' is used for variables that can change their value after declaration."
+                },
+                {
+                    question: "What happens if you try to change a constant's value after declaration?",
+                    options: ["It changes successfully", "You get a runtime error", "You get a compile-time error", "It creates a new variable"],
+                    correct: 2,
+                    explanation: "Constants cannot be changed after declaration, resulting in a compile-time error."
+                },
+                {
+                    question: "When should you prefer using 'let' over 'var'?",
+                    options: ["Never", "When the value won't change", "When working with strings", "When working with numbers"],
+                    correct: 1,
+                    explanation: "Use 'let' when the value won't change during program execution. It makes code safer and more predictable."
+                },
+                {
+                    question: "Which declaration is correct for a constant that stores Pi?",
+                    options: ["var pi = 3.14159", "let pi = 3.14159", "const pi = 3.14159", "final pi = 3.14159"],
+                    correct: 1,
+                    explanation: "'let' is the correct keyword for constants in Swift, and Pi is a value that shouldn't change."
+                },
+                {
+                    question: "Can you declare a variable without initializing it immediately?",
+                    options: ["No, never", "Yes, but you must specify the type", "Yes, Swift will give it a default value", "Only for strings"],
+                    correct: 1,
+                    explanation: "You can declare variables without immediate initialization, but you must specify their type and initialize them before use."
+                }
+            ],
+            // Types & Type Inference
+            [
+                {
+                    question: "What type does Swift infer for the literal 42?",
+                    options: ["Double", "Int", "Float", "Number"],
+                    correct: 1,
+                    explanation: "Swift infers Int for whole number literals by default."
+                },
+                {
+                    question: "How do you convert an Int to a Double in Swift?",
+                    options: ["Automatic conversion", "Double(intValue)", "intValue.toDouble()", "Cast as Double"],
+                    correct: 1,
+                    explanation: "Swift requires explicit type conversion using the target type's initializer."
+                },
+                {
+                    question: "What happens when you try to add an Int and a Double without conversion?",
+                    options: ["They add normally", "Swift converts automatically", "Compile-time error", "Runtime error"],
+                    correct: 2,
+                    explanation: "Swift has strict typing and won't automatically convert between number types."
+                },
+                {
+                    question: "What type does Swift infer for 'Hello, World!'?",
+                    options: ["String", "Text", "Char", "NSString"],
+                    correct: 0,
+                    explanation: "String literals are inferred as String type in Swift."
+                },
+                {
+                    question: "When must you explicitly declare a type?",
+                    options: ["Always", "Never", "When Swift can't infer it", "Only for optionals"],
+                    correct: 2,
+                    explanation: "Type annotations are required when Swift cannot infer the type from context, such as empty collections."
+                }
+            ],
+            // Control Flow
+            [
+                {
+                    question: "What's required in every Swift switch statement?",
+                    options: ["break statements", "default case", "parentheses around condition", "curly braces"],
+                    correct: 1,
+                    explanation: "Every switch statement must be exhaustive, requiring a default case if not all possible values are covered."
+                },
+                {
+                    question: "What does the range 1...5 include?",
+                    options: ["1, 2, 3, 4", "1, 2, 3, 4, 5", "2, 3, 4, 5", "0, 1, 2, 3, 4, 5"],
+                    correct: 1,
+                    explanation: "The closed range operator (...) includes both the start and end values."
+                },
+                {
+                    question: "How do you create a range that excludes the upper bound?",
+                    options: ["1...5", "1..<5", "1..5", "1-5"],
+                    correct: 1,
+                    explanation: "The half-open range operator (..<) excludes the upper bound."
+                },
+                {
+                    question: "What operator is used for logical AND in Swift?",
+                    options: ["&", "and", "&&", "AND"],
+                    correct: 2,
+                    explanation: "The && operator performs logical AND operations in Swift."
+                },
+                {
+                    question: "Which loop is best for iterating over an array?",
+                    options: ["while loop", "for-in loop", "repeat-while loop", "do-while loop"],
+                    correct: 1,
+                    explanation: "The for-in loop is the most convenient and idiomatic way to iterate over arrays in Swift."
+                }
+            ],
+            // Functions
+            [
+                {
+                    question: "How do you specify a function's return type in Swift?",
+                    options: ["-> Type", ": Type", "returns Type", "Type ->"],
+                    correct: 0,
+                    explanation: "The arrow notation -> followed by the type specifies the return type."
+                },
+                {
+                    question: "What's required when calling a Swift function with parameters?",
+                    options: ["Parameter names", "Parentheses only", "Type annotations", "Nothing special"],
+                    correct: 0,
+                    explanation: "By default, Swift requires parameter names (argument labels) when calling functions for clarity."
+                },
+                {
+                    question: "How do you provide a default value for a parameter?",
+                    options: ["param: Type = value", "param = value: Type", "default param: Type", "param?: Type"],
+                    correct: 0,
+                    explanation: "Default parameter values are specified with = after the type annotation."
+                },
+                {
+                    question: "Can a Swift function return multiple values?",
+                    options: ["No", "Yes, using tuples", "Yes, using arrays", "Only with optionals"],
+                    correct: 1,
+                    explanation: "Swift functions can return multiple values using tuples."
+                },
+                {
+                    question: "What's the purpose of external parameter names?",
+                    options: ["Performance", "Memory management", "Code readability", "Type safety"],
+                    correct: 2,
+                    explanation: "External parameter names make function calls more readable and self-documenting."
+                }
+            ],
+            // Optionals
+            [
+                {
+                    question: "How do you declare an optional String?",
+                    options: ["String?", "Optional<String>", "String!", "?String"],
+                    correct: 0,
+                    explanation: "The question mark (?) after the type creates an optional."
+                },
+                {
+                    question: "What does nil represent in Swift?",
+                    options: ["Zero", "Empty string", "Absence of value", "Error"],
+                    correct: 2,
+                    explanation: "nil represents the absence of a value in Swift optionals."
+                },
+                {
+                    question: "Which is the safest way to unwrap an optional?",
+                    options: ["Force unwrapping (!)", "Optional binding (if let)", "Implicitly unwrapped optionals", "Direct access"],
+                    correct: 1,
+                    explanation: "Optional binding with 'if let' safely unwraps optionals without risk of crashes."
+                },
+                {
+                    question: "What does the nil coalescing operator (??) do?",
+                    options: ["Unwraps optionals", "Creates optionals", "Provides default values", "Compares optionals"],
+                    correct: 2,
+                    explanation: "The ?? operator provides a default value when an optional is nil."
+                },
+                {
+                    question: "When should you use force unwrapping (!)?",
+                    options: ["Always", "Never", "When you're certain the value exists", "For better performance"],
+                    correct: 2,
+                    explanation: "Force unwrapping should only be used when you're absolutely certain the optional contains a value."
+                }
+            ],
+            // Collections
+            [
+                {
+                    question: "Which collection type maintains insertion order?",
+                    options: ["Set", "Dictionary", "Array", "All of them"],
+                    correct: 2,
+                    explanation: "Arrays maintain the order in which elements were inserted or arranged."
+                },
+                {
+                    question: "What's the main characteristic of a Set?",
+                    options: ["Ordered elements", "Key-value pairs", "Unique elements", "Fast insertion"],
+                    correct: 2,
+                    explanation: "Sets automatically ensure all elements are unique."
+                },
+                {
+                    question: "How do you safely access a dictionary value?",
+                    options: ["dict[key]!", "dict.get(key)", "dict[key] with nil check", "dict.value(key)"],
+                    correct: 2,
+                    explanation: "Dictionary subscript returns an optional, so you should check for nil or use nil coalescing."
+                },
+                {
+                    question: "Which method adds an element to the end of an array?",
+                    options: ["insert()", "append()", "add()", "push()"],
+                    correct: 1,
+                    explanation: "The append() method adds elements to the end of an array."
+                },
+                {
+                    question: "What's the time complexity of checking Set membership?",
+                    options: ["O(n)", "O(log n)", "O(1)", "O(n²)"],
+                    correct: 2,
+                    explanation: "Sets provide O(1) average-case membership testing due to their hash-based implementation."
+                }
+            ],
+            // Structs vs Classes
+            [
+                {
+                    question: "What happens when you assign a struct to another variable?",
+                    options: ["Both variables share the same instance", "A copy is created", "A reference is created", "It causes an error"],
+                    correct: 1,
+                    explanation: "Structs have value semantics - assignment creates an independent copy."
+                },
+                {
+                    question: "What happens when you assign a class instance to another variable?",
+                    options: ["A copy is created", "Both variables reference the same instance", "It causes an error", "The original is deleted"],
+                    correct: 1,
+                    explanation: "Classes have reference semantics - both variables point to the same object in memory."
+                },
+                {
+                    question: "Which requires the 'mutating' keyword for methods that change properties?",
+                    options: ["Classes", "Structs", "Both", "Neither"],
+                    correct: 1,
+                    explanation: "Struct methods that modify properties must be marked as 'mutating'."
+                },
+                {
+                    question: "When should you typically use a struct?",
+                    options: ["For complex objects with identity", "For simple data containers", "For shared resources", "For inheritance"],
+                    correct: 1,
+                    explanation: "Structs are ideal for simple data containers where you want independent copies."
+                },
+                {
+                    question: "How do you check if two class instances are the same object?",
+                    options: ["==", "===", "equals()", "same()"],
+                    correct: 1,
+                    explanation: "The === operator checks for reference equality (same object identity) in Swift."
+                }
+            ]
+        ];
+
+        // Navigation and state management
+        function showHome() {
+            console.log('showHome called');
+            document.getElementById('homepage').classList.remove('hidden');
+            document.getElementById('chapter-view').classList.add('hidden');
+            document.getElementById('navigation').classList.add('hidden');
+            currentChapter = 0;
+            updateProgress();
+        }
+
+        function showChapter(index) {
+            console.log('showChapter called with index:', index);
+            currentChapter = index;
+            loadChapter(index);
+            document.getElementById('homepage').classList.add('hidden');
+            document.getElementById('chapter-view').classList.remove('hidden');
+            document.getElementById('navigation').classList.remove('hidden');
+            updateProgress();
+            saveProgress();
+        }
+
+        function nextChapter() {
+            console.log('nextChapter called, current:', currentChapter);
+            if (currentChapter < TOTAL_CHAPTERS - 1) {
+                showChapter(currentChapter + 1);
+            }
+        }
+
+        function previousChapter() {
+            console.log('previousChapter called, current:', currentChapter);
+            if (currentChapter > 0) {
+                showChapter(currentChapter - 1);
+            }
+        }
+
+        function startLearning() {
+            console.log('startLearning called');
+            showChapter(0);
+        }
+
+        function loadProgress() {
+            console.log('loadProgress called');
+            const saved = localStorage.getItem('swiftLearningProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                currentChapter = progress.currentChapter || 0;
+                quizScores = progress.quizScores || {};
+                editorContent = progress.editorContent || {};
+                showChapter(currentChapter);
+            } else {
+                startLearning();
+            }
+        }
+
+        function saveProgress() {
+            const progress = {
+                currentChapter,
+                quizScores,
+                editorContent
+            };
+            localStorage.setItem('swiftLearningProgress', JSON.stringify(progress));
+        }
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progress-fill');
+            const navTitle = document.getElementById('nav-title');
+            
+            if (currentChapter === 0) {
+                progressFill.style.width = '0%';
+                navTitle.textContent = 'Swift Learning Platform';
+            } else {
+                const percentage = ((currentChapter) / TOTAL_CHAPTERS) * 100;
+                progressFill.style.width = percentage + '%';
+                navTitle.textContent = chapters[currentChapter - 1].title;
+            }
+        }
+
+        // Chapter content rendering
+        function loadChapter(index) {
+            const chapter = chapters[index];
+            const content = document.getElementById('chapter-content');
+            
+            content.innerHTML = `
+                <h1 class="chapter-title">${chapter.title}</h1>
+                
+                <div class="section">
+                    <h2 class="section-title">📖 Definition</h2>
+                    ${chapter.content.definition}
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">💡 Examples</h2>
+                    ${chapter.content.examples.map((example, i) => `
+                        <h3>${example.title}</h3>
+                        <div class="code-container">
+                            <pre class="code-block"><code>${highlightSwiftSyntax(example.code)}</code></pre>
+                            <button class="copy-btn" onclick="copyCode(this)" data-code="${escapeForAttribute(example.code)}">Copy</button>
+                        </div>
+                        <p>${example.explanation}</p>
+                    `).join('')}
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">⚠️ Common Mistakes</h2>
+                    <ul class="mistakes-list">
+                        ${chapter.content.mistakes.map(mistake => `<li>${mistake}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">🛠️ Practice</h2>
+                    <p>${chapter.content.practice.prompt}</p>
+                    <div class="practice-editor">
+                        <div class="editor-header">
+                            <h3>Swift Editor</h3>
+                            <div class="editor-buttons">
+                                <button class="btn" onclick="insertStarter(${index})">Insert Starter</button>
+                                <button class="btn primary" onclick="runCode(${index})">▶️ Run</button>
+                                <button class="btn secondary" onclick="showSolution(${index})">Show Solution</button>
+                                <button class="btn" onclick="clearEditor(${index})">Clear</button>
+                            </div>
+                        </div>
+                        <textarea id="editor-${index}" class="editor-textarea" placeholder="Write your Swift code here...">${editorContent[index] || ''}</textarea>
+                        <div id="output-${index}" class="output-area" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2 class="section-title">🎯 Quiz</h2>
+                    <div id="quiz-${index}" class="quiz-container">
+                        <button class="btn primary" onclick="showQuiz(${index})">Start Quiz</button>
+                    </div>
+                </div>
+                
+                <div class="instructor-notes">
+                    <div class="instructor-header" onclick="toggleInstructorNotes()">
+                        <h3>👨‍🏫 Instructor Notes</h3>
+                        <span id="instructor-toggle">▼</span>
+                    </div>
+                    <div id="instructor-content" class="instructor-content">
+                        ${getInstructorNotes(index)}
+                    </div>
+                </div>
+            `;
+            
+            // Add event listener for editor changes
+            const editor = document.getElementById(`editor-${index}`);
+            editor.addEventListener('input', () => {
+                editorContent[index] = editor.value;
+                saveProgress();
+            });
+        }
+
+        // Swift syntax highlighting
+        function highlightSwiftSyntax(code) {
+            // Escape HTML first to prevent issues
+            let highlighted = code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            // Define patterns with priorities (higher index = higher priority)
+            const patterns = [
+                // Comments (highest priority - don't highlight anything inside)
+                {
+                    regex: /\/\/.*$/gm,
+                    className: 'swift-comment'
+                },
+                // Strings (high priority)
+                {
+                    regex: /"[^"]*"/g,
+                    className: 'swift-string'
+                },
+                // Numbers
+                {
+                    regex: /\b\d+\.?\d*\b/g,
+                    className: 'swift-number'
+                },
+                // Keywords
+                {
+                    regex: /\b(var|let|func|if|else|for|in|while|switch|case|default|return|true|false|nil|import|class|struct|init|self|super|override|public|private|internal|static|mutating|guard)\b/g,
+                    className: 'swift-keyword'
+                },
+                // Types
+                {
+                    regex: /\b(Int|Double|Float|String|Bool|Array|Dictionary|Set|Optional)\b/g,
+                    className: 'swift-type'
+                }
+            ];
+            
+            // Track which characters are already inside spans to avoid nesting
+            const spanMap = new Array(highlighted.length).fill(false);
+            const replacements = [];
+            
+            // Find all matches first
+            patterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.regex.exec(highlighted)) !== null) {
+                    // Check if this range is already highlighted
+                    let canHighlight = true;
+                    for (let i = match.index; i < match.index + match[0].length; i++) {
+                        if (spanMap[i]) {
+                            canHighlight = false;
+                            break;
+                        }
+                    }
+                    
+                    if (canHighlight) {
+                        replacements.push({
+                            start: match.index,
+                            end: match.index + match[0].length,
+                            text: match[0],
+                            className: pattern.className
+                        });
+                        
+                        // Mark these characters as highlighted
+                        for (let i = match.index; i < match.index + match[0].length; i++) {
+                            spanMap[i] = true;
+                        }
+                    }
+                }
+                // Reset regex lastIndex
+                pattern.regex.lastIndex = 0;
+            });
+            
+            // Sort replacements by start position (reverse order for easier replacement)
+            replacements.sort((a, b) => b.start - a.start);
+            
+            // Apply replacements
+            replacements.forEach(replacement => {
+                const before = highlighted.substring(0, replacement.start);
+                const after = highlighted.substring(replacement.end);
+                const highlighted_text = `<span class="${replacement.className}">${replacement.text}</span>`;
+                highlighted = before + highlighted_text + after;
+            });
+            
+            return highlighted;
+        }
+
+        function escapeForAttribute(str) {
+            return str.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, " ").replace(/\r/g, " ");
+        }
+
+        // Editor functions
+        function insertStarter(index) {
+            const editor = document.getElementById(`editor-${index}`);
+            const starter = chapters[index].content.practice.starter;
+            editor.value = starter;
+            editorContent[index] = starter;
+            saveProgress();
+        }
+
+        function clearEditor(index) {
+            const editor = document.getElementById(`editor-${index}`);
+            editor.value = '';
+            editorContent[index] = '';
+            const output = document.getElementById(`output-${index}`);
+            output.style.display = 'none';
+            saveProgress();
+        }
+
+        function showSolution(index) {
+            const editor = document.getElementById(`editor-${index}`);
+            const solution = chapters[index].content.practice.solution;
+            editor.value = solution;
+            editorContent[index] = solution;
+            saveProgress();
+        }
+
+        function runCode(index) {
+            const editor = document.getElementById(`editor-${index}`);
+            const output = document.getElementById(`output-${index}`);
+            const code = editor.value;
+            
+            if (!code.trim()) {
+                alert('Please write some Swift code first!');
+                return;
+            }
+            
+            output.style.display = 'block';
+            output.textContent = 'Running code...';
+            
+            // Try online runner first, fallback to simulation
+            runCodeOnline(code, output);
+        }
+
+        async function runCodeOnline(code, outputElement) {
+            try {
+                // Try Piston API
+                const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        language: 'swift',
+                        version: '5.3.3',
+                        files: [
+                            {
+                                content: code
+                            }
+                        ]
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.run && result.run.output) {
+                    outputElement.textContent = result.run.output;
+                } else if (result.run && result.run.stderr) {
+                    outputElement.textContent = 'Error: ' + result.run.stderr;
+                } else {
+                    throw new Error('No output received');
+                }
+            } catch (error) {
+                // Fallback to simulation
+                simulateCodeExecution(code, outputElement);
+            }
+        }
+
+        function simulateCodeExecution(code, outputElement) {
+            // Basic simulation for common Swift patterns
+            let output = '';
+            
+            try {
+                // Extract print statements
+                const printMatches = code.match(/print\s*\(\s*"([^"]*)"\s*\)/g);
+                if (printMatches) {
+                    printMatches.forEach(match => {
+                        const content = match.match(/"([^"]*)"/)[1];
+                        output += content + '\n';
+                    });
+                }
+                
+                // Extract string interpolation
+                const interpolationMatches = code.match(/print\s*\(\s*"([^"]*\\[^"]*[^"]*)"\s*\)/g);
+                if (interpolationMatches) {
+                    interpolationMatches.forEach(match => {
+                        let content = match.match(/"([^"]*)"/)[1];
+                        // Simple interpolation simulation
+                        content = content.replace(/\\(.+?)\)/g, '[calculated value]');
+                        output += content + '\n';
+                    });
+                }
+                
+                if (!output) {
+                    output = '✅ Code compiled successfully!\n\n(Note: This is a simulation. For full Swift execution, the code would run on a Swift compiler)';
+                }
+                
+                outputElement.textContent = output;
+            } catch (error) {
+                outputElement.textContent = 'Simulation Error: Unable to parse Swift code for simulation.';
+            }
+        }
+
+        function copyCode(button) {
+            const code = button.getAttribute('data-code');
+            navigator.clipboard.writeText(code).then(() => {
+                // Temporary visual feedback
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 1000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 1000);
+            });
+        }
+
+        // Quiz functionality
+        function showQuiz(chapterIndex) {
+            const quizContainer = document.getElementById(`quiz-${chapterIndex}`);
+            const quiz = quizzes[chapterIndex];
+            
+            let quizHTML = '<div id="quiz-questions">';
+            quiz.forEach((q, index) => {
+                quizHTML += `
+                    <div class="question" id="question-${index}">
+                        <h4>${index + 1}. ${q.question}</h4>
+                        <ul class="options">
+                            ${q.options.map((option, optIndex) => `
+                                <li>
+                                    <label>
+                                        <input type="radio" name="q${index}" value="${optIndex}">
+                                        ${option}
+                                    </label>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            });
+            quizHTML += '</div>';
+            quizHTML += `<button class="btn primary" onclick="submitQuiz(${chapterIndex})">Submit Quiz</button>`;
+            quizHTML += `<div id="quiz-feedback-${chapterIndex}"></div>`;
+            
+            quizContainer.innerHTML = quizHTML;
+        }
+
+        function submitQuiz(chapterIndex) {
+            const quiz = quizzes[chapterIndex];
+            const feedbackContainer = document.getElementById(`quiz-feedback-${chapterIndex}`);
+            let score = 0;
+            let feedback = '';
+            
+            quiz.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                const questionElement = document.getElementById(`question-${index}`);
+                
+                if (selected) {
+                    const answer = parseInt(selected.value);
+                    if (answer === q.correct) {
+                        score++;
+                        questionElement.style.backgroundColor = '#f0fff4';
+                        questionElement.style.border = '2px solid #38a169';
+                    } else {
+                        questionElement.style.backgroundColor = '#fff5f5';
+                        questionElement.style.border = '2px solid #e53e3e';
+                    }
+                    
+                    feedback += `
+                        <div class="quiz-feedback ${answer === q.correct ? 'correct' : 'incorrect'}">
+                            <strong>Question ${index + 1}:</strong> ${answer === q.correct ? '✅ Correct!' : '❌ Incorrect'}
+                            <br>${q.explanation}
+                        </div>
+                    `;
+                } else {
+                    questionElement.style.backgroundColor = '#fffbeb';
+                    questionElement.style.border = '2px solid #d69e2e';
+                    feedback += `
+                        <div class="quiz-feedback incorrect">
+                            <strong>Question ${index + 1}:</strong> ❓ Not answered
+                            <br>${q.explanation}
+                        </div>
+                    `;
+                }
+            });
+            
+            const percentage = Math.round((score / quiz.length) * 100);
+            
+            feedback = `
+                <div class="score-display">
+                    Score: ${score}/${quiz.length} (${percentage}%)
+                    ${percentage >= 80 ? '🎉 Excellent!' : percentage >= 60 ? '👍 Good job!' : '📚 Keep studying!'}
+                </div>
+            ` + feedback;
+            
+            feedbackContainer.innerHTML = feedback;
+            
+            // Save best score
+            if (!quizScores[chapterIndex] || percentage > quizScores[chapterIndex]) {
+                quizScores[chapterIndex] = percentage;
+                saveProgress();
+            }
+        }
+
+        // Theme toggle
+        function toggleTheme() {
+            console.log('toggleTheme called');
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                if (themeToggle) themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+                console.log('Switched to light theme');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                if (themeToggle) themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+                console.log('Switched to dark theme');
+            }
+        }
+
+        function toggleInstructorNotes() {
+            const content = document.getElementById('instructor-content');
+            const toggle = document.getElementById('instructor-toggle');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                toggle.textContent = '▼';
+            } else {
+                content.classList.add('active');
+                toggle.textContent = '▲';
+            }
+        }
+
+        function getInstructorNotes(chapterIndex) {
+            const notes = [
+                // Variables & Constants
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Show side-by-side code editor and output console. Start with simple examples.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Emphasize the mental model: variables are "boxes" that can change contents, constants are "labeled boxes" that can't</li>
+                    <li>Show the compiler error when trying to change a constant</li>
+                    <li>Demonstrate how Xcode helps with autocomplete and error messages</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Create a simple calculator that stores results in variables</li>
+                    <li>Build a game score tracker using constants for max scores and variables for current scores</li>
+                    <li>Discuss memory implications (briefly) - constants can be optimized by compiler</li>
+                </ul>`,
+                
+                // Types & Type Inference
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Use playground-style environment to show type inference in action.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Show the "option+click" trick in Xcode to see inferred types</li>
+                    <li>Demonstrate type conversion errors and fixes</li>
+                    <li>Explain why strict typing prevents bugs</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Create a unit converter (temperature, currency, measurements)</li>
+                    <li>Build a simple data validator that checks types</li>
+                    <li>Explore custom types with typealias</li>
+                </ul>`,
+                
+                // Control Flow
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Use debugger to step through loops and conditionals.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Show execution flow with breakpoints and step-through</li>
+                    <li>Emphasize exhaustive switch statements as a Swift safety feature</li>
+                    <li>Demonstrate different loop types and when to use each</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Build a number guessing game with while loops</li>
+                    <li>Create a grade calculator with switch statements</li>
+                    <li>Implement FizzBuzz or similar algorithmic challenges</li>
+                </ul>`,
+                
+                // Functions
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Show function definition, call stack, and parameter/return value flow.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Emphasize functions as "black boxes" that transform input to output</li>
+                    <li>Show how parameter labels make code self-documenting</li>
+                    <li>Demonstrate testing functions in isolation</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Build a library of math utility functions</li>
+                    <li>Create string manipulation functions for text processing</li>
+                    <li>Implement higher-order functions (functions that take other functions)</li>
+                </ul>`,
+                
+                // Optionals
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Show crashes in other languages vs safe Swift optional handling.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Start with the "million-dollar mistake" problem optionals solve</li>
+                    <li>Show force unwrapping crashes vs safe unwrapping</li>
+                    <li>Emphasize that optionals make nil explicit and safe</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Build a user registration form with optional fields</li>
+                    <li>Create a configuration system using optionals and defaults</li>
+                    <li>Implement optional chaining patterns for complex data structures</li>
+                </ul>`,
+                
+                // Collections
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Use visual debugger to show collection contents and memory layout.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Show performance characteristics with large datasets</li>
+                    <li>Demonstrate when each collection type is most appropriate</li>
+                    <li>Use real-world analogies (arrays=ordered list, dictionary=phone book, set=unique items bag)</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Build a contact management system using all three types</li>
+                    <li>Create a word frequency counter using dictionaries</li>
+                    <li>Implement set operations for data analysis</li>
+                </ul>`,
+                
+                // Structs vs Classes
+                `<h4>Teaching This Chapter:</h4>
+                <p><strong>OBS Demo Setup:</strong> Use memory debugger to show value vs reference semantics visually.</p>
+                <p><strong>Key Voiceover Points:</strong></p>
+                <ul>
+                    <li>Use physical analogies: struct=photocopying, class=sharing a document</li>
+                    <li>Show memory addresses and reference counting</li>
+                    <li>Demonstrate unexpected mutations with class references</li>
+                </ul>
+                <p><strong>Extension Ideas:</strong></p>
+                <ul>
+                    <li>Build a game with both value types (positions, stats) and reference types (players, game objects)</li>
+                    <li>Create a document editing system showing sharing vs copying</li>
+                    <li>Implement copy-on-write optimization demonstration</li>
+                </ul>`
+            ];
+            
+            return notes[chapterIndex] || '<p>No instructor notes available for this chapter.</p>';
+        }
+
+        // Initialize homepage
+        function initializeHomepage() {
+            console.log('Initializing homepage...');
+            const grid = document.getElementById('chapter-grid');
+            if (!grid) {
+                console.error('Chapter grid element not found!');
+                return;
+            }
+            
+            grid.innerHTML = chapters.map((chapter, index) => `
+                <div class="card" onclick="showChapter(${index})" role="button" tabindex="0" 
+                     onkeypress="if(event.key==='Enter') showChapter(${index})">
+                    <h3>${chapter.title}</h3>
+                    <p>Learn about ${chapter.title.toLowerCase()} in Swift with interactive examples and practice.</p>
+                    ${quizScores[index] ? `<p style="color: var(--success-color); font-weight: 600;">✅ Quiz Score: ${quizScores[index]}%</p>` : ''}
+                </div>
+            `).join('');
+            
+            console.log('Homepage initialized with', chapters.length, 'chapters');
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('homepage').classList.contains('hidden')) return;
+            
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousChapter();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextChapter();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                showHome();
+            }
+        });
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing application...');
+            
+            // Load saved theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle').textContent = '☀️';
+            }
+            
+            // Initialize homepage
+            initializeHomepage();
+            
+            // Load progress if available
+            const saved = localStorage.getItem('swiftLearningProgress');
+            if (saved) {
+                try {
+                    const progress = JSON.parse(saved);
+                    quizScores = progress.quizScores || {};
+                    editorContent = progress.editorContent || {};
+                    initializeHomepage(); // Refresh to show scores
+                } catch (e) {
+                    console.error('Error loading saved progress:', e);
+                }
+            }
+            
+            updateProgress();
+            console.log('Application initialized successfully');
+        });
+
+        // Service worker for offline capability (basic)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {
+                    // Silent fail - service worker not available
+                });
+            });
+        }
+
+        // Additional utility functions
+        function exportProgress() {
+            const progress = {
+                currentChapter,
+                quizScores,
+                editorContent,
+                timestamp: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(progress, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'swift-learning-progress.json';
+            link.click();
+        }
+
+        function importProgress(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const progress = JSON.parse(e.target.result);
+                        currentChapter = progress.currentChapter || 0;
+                        quizScores = progress.quizScores || {};
+                        editorContent = progress.editorContent || {};
+                        saveProgress();
+                        initializeHomepage();
+                        alert('Progress imported successfully!');
+                    } catch (error) {
+                        alert('Error importing progress: Invalid file format');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        // Analytics tracking (privacy-friendly)
+        function trackChapterProgress(chapterIndex) {
+            // Basic local analytics - no external services
+            const analytics = JSON.parse(localStorage.getItem('learning-analytics') || '{}');
+            const today = new Date().toDateString();
+            
+            if (!analytics[today]) {
+                analytics[today] = {
+                    chaptersVisited: new Set(),
+                    quizzesCompleted: new Set(),
+                    practiceExercises: 0
+                };
+            }
+            
+            analytics[today].chaptersVisited.add(chapterIndex);
+            
+            // Convert Set to Array for JSON serialization
+            analytics[today].chaptersVisited = Array.from(analytics[today].chaptersVisited);
+            analytics[today].quizzesCompleted = Array.from(analytics[today].quizzesCompleted);
+            
+            localStorage.setItem('learning-analytics', JSON.stringify(analytics));
+        }
+
+        // Accessibility improvements
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        // Enhanced error handling
+        window.addEventListener('error', (e) => {
+            console.error('Application error:', e.error);
+            // Graceful degradation - don't break the user experience
+        });
+
+        // Print stylesheet support
+        function printChapter() {
+            window.print();
+        }
+
+        // Focus management for better accessibility
+        function manageFocus() {
+            const activeElement = document.activeElement;
+            if (activeElement && activeElement.blur) {
+                activeElement.blur();
+            }
+            
+            // Focus first interactive element in new view
+            const firstButton = document.querySelector('.btn:not(:disabled)');
+            if (firstButton) {
+                firstButton.focus();
+            }
+        }
+
+        // Performance monitoring
+        const performanceObserver = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (entry.entryType === 'navigation') {
+                    console.log('Page load time:', entry.loadEventEnd - entry.loadEventStart);
+                }
+            }
+        });
+
+        if ('PerformanceObserver' in window) {
+            performanceObserver.observe({entryTypes: ['navigation']});
+        }
+
+    </script>
+
+    <!-- Add structured data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": "Swift Learning Platform",
+        "description": "Interactive Swift programming course with practice exercises and quizzes",
+        "provider": {
+            "@type": "Organization",
+            "name": "Swift Learning Platform"
+        },
+        "courseCode": "SWIFT-101",
+        "educationalLevel": "Beginner",
+        "inLanguage": "en-US",
+        "teaches": [
+            "Variables and Constants",
+            "Types and Type Inference", 
+            "Control Flow",
+            "Functions",
+            "Optionals",
+            "Collections",
+            "Structs vs Classes"
+        ]
+    }
+    </script>
+</body>
+</html>

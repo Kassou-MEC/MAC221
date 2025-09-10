@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS App Development Overview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .slide {
+            display: none;
+            text-align: center;
+            max-width: 90%;
+            padding: 2rem;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: #ffeb3b;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ffd54f;
+        }
+
+        p, li {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .process-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .process-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .process-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .ecosystem-item {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .ecosystem-item:hover {
+            background: rgba(255,255,255,0.25);
+            transform: scale(1.05);
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: left;
+            font-family: 'Monaco', 'Menlo', monospace;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+
+        .code-block pre {
+            color: #f8f8f2;
+            font-size: 0.9rem;
+        }
+
+        .swift-keyword { color: #ff79c6; }
+        .swift-string { color: #f1fa8c; }
+        .swift-comment { color: #6272a4; }
+        .swift-type { color: #8be9fd; }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(0,0,0,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ui-builder-demo {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .code-preview {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 300px;
+        }
+
+        .phone-preview {
+            width: 200px;
+            height: 400px;
+            background: #f0f0f0;
+            border-radius: 25px;
+            border: 3px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hello-text {
+            background: #007AFF;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .interactive-element {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .interactive-element:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .slide-title {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(5px);
+        }
+
+        ul {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            .process-grid { grid-template-columns: 1fr; }
+            .ui-builder-demo { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <div class="slide-counter">
+            <span id="current-slide">1</span> / <span id="total-slides">12</span>
+        </div>
+
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-title">
+                <h1>📱 MAC221 Khalid Kassou</h1>
+                <h1>📱 iOS App Development</h1>
+                <h3>A Complete Overview</h3>
+            </div>
+            <p style="font-size: 1.5rem; margin-top: 2rem;">
+                Learn the fundamentals of building iOS apps with Swift and SwiftUI
+            </p>
+            <div style="margin-top: 3rem;">
+                <div class="interactive-element" style="display: inline-block; background: rgba(255,255,255,0.2); padding: 1rem 2rem; border-radius: 25px;">
+                    Click to begin your journey! 🚀
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Process Overview -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>📋 Development Process</h2>
+            </div>
+            <div class="process-grid">
+                <div class="process-card interactive-element">
+                    <div class="process-icon">⚡</div>
+                    <h3>Swift Programming Basics</h3>
+                    <p>Master the fundamentals of Swift language</p>
+                </div>
+                <div class="process-card interactive-element">
+                    <div class="process-icon">🏪</div>
+                    <h3>App Store Workflow</h3>
+                    <p>Learn how apps are made and distributed</p>
+                </div>
+                <div class="process-card interactive-element">
+                    <div class="process-icon">🛠️</div>
+                    <h3>Using Xcode</h3>
+                    <p>Navigate Apple's development environment</p>
+                </div>
+                <div class="process-card interactive-element">
+                    <div class="process-icon">🎨</div>
+                    <h3>SwiftUI Interfaces</h3>
+                    <p>Build beautiful user interfaces</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Ecosystem -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🌐 iOS Development Ecosystem</h2>
+            </div>
+            <div class="ecosystem-grid">
+                <div class="ecosystem-item interactive-element">
+                    <h4>🔧 Xcode</h4>
+                    <p>Integrated Development Environment</p>
+                </div>
+                <div class="ecosystem-item interactive-element">
+                    <h4>⚡ Swift</h4>
+                    <p>Programming Language</p>
+                </div>
+                <div class="ecosystem-item interactive-element">
+                    <h4>🎨 SwiftUI</h4>
+                    <p>UI Framework</p>
+                </div>
+                <div class="ecosystem-item interactive-element">
+                    <h4>👨‍💻 Developer Program</h4>
+                    <p>Apple Developer Membership</p>
+                </div>
+                <div class="ecosystem-item interactive-element">
+                    <h4>🏪 App Store Connect</h4>
+                    <p>App Distribution Platform</p>
+                </div>
+                <div class="ecosystem-item interactive-element">
+                    <h4>🧪 TestFlight</h4>
+                    <p>Beta Testing Service</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Getting Xcode -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>💻 Getting Started with Xcode</h2>
+            </div>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h3>📥 How to Get Xcode</h3>
+                <ul>
+                    <li>Download from Mac App Store (Free)</li>
+                    <li>Requires macOS and Apple Silicon/Intel Mac</li>
+                    <li>Large download (~10GB+)</li>
+                </ul>
+                
+                <h3 style="margin-top: 2rem;">🎯 Major Interface Areas</h3>
+                <ul>
+                    <li><span class="highlight">Navigator</span> - Project files and structure</li>
+                    <li><span class="highlight">Editor</span> - Code and interface editing</li>
+                    <li><span class="highlight">Inspector</span> - Properties and attributes</li>
+                    <li><span class="highlight">Debug Area</span> - Console and variables</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Playground -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🎮 Swift Playground</h2>
+            </div>
+            <div style="max-width: 700px; margin: 0 auto;">
+                <h3>What is Playground?</h3>
+                <p>An interactive environment to <span class="highlight">explore Swift code quickly and easily</span></p>
+                
+                <div class="process-grid" style="margin-top: 2rem;">
+                    <div class="process-card">
+                        <div class="process-icon">📄</div>
+                        <h4>Blank</h4>
+                        <p>Start from scratch</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">🎮</div>
+                        <h4>Game</h4>
+                        <p>Game development template</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">🗺️</div>
+                        <h4>Map</h4>
+                        <p>Location-based projects</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">📱</div>
+                        <h4>Single View</h4>
+                        <p>Basic app template</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Creating Projects -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🆕 Creating New Projects</h2>
+            </div>
+            <div style="max-width: 600px; margin: 0 auto; text-align: left;">
+                <h3>Project Setup Steps:</h3>
+                <ol style="font-size: 1.2rem; line-height: 2;">
+                    <li>Choose <span class="highlight">Platform: iOS</span></li>
+                    <li>Select <span class="highlight">Application Type: App</span></li>
+                    <li>Enter <span class="highlight">Product Name</span></li>
+                    <li>Set <span class="highlight">Team & Organization</span></li>
+                    <li>Configure <span class="highlight">Bundle Identifier</span></li>
+                    <li>Choose <span class="highlight">Interface: SwiftUI</span></li>
+                    <li>Select <span class="highlight">Language: Swift</span></li>
+                </ol>
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <h4>💡 Pro Tip:</h4>
+                    <p>Enable "Use Core Data" for apps that need local data storage</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Basic Code Structure -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>💻 SwiftUI Code Structure</h2>
+            </div>
+            <div class="code-block">
+                <pre><code><span class="swift-keyword">import</span> <span class="swift-type">SwiftUI</span>
+
+<span class="swift-keyword">struct</span> <span class="swift-type">ContentView</span>: <span class="swift-type">View</span> {
+    <span class="swift-keyword">var</span> body: <span class="swift-keyword">some</span> <span class="swift-type">View</span> {
+        <span class="swift-type">Text</span>(<span class="swift-string">"Hello, World!"</span>)
+            .padding()
+    }
+}
+
+<span class="swift-keyword">struct</span> <span class="swift-type">ContentView_Previews</span>: <span class="swift-type">PreviewProvider</span> {
+    <span class="swift-keyword">static var</span> previews: <span class="swift-keyword">some</span> <span class="swift-type">View</span> {
+        <span class="swift-type">ContentView</span>()
+    }
+}</code></pre>
+            </div>
+            <div style="margin-top: 2rem;">
+                <p><span class="highlight">View Protocol:</span> Defines what can be displayed</p>
+                <p><span class="highlight">Body Property:</span> Returns the view content</p>
+                <p><span class="highlight">PreviewProvider:</span> Shows live preview in Xcode</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Code Explanation -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🔍 Code Breakdown</h2>
+            </div>
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                    <div>
+                        <h4>Code Components:</h4>
+                        <ul style="text-align: left;">
+                            <li><code style="color: #ff79c6;">import SwiftUI</code> - Framework import</li>
+                            <li><code style="color: #8be9fd;">struct ContentView</code> - View definition</li>
+                            <li><code style="color: #f1fa8c;">var body</code> - Computed property</li>
+                            <li><code style="color: #50fa7b;">Text("Hello!")</code> - Text element</li>
+                            <li><code style="color: #bd93f9;">.padding()</code> - Modifier</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Key Concepts:</h4>
+                        <ul style="text-align: left;">
+                            <li><span class="highlight">Declarative</span> - Describe what you want</li>
+                            <li><span class="highlight">Modifiers</span> - Chain to customize views</li>
+                            <li><span class="highlight">Live Preview</span> - See changes instantly</li>
+                            <li><span class="highlight">Protocol</span> - Contract for behavior</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Text Elements and Modifiers -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>📝 Text Elements & Modifiers</h2>
+            </div>
+            <div class="ui-builder-demo">
+                <div class="code-preview">
+                    <div class="code-block">
+                        <pre><code><span class="swift-type">Text</span>(<span class="swift-string">"Hello!"</span>)
+    .padding()
+    .background(<span class="swift-type">Color</span>.blue)</code></pre>
+                    </div>
+                </div>
+                <div class="phone-preview">
+                    <div class="hello-text interactive-element" id="demo-text">
+                        Hello!
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 2rem;">
+                <p>Modifiers transform and style your views:</p>
+                <ul style="max-width: 600px; margin: 1rem auto;">
+                    <li><code>.padding()</code> - Adds space around content</li>
+                    <li><code>.background(Color.blue)</code> - Sets background color</li>
+                    <li><code>.font(.title)</code> - Changes text size</li>
+                    <li><code>.foregroundColor(.white)</code> - Sets text color</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 10: Visual Interface Building -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🎨 Visual Interface Building</h2>
+            </div>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h3>SwiftUI Inspector Features:</h3>
+                <div class="process-grid">
+                    <div class="process-card">
+                        <div class="process-icon">🎯</div>
+                        <h4>Drag & Drop</h4>
+                        <p>Add UI elements visually</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">⚙️</div>
+                        <h4>Property Inspector</h4>
+                        <p>Modify attributes directly</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">🔍</div>
+                        <h4>Live Preview</h4>
+                        <p>See changes in real-time</p>
+                    </div>
+                    <div class="process-card">
+                        <div class="process-icon">📱</div>
+                        <h4>Device Preview</h4>
+                        <p>Test on different screens</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                    <h4>💫 Interactive Development</h4>
+                    <p>Xcode's canvas lets you build interfaces visually while automatically generating SwiftUI code. Changes in code update the visual editor and vice versa!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Running Your App -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>▶️ Running Your App</h2>
+            </div>
+            <div style="max-width: 700px; margin: 0 auto;">
+                <div class="process-grid">
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">📱</div>
+                        <h3>iOS Simulator</h3>
+                        <p>Test on virtual devices</p>
+                        <ul style="text-align: left; margin-top: 1rem;">
+                            <li>iPhone, iPad, Apple Watch</li>
+                            <li>Different iOS versions</li>
+                            <li>Various screen sizes</li>
+                        </ul>
+                    </div>
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">👁️</div>
+                        <h3>Live Preview</h3>
+                        <p>Automatic updates as you code</p>
+                        <ul style="text-align: left; margin-top: 1rem;">
+                            <li>Instant visual feedback</li>
+                            <li>No build required</li>
+                            <li>Multiple device previews</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(0,255,0,0.2); border-radius: 10px;">
+                    <h4>🚀 Quick Start Tip:</h4>
+                    <p>Use <span class="highlight">Cmd + R</span> to build and run, or click the play button to start the simulator!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Summary -->
+        <div class="slide">
+            <div class="slide-title">
+                <h2>🎯 Key Takeaways</h2>
+            </div>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="process-grid">
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">🛠️</div>
+                        <h4>Tools</h4>
+                        <p>Xcode + Swift + SwiftUI = Powerful development environment</p>
+                    </div>
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">🎨</div>
+                        <h4>UI Building</h4>
+                        <p>Visual + Code approach for flexible interface creation</p>
+                    </div>
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">⚡</div>
+                        <h4>Fast Iteration</h4>
+                        <p>Live previews and simulation for rapid development</p>
+                    </div>
+                    <div class="process-card interactive-element">
+                        <div class="process-icon">📱</div>
+                        <h4>Complete Ecosystem</h4>
+                        <p>From development to App Store distribution</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(45deg, rgba(255,215,0,0.3), rgba(255,165,0,0.3)); border-radius: 15px;">
+                    <h3>🎉 Ready to Build Amazing iOS Apps!</h3>
+                    <p style="font-size: 1.3rem; margin-top: 1rem;">
+                        You now have the foundation to start your iOS development journey
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prev-btn" onclick="previousSlide()">← Previous</button>
+        <button class="nav-btn" id="next-btn" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('total-slides').textContent = totalSlides;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+            });
+            
+            document.getElementById('current-slide').textContent = index + 1;
+            document.getElementById('prev-btn').disabled = index === 0;
+            document.getElementById('next-btn').disabled = index === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < totalSlides - 1) {
+                currentSlideIndex++;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                showSlide(currentSlideIndex);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                previousSlide();
+            }
+        });
+
+        // Interactive elements
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('interactive-element')) {
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
+            }
+        });
+
+        // Demo text animation
+        const demoText = document.getElementById('demo-text');
+        if (demoText) {
+            demoText.addEventListener('click', () => {
+                const colors = ['#007AFF', '#FF3B30', '#34C759', '#FF9500', '#AF52DE'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                demoText.style.backgroundColor = randomColor;
+                demoText.style.transform = 'scale(1.1) rotate(5deg)';
+                setTimeout(() => {
+                    demoText.style.transform = 'scale(1) rotate(0deg)';
+                }, 300);
+            });
+        }
+
+        // Initialize
+        showSlide(0);
+
+        // Auto-advance on first slide click
+        let firstSlideClicked = false;
+        slides[0].addEventListener('click', () => {
+            if (!firstSlideClicked) {
+                firstSlideClicked = true;
+                nextSlide();
+            }
+        });
+    </script>
+</body>
+</html>

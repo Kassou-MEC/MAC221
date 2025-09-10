@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Swift Language Overview - Interactive Presentation</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body{
+      font-family:'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      color:#333; line-height:1.6;
+    }
+
+    .container{ display:flex; height:100vh; }
+
+    .sidebar{
+      width:250px; background:rgba(255,255,255,.95); backdrop-filter:blur(10px);
+      padding:20px; overflow-y:auto; border-right:1px solid rgba(255,255,255,.2);
+    }
+
+    .logo{ display:flex; align-items:center; margin-bottom:30px; font-size:20px; font-weight:bold; color:#f05138; }
+    .logo::before{ content:"🚀"; margin-right:10px; font-size:24px; }
+
+    .chapter-list{ list-style:none; }
+    .chapter-item{
+      margin-bottom:8px; padding:12px; background:rgba(240,81,56,.1);
+      border-radius:8px; cursor:pointer; transition:all .3s ease; border-left:3px solid transparent;
+    }
+    .chapter-item:hover{ background:rgba(240,81,56,.2); border-left-color:#f05138; }
+    .chapter-item.active{ background:#f05138; color:#fff; border-left-color:#d63031; }
+
+    .main-content{ flex:1; display:flex; flex-direction:column; }
+    .content-area{ flex:1; display:flex; }
+
+    .presentation-panel{
+      flex:1; background:#fff; margin:20px 10px 20px 20px; border-radius:12px;
+      box-shadow:0 10px 40px rgba(0,0,0,.1); overflow:hidden;
+    }
+
+    .code-panel{ flex:1; margin:20px 20px 20px 10px; display:flex; flex-direction:column; }
+
+    .code-editor{
+      flex:1; background:#1e1e1e; border-radius:12px; margin-bottom:10px; overflow:hidden;
+      box-shadow:0 10px 40px rgba(0,0,0,.2);
+    }
+
+    .console{
+      height:200px; background:#0d1117; border-radius:12px; overflow:hidden;
+      box-shadow:0 10px 40px rgba(0,0,0,.2);
+    }
+
+    .panel-header{
+      background:#2d3748; color:#fff; padding:12px 20px; font-weight:600;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .console-header{ background:#21262d; }
+
+    .run-button{
+      background:#28a745; color:#fff; border:none; padding:8px 16px; border-radius:6px;
+      cursor:pointer; font-weight:600; transition:background .3s ease;
+    }
+    .run-button:hover{ background:#218838; }
+
+    .code-input{
+      width:100%; height:calc(100% - 60px); background:#1e1e1e; color:#d4d4d4; border:none;
+      padding:20px; font-family:'Monaco','Menlo','Ubuntu Mono',monospace; font-size:14px; resize:none; outline:none;
+    }
+
+    .console-output{
+      padding:20px; color:#58a6ff; font-family:'Monaco','Menlo','Ubuntu Mono',monospace;
+      font-size:13px; height:calc(100% - 60px); overflow-y:auto; white-space:pre-wrap;
+    }
+
+    .chapter-content{ padding:40px; height:100%; overflow-y:auto; }
+
+    .chapter-content h1{ color:#f05138; font-size:2.2em; margin-bottom:20px; font-weight:700; }
+    .chapter-content h2{ color:#2d3748; font-size:1.6em; margin:28px 0 14px; font-weight:600; }
+    .chapter-content h3{ color:#4a5568; font-size:1.2em; margin:18px 0 10px; font-weight:600; }
+    .chapter-content p{ margin-bottom:14px; color:#2d3748; font-size:16px; }
+
+    .code-example{
+      position:relative;
+      background:#0b1220; border:1px solid #112240; border-radius:10px;
+      margin:16px 0; overflow:auto;
+    }
+    .code-example pre{
+      margin:0; padding:18px 16px 18px 20px;
+      color:#e6edf3; font-family:'Monaco','Menlo','Ubuntu Mono',monospace;
+      font-size:13.5px; line-height:1.45; white-space:pre; tab-size:4;
+    }
+    .code-example::before{
+      content:"Swift"; position:absolute; top:8px; right:12px;
+      background:#f05138; color:#fff; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700;
+    }
+    .copy-btn{
+      position:absolute; top:8px; left:10px; border:none; padding:4px 10px; border-radius:6px;
+      background:#334155; color:#e5e7eb; font-size:12px; cursor:pointer;
+    }
+    .copy-btn:hover{ filter:brightness(1.1); }
+
+    .highlight{
+      background:linear-gradient(120deg,#f093fb 0%,#f5576c 100%);
+      padding:2px 6px; border-radius:4px; color:#fff; font-weight:600;
+    }
+
+    .feature-box{
+      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff;
+      padding:20px; border-radius:12px; margin:20px 0;
+    }
+    .feature-box h3{ color:#fff; margin-bottom:10px; }
+
+    .navigation{
+      display:flex; justify-content:space-between; padding:20px 40px;
+      background:rgba(255,255,255,.95); backdrop-filter:blur(10px);
+    }
+    .nav-button{
+      background:#f05138; color:#fff; border:none; padding:12px 24px; border-radius:25px;
+      cursor:pointer; font-weight:600; transition:all .3s ease;
+    }
+    .nav-button:hover{ background:#d63031; transform:translateY(-2px); }
+    .nav-button:disabled{ background:#ccc; cursor:not-allowed; transform:none; }
+
+    @media (max-width:768px){
+      .container{ flex-direction:column; }
+      .sidebar{ width:100%; height:auto; max-height:200px; }
+      .content-area{ flex-direction:column; }
+      .presentation-panel, .code-panel{ margin:10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <div class="logo">Swift Overview</div>
+      <ul class="chapter-list">
+        <li class="chapter-item active" data-chapter="0">1. Introduction</li>
+        <li class="chapter-item" data-chapter="1">2. Variables & Constants</li>
+        <li class="chapter-item" data-chapter="2">3. Data Types</li>
+        <li class="chapter-item" data-chapter="3">4. Control Flow</li>
+        <li class="chapter-item" data-chapter="4">5. Functions</li>
+        <li class="chapter-item" data-chapter="5">6. Classes & Structures</li>
+        <li class="chapter-item" data-chapter="6">7. Error Handling</li>
+        <li class="chapter-item" data-chapter="7">8. Advanced Features</li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <div class="content-area">
+        <div class="presentation-panel">
+          <div id="chapter-content" class="chapter-content"></div>
+        </div>
+
+        <div class="code-panel">
+          <div class="code-editor">
+            <div class="panel-header">
+              <span>Code Editor</span>
+              <button class="run-button" onclick="runCode()">Run Code ▶</button>
+            </div>
+            <textarea class="code-input" id="code-input" placeholder='// Write your Swift code here...
+print("Hello, Swift!")'></textarea>
+          </div>
+
+          <div class="console">
+            <div class="panel-header console-header">Console Output</div>
+            <div class="console-output" id="console-output">Welcome to Swift Interactive Console!
+Click "Run Code" to execute your Swift code.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="navigation">
+        <button class="nav-button" id="prev-button" onclick="previousChapter()" disabled>Previous</button>
+        <button class="nav-button" id="next-button" onclick="nextChapter()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------- Content (same text, but code blocks render better thanks to CSS) -------
+    const chapters = [
+      {
+        title: "Introduction to Swift",
+        content: `
+<h1>Introduction to Swift</h1>
+<p>Swift is a powerful and intuitive programming language developed by Apple for iOS, macOS, watchOS, and tvOS. It's designed to be safe, fast, and expressive.</p>
+<div class="feature-box">
+  <h3>🚀 Key Features</h3>
+  <p>• <strong>Safe</strong> (eliminates entire classes of unsafe code)<br>
+     • <strong>Fast</strong> (built for performance)<br>
+     • <strong>Modern</strong> (optionals, generics, closures)<br>
+     • <strong>Interactive</strong> (Swift Playgrounds)</p>
+</div>
+<h2>Your First Swift Program</h2>
+<p>Classic “Hello, World!”:</p>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>print("Hello, World!")
+// This prints: Hello, World!</pre></div>
+<h2>Swift History</h2>
+<p>Introduced at WWDC 2014, designed as a modern replacement for Objective-C with interoperability.</p>
+<h3>Why Choose Swift?</h3>
+<p>Approachable for beginners and powerful for experts.</p>`
+      },
+      {
+        title: "Variables and Constants",
+        content: `
+<h1>Variables and Constants</h1>
+<p>Declare constants with <span class="highlight">let</span> and variables with <span class="highlight">var</span>.</p>
+<h2>Constants (let)</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let maximumNumberOfLoginAttempts = 10
+let π = 3.14159
+let welcomeMessage = "Hello"
+
+// This would cause an error in real Swift:
+// maximumNumberOfLoginAttempts = 9</pre></div>
+<h2>Variables (var)</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>var currentLoginAttempt = 0
+var x = 0.0, y = 0.0, z = 0.0
+
+currentLoginAttempt += 1
+print("Current attempt: \\(currentLoginAttempt)")</pre></div>
+<h2>Type Annotations</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>var welcomeMessage: String
+welcomeMessage = "Hello"
+
+var red, green, blue: Double
+red = 1.0
+green = 0.5
+blue = 0.2</pre></div>
+<div class="feature-box">
+  <h3>💡 Best Practice</h3>
+  <p>Use <strong>let</strong> by default; use <strong>var</strong> only when mutation is required.</p>
+</div>
+<h2>Naming</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let 🐶🐮 = "dogcow"
+let 你好 = "hello in Chinese"
+let π = 3.14159</pre></div>`
+      },
+      {
+        title: "Data Types",
+        content: `
+<h1>Data Types</h1>
+<p>Swift provides integers, floating-point numbers, Booleans, strings, arrays, and dictionaries.</p>
+<h2>Numbers</h2>
+<h3>Integers</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let minValue = UInt8.min  // 0
+let maxValue = UInt8.max  // 255
+
+let decimalInteger = 17
+let binaryInteger = 0b10001
+let octalInteger = 0o21
+let hexadecimalInteger = 0x11</pre></div>
+<h3>Floating-Point</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let pi64: Double = 3.14159
+let pi32: Float = 3.14159
+
+let decimalDouble = 12.1875
+let exponentDouble = 1.21875e1
+let hexadecimalDouble = 0xC.3p0</pre></div>
+<h2>Booleans</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let orangesAreOrange = true
+let turnipsAreDelicious = false
+
+if turnipsAreDelicious {
+    print("Mmm, tasty turnips!")
+} else {
+    print("Eww, turnips are horrible.")
+}</pre></div>
+<h2>Strings</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let someString = "Some string literal value"
+let multilineString = """
+This is a multiline
+string literal
+"""
+
+// String interpolation
+let multiplier = 3
+let message = "\\(multiplier) times 2.5 is \\(Double(multiplier) * 2.5)"
+print(message)</pre></div>
+<h2>Collections</h2>
+<h3>Arrays</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>var someInts: [Int] = []
+var shoppingList = ["Eggs", "Milk", "Flour"]
+
+shoppingList.append("Baking Powder")
+print("The shopping list contains \\(shoppingList.count) items")</pre></div>
+<h3>Dictionaries</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>var airports = ["YYZ": "Toronto Pearson", "DUB": "Dublin"]
+airports["LHR"] = "London Heathrow"
+print("The airports dictionary contains \\(airports.count) items")</pre></div>
+<div class="feature-box">
+  <h3>🎯 Type Safety</h3>
+  <p>Swift performs compile-time type checks and flags mismatches.</p>
+</div>`
+      },
+      {
+        title: "Control Flow",
+        content: `
+<h1>Control Flow</h1>
+<p>Swift includes conditionals and loops.</p>
+<h2>Conditional Statements</h2>
+<h3>If</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let temperature = 25
+
+if temperature <= 32 {
+    print("It's very cold. Consider wearing a scarf.")
+} else if temperature >= 86 {
+    print("It's really warm. Don't forget sunscreen.")
+} else {
+    print("It's not that cold. Wear a t-shirt.")
+}</pre></div>
+<h3>Switch</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let someCharacter: Character = "z"
+switch someCharacter {
+case "a":
+    print("The first letter of the alphabet")
+case "z":
+    print("The last letter of the alphabet")
+default:
+    print("Some other character")
+}
+
+// Ranges
+let approximateCount = 62
+let countedThings = "moons orbiting Saturn"
+let naturalCount: String
+switch approximateCount {
+case 0: naturalCount = "no"
+case 1..<5: naturalCount = "a few"
+case 5..<12: naturalCount = "several"
+case 12..<100: naturalCount = "dozens of"
+default: naturalCount = "many"
+}
+print("There are \\(naturalCount) \\(countedThings).")</pre></div>
+<h2>Loops</h2>
+<h3>For-In</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let names = ["Anna", "Alex", "Brian", "Jack"]
+for name in names { print("Hello, \\(name)!") }
+
+for index in 1...5 {
+    print("\\(index) times 5 is \\(index * 5)")
+}</pre></div>
+<h3>While / Repeat-While</h3>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>var counter = 0
+while counter < 3 {
+    print("Counter is \\(counter)")
+    counter += 1
+}
+
+var number = 0
+repeat {
+    print("Number is \\(number)")
+    number += 1
+} while number < 2</pre></div>
+<h2>Guard</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func greet(person: [String: String]) {
+    guard let name = person["name"] else { return }
+    print("Hello \\(name)")
+
+    guard let location = person["location"] else {
+        print("I hope the weather is nice near you."); return
+    }
+    print("I hope the weather is nice in \\(location).")
+}</pre></div>
+<div class="feature-box"><h3>🔄 Control Transfer</h3>
+<p><strong>continue</strong>, <strong>break</strong>, <strong>fallthrough</strong>, <strong>return</strong>, <strong>throw</strong></p></div>`
+      },
+      {
+        title: "Functions",
+        content: `
+<h1>Functions</h1>
+<p>Self-contained chunks of code that perform tasks.</p>
+<h2>Basic Syntax</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func greet(person: String) -> String {
+    "Hello, " + person + "!"
+}
+print(greet(person: "Anna"))
+print(greet(person: "Brian"))</pre></div>
+<h2>Void / Multiple Params</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func greet(person: String) { print("Hello, \\(person)!") }
+greet(person: "Dave")
+
+func greet(person: String, from hometown: String) -> String {
+    "Hello \\(person)! Glad you could visit from \\(hometown)."
+}
+print(greet(person: "Bill", from: "Cupertino"))</pre></div>
+<h2>Multiple Return Values</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func minMax(array: [Int]) -> (min: Int, max: Int)? {
+    guard !array.isEmpty else { return nil }
+    var currentMin = array[0], currentMax = array[0]
+    for value in array.dropFirst() {
+        if value < currentMin { currentMin = value }
+        else if value > currentMax { currentMax = value }
+    }
+    return (currentMin, currentMax)
+}
+if let b = minMax(array:[8,-6,2,109,3,71]) {
+    print("min is \\(b.min) and max is \\(b.max)")
+}</pre></div>
+<h2>Argument Labels / Defaults / HOF</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func greet(to person: String, from hometown: String) {
+    print("Hello \\(person)! from \\(hometown).")
+}
+greet(to:"Bill", from:"Cupertino")
+
+func someFunction(_ first: Int, second: Int) { }
+someFunction(1, second: 2)
+
+func some(parameterWithoutDefault: Int, parameterWithDefault: Int = 12) {
+    print("\\(parameterWithoutDefault), \\(parameterWithDefault)")
+}
+some(parameterWithoutDefault: 3, parameterWithDefault: 6)
+some(parameterWithoutDefault: 4)</pre></div>
+<div class="feature-box"><h3>🎯 Best Practices</h3>
+<p>Descriptive names, small scope, defaults where useful, prefer immutability.</p></div>`
+      },
+      {
+        title: "Classes and Structures",
+        content: `
+<h1>Classes and Structures</h1>
+<h2>Structs</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>struct Resolution {
+    var width = 0, height = 0
+    func description() -> String { "Resolution: \\(width) x \\(height)" }
+    mutating func scale(by factor: Int) { width *= factor; height *= factor }
+}
+var res = Resolution(width:1920, height:1080)
+print(res.description())
+res.scale(by:2)
+print(res.description())</pre></div>
+<h2>Classes</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>class VideoMode {
+    var resolution = Resolution()
+    var interlaced = false
+    var frameRate = 0.0
+    var name: String?
+    init(name: String) { self.name = name }
+    func description() -> String {
+        let resDesc = resolution.description()
+        return "VideoMode: \\(name ?? "Unknown") - \\(resDesc)"
+    }
+}
+let vm = VideoMode(name:"4K Ultra HD")
+vm.resolution.width = 3840; vm.resolution.height = 2160; vm.frameRate = 60.0
+print(vm.description())</pre></div>
+<h2>Properties & Observers</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>class StepCounter {
+    var totalSteps: Int = 0 {
+        willSet { print("About to set totalSteps to \\(newValue)") }
+        didSet { if totalSteps > oldValue { print("Added \\(totalSteps-oldValue) steps") } }
+    }
+}
+let sc = StepCounter()
+sc.totalSteps = 200
+sc.totalSteps = 360</pre></div>
+<h2>Inheritance</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>class Vehicle {
+    var currentSpeed = 0.0
+    var description: String { "traveling at \\(currentSpeed) mph" }
+    func makeNoise() { }
+}
+class Car: Vehicle {
+    var gear = 1
+    override var description: String { "Car in gear \\(gear) " + super.description }
+    override func makeNoise() { print("Vroom vroom!") }
+}
+let car = Car(); car.currentSpeed=25.0; car.gear=3
+print(car.description); car.makeNoise()</pre></div>
+<div class="feature-box"><h3>🏗️ Classes vs Structures</h3>
+<p><strong>Classes:</strong> reference types, inheritance, deinit<br>
+<strong>Structs:</strong> value types, memberwise init, prefer when possible</p></div>`
+      },
+      {
+        title: "Error Handling",
+        content: `
+<h1>Error Handling</h1>
+<p>Throw, catch, propagate, and handle recoverable errors.</p>
+<h2>Representing & Throwing</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>enum VendingMachineError: Error {
+    case invalidSelection, insufficientFunds(coinsNeeded:Int), outOfStock
+}
+struct Item { var price:Int; var count:Int }
+class VendingMachine {
+    var inventory = ["Candy Bar": Item(price:12,count:7)]
+    var coinsDeposited = 0
+    func buy(itemNamed name:String) throws -> String {
+        guard let item = inventory[name] else { throw VendingMachineError.invalidSelection }
+        guard item.count > 0 else { throw VendingMachineError.outOfStock }
+        guard item.price <= coinsDeposited else {
+            throw VendingMachineError.insufficientFunds(coinsNeeded:item.price - coinsDeposited)
+        }
+        coinsDeposited -= item.price
+        var newItem = item; newItem.count -= 1; inventory[name] = newItem
+        return "Dispensed \\(name)"
+    }
+}</pre></div>
+<h2>Handling</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>let vm = VendingMachine(); vm.coinsDeposited = 8
+do {
+    let snack = try vm.buy(itemNamed: "Candy Bar")
+    print("Success: \\(snack)")
+} catch VendingMachineError.invalidSelection {
+    print("Invalid Selection.")
+} catch VendingMachineError.outOfStock {
+    print("Out of Stock.")
+} catch VendingMachineError.insufficientFunds(let coinsNeeded) {
+    print("Insufficient funds. Insert \\(coinsNeeded) coins.")
+} catch {
+    print("Unexpected error: \\(error)")
+}</pre></div>
+<div class="feature-box"><h3>🛡️ Tips</h3>
+<p>Use specific error types, meaningful messages, and <code>defer</code> for cleanup.</p></div>`
+      },
+      {
+        title: "Advanced Features",
+        content: `
+<h1>Advanced Swift Features</h1>
+<h2>Generics</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>func swapTwoValues&lt;T&gt;(_ a: inout T, _ b: inout T) {
+    let t = a; a = b; b = t
+}
+var a = 3, b = 107
+swapTwoValues(&a, &b)
+print("a: \\(a), b: \\(b)")
+
+struct Stack&lt;Element&gt; {
+    var items:[Element] = []
+    mutating func push(_ item:Element){ items.append(item) }
+    mutating func pop() -> Element? { items.popLast() }
+}
+var s = Stack&lt;String&gt;(); s.push("uno"); s.push("dos"); print(s.pop() ?? "")</pre></div>
+<h2>Protocols & Extensions</h2>
+<div class="code-example"><button class="copy-btn">Copy</button><pre>protocol Drawable { func draw() -> String }
+struct Circle: Drawable {
+    var radius: Double
+    func draw() -> String { "Circle radius \\(radius)" }
+}
+extension Double { var km: Double { self * 1000 } }
+print(5.0.km)</pre></div>
+<div class="feature-box"><h3>🚀 Tips</h3>
+<p>Use protocols for behavior, extensions to organize, generics for reuse, master optionals, understand ARC.</p></div>`
+      }
+    ];
+
+    let currentChapter = 0;
+
+    function withCopyButtons() {
+      document.querySelectorAll('.code-example .copy-btn').forEach(btn => {
+        btn.onclick = () => {
+          const code = btn.nextElementSibling.innerText;
+          navigator.clipboard.writeText(code);
+          btn.textContent = "Copied!";
+          setTimeout(() => (btn.textContent = "Copy"), 1000);
+        };
+      });
+    }
+
+    function displayChapter(index) {
+      const chapter = chapters[index];
+      const content = document.getElementById('chapter-content');
+      content.innerHTML = chapter.content;
+
+      // Set a sensible starter code for many chapters
+      const starter = {
+        0: 'print("Hello, Swift!")',
+        1: 'let maximumAttempts = 10\nvar currentAttempt = 0\nprint("Max attempts: \\(maximumAttempts)")\ncurrentAttempt += 1\nprint("Current attempt: \\(currentAttempt)")',
+        2: 'let integer = 42\nlet pi = 3.14159\nprint("Integer: \\(integer), Pi: \\(pi)")',
+        3: 'let score = 85\nif score >= 90 { print("A") } else if score >= 80 { print("B") } else { print("C") }',
+        4: 'func add(a: Int, b: Int) -> Int { a + b }\nprint("5 + 3 = \\(add(a:5,b:3))")',
+        5: 'struct Person { var name:String; var age:Int }\nlet p = Person(name:"Alice", age:25)\nprint("Hi, I\\(String("\'"))m \\(p.name)")',
+        6: 'enum CalcError: Error { case divisionByZero }\nprint("Errors demo (see slides).")',
+        7: 'print("Generics & Protocols demo (see slides).")'
+      };
+      document.getElementById('code-input').value = starter[index] || 'print("Hello, Swift!")';
+
+      // Update nav
+      document.getElementById('prev-button').disabled = index === 0;
+      document.getElementById('next-button').disabled = index === chapters.length - 1;
+
+      // Sidebar active state
+      document.querySelectorAll('.chapter-item').forEach((item, i) => {
+        item.classList.toggle('active', i === index);
+      });
+
+      // Wire copy buttons
+      withCopyButtons();
+    }
+
+    function nextChapter(){ if(currentChapter < chapters.length-1){ currentChapter++; displayChapter(currentChapter); } }
+    function previousChapter(){ if(currentChapter > 0){ currentChapter--; displayChapter(currentChapter); } }
+
+    // =========================
+    // Swift-like Mock Runtime (enhanced)
+    // =========================
+
+    // Remove Swift argument labels in calls: add(a:5,b:3) -> add(5,3)
+    function normalizeSwiftExpr(expr) {
+      return expr.replace(/\b([A-Za-z_]\w*)\s*\(([^()]*)\)/g, (m, fn, args) => {
+        const cleaned = args
+          .split(',')
+          .map(s => s.replace(/^\s*[A-Za-z_]\w*\s*:\s*/, '').trim())
+          .join(', ');
+        return `${fn}(${cleaned})`;
+      });
+    }
+
+    // Evaluate expression within env of vars & functions
+    function evalInEnv(expr, env) {
+      const normalized = normalizeSwiftExpr(expr);
+
+      // very conservative character allowlist
+      if (!/^[\s\w\.\+\-\*\/%\(\),"':`&\[\]<>?\\|!^=]+$/.test(normalized)) {
+        throw new Error("Unsupported characters in expression.");
+      }
+
+      const keys = Object.keys(env);
+      const vals = keys.map(k => env[k]);
+      // eslint-disable-next-line no-new-func
+      const fn = Function(...keys, `"use strict"; return (${normalized});`);
+      return fn(...vals);
+    }
+
+    // Parse single-line Swift function: func name(a: Type, b: Type) -> Ret { expr }
+    function parseSwiftFunction(line, env) {
+      const m = line.match(/^func\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*(?:->\s*[^ {]+)?\s*\{\s*([^}]*)\s*\}\s*$/);
+      if (!m) return false;
+
+      const [, name, paramsRaw, bodyRaw] = m;
+      const params = paramsRaw.trim()
+        ? paramsRaw.split(',').map(p => {
+            const mm = p.trim().match(/^(?:[A-Za-z_]\w*|\_)\s*([A-Za-z_]\w*)\s*:\s*.+$/);
+            return mm ? mm[1] : p.trim().split(':')[0].trim();
+          })
+        : [];
+
+      env[name] = function(...args) {
+        const local = Object.create(null);
+        Object.assign(local, env);
+        params.forEach((p, i) => { local[p] = args[i]; });
+        const bodyExpr = bodyRaw.trim().replace(/;$/, '');
+        return evalInEnv(bodyExpr, local);
+      };
+      return true;
+    }
+
+    function parseValue(raw, env) {
+      const s = raw.trim();
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        return s.slice(1, -1).replace(/\\n/g, "\n").replace(/\\t/g, "\t");
+      }
+      if (s === "true") return true;
+      if (s === "false") return false;
+      if (/^[A-Za-z_]\w*$/.test(s) && Object.prototype.hasOwnProperty.call(env, s)) {
+        return env[s];
+      }
+      const n = Number(s);
+      if (!isNaN(n)) return n;
+      return s;
+    }
+
+    function mockSwiftExecution(src) {
+      const env = Object.create(null);
+      let output = "";
+      const lines = src.split(/\r?\n/);
+
+      for (let raw of lines) {
+        let line = raw.trim();
+        if (!line || line.startsWith("//")) continue;
+
+        // Single-line function definitions
+        if (parseSwiftFunction(line, env)) continue;
+
+        // Augmented assignment
+        let mAug = line.match(/^([A-Za-z_]\w*)\s*(\+=|-=)\s*(.+)$/);
+        if (mAug) {
+          const [, name, op, rhsRaw] = mAug;
+          const rhs = parseValue(rhsRaw, env);
+          if (!(name in env)) throw new Error(`Variable '${name}' not defined.`);
+          if (typeof env[name] === "number" && typeof rhs === "number") {
+            env[name] = op === "+=" ? env[name] + rhs : env[name] - rhs;
+          } else if (typeof env[name] === "string" && op === "+=") {
+            env[name] = String(env[name]) + String(rhs);
+          } else {
+            throw new Error("Unsupported augmented assignment types.");
+          }
+          continue;
+        }
+
+        // let/var assignment
+        let mAssign = line.match(/^(?:let|var)\s+([A-Za-z_]\w*)\s*=\s*(.+)$/);
+        if (mAssign) {
+          const [, name, rhsRaw] = mAssign;
+          env[name] = parseValue(rhsRaw, env);
+          continue;
+        }
+
+        // Plain assignment
+        let mPlain = line.match(/^([A-Za-z_]\w*)\s*=\s*(.+)$/);
+        if (mPlain) {
+          const [, name, rhsRaw] = mPlain;
+          env[name] = parseValue(rhsRaw, env);
+          continue;
+        }
+
+        // print(...)
+        let mPrint = line.match(/^print\s*\(([\s\S]+)\)\s*$/);
+        if (mPrint) {
+          let inside = mPrint[1].trim();
+
+          // Interpolation \( ... ) and \\( ... )
+          const interpolate = (str) => str
+            .replace(/\\\\\(([^)]+)\)/g, (_, expr) => { // editor-escaped
+              try { return String(evalInEnv(expr, env)); } catch { return `\\(${expr})`; }
+            })
+            .replace(/\\\(([^)]+)\)/g,   (_, expr) => { // normal
+              try { return String(evalInEnv(expr, env)); } catch { return `\\(${expr})`; }
+            });
+
+          if ((inside.startsWith('"') && inside.endsWith('"')) || (inside.startsWith("'") && inside.endsWith("'"))) {
+            let text = inside.slice(1, -1)
+              .replace(/\\n/g, "\n")
+              .replace(/\\t/g, "\t");
+            text = interpolate(text);
+            output += text + "\n";
+          } else {
+            const val = evalInEnv(inside, env);
+            output += String(val) + "\n";
+          }
+          continue;
+        }
+
+        // Ignore other constructs in this mock
+      }
+
+      return output || "Code executed (mock). Use Xcode/Swift for full semantics.";
+    }
+
+    function runCode() {
+      const code = document.getElementById('code-input').value;
+      const out = document.getElementById('console-output');
+      if (!code.trim()) { out.textContent = "Please enter some Swift code to run."; return; }
+
+      out.textContent = "Running Swift code...\n\n";
+      setTimeout(() => {
+        try {
+          const result = mockSwiftExecution(code);
+          out.textContent += result;
+        } catch (e) {
+          out.textContent += "Error: " + e.message;
+        } finally {
+          out.scrollTop = out.scrollHeight;
+        }
+      }, 150);
+    }
+
+    // -------- Init & bindings --------
+    document.addEventListener('DOMContentLoaded', () => {
+      displayChapter(0);
+
+      document.querySelectorAll('.chapter-item').forEach((item, index) => {
+        item.addEventListener('click', () => { currentChapter = index; displayChapter(currentChapter); });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        const metaOrCtrl = e.metaKey || e.ctrlKey;
+        if (e.key === 'ArrowLeft' && currentChapter > 0) previousChapter();
+        else if (e.key === 'ArrowRight' && currentChapter < chapters.length - 1) nextChapter();
+        else if (metaOrCtrl && e.key.toLowerCase() === 'enter') runCode();
+      });
+    });
+  </script>
+</body>
+</html>

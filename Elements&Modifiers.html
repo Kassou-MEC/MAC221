@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwiftUI Mastery: Elements & Modifiers! 📱</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+        }
+
+        .definition-box {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .example-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'SF Mono', Consolas, 'Monaco', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'SwiftUI';
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #a0aec0;
+            font-size: 12px;
+        }
+
+        .funny-note {
+            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            text-align: center;
+            border: 2px dashed #e17055;
+            font-size: 16px;
+        }
+
+        .simulator-container {
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .simulator-screen {
+            background: white;
+            width: 300px;
+            height: 500px;
+            border-radius: 25px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 8px solid #2d3748;
+        }
+
+        .interactive-demo {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .demo-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .demo-btn:hover, .demo-btn.active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .exercise-container {
+            background: #f1f3f4;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .quiz-container {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 35px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .question {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .answer-btn {
+            background: #74b9ff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 8px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .answer-btn:hover {
+            background: #0984e3;
+            transform: scale(1.05);
+        }
+
+        .correct {
+            background: #00b894 !important;
+        }
+
+        .incorrect {
+            background: #e17055 !important;
+        }
+
+        .step-by-step {
+            background: #fdcb6e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #e17055;
+        }
+
+        .difficulty-tag {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .easy { background: #00b894; color: white; }
+        .medium { background: #fdcb6e; color: #2d3436; }
+        .hard { background: #e17055; color: white; }
+
+        .modifier-demo {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modifier-demo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 2em;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .bounce {
+            animation: bounce 1s;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .syntax-highlight .keyword { color: #ff79c6; }
+        .syntax-highlight .string { color: #f1fa8c; }
+        .syntax-highlight .number { color: #bd93f9; }
+        .syntax-highlight .comment { color: #6272a4; }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .element-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .element-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .element-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 SwiftUI Mastery: Elements & Modifiers! 🎨</h1>
+            <p>Master the building blocks of beautiful iOS apps!</p>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn active" onclick="showSection(0)">🏠 Intro</button>
+            <button class="nav-btn" onclick="showSection(1)">🧱 Elements</button>
+            <button class="nav-btn" onclick="showSection(2)">📐 Layout</button>
+            <button class="nav-btn" onclick="showSection(3)">✨ Modifiers</button>
+            <button class="nav-btn" onclick="showSection(4)">🎯 Combining</button>
+            <button class="nav-btn" onclick="showSection(5)">💪 Practice</button>
+            <button class="nav-btn" onclick="showSection(6)">🏆 Quiz</button>
+        </div>
+
+        <!-- Section 0: Introduction -->
+        <div class="section active" id="section-0">
+            <h2>🌟 Welcome to SwiftUI Universe! 🌟</h2>
+            
+            <div class="definition-box">
+                <h3>🍎 What is SwiftUI?</h3>
+                <p><strong>SwiftUI</strong> is Apple's modern framework for building user interfaces across all Apple platforms. It uses a declarative syntax, meaning you describe what your UI should look like and SwiftUI figures out how to make it happen!</p>
+                <p><strong>Key Concepts:</strong></p>
+                <ul>
+                    <li><strong>Views:</strong> The building blocks of your UI</li>
+                    <li><strong>Modifiers:</strong> Methods that change how views look and behave</li>
+                    <li><strong>Declarative:</strong> You describe the result, not the steps</li>
+                </ul>
+            </div>
+
+            <div class="funny-note">
+                🤖 SwiftUI is like having a really smart assistant: 
+                You say "I want a blue button that bounces when tapped" 
+                and it replies "Say no more, fam!" 💙
+            </div>
+
+            <div class="simulator-container">
+                <h3>📱 iOS Simulator Preview</h3>
+                <div class="simulator-screen" id="main-simulator">
+                    <div style="font-size: 24px; margin: 20px;">Hello, SwiftUI! 👋</div>
+                    <div style="background: #007AFF; color: white; padding: 10px 20px; border-radius: 10px; margin: 10px;">
+                        Tap Me!
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-block">
+<pre><span class="keyword">struct</span> ContentView: <span class="keyword">View</span> {
+    <span class="keyword">var</span> body: <span class="keyword">some View</span> {
+        <span class="keyword">VStack</span> {
+            <span class="keyword">Text</span>(<span class="string">"Hello, SwiftUI! 👋"</span>)
+            <span class="keyword">Button</span>(<span class="string">"Tap Me!"</span>) {
+                <span class="comment">// Action here</span>
+            }
+        }
+    }
+}</pre>
+            </div>
+
+            <div class="funny-note">
+                🏗️ Think of SwiftUI views like LEGO blocks: 
+                Each piece has a specific purpose, and you combine them to build amazing things! 🧱✨
+            </div>
+        </div>
+
+        <!-- Section 1: Basic Elements -->
+        <div class="section" id="section-1">
+            <h2>🧱 SwiftUI Elements: The Building Blocks!</h2>
+            
+            <div class="definition-box">
+                <h3>📋 Core UI Elements</h3>
+                <p>SwiftUI provides a rich set of views to build your interface. Each view has a specific purpose and can be customized with modifiers!</p>
+            </div>
+
+            <div class="element-showcase">
+                <div class="element-card" onclick="showElementDemo('text')">
+                    <h4>📝 Text</h4>
+                    <p>Display text content</p>
+                </div>
+                <div class="element-card" onclick="showElementDemo('button')">
+                    <h4>🔘 Button</h4>
+                    <p>Interactive tap element</p>
+                </div>
+                <div class="element-card" onclick="showElementDemo('image')">
+                    <h4>🖼️ Image</h4>
+                    <p>Display images</p>
+                </div>
+                <div class="element-card" onclick="showElementDemo('textfield')">
+                    <h4>📝 TextField</h4>
+                    <p>Text input field</p>
+                </div>
+                <div class="element-card" onclick="showElementDemo('toggle')">
+                    <h4>🔄 Toggle</h4>
+                    <p>On/off switch</p>
+                </div>
+                <div class="element-card" onclick="showElementDemo('slider')">
+                    <h4>🎚️ Slider</h4>
+                    <p>Range selector</p>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>🎮 Interactive Demo</h3>
+                <div class="simulator-screen" id="elements-simulator" style="background: #f0f0f0;">
+                    <div id="demo-content">Click an element above to see it in action!</div>
+                </div>
+            </div>
+
+            <h3>📝 Examples:</h3>
+            
+            <div class="example-box">
+                <div class="difficulty-tag easy">EASY</div>
+                <h4>Text Views</h4>
+                <div class="code-block">
+<pre><span class="keyword">Text</span>(<span class="string">"Hello World"</span>)
+<span class="keyword">Text</span>(<span class="string">"Welcome to iOS"</span>)
+    .font(.title)
+    .foregroundColor(.blue)</pre>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="difficulty-tag medium">MEDIUM</div>
+                <h4>Interactive Button</h4>
+                <div class="code-block">
+<pre><span class="keyword">Button</span>(<span class="string">"Press Me"</span>) {
+    print(<span class="string">"Button tapped!"</span>)
+}
+.buttonStyle(BorderedProminentButtonStyle())
+.controlSize(.large)</pre>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="difficulty-tag hard">HARD</div>
+                <h4>Custom TextField</h4>
+                <div class="code-block">
+<pre><span class="keyword">@State private var</span> username = <span class="string">""</span>
+
+<span class="keyword">TextField</span>(<span class="string">"Enter username"</span>, text: $username)
+    .textFieldStyle(RoundedBorderTextFieldStyle())
+    .autocapitalization(.none)
+    .disableAutocorrection(<span class="keyword">true</span>)</pre>
+                </div>
+            </div>
+
+            <div class="funny-note">
+                🎨 Elements are like ingredients in a recipe: 
+                A Text is flour, a Button is sugar, and modifiers are the spices that make it delicious! 👨‍🍳
+            </div>
+        </div>
+
+        <!-- Section 2: Layout Containers -->
+        <div class="section" id="section-2">
+            <h2>📐 Layout Containers: Organizing Your Views!</h2>
+            
+            <div class="definition-box">
+                <h3>📦 Layout Views</h3>
+                <p>Layout containers organize and position other views. They're the skeleton of your UI!</p>
+                <ul>
+                    <li><strong>VStack:</strong> Vertical arrangement</li>
+                    <li><strong>HStack:</strong> Horizontal arrangement</li>
+                    <li><strong>ZStack:</strong> Overlapping arrangement</li>
+                    <li><strong>LazyVGrid/LazyHGrid:</strong> Grid layouts</li>
+                </ul>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>🎯 Layout Playground</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="showLayoutDemo('vstack')">VStack</button>
+                    <button class="demo-btn" onclick="showLayoutDemo('hstack')">HStack</button>
+                    <button class="demo-btn" onclick="showLayoutDemo('zstack')">ZStack</button>
+                    <button class="demo-btn" onclick="showLayoutDemo('grid')">Grid</button>
+                </div>
+                <div class="simulator-screen" id="layout-simulator">
+                    <div id="layout-content">Select a layout type above!</div>
+                </div>
+            </div>
+
+            <div class="grid-layout">
+                <div class="example-box">
+                    <div class="difficulty-tag easy">EASY</div>
+                    <h4>VStack - Vertical Stack</h4>
+                    <div class="code-block">
+<pre><span class="keyword">VStack</span> {
+    <span class="keyword">Text</span>(<span class="string">"First"</span>)
+    <span class="keyword">Text</span>(<span class="string">"Second"</span>)
+    <span class="keyword">Text</span>(<span class="string">"Third"</span>)
+}</pre>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <div class="difficulty-tag easy">EASY</div>
+                    <h4>HStack - Horizontal Stack</h4>
+                    <div class="code-block">
+<pre><span class="keyword">HStack</span> {
+    <span class="keyword">Image</span>(systemName: <span class="string">"star"</span>)
+    <span class="keyword">Text</span>(<span class="string">"Favorite"</span>)
+    <span class="keyword">Spacer</span>()
+}</pre>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <div class="difficulty-tag medium">MEDIUM</div>
+                    <h4>ZStack - Overlapping</h4>
+                    <div class="code-block">
+<pre><span class="keyword">ZStack</span> {
+    <span class="keyword">Rectangle</span>()
+        .fill(.blue)
+        .frame(width: <span class="number">100</span>, height: <span class="number">100</span>)
+    <span class="keyword">Text</span>(<span class="string">"Overlay"</span>)
+        .foregroundColor(.white)
+}</pre>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <div class="difficulty-tag hard">HARD</div>
+                    <h4>LazyVGrid - Grid Layout</h4>
+                    <div class="code-block">
+<pre><span class="keyword">let</span> columns = [
+    GridItem(.flexible()),
+    GridItem(.flexible())
+]
+
+<span class="keyword">LazyVGrid</span>(columns: columns) {
+    <span class="keyword">ForEach</span>(<span class="number">1</span>...<span class="number">6</span>, id: \.self) { item in
+        <span class="keyword">Text</span>(<span class="string">"Item \(item)"</span>)
+    }
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funny-note">
+                🏗️ Layout containers are like furniture arrangers: 
+                VStack lines things up like soldiers, HStack like a conga line, 
+                and ZStack... well, that's just chaos with style! 💃
+            </div>
+        </div>
+
+        <!-- Section 3: Modifiers -->
+        <div class="section" id="section-3">
+            <h2>✨ Modifiers: The Magic Wand of SwiftUI!</h2>
+            
+            <div class="definition-box">
+                <h3>🎨 What are Modifiers?</h3>
+                <p>Modifiers are methods you call on views to change their appearance, behavior, or layout. They're chainable and order matters!</p>
+                <p><strong>Categories:</strong></p>
+                <ul>
+                    <li><strong>Appearance:</strong> Colors, fonts, styling</li>
+                    <li><strong>Layout:</strong> Size, padding, alignment</li>
+                    <li><strong>Behavior:</strong> Gestures, animations, state</li>
+                </ul>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>🎮 Modifier Playground</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="applyModifier('font')">Font</button>
+                    <button class="demo-btn" onclick="applyModifier('color')">Color</button>
+                    <button class="demo-btn" onclick="applyModifier('padding')">Padding</button>
+                    <button class="demo-btn" onclick="applyModifier('background')">Background</button>
+                    <button class="demo-btn" onclick="applyModifier('cornerRadius')">Corner Radius</button>
+                    <button class="demo-btn" onclick="applyModifier('shadow')">Shadow</button>
+                    <button class="demo-btn" onclick="resetModifiers()">Reset</button>
+                </div>
+                <div class="simulator-screen" id="modifier-simulator">
+                    <div id="modifier-text" style="font-size: 18px; color: black; padding: 10px;">
+                        Hello, SwiftUI! ✨
+                    </div>
+                </div>
+                <div class="code-block" id="modifier-code">
+<pre><span class="keyword">Text</span>(<span class="string">"Hello, SwiftUI! ✨"</span>)</pre>
+                </div>
+            </div>
+
+            <h3>📚 Modifier Categories:</h3>
+
+            <div class="grid-layout">
+                <div class="example-box">
+                    <div class="difficulty-tag easy">APPEARANCE</div>
+                    <h4>Styling Modifiers</h4>
+                    <div class="code-block">
+<pre><span class="keyword">Text</span>(<span class="string">"Styled Text"</span>)
+    .font(.title)
+    .foregroundColor(.blue)
+    .bold()
+    .italic()</pre>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <div class="difficulty-tag medium">LAYOUT</div>
+                    <h4>Layout Modifiers</h4>
+                    <div class="code-block">
+<pre><span class="keyword">Text</span>(<span class="string">"Positioned"</span>)
+    .padding(<span class="number">20</span>)
+    .frame(width: <span class="number">200</span>, height: <span class="number">100</span>)
+    .background(.gray)
+    .cornerRadius(<span class="number">10</span>)</pre>
+                    </div>
+                </div>
+
+                <div class="example-box">
+                    <div class="difficulty-tag hard">BEHAVIOR</div>
+                    <h4>Interactive Modifiers</h4>
+                    <div class="code-block">
+<pre><span class="keyword">Text</span>(<span class="string">"Tap me!"</span>)
+    .onTapGesture {
+        print(<span class="string">"Tapped!"</span>)
+    }
+    .scaleEffect(isPressed ? <span class="number">0.8</span> : <span class="number">1.0</span>)
+    .animation(.easeInOut, value: isPressed)</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-by-step">
+                <h4>🔗 Modifier Chaining Order Matters!</h4>
+                <p><strong>Example:</strong> The order of .padding() and .background() changes the result:</p>
+                <div class="code-block">
+<pre><span class="comment">// Background then padding</span>
+<span class="keyword">Text</span>(<span class="string">"Hello"</span>)
+    .background(.blue)
+    .padding(<span class="number">20</span>)
+
+<span class="comment">// Padding then background</span>
+<span class="keyword">Text</span>(<span class="string">"Hello"</span>)
+    .padding(<span class="number">20</span>)
+    .background(.blue)</pre>
+                </div>
+            </div>
+
+            <div class="funny-note">
+                🎭 Modifiers are like makeup for your views: 
+                Apply foundation first (.background), then powder (.padding), 
+                then lipstick (.foregroundColor)! Order matters in beauty AND code! 💄
+            </div>
+        </div>
+
+        <!-- Section 4: Combining Elements and Modifiers -->
+        <div class="section" id="section-4">
+            <h2>🎯 Combining Elements & Modifiers: Building Real UIs!</h2>
+            
+            <div class="definition-box">
+                <h3>🏗️ Building Complex Views</h3>
+                <p>Real apps combine multiple elements with various modifiers to create beautiful, functional interfaces. Let's see how the pieces fit together!</p>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>🎨 UI Builder</h3>
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="buildUI('card')">Card View</button>
+                    <button class="demo-btn" onclick="buildUI('form')">Form</button>
+                    <button class="demo-btn" onclick="buildUI('list')">List</button>
+                    <button class="demo-btn" onclick="buildUI('profile')">Profile</button>
+                </div>
+                <div class="simulator-screen" id="combined-simulator">
+                    <div id="combined-content">Choose a UI pattern above!</div>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="difficulty-tag easy">EASY</div>
+                <h4>Simple Card View</h4>
+                <div class="code-block">
+<pre><span class="keyword">VStack</span>(alignment: .leading, spacing: <span class="number">8</span>) {
+    <span class="keyword">Text</span>(<span class="string">"Card Title"</span>)
+        .font(.headline)
+        .foregroundColor(.primary)
+    
+    <span class="keyword">Text</span>(<span class="string">"Card description goes here"</span>)
+        .font(.body)
+        .foregroundColor(.secondary)
+}
+.padding()
+.background(.regularMaterial)
+.cornerRadius(<span class="number">12</span>)
+.shadow(radius: <span class="number">4</span>)</pre>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="difficulty-tag medium">MEDIUM</div>
+                <h4>Interactive Button Row</h4>
+                <div class="code-block">
+<pre><span class="keyword">HStack</span>(spacing: <span class="number">16</span>) {
+    <span class="keyword">Button</span>(<span class="string">"Save"</span>) {
+        <span class="comment">// Save action</span>
+    }
+    .buttonStyle(.borderedProminent)
+    
+    <span class="keyword">Button</span>(<span class="string">"Cancel"</span>) {
+        <span class="comment">// Cancel action</span>
+    }
+    .buttonStyle(.bordered)
+}
+.padding(.horizontal)</pre>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="difficulty-tag hard">HARD</div>
+                <h4>Profile Card with Image</h4>
+                <div class="code-block">
+<pre><span class="keyword">VStack</span>(spacing: <span class="number">16</span>) {
+    <span class="keyword">AsyncImage</span>(url: URL(string: avatarURL)) { image in
+        image
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+    } placeholder: {
+        <span class="keyword">ProgressView</span>()
+    }
+    .frame(width: <span class="number">80</span>, height: <span class="number">80</span>)
+    .clipShape(<span class="keyword">Circle</span>())
+    .overlay(<span class="keyword">Circle</span>().stroke(.gray, lineWidth: <span class="number">2</span>))
+    
+    <span class="keyword">VStack</span>(spacing: <span class="number">4</span>) {
+        <span class="keyword">Text</span>(user.name)
+            .font(.title2)
+            .fontWeight(.semibold)
+        
+        <span class="keyword">Text</span>(user.email)
+            .font(.caption)
+            .foregroundColor(.secondary)
+    }
+}
+.padding()
+.background(.regularMaterial)
+.cornerRadius(<span class="number">16</span>)</pre>
+                </div>
+            </div>
+
+            <div class="step-by-step">
+                <h4>🎨 Best Practices for Combining Views:</h4>
+                <ul>
+                    <li><strong>Start Simple:</strong> Build one component at a time</li>
+                    <li><strong>Use Spacing:</strong> Add breathing room with padding and spacing</li>
+                    <li><strong>Group Related Content:</strong> Use stacks to organize</li>
+                    <li><strong>Apply Modifiers Logically:</strong> Style from inside out</li>
+                    <li><strong>Test on Different Sizes:</strong> Consider various screen sizes</li>
+                </ul>
+            </div>
+
+            <div class="funny-note">
+                🧩 Building UIs is like solving a jigsaw puzzle: 
+                Each piece (element) has a place, and modifiers are the edges that make everything fit perfectly! 
+                The picture becomes beautiful when all pieces work together! 🖼️
+            </div>
+        </div>
+
+        <!-- Section 5: Practice -->
+        <div class="section" id="section-5">
+            <h2>💪 Practice Exercises: Level Up Your Skills!</h2>
+            
+            <div class="exercise-container">
+                <h3>🏋️ Exercise 1: Basic Text Styling</h3>
+                <p><strong>Task:</strong> Create a text view that displays "Welcome" in large blue text with padding.</p>
+                <button class="answer-btn" onclick="showSolution('ex1')">Show Solution</button>
+                <div id="ex1-solution" style="display: none;">
+                    <div class="code-block">
+<pre><span class="keyword">Text</span>(<span class="string">"Welcome"</span>)
+    .font(.largeTitle)
+    .foregroundColor(.blue)
+    .padding()</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-container">
+                <h3>🔘 Exercise 2: Button with Action</h3>
+                <p><strong>Task:</strong> Create a button labeled "Get Started" that prints "Button pressed!" when tapped.</p>
+                <button class="answer-btn" onclick="showSolution('ex2')">Show Solution</button>
+                <div id="ex2-solution" style="display: none;">
+                    <div class="code-block">
+<pre><span class="keyword">Button</span>(<span class="string">"Get Started"</span>) {
+    print(<span class="string">"Button pressed!"</span>)
+}
+.buttonStyle(.borderedProminent)</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-container">
+                <h3>📐 Exercise 3: Layout Challenge</h3>
+                <p><strong>Task:</strong> Create a horizontal stack with an icon, text "Messages", and a spacer, then a count "3".</p>
+                <button class="answer-btn" onclick="showSolution('ex3')">Show Solution</button>
+                <div id="ex3-solution" style="display: none;">
+                    <div class="code-block">
+<pre><span class="keyword">HStack</span> {
+    <span class="keyword">Image</span>(systemName: <span class="string">"message"</span>)
+    <span class="keyword">Text</span>(<span class="string">"Messages"</span>)
+    <span class="keyword">Spacer</span>()
+    <span class="keyword">Text</span>(<span class="string">"3"</span>)
+        .padding(<span class="number">4</span>)
+        .background(.red)
+        .foregroundColor(.white)
+        .clipShape(<span class="keyword">Circle</span>())
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-container">
+                <h3>🎨 Exercise 4: Card Design</h3>
+                <p><strong>Task:</strong> Create a card with a title "Featured Article", subtitle, and rounded corners with shadow.</p>
+                <button class="answer-btn" onclick="showSolution('ex4')">Show Solution</button>
+                <div id="ex4-solution" style="display: none;">
+                    <div class="code-block">
+<pre><span class="keyword">VStack</span>(alignment: .leading, spacing: <span class="number">8</span>) {
+    <span class="keyword">Text</span>(<span class="string">"Featured Article"</span>)
+        .font(.headline)
+        .fontWeight(.bold)
+    
+    <span class="keyword">Text</span>(<span class="string">"This is an amazing article about SwiftUI"</span>)
+        .font(.subheadline)
+        .foregroundColor(.secondary)
+}
+.padding()
+.background(.white)
+.cornerRadius(<span class="number">12</span>)
+.shadow(color: .black.opacity(<span class="number">0.1</span>), radius: <span class="number">4</span>)</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exercise-container">
+                <h3>🔥 Exercise 5: Complex Layout</h3>
+                <p><strong>Task:</strong> Build a user profile row with circular image, name, email, and follow button.</p>
+                <button class="answer-btn" onclick="showSolution('ex5')">Show Solution</button>
+                <div id="ex5-solution" style="display: none;">
+                    <div class="code-block">
+<pre><span class="keyword">HStack</span>(spacing: <span class="number">12</span>) {
+    <span class="keyword">Image</span>(systemName: <span class="string">"person.circle.fill"</span>)
+        .resizable()
+        .frame(width: <span class="number">50</span>, height: <span class="number">50</span>)
+        .foregroundColor(.blue)
+    
+    <span class="keyword">VStack</span>(alignment: .leading) {
+        <span class="keyword">Text</span>(<span class="string">"John Doe"</span>)
+            .font(.headline)
+        <span class="keyword">Text</span>(<span class="string">"john@example.com"</span>)
+            .font(.caption)
+            .foregroundColor(.secondary)
+    }
+    
+    <span class="keyword">Spacer</span>()
+    
+    <span class="keyword">Button</span>(<span class="string">"Follow"</span>) {
+        <span class="comment">// Follow action</span>
+    }
+    .buttonStyle(.bordered)
+}
+.padding()</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funny-note">
+                🎯 Practice makes perfect! Each exercise is like a mini-boss in a video game - 
+                defeat them all and you'll be ready for the final boss quiz! 🎮👾
+            </div>
+        </div>
+
+        <!-- Section 6: Quiz -->
+        <div class="section" id="section-6">
+            <h2>🏆 Final Quiz: SwiftUI Mastery Test!</h2>
+            
+            <div class="quiz-container">
+                <div class="score-display">Score: <span id="score">0</span>/10</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 0%"></div>
+                </div>
+
+                <div class="question" id="q1">
+                    <h4>Question 1: Which modifier is used to add space around a view?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(1, 'a')">A) .padding()</button>
+                    <button class="answer-btn" onclick="checkAnswer(1, 'b')">B) .spacing()</button>
+                    <button class="answer-btn" onclick="checkAnswer(1, 'c')">C) .margin()</button>
+                    <div id="feedback1" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q2" style="display: none;">
+                    <h4>Question 2: What does VStack do?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(2, 'a')">A) Arranges views horizontally</button>
+                    <button class="answer-btn" onclick="checkAnswer(2, 'b')">B) Arranges views vertically</button>
+                    <button class="answer-btn" onclick="checkAnswer(2, 'c')">C) Overlaps views</button>
+                    <div id="feedback2" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q3" style="display: none;">
+                    <h4>Question 3: Which is correct for creating a blue background?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(3, 'a')">A) .background(.blue)</button>
+                    <button class="answer-btn" onclick="checkAnswer(3, 'b')">B) .backgroundColor(.blue)</button>
+                    <button class="answer-btn" onclick="checkAnswer(3, 'c')">C) .color(.blue)</button>
+                    <div id="feedback3" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q4" style="display: none;">
+                    <h4>Question 4: What does @State do?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(4, 'a')">A) Creates a constant value</button>
+                    <button class="answer-btn" onclick="checkAnswer(4, 'b')">B) Creates a variable that can trigger UI updates</button>
+                    <button class="answer-btn" onclick="checkAnswer(4, 'c')">C) Imports a framework</button>
+                    <div id="feedback4" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q5" style="display: none;">
+                    <h4>Question 5: Which layout container overlaps views?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(5, 'a')">A) VStack</button>
+                    <button class="answer-btn" onclick="checkAnswer(5, 'b')">B) HStack</button>
+                    <button class="answer-btn" onclick="checkAnswer(5, 'c')">C) ZStack</button>
+                    <div id="feedback5" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q6" style="display: none;">
+                    <h4>Question 6: How do you make text bold in SwiftUI?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(6, 'a')">A) .bold()</button>
+                    <button class="answer-btn" onclick="checkAnswer(6, 'b')">B) .fontWeight(.bold)</button>
+                    <button class="answer-btn" onclick="checkAnswer(6, 'c')">C) Both A and B</button>
+                    <div id="feedback6" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q7" style="display: none;">
+                    <h4>Question 7: What's the correct way to add rounded corners?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(7, 'a')">A) .rounded(10)</button>
+                    <button class="answer-btn" onclick="checkAnswer(7, 'b')">B) .cornerRadius(10)</button>
+                    <button class="answer-btn" onclick="checkAnswer(7, 'c')">C) .border(10)</button>
+                    <div id="feedback7" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q8" style="display: none;">
+                    <h4>Question 8: Which modifier adds a tap gesture?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(8, 'a')">A) .onTap()</button>
+                    <button class="answer-btn" onclick="checkAnswer(8, 'b')">B) .onTapGesture()</button>
+                    <button class="answer-btn" onclick="checkAnswer(8, 'c')">C) .tapAction()</button>
+                    <div id="feedback8" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q9" style="display: none;">
+                    <h4>Question 9: What does Spacer() do?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(9, 'a')">A) Adds fixed space</button>
+                    <button class="answer-btn" onclick="checkAnswer(9, 'b')">B) Pushes views apart by taking available space</button>
+                    <button class="answer-btn" onclick="checkAnswer(9, 'c')">C) Creates a white background</button>
+                    <div id="feedback9" class="feedback"></div>
+                </div>
+
+                <div class="question" id="q10" style="display: none;">
+                    <h4>Question 10: In modifier chaining, what happens first?</h4>
+                    <button class="answer-btn" onclick="checkAnswer(10, 'a')">A) The last modifier in the chain</button>
+                    <button class="answer-btn" onclick="checkAnswer(10, 'b')">B) The first modifier in the chain</button>
+                    <button class="answer-btn" onclick="checkAnswer(10, 'c')">C) All modifiers apply simultaneously</button>
+                    <div id="feedback10" class="feedback"></div>
+                </div>
+
+                <div id="final-result" style="display: none; text-align: center; margin-top: 30px;">
+                    <h3 id="final-message"></h3>
+                    <button class="answer-btn" onclick="restartQuiz()">Take Quiz Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 0;
+        let quizScore = 0;
+        let currentQuestion = 1;
+        const answers = ['a', 'b', 'a', 'b', 'c', 'c', 'b', 'b', 'b', 'b']; // Correct answers
+        let appliedModifiers = [];
+
+        function showSection(sectionNum) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(`section-${sectionNum}`).classList.add('active');
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index === sectionNum);
+            });
+            
+            currentSection = sectionNum;
+        }
+
+        function showElementDemo(elementType) {
+            const simulator = document.getElementById('demo-content');
+            
+            switch(elementType) {
+                case 'text':
+                    simulator.innerHTML = `
+                        <div style="font-size: 24px; color: #333; margin: 20px;">
+                            📝 Hello, SwiftUI!
+                        </div>
+                        <div style="font-size: 16px; color: #666;">
+                            This is a Text view
+                        </div>
+                    `;
+                    break;
+                case 'button':
+                    simulator.innerHTML = `
+                        <div style="background: #007AFF; color: white; padding: 12px 24px; border-radius: 8px; margin: 20px; cursor: pointer;" onclick="this.style.background='#0056CC'">
+                            🔘 Tap Me!
+                        </div>
+                    `;
+                    break;
+                case 'image':
+                    simulator.innerHTML = `
+                        <div style="width: 100px; height: 100px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; margin: 20px auto; border-radius: 8px;">
+                            🖼️ Image
+                        </div>
+                    `;
+                    break;
+                case 'textfield':
+                    simulator.innerHTML = `
+                        <input type="text" placeholder="Enter text here" style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; margin: 20px; width: 200px; font-size: 16px;">
+                    `;
+                    break;
+                case 'toggle':
+                    simulator.innerHTML = `
+                        <div style="margin: 20px;">
+                            <label style="display: flex; align-items: center; gap: 10px; font-size: 16px;">
+                                <input type="checkbox" style="width: 20px; height: 20px;">
+                                🔄 Toggle Setting
+                            </label>
+                        </div>
+                    `;
+                    break;
+                case 'slider':
+                    simulator.innerHTML = `
+                        <div style="margin: 20px; width: 200px;">
+                            <input type="range" min="0" max="100" value="50" style="width: 100%; height: 6px; border-radius: 3px;">
+                            <div style="text-align: center; margin-top: 8px; font-size: 14px;">🎚️ Value: 50</div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function showLayoutDemo(layoutType) {
+            const simulator = document.getElementById('layout-content');
+            
+            switch(layoutType) {
+                case 'vstack':
+                    simulator.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px;">
+                            <div style="background: #007AFF; color: white; padding: 10px 20px; border-radius: 8px;">First</div>
+                            <div style="background: #34C759; color: white; padding: 10px 20px; border-radius: 8px;">Second</div>
+                            <div style="background: #FF9500; color: white; padding: 10px 20px; border-radius: 8px;">Third</div>
+                        </div>
+                    `;
+                    break;
+                case 'hstack':
+                    simulator.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; padding: 20px;">
+                            <div style="background: #007AFF; color: white; padding: 10px 15px; border-radius: 8px;">⭐</div>
+                            <div style="background: #34C759; color: white; padding: 10px 15px; border-radius: 8px;">Favorite</div>
+                            <div style="flex: 1;"></div>
+                            <div style="background: #FF9500; color: white; padding: 10px 15px; border-radius: 8px;">→</div>
+                        </div>
+                    `;
+                    break;
+                case 'zstack':
+                    simulator.innerHTML = `
+                        <div style="position: relative; width: 150px; height: 150px; margin: 20px auto;">
+                            <div style="position: absolute; width: 100%; height: 100%; background: #007AFF; border-radius: 10px;"></div>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 18px; font-weight: bold;">Overlay</div>
+                        </div>
+                    `;
+                    break;
+                case 'grid':
+                    simulator.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; max-width: 200px; margin: 0 auto;">
+                            <div style="background: #007AFF; color: white; padding: 15px; border-radius: 8px; text-align: center;">1</div>
+                            <div style="background: #34C759; color: white; padding: 15px; border-radius: 8px; text-align: center;">2</div>
+                            <div style="background: #FF9500; color: white; padding: 15px; border-radius: 8px; text-align: center;">3</div>
+                            <div style="background: #FF3B30; color: white; padding: 15px; border-radius: 8px; text-align: center;">4</div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function applyModifier(modifier) {
+            const textElement = document.getElementById('modifier-text');
+            const codeElement = document.getElementById('modifier-code');
+            
+            if (!appliedModifiers.includes(modifier)) {
+                appliedModifiers.push(modifier);
+            }
+            
+            // Reset styles first
+            textElement.style.cssText = 'font-size: 18px; color: black; padding: 10px; transition: all 0.3s ease;';
+            
+            let codeString = 'Text("Hello, SwiftUI! ✨")';
+            
+            // Apply modifiers in order
+            appliedModifiers.forEach(mod => {
+                switch(mod) {
+                    case 'font':
+                        textElement.style.fontSize = '28px';
+                        textElement.style.fontWeight = 'bold';
+                        codeString += '\n    .font(.title)\n    .fontWeight(.bold)';
+                        break;
+                    case 'color':
+                        textElement.style.color = '#007AFF';
+                        codeString += '\n    .foregroundColor(.blue)';
+                        break;
+                    case 'padding':
+                        textElement.style.padding = '25px';
+                        codeString += '\n    .padding(25)';
+                        break;
+                    case 'background':
+                        textElement.style.background = '#f0f0f0';
+                        codeString += '\n    .background(.gray.opacity(0.2))';
+                        break;
+                    case 'cornerRadius':
+                        textElement.style.borderRadius = '12px';
+                        codeString += '\n    .cornerRadius(12)';
+                        break;
+                    case 'shadow':
+                        textElement.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+                        codeString += '\n    .shadow(radius: 4)';
+                        break;
+                }
+            });
+            
+            codeElement.innerHTML = `<pre><span class="keyword">${codeString.replace(/\n/g, '\n')}</span></pre>`;
+        }
+
+        function resetModifiers() {
+            appliedModifiers = [];
+            const textElement = document.getElementById('modifier-text');
+            const codeElement = document.getElementById('modifier-code');
+            
+            textElement.style.cssText = 'font-size: 18px; color: black; padding: 10px;';
+            codeElement.innerHTML = '<pre><span class="keyword">Text</span>(<span class="string">"Hello, SwiftUI! ✨"</span>)</pre>';
+            
+            // Reset all demo buttons
+            document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function buildUI(uiType) {
+            const simulator = document.getElementById('combined-content');
+            
+            switch(uiType) {
+                case 'card':
+                    simulator.innerHTML = `
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 20px; max-width: 250px;">
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">Card Title</div>
+                            <div style="color: #666; font-size: 14px;">This is the card description with some interesting content.</div>
+                        </div>
+                    `;
+                    break;
+                case 'form':
+                    simulator.innerHTML = `
+                        <div style="padding: 20px; max-width: 280px;">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Email</label>
+                                <input type="email" placeholder="Enter email" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Password</label>
+                                <input type="password" placeholder="Enter password" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px;">
+                            </div>
+                            <button style="width: 100%; background: #007AFF; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 500;">Sign In</button>
+                        </div>
+                    `;
+                    break;
+                case 'list':
+                    simulator.innerHTML = `
+                        <div style="max-width: 280px; background: white; border-radius: 10px; overflow: hidden;">
+                            <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 40px; height: 40px; background: #007AFF; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white;">📧</div>
+                                <div>
+                                    <div style="font-weight: 500;">Messages</div>
+                                    <div style="font-size: 12px; color: #666;">3 new messages</div>
+                                </div>
+                            </div>
+                            <div style="padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 40px; height: 40px; background: #34C759; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white;">📞</div>
+                                <div>
+                                    <div style="font-weight: 500;">Phone</div>
+                                    <div style="font-size: 12px; color: #666;">Recent call</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'profile':
+                    simulator.innerHTML = `
+                        <div style="text-align: center; padding: 20px; max-width: 280px;">
+                            <div style="width: 80px; height: 80px; background: #007AFF; border-radius: 40px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">👤</div>
+                            <div style="font-size: 20px; font-weight: 600; margin-bottom: 5px;">John Doe</div>
+                            <div style="color: #666; font-size: 14px; margin-bottom: 20px;">iOS Developer</div>
+                            <button style="background: #007AFF; color: white; padding: 8px 20px; border: none; border-radius: 20px; font-size: 14px;">Follow</button>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function showSolution(exerciseId) {
+            const solution = document.getElementById(exerciseId + '-solution');
+            solution.style.display = solution.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function checkAnswer(questionNum, selectedAnswer) {
+            const correct = answers[questionNum - 1];
+            const buttons = document.querySelectorAll(`#q${questionNum} .answer-btn`);
+            const feedback = document.getElementById(`feedback${questionNum}`);
+            
+            // Disable all buttons for this question
+            buttons.forEach(btn => btn.disabled = true);
+            
+            if (selectedAnswer === correct) {
+                quizScore++;
+                buttons.forEach(btn => {
+                    if (btn.textContent.startsWith(correct.toUpperCase())) {
+                        btn.classList.add('correct');
+                    }
+                });
+                feedback.innerHTML = '<div style="color: #00b894; font-weight: bold; margin-top: 10px;">✅ Excellent! That\'s correct!</div>';
+            } else {
+                buttons.forEach(btn => {
+                    if (btn.textContent.startsWith(selectedAnswer.toUpperCase())) {
+                        btn.classList.add('incorrect');
+                    }
+                    if (btn.textContent.startsWith(correct.toUpperCase())) {
+                        btn.classList.add('correct');
+                    }
+                });
+                feedback.innerHTML = '<div style="color: #e17055; font-weight: bold; margin-top: 10px;">❌ Not quite! The correct answer is highlighted in green.</div>';
+            }
+            
+            // Update score and progress
+            document.getElementById('score').textContent = quizScore;
+            document.getElementById('progress').style.width = (questionNum / 10 * 100) + '%';
+            
+            // Show next question or results
+            setTimeout(() => {
+                if (questionNum < 10) {
+                    document.getElementById(`q${questionNum}`).style.display = 'none';
+                    document.getElementById(`q${questionNum + 1}`).style.display = 'block';
+                    currentQuestion++;
+                } else {
+                    showFinalResults();
+                }
+            }, 2000);
+        }
+
+        function showFinalResults() {
+            document.getElementById('q10').style.display = 'none';
+            document.getElementById('final-result').style.display = 'block';
+            
+            const finalMessage = document.getElementById('final-message');
+            const percentage = (quizScore / 10) * 100;
+            
+            if (percentage >= 90) {
+                finalMessage.innerHTML = '🏆 Outstanding! You\'re a SwiftUI master! Welcome to the elite! 🎉';
+                finalMessage.style.color = '#00b894';
+            } else if (percentage >= 80) {
+                finalMessage.innerHTML = '🌟 Excellent work! You have strong SwiftUI skills! 💪';
+                finalMessage.style.color = '#667eea';
+            } else if (percentage >= 70) {
+                finalMessage.innerHTML = '👍 Good job! You\'re on the right track with SwiftUI! 📱';
+                finalMessage.style.color = '#34C759';
+            } else if (percentage >= 60) {
+                finalMessage.innerHTML = '📚 Not bad! Review the material and keep practicing! 🔄';
+                finalMessage.style.color = '#fdcb6e';
+            } else {
+                finalMessage.innerHTML = '🤔 Keep learning! SwiftUI mastery takes practice! You\'ve got this! 💪';
+                finalMessage.style.color = '#e17055';
+            }
+            
+            finalMessage.classList.add('bounce');
+        }
+
+        function restartQuiz() {
+            quizScore = 0;
+            currentQuestion = 1;
+            
+            // Reset all questions
+            for (let i = 1; i <= 10; i++) {
+                const question = document.getElementById(`q${i}`);
+                const buttons = question.querySelectorAll('.answer-btn');
+                const feedback = document.getElementById(`feedback${i}`);
+                
+                question.style.display = i === 1 ? 'block' : 'none';
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'incorrect');
+                });
+                feedback.innerHTML = '';
+            }
+            
+            document.getElementById('final-result').style.display = 'none';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('progress').style.width = '0%';
+        }
+
+        // Initialize the presentation
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection(0);
+        });
+    </script>
+</body>
+</html>

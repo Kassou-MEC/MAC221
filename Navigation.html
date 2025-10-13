@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftUI Animations & Transitions - Interactive Guide</title>
+    <title>NavigationLink in SwiftUI - Interactive Guide</title>
     <style>
         * {
             margin: 0;
@@ -13,104 +13,73 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 24px;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
 
         header {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 50px 40px;
+            padding: 40px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-            animation: pulse 8s infinite linear;
-        }
-
-        @keyframes pulse {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         h1 {
-            font-size: 3.2em;
-            margin-bottom: 15px;
-            font-weight: 800;
-            position: relative;
-            z-index: 1;
+            font-size: 2.5em;
+            margin-bottom: 10px;
         }
 
         .subtitle {
-            font-size: 1.4em;
+            font-size: 1.2em;
             opacity: 0.9;
-            position: relative;
-            z-index: 1;
         }
 
         nav {
             background: #f8f9fa;
-            padding: 25px;
+            padding: 20px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
             border-bottom: 2px solid #e9ecef;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
         .nav-btn {
-            padding: 14px 28px;
+            padding: 12px 24px;
             background: white;
-            border: 2px solid #6a11cb;
-            color: #6a11cb;
-            border-radius: 12px;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1em;
+            font-size: 1em;
             transition: all 0.3s;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .nav-btn:hover {
-            background: #6a11cb;
+            background: #667eea;
             color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
         .nav-btn.active {
-            background: #6a11cb;
+            background: #667eea;
             color: white;
         }
 
         .content {
-            padding: 50px;
-            min-height: 800px;
+            padding: 40px;
         }
 
         .section {
@@ -134,256 +103,157 @@
         }
 
         h2 {
-            color: #6a11cb;
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #6a11cb;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
         }
 
         h3 {
-            color: #2575fc;
-            font-size: 1.8em;
-            margin-top: 40px;
-            margin-bottom: 20px;
+            color: #764ba2;
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
         }
 
         .definition-box {
-            background: linear-gradient(135deg, #6a11cb15 0%, #2575fc15 100%);
-            border-left: 6px solid #6a11cb;
-            padding: 30px;
-            margin: 30px 0;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
         }
 
         .code-block {
-            background: #1e1e1e;
+            background: #2d2d2d;
             color: #f8f8f2;
-            padding: 25px;
-            border-radius: 12px;
+            padding: 20px;
+            border-radius: 8px;
             overflow-x: auto;
-            margin: 25px 0;
+            margin: 20px 0;
             position: relative;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
         .code-block pre {
             margin: 0;
-            font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+            font-family: 'Courier New', monospace;
             font-size: 0.95em;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .code-label {
-            background: #6a11cb;
+            background: #667eea;
             color: white;
-            padding: 8px 20px;
-            border-radius: 8px;
-            font-size: 0.9em;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.85em;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             display: inline-block;
         }
 
         .explanation {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 25px 0;
-            border-left: 6px solid #2575fc;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #764ba2;
         }
 
         .explanation h4 {
-            color: #2575fc;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .explanation ul {
-            margin-left: 25px;
-            line-height: 1.8;
-        }
-
-        .explanation li {
+            color: #764ba2;
             margin-bottom: 10px;
         }
 
-        .example-box {
+        .explanation ul {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .exercise-box {
             background: #fff3cd;
             border: 2px solid #ffc107;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 8px;
             margin: 30px 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
 
-        .example-box h4 {
+        .exercise-box h4 {
             color: #856404;
             margin-bottom: 15px;
-            font-size: 1.3em;
         }
 
-        .demo-container {
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 30px;
-            margin: 25px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .demo-box {
-            width: 100%;
-            height: 200px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            border: 2px dashed #6a11cb;
-        }
-
-        .demo-element {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            transition: all 0.5s;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .demo-btn {
-            padding: 12px 24px;
-            background: #6a11cb;
-            color: white;
+        .answer-btn {
+            background: #ffc107;
+            color: #856404;
             border: none;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
+            margin-top: 15px;
             transition: all 0.3s;
         }
 
-        .demo-btn:hover {
-            background: #2575fc;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 117, 252, 0.4);
+        .answer-btn:hover {
+            background: #e0a800;
+            transform: scale(1.05);
         }
 
-        .note {
-            background: #d1ecf1;
-            border-left: 6px solid #17a2b8;
+        .answer {
+            display: none;
+            margin-top: 20px;
             padding: 20px;
-            margin: 25px 0;
-            border-radius: 8px;
-        }
-
-        .note strong {
-            color: #0c5460;
-        }
-
-        .example-number {
-            display: inline-block;
-            background: #6a11cb;
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-        }
-
-        p {
-            line-height: 1.8;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-        }
-
-        ul, ol {
-            line-height: 1.8;
-            margin-left: 25px;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-        }
-
-        .animation-types {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin: 30px 0;
-        }
-
-        .animation-card {
             background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            border: 2px solid #e9ecef;
-            transition: all 0.3s;
+            border-radius: 8px;
+            border: 2px solid #28a745;
         }
 
-        .animation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            border-color: #6a11cb;
+        .answer.show {
+            display: block;
+            animation: slideDown 0.3s;
         }
 
-        .animation-card h4 {
-            color: #6a11cb;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 2000px;
+            }
         }
 
         .quiz-container {
             background: #e7f3ff;
             border: 2px solid #2196F3;
-            padding: 30px;
-            border-radius: 12px;
+            padding: 25px;
+            border-radius: 8px;
             margin: 30px 0;
         }
 
         .quiz-question {
             font-weight: 600;
             color: #0d47a1;
-            margin-bottom: 20px;
-            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-size: 1.1em;
         }
 
         .quiz-options {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
         }
 
         .quiz-option {
             background: white;
-            padding: 18px;
+            padding: 15px;
             border: 2px solid #2196F3;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1.1em;
         }
 
         .quiz-option:hover {
@@ -405,12 +275,11 @@
         }
 
         .quiz-feedback {
-            margin-top: 20px;
-            padding: 20px;
+            margin-top: 15px;
+            padding: 15px;
             border-radius: 8px;
             font-weight: 600;
             display: none;
-            font-size: 1.1em;
         }
 
         .quiz-feedback.show {
@@ -429,104 +298,37 @@
             border: 2px solid #dc3545;
         }
 
-        .exercise-box {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            padding: 30px;
-            border-radius: 12px;
-            margin: 30px 0;
+        .note {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
         }
 
-        .exercise-box h4 {
-            color: #856404;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+        .note strong {
+            color: #0c5460;
         }
 
-        .answer-btn {
-            background: #ffc107;
-            color: #856404;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 20px;
-            transition: all 0.3s;
-            font-size: 1.1em;
-        }
-
-        .answer-btn:hover {
-            background: #e0a800;
-            transform: scale(1.05);
-        }
-
-        .answer {
-            display: none;
-            margin-top: 25px;
-            padding: 25px;
-            background: white;
-            border-radius: 12px;
-            border: 2px solid #28a745;
-        }
-
-        .answer.show {
-            display: block;
-            animation: slideDown 0.5s;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                max-height: 0;
-            }
-            to {
-                opacity: 1;
-                max-height: 2000px;
-            }
-        }
-
-        .transition-demo {
-            width: 100%;
-            height: 300px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            border: 2px dashed #6a11cb;
-            margin: 25px 0;
-        }
-
-        .transition-element {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .example-number {
+            display: inline-block;
+            background: #667eea;
             color: white;
-            font-weight: bold;
-            position: absolute;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
         }
 
-        .complex-demo {
-            width: 100%;
-            height: 400px;
-            background: #1e1e1e;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            margin: 25px 0;
+        p {
+            line-height: 1.8;
+            margin-bottom: 15px;
         }
 
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        ul, ol {
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 15px;
         }
 
         @media (max-width: 768px) {
@@ -535,24 +337,20 @@
             }
 
             header {
-                padding: 30px 20px;
+                padding: 20px;
             }
 
             h1 {
-                font-size: 2.2em;
+                font-size: 1.8em;
             }
 
             .content {
-                padding: 30px 20px;
+                padding: 20px;
             }
 
             .nav-btn {
-                font-size: 1em;
-                padding: 12px 20px;
-            }
-
-            .animation-types {
-                grid-template-columns: 1fr;
+                font-size: 0.9em;
+                padding: 10px 15px;
             }
         }
     </style>
@@ -560,911 +358,969 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎨 SwiftUI Animations & Transitions</h1>
-            <p class="subtitle">Bring Your iOS Apps to Life with Beautiful Motion</p>
+            <h1>🧭 NavigationLink in SwiftUI</h1>
+            <p class="subtitle">Master Navigation in Your iOS Apps</p>
         </header>
 
         <nav>
-            <button class="nav-btn active" onclick="showSection('intro', this)">
-                <span>🎯</span> Introduction
-            </button>
-            <button class="nav-btn" onclick="showSection('basics', this)">
-                <span>🔰</span> Basic Animations
-            </button>
-            <button class="nav-btn" onclick="showSection('transitions', this)">
-                <span>🔄</span> Transitions
-            </button>
-            <button class="nav-btn" onclick="showSection('advanced', this)">
-                <span>🚀</span> Advanced Animations
-            </button>
-            <button class="nav-btn" onclick="showSection('examples', this)">
-                <span>💡</span> Real Examples
-            </button>
-            <button class="nav-btn" onclick="showSection('exercises', this)">
-                <span>💪</span> Exercises
-            </button>
-            <button class="nav-btn" onclick="showSection('quiz', this)">
-                <span>🧠</span> Quiz
-            </button>
+            <button class="nav-btn active" onclick="showSection('intro', this)">Introduction</button>
+            <button class="nav-btn" onclick="showSection('basics', this)">Basic Examples</button>
+            <button class="nav-btn" onclick="showSection('intermediate', this)">Intermediate</button>
+            <button class="nav-btn" onclick="showSection('advanced', this)">Advanced</button>
+            <button class="nav-btn" onclick="showSection('exercises', this)">Exercises</button>
+            <button class="nav-btn" onclick="showSection('quiz', this)">Quiz</button>
         </nav>
 
         <div class="content">
             <!-- Introduction Section -->
             <div id="intro" class="section active">
-                <h2>🎯 Introduction to SwiftUI Animations</h2>
+                <h2>Introduction to NavigationLink</h2>
                 
                 <div class="definition-box">
-                    <h3>What are SwiftUI Animations?</h3>
-                    <p><strong>SwiftUI Animations</strong> are powerful tools that allow you to create smooth, engaging motion in your iOS applications. They help guide user attention, provide feedback, and make your app feel more polished and professional.</p>
+                    <h3>What is NavigationLink?</h3>
+                    <p><strong>NavigationLink</strong> is a SwiftUI view that creates a button-like interface element which navigates to a destination view when tapped. It must be placed inside a NavigationStack (iOS 16+) or NavigationView (iOS 13-15) to function properly.</p>
                 </div>
 
-                <h3>Why Use Animations?</h3>
+                <h3>Key Concepts</h3>
                 <ul>
-                    <li><strong>Enhanced User Experience:</strong> Animations make your app feel more responsive and intuitive</li>
-                    <li><strong>Visual Feedback:</strong> Provide clear feedback for user actions</li>
-                    <li><strong>Focus Attention:</strong> Guide users to important content or actions</li>
-                    <li><strong>Professional Polish:</strong> Well-executed animations make your app stand out</li>
+                    <li><strong>NavigationStack:</strong> A container that manages a stack of views with navigation capabilities (iOS 16+)</li>
+                    <li><strong>Destination View:</strong> The view that appears when the navigation link is activated</li>
+                    <li><strong>Label:</strong> The visible content of the navigation link that users tap</li>
+                    <li><strong>Navigation State:</strong> SwiftUI automatically manages the navigation stack and back button</li>
                 </ul>
 
-                <h3>Core Animation Concepts</h3>
-                <div class="animation-types">
-                    <div class="animation-card">
-                        <h4>Implicit Animations</h4>
-                        <p>Automatically animate changes when state variables change. Use <code>.animation()</code> modifier.</p>
-                    </div>
-                    <div class="animation-card">
-                        <h4>Explicit Animations</h4>
-                        <p>Manually trigger animations with <code>withAnimation</code> blocks for precise control.</p>
-                    </div>
-                    <div class="animation-card">
-                        <h4>Transitions</h4>
-                        <p>Animate views as they appear or disappear from the screen.</p>
-                    </div>
-                    <div class="animation-card">
-                        <h4>Spring Animations</h4>
-                        <p>Create natural, physics-based animations with bounce and elasticity.</p>
-                    </div>
+                <h3>Basic Syntax</h3>
+                <div class="code-block">
+                    <div class="code-label">Swift Syntax</div>
+                    <pre>NavigationLink(destination: DestinationView()) {
+    Text("Tap to Navigate")
+}</pre>
                 </div>
 
                 <div class="note">
-                    <strong>Note:</strong> SwiftUI uses a declarative syntax for animations, making them easier to implement and reason about compared to UIKit's imperative approach.
+                    <strong>Note:</strong> NavigationLink automatically provides a chevron (>) indicator and handles the navigation animation, back button, and navigation bar title.
                 </div>
             </div>
 
-            <!-- Basic Animations Section -->
+            <!-- Basic Examples Section -->
             <div id="basics" class="section">
-                <h2>🔰 Basic Animations</h2>
+                <h2>Basic Examples</h2>
 
-                <div class="example-number">Example 1: Simple Scale Animation</div>
-                <p>This basic example demonstrates how to animate the scale of a view when a state variable changes.</p>
+                <div class="example-number">Example 1: Simple Navigation</div>
+                <p>This is the most basic form of navigation - tapping a link navigates to a new view.</p>
 
                 <div class="code-block">
-                    <div class="code-label">ScaleAnimation.swift</div>
+                    <div class="code-label">ContentView.swift</div>
                     <pre>import SwiftUI
 
-struct ScaleAnimation: View {
-    @State private var isScaled = false
+struct ContentView: View {
+    var body: some View {
+        NavigationStack {
+            NavigationLink(destination: DetailView()) {
+                Text("Go to Detail View")
+                    .font(.headline)
+                    .foregroundColor(.blue)
+            }
+            .navigationTitle("Home")
+        }
+    }
+}
+
+struct DetailView: View {
+    var body: some View {
+        Text("Welcome to Detail View!")
+            .font(.largeTitle)
+            .navigationTitle("Detail")
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>NavigationStack:</strong> Creates a navigation container that manages the view hierarchy</li>
+                        <li><strong>NavigationLink:</strong> Creates a tappable element that navigates to DetailView</li>
+                        <li><strong>destination:</strong> Specifies which view to navigate to</li>
+                        <li><strong>navigationTitle:</strong> Sets the title displayed in the navigation bar</li>
+                        <li>The back button is automatically created by SwiftUI</li>
+                    </ul>
+                </div>
+
+                <div class="example-number">Example 2: Navigation with Custom Label</div>
+                <p>You can customize the appearance of the navigation link with any view content.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                NavigationLink(destination: ProfileView()) {
+                    HStack {
+                        Image(systemName: "person.circle.fill")
+                            .font(.largeTitle)
+                        VStack(alignment: .leading) {
+                            Text("Profile")
+                                .font(.headline)
+                            Text("View your profile")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding()
+            .navigationTitle("Settings")
+        }
+    }
+}
+
+struct ProfileView: View {
+    var body: some View {
+        VStack {
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 100))
+                .foregroundColor(.blue)
+            Text("John Doe")
+                .font(.title)
+                .padding()
+        }
+        .navigationTitle("Profile")
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>HStack:</strong> Arranges content horizontally inside the navigation link</li>
+                        <li><strong>Custom styling:</strong> The label can contain any view hierarchy</li>
+                        <li><strong>buttonStyle(PlainButtonStyle()):</strong> Removes the default blue tint from the entire link</li>
+                        <li><strong>SF Symbols:</strong> Using system icons for visual enhancement</li>
+                    </ul>
+                </div>
+
+                <div class="example-number">Example 3: List with Navigation</div>
+                <p>NavigationLink works seamlessly with List views for common navigation patterns.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct ContentView: View {
+    let fruits = ["Apple", "Banana", "Orange", "Grape", "Mango"]
+    
+    var body: some View {
+        NavigationStack {
+            List(fruits, id: \.self) { fruit in
+                NavigationLink(destination: FruitDetailView(fruitName: fruit)) {
+                    HStack {
+                        Image(systemName: "leaf.fill")
+                            .foregroundColor(.green)
+                        Text(fruit)
+                            .font(.body)
+                    }
+                }
+            }
+            .navigationTitle("Fruits")
+        }
+    }
+}
+
+struct FruitDetailView: View {
+    let fruitName: String
+    
+    var body: some View {
+        VStack {
+            Image(systemName: "leaf.circle.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.green)
+                .padding()
+            
+            Text(fruitName)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text("This is a delicious \(fruitName.lowercased())!")
+                .font(.body)
+                .foregroundColor(.gray)
+                .padding()
+        }
+        .navigationTitle(fruitName)
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>List:</strong> Creates a scrollable list of items</li>
+                        <li><strong>id: \.self:</strong> Uses the string itself as the unique identifier</li>
+                        <li><strong>Parameter passing:</strong> The fruit name is passed to the detail view</li>
+                        <li><strong>Automatic behavior:</strong> List + NavigationLink automatically adds disclosure indicators</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Intermediate Examples Section -->
+            <div id="intermediate" class="section">
+                <h2>Intermediate Examples</h2>
+
+                <div class="example-number">Example 4: Navigation with Data Models</div>
+                <p>Using custom data models for more complex navigation scenarios.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct Book: Identifiable {
+    let id = UUID()
+    let title: String
+    let author: String
+    let year: Int
+    let description: String
+}
+
+struct ContentView: View {
+    let books = [
+        Book(title: "1984", author: "George Orwell", year: 1949,
+             description: "A dystopian social science fiction novel"),
+        Book(title: "To Kill a Mockingbird", author: "Harper Lee", year: 1960,
+             description: "A novel about racial injustice"),
+        Book(title: "The Great Gatsby", author: "F. Scott Fitzgerald", year: 1925,
+             description: "A story of decadence and excess")
+    ]
+    
+    var body: some View {
+        NavigationStack {
+            List(books) { book in
+                NavigationLink(destination: BookDetailView(book: book)) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(book.title)
+                            .font(.headline)
+                        Text(book.author)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.vertical, 5)
+                }
+            }
+            .navigationTitle("Library")
+        }
+    }
+}
+
+struct BookDetailView: View {
+    let book: Book
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                Image(systemName: "book.fill")
+                    .font(.system(size: 100))
+                    .foregroundColor(.blue)
+                    .frame(maxWidth: .infinity)
+                
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(book.title)
+                        .font(.title)
+                        .fontWeight(.bold)
+                    
+                    Text("by \(book.author)")
+                        .font(.title3)
+                        .foregroundColor(.gray)
+                    
+                    Text("Published: \(book.year)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Divider()
+                        .padding(.vertical)
+                    
+                    Text("Description")
+                        .font(.headline)
+                    
+                    Text(book.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+            }
+        }
+        .navigationTitle("Book Details")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>Identifiable protocol:</strong> Allows the Book struct to be used in List without specifying id</li>
+                        <li><strong>Data model:</strong> Encapsulates related properties in a structured way</li>
+                        <li><strong>Object passing:</strong> The entire book object is passed to the detail view</li>
+                        <li><strong>navigationBarTitleDisplayMode:</strong> Controls how the title is displayed (inline vs large)</li>
+                    </ul>
+                </div>
+
+                <div class="example-number">Example 5: Programmatic Navigation</div>
+                <p>Control navigation programmatically using NavigationPath and state.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct ContentView: View {
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            VStack(spacing: 20) {
+                Text("Home Screen")
+                    .font(.largeTitle)
+                
+                Button("Go to Level 1") {
+                    navigationPath.append("Level1")
+                }
+                .buttonStyle(.borderedProminent)
+                
+                Button("Go to Level 2 Directly") {
+                    navigationPath.append("Level1")
+                    navigationPath.append("Level2")
+                }
+                .buttonStyle(.bordered)
+                
+                Button("Reset Navigation") {
+                    navigationPath = NavigationPath()
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+            }
+            .navigationTitle("Home")
+            .navigationDestination(for: String.self) { value in
+                if value == "Level1" {
+                    Level1View(navigationPath: $navigationPath)
+                } else if value == "Level2" {
+                    Level2View(navigationPath: $navigationPath)
+                }
+            }
+        }
+    }
+}
+
+struct Level1View: View {
+    @Binding var navigationPath: NavigationPath
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Level 1")
+                .font(.largeTitle)
+            
+            Button("Go to Level 2") {
+                navigationPath.append("Level2")
+            }
+            .buttonStyle(.borderedProminent)
+            
+            Button("Back to Home") {
+                navigationPath = NavigationPath()
+            }
+            .buttonStyle(.bordered)
+        }
+        .navigationTitle("Level 1")
+    }
+}
+
+struct Level2View: View {
+    @Binding var navigationPath: NavigationPath
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Level 2")
+                .font(.largeTitle)
+            
+            Button("Back to Home") {
+                navigationPath = NavigationPath()
+            }
+            .buttonStyle(.borderedProminent)
+            
+            Button("Back to Level 1") {
+                navigationPath.removeLast()
+            }
+            .buttonStyle(.bordered)
+        }
+        .navigationTitle("Level 2")
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>NavigationPath:</strong> A type-erased list that stores navigation state</li>
+                        <li><strong>path parameter:</strong> Binds the navigation stack to the state</li>
+                        <li><strong>navigationDestination:</strong> Maps values to destination views</li>
+                        <li><strong>append/removeLast:</strong> Methods to programmatically control navigation</li>
+                        <li><strong>@Binding:</strong> Allows child views to modify parent's navigation state</li>
+                    </ul>
+                </div>
+
+                <div class="example-number">Example 6: Navigation with isActive</div>
+                <p>Using a boolean binding to control navigation state.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct ContentView: View {
+    @State private var isShowingDetail = false
+    @State private var userName = ""
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                TextField("Enter your name", text: $userName)
+                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                
+                Button("Submit") {
+                    if !userName.isEmpty {
+                        isShowingDetail = true
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(userName.isEmpty)
+                
+                NavigationLink(destination: WelcomeView(name: userName),
+                             isActive: $isShowingDetail) {
+                    EmptyView()
+                }
+            }
+            .navigationTitle("Login")
+        }
+    }
+}
+
+struct WelcomeView: View {
+    let name: String
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("Welcome, \(name)!")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            
+            Text("You have successfully logged in.")
+                .foregroundColor(.gray)
+            
+            Button("Logout") {
+                dismiss()
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+        }
+        .navigationTitle("Dashboard")
+        .navigationBarBackButtonHidden(true)
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>isActive binding:</strong> Controls whether the navigation link is active</li>
+                        <li><strong>EmptyView:</strong> Hidden navigation link triggered programmatically</li>
+                        <li><strong>Environment dismiss:</strong> Provides a way to programmatically dismiss the view</li>
+                        <li><strong>navigationBarBackButtonHidden:</strong> Hides the default back button</li>
+                        <li>This pattern is useful for conditional navigation based on user input</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Advanced Examples Section -->
+            <div id="advanced" class="section">
+                <h2>Advanced Examples</h2>
+
+                <div class="example-number">Example 7: Deep Linking and Complex Navigation</div>
+                <p>Handling complex navigation hierarchies with multiple data types.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+enum NavigationDestination: Hashable {
+    case category(String)
+    case product(Product)
+    case productDetail(Product, String)
+}
+
+struct Product: Hashable {
+    let id = UUID()
+    let name: String
+    let category: String
+    let price: Double
+}
+
+struct ContentView: View {
+    @State private var navigationPath: [NavigationDestination] = []
+    
+    let categories = ["Electronics", "Clothing", "Books"]
+    let products = [
+        Product(name: "iPhone", category: "Electronics", price: 999),
+        Product(name: "MacBook", category: "Electronics", price: 1999),
+        Product(name: "T-Shirt", category: "Clothing", price: 29),
+        Product(name: "SwiftUI Book", category: "Books", price: 49)
+    ]
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List {
+                Section("Categories") {
+                    ForEach(categories, id: \.self) { category in
+                        NavigationLink(value: NavigationDestination.category(category)) {
+                            HStack {
+                                Image(systemName: iconFor(category: category))
+                                Text(category)
+                            }
+                        }
+                    }
+                }
+                
+                Section("Quick Actions") {
+                    Button("View Electronics → iPhone") {
+                        navigationPath.append(.category("Electronics"))
+                        if let iphone = products.first(where: { $0.name == "iPhone" }) {
+                            navigationPath.append(.product(iphone))
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Store")
+            .navigationDestination(for: NavigationDestination.self) { destination in
+                switch destination {
+                case .category(let category):
+                    CategoryView(category: category, products: products, navigationPath: $navigationPath)
+                case .product(let product):
+                    ProductView(product: product, navigationPath: $navigationPath)
+                case .productDetail(let product, let section):
+                    ProductDetailView(product: product, section: section)
+                }
+            }
+        }
+    }
+    
+    func iconFor(category: String) -> String {
+        switch category {
+        case "Electronics": return "desktopcomputer"
+        case "Clothing": return "tshirt"
+        case "Books": return "book"
+        default: return "tag"
+        }
+    }
+}
+
+struct CategoryView: View {
+    let category: String
+    let products: [Product]
+    @Binding var navigationPath: [NavigationDestination]
+    
+    var filteredProducts: [Product] {
+        products.filter { $0.category == category }
+    }
+    
+    var body: some View {
+        List(filteredProducts, id: \.id) { product in
+            NavigationLink(value: NavigationDestination.product(product)) {
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(product.name)
+                            .font(.headline)
+                        Text("$\(String(format: "%.2f", product.price))")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+        }
+        .navigationTitle(category)
+    }
+}
+
+struct ProductView: View {
+    let product: Product
+    @Binding var navigationPath: [NavigationDestination]
+    
+    var body: some View {
+        List {
+            Section("Product Info") {
+                HStack {
+                    Text("Name")
+                    Spacer()
+                    Text(product.name)
+                        .foregroundColor(.gray)
+                }
+                HStack {
+                    Text("Price")
+                    Spacer()
+                    Text("$\(String(format: "%.2f", product.price))")
+                        .foregroundColor(.green)
+                        .fontWeight(.bold)
+                }
+            }
+            
+            Section("Details") {
+                NavigationLink(value: NavigationDestination.productDetail(product, "Specifications")) {
+                    Text("Specifications")
+                }
+                NavigationLink(value: NavigationDestination.productDetail(product, "Reviews")) {
+                    Text("Reviews")
+                }
+            }
+        }
+        .navigationTitle(product.name)
+        .toolbar {
+            Button("Back to Store") {
+                navigationPath.removeAll()
+            }
+        }
+    }
+}
+
+struct ProductDetailView: View {
+    let product: Product
+    let section: String
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "doc.text.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.blue)
+            
+            Text("\(section) for \(product.name)")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            Text("This section would contain detailed \(section.lowercased()) information.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
+        }
+        .navigationTitle(section)
+    }
+}</pre>
+                </div>
+
+                <div class="explanation">
+                    <h4>Explanation:</h4>
+                    <ul>
+                        <li><strong>Enum navigation:</strong> Using an enum to represent different navigation destinations</li>
+                        <li><strong>Associated values:</strong> Each case can carry different data types</li>
+                        <li><strong>Type-safe navigation:</strong> The compiler ensures correct data is passed</li>
+                        <li><strong>Deep linking:</strong> Ability to navigate multiple levels with one action</li>
+                        <li><strong>removeAll():</strong> Clears the entire navigation stack</li>
+                    </ul>
+                </div>
+
+                <div class="example-number">Example 8: Custom Navigation with Animation</div>
+                <p>Creating custom navigation experiences with state management and animations.</p>
+
+                <div class="code-block">
+                    <div class="code-label">ContentView.swift</div>
+                    <pre>import SwiftUI
+
+struct ContentView: View {
+    @State private var selectedTab = 0
+    @State private var navigationPath = NavigationPath()
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            NavigationStack(path: $navigationPath) {
+                HomeTabView(navigationPath: $navigationPath)
+                    .navigationDestination(for: String.self) { destination in
+                        DestinationView(destination: destination, navigationPath: $navigationPath)
+                    }
+            }
+            .tabItem {
+                Label("Home", systemImage: "house.fill")
+            }
+            .tag(0)
+            
+            SearchView()
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
+                .tag(1)
+            
+            ProfileView()
+                .tabItem {
+                    Label("Profile", systemImage: "person.fill")
+                }
+                .tag(2)
+        }
+    }
+}
+
+struct HomeTabView: View {
+    @Binding var navigationPath: NavigationPath
+    
+    let destinations = ["Dashboard", "Settings", "About", "Help"]
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                ForEach(destinations, id: \.self) { destination in
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            navigationPath.append(destination)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: iconFor(destination))
+                                .font(.title2)
+                                .frame(width: 50)
+                            
+                            Text(destination)
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.gray)
+                        }
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Home")
+    }
+    
+    func iconFor(_ destination: String) -> String {
+        switch destination {
+        case "Dashboard": return "chart.bar.fill"
+        case "Settings": return "gear"
+        case "About": return "info.circle"
+        case "Help": return "questionmark.circle"
+        default: return "circle"
+        }
+    }
+}
+
+struct DestinationView: View {
+    let destination: String
+    @Binding var navigationPath: NavigationPath
+    @State private var isAnimated = false
     
     var body: some View {
         VStack(spacing: 30) {
             Circle()
-                .fill(Color.blue)
+                .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]),
+                                   startPoint: .topLeading,
+                                   endPoint: .bottomTrailing))
                 .frame(width: 100, height: 100)
-                .scaleEffect(isScaled ? 1.5 : 1.0)
-                .animation(.easeInOut(duration: 0.5), value: isScaled)
-            
-            Button("Animate Scale") {
-                isScaled.toggle()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div class="demo-element" id="scale-demo">Scale</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="animateScale()">Animate Scale</button>
-                        <button class="demo-btn" onclick="resetScale()">Reset</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>@State:</strong> Tracks the animation state</li>
-                        <li><strong>scaleEffect:</strong> Modifies the view's scale based on state</li>
-                        <li><strong>.animation():</strong> Applies the animation to scale changes</li>
-                        <li><strong>.easeInOut:</strong> Animation timing curve (starts slow, speeds up, ends slow)</li>
-                    </ul>
-                </div>
-
-                <div class="example-number">Example 2: Rotation and Color Animation</div>
-                <p>Animating multiple properties simultaneously with different timing curves.</p>
-
-                <div class="code-block">
-                    <div class="code-label">MultiPropertyAnimation.swift</div>
-                    <pre>import SwiftUI
-
-struct MultiPropertyAnimation: View {
-    @State private var isRotated = false
-    @State private var colorChanged = false
-    
-    var body: some View {
-        VStack(spacing: 30) {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(colorChanged ? Color.purple : Color.orange)
-                .frame(width: 150, height: 150)
-                .rotationEffect(.degrees(isRotated ? 180 : 0))
-                .animation(
-                    .spring(response: 0.6, dampingFraction: 0.8),
-                    value: isRotated
+                .overlay(
+                    Image(systemName: iconFor(destination))
+                        .font(.system(size: 50))
+                        .foregroundColor(.white)
                 )
-                .animation(
-                    .easeInOut(duration: 1.0),
-                    value: colorChanged
-                )
+                .scaleEffect(isAnimated ? 1.0 : 0.5)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isAnimated)
             
-            Button("Animate All") {
-                isRotated.toggle()
-                colorChanged.toggle()
+            Text(destination)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .opacity(isAnimated ? 1.0 : 0.0)
+                .animation(.easeIn(duration: 0.5).delay(0.2), value: isAnimated)
+            
+            Text("You are now viewing the \(destination) section.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
+                .opacity(isAnimated ? 1.0 : 0.0)
+                .animation(.easeIn(duration: 0.5).delay(0.4), value: isAnimated)
+            
+            Button("Return to Home") {
+                navigationPath.removeLast()
             }
             .buttonStyle(.borderedProminent)
+            .opacity(isAnimated ? 1.0 : 0.0)
+            .animation(.easeIn(duration: 0.5).delay(0.6), value: isAnimated)
         }
         .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div class="demo-element" id="multi-demo">Multi</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="animateMulti()">Animate Properties</button>
-                        <button class="demo-btn" onclick="resetMulti()">Reset</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>rotationEffect:</strong> Animates rotation using degrees</li>
-                        <li><strong>Multiple animations:</strong> Different animations for different properties</li>
-                        <li><strong>Spring animation:</strong> Creates bouncy, natural motion</li>
-                        <li><strong>Simultaneous changes:</strong> Multiple state changes in one action</li>
-                    </ul>
-                </div>
-
-                <div class="example-number">Example 3: Implicit vs Explicit Animations</div>
-                <p>Understanding the difference between implicit and explicit animation approaches.</p>
-
-                <div class="code-block">
-                    <div class="code-label">AnimationTypes.swift</div>
-                    <pre>import SwiftUI
-
-struct AnimationTypes: View {
-    @State private var implicitOffset: CGFloat = 0
-    @State private var explicitOffset: CGFloat = 0
-    
-    var body: some View {
-        VStack(spacing: 40) {
-            // Implicit Animation
-            VStack {
-                Text("Implicit Animation")
-                    .font(.headline)
-                
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 80, height: 80)
-                    .offset(x: implicitOffset)
-                    .animation(.easeInOut(duration: 1.0), value: implicitOffset)
-                
-                Button("Move") {
-                    implicitOffset = implicitOffset == 0 ? 100 : 0
-                }
-            }
-            
-            // Explicit Animation
-            VStack {
-                Text("Explicit Animation")
-                    .font(.headline)
-                
-                Circle()
-                    .fill(Color.blue)
-                    .frame(width: 80, height: 80)
-                    .offset(x: explicitOffset)
-                
-                Button("Move") {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                        explicitOffset = explicitOffset == 0 ? 100 : 0
-                    }
-                }
-            }
+        .navigationTitle(destination)
+        .onAppear {
+            isAnimated = true
         }
-        .padding()
     }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div class="demo-element" id="implicit-demo" style="background: #28a745;">Implicit</div>
-                        <div class="demo-element" id="explicit-demo" style="background: #007bff;">Explicit</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="animateImplicit()">Animate Implicit</button>
-                        <button class="demo-btn" onclick="animateExplicit()">Animate Explicit</button>
-                        <button class="demo-btn" onclick="resetBoth()">Reset Both</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>Implicit Animation:</strong> Automatically animates when state changes</li>
-                        <li><strong>Explicit Animation:</strong> Manually triggered with <code>withAnimation</code></li>
-                        <li><strong>Control:</strong> Explicit animations give you more control over timing and scope</li>
-                        <li><strong>Use Cases:</strong> Implicit for simple changes, explicit for complex sequences</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Transitions Section -->
-            <div id="transitions" class="section">
-                <h2>🔄 Transitions</h2>
-
-                <div class="example-number">Example 1: Basic View Transitions</div>
-                <p>Animating views as they appear and disappear from the screen.</p>
-
-                <div class="code-block">
-                    <div class="code-label">BasicTransitions.swift</div>
-                    <pre>import SwiftUI
-
-struct BasicTransitions: View {
-    @State private var showSquare = false
     
-    var body: some View {
-        VStack(spacing: 30) {
-            if showSquare {
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(Color.purple)
-                    .frame(width: 150, height: 150)
-                    .transition(.scale.combined(with: .opacity))
-            }
-            
-            Button(showSquare ? "Hide Square" : "Show Square") {
-                withAnimation(.easeInOut(duration: 0.8)) {
-                    showSquare.toggle()
-                }
-            }
-            .buttonStyle(.borderedProminent)
+    func iconFor(_ destination: String) -> String {
+        switch destination {
+        case "Dashboard": return "chart.bar.fill"
+        case "Settings": return "gear"
+        case "About": return "info.circle"
+        case "Help": return "questionmark.circle"
+        default: return "circle"
         }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="transition-demo">
-                        <div class="transition-element" id="transition-demo" style="display: none;">Hello!</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="toggleTransition()">Toggle Transition</button>
-                        <button class="demo-btn" onclick="changeTransition('scale')">Scale</button>
-                        <button class="demo-btn" onclick="changeTransition('slide')">Slide</button>
-                        <button class="demo-btn" onclick="changeTransition('opacity')">Opacity</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>.transition():</strong> Defines how a view appears/disappears</li>
-                        <li><strong>Built-in transitions:</strong> .scale, .slide, .opacity, .move(edge:)</li>
-                        <li><strong>Combined transitions:</strong> Use .combined(with:) to mix effects</li>
-                        <li><strong>withAnimation:</strong> Required to animate transitions</li>
-                    </ul>
-                </div>
-
-                <div class="example-number">Example 2: Asymmetric Transitions</div>
-                <p>Using different animations for insertion and removal of views.</p>
-
-                <div class="code-block">
-                    <div class="code-label">AsymmetricTransitions.swift</div>
-                    <pre>import SwiftUI
-
-struct AsymmetricTransitions: View {
-    @State private var showMessage = false
-    
-    var body: some View {
-        VStack(spacing: 30) {
-            if showMessage {
-                Text("Welcome to SwiftUI!")
-                    .font(.title2)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .scale.combined(with: .opacity)
-                    ))
-            }
-            
-            Button(showMessage ? "Dismiss" : "Show Welcome") {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    showMessage.toggle()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="transition-demo">
-                        <div class="transition-element" id="asymmetric-demo" style="display: none; width: 200px; height: 60px;">Welcome Message!</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="toggleAsymmetric()">Toggle Asymmetric</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>.asymmetric():</strong> Allows different transitions for insertion and removal</li>
-                        <li><strong>insertion:</strong> Animation when view appears</li>
-                        <li><strong>removal:</strong> Animation when view disappears</li>
-                        <li><strong>Creative effects:</strong> Create unique entry/exit animations</li>
-                    </ul>
-                </div>
-
-                <div class="example-number">Example 3: Custom Transitions</div>
-                <p>Creating your own custom transitions for unique effects.</p>
-
-                <div class="code-block">
-                    <div class="code-label">CustomTransitions.swift</div>
-                    <pre>import SwiftUI
-
-extension AnyTransition {
-    static var rotateAndFade: AnyTransition {
-        .modifier(
-            active: RotateFadeModifier(rotation: 90, opacity: 0),
-            identity: RotateFadeModifier(rotation: 0, opacity: 1)
-        )
-    }
-    
-    static var bounce: AnyTransition {
-        .modifier(
-            active: BounceModifier(scale: 0.1),
-            identity: BounceModifier(scale: 1)
-        )
     }
 }
 
-struct RotateFadeModifier: ViewModifier {
-    let rotation: Double
-    let opacity: Double
-    
-    func body(content: Content) -> some View {
-        content
-            .rotationEffect(.degrees(rotation))
-            .opacity(opacity)
+struct SearchView: View {
+    var body: some View {
+        Text("Search")
+            .font(.largeTitle)
     }
 }
 
-struct BounceModifier: ViewModifier {
-    let scale: CGFloat
-    
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(scale)
-    }
-}
-
-struct CustomTransitions: View {
-    @State private var showCustomView = false
-    
+struct ProfileView: View {
     var body: some View {
-        VStack(spacing: 30) {
-            if showCustomView {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(LinearGradient(
-                        gradient: Gradient(colors: [.red, .orange]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 200, height: 200)
-                    .transition(.rotateAndFade)
-            }
-            
-            Button(showCustomView ? "Hide" : "Show Custom") {
-                withAnimation(.easeInOut(duration: 1.0)) {
-                    showCustomView.toggle()
-                }
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
+        Text("Profile")
+            .font(.largeTitle)
     }
 }</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="transition-demo">
-                        <div class="transition-element" id="custom-demo" style="display: none;">Custom!</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="toggleCustom()">Toggle Custom</button>
-                    </div>
                 </div>
 
                 <div class="explanation">
                     <h4>Explanation:</h4>
                     <ul>
-                        <li><strong>AnyTransition extension:</strong> Create reusable custom transitions</li>
-                        <li><strong>ViewModifier:</strong> Define the active and identity states</li>
-                        <li><strong>Active state:</strong> The view's appearance during transition</li>
-                        <li><strong>Identity state:</strong> The view's normal appearance</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Advanced Animations Section -->
-            <div id="advanced" class="section">
-                <h2>🚀 Advanced Animations</h2>
-
-                <div class="example-number">Example 1: Animation Matched Geometry Effect</div>
-                <p>Creating seamless animations between different views using matchedGeometryEffect.</p>
-
-                <div class="code-block">
-                    <div class="code-label">MatchedGeometry.swift</div>
-                    <pre>import SwiftUI
-
-struct MatchedGeometry: View {
-    @State private var isExpanded = false
-    @Namespace private var animation
-    
-    var body: some View {
-        VStack {
-            if isExpanded {
-                // Expanded view
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(Color.blue)
-                    .frame(width: 300, height: 400)
-                    .overlay(
-                        Text("Detailed View")
-                            .font(.title)
-                            .foregroundColor(.white)
-                    )
-                    .matchedGeometryEffect(id: "shape", in: animation)
-                    .onTapGesture {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                    }
-            } else {
-                // Collapsed view
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.blue)
-                    .frame(width: 100, height: 100)
-                    .overlay(
-                        Text("Tap me")
-                            .foregroundColor(.white)
-                    )
-                    .matchedGeometryEffect(id: "shape", in: animation)
-                    .onTapGesture {
-                        withAnimation(.spring()) {
-                            isExpanded.toggle()
-                        }
-                    }
-            }
-        }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="transition-demo">
-                        <div class="transition-element" id="geometry-demo" style="width: 100px; height: 100px;">Tap me</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="toggleGeometry()">Toggle Geometry</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>@Namespace:</strong> Creates an animation namespace</li>
-                        <li><strong>matchedGeometryEffect:</strong> Links two views for seamless animation</li>
-                        <li><strong>Same ID:</strong> Both views share the same identifier</li>
-                        <li><strong>Smooth transitions:</strong> Creates fluid morphing between views</li>
+                        <li><strong>TabView integration:</strong> NavigationStack works within TabView</li>
+                        <li><strong>withAnimation:</strong> Wraps state changes to animate navigation</li>
+                        <li><strong>Custom animations:</strong> Different animation effects for various elements</li>
+                        <li><strong>onAppear:</strong> Triggers animations when the view appears</li>
+                        <li><strong>State management:</strong> Coordinating navigation across tabs</li>
                     </ul>
                 </div>
 
-                <div class="example-number">Example 2: Animation TimelineView</div>
-                <p>Creating complex animations that change over time using TimelineView.</p>
-
-                <div class="code-block">
-                    <div class="code-label">TimelineAnimation.swift</div>
-                    <pre>import SwiftUI
-
-struct TimelineAnimation: View {
-    var body: some View {
-        TimelineView(.animation) { timeline in
-            Canvas { context, size in
-                let time = timeline.date.timeIntervalSinceReferenceDate
-                let angle = time.remainder(dividingBy: 2)
-                
-                // Draw multiple rotating elements
-                for i in 0..<5 {
-                    let rotation = Angle(radians: angle + Double(i) * .pi / 2.5)
-                    let x = size.width / 2 + cos(rotation.radians) * 100
-                    let y = size.height / 2 + sin(rotation.radians) * 100
-                    
-                    var elementContext = context
-                    elementContext.translateBy(x: x, y: y)
-                    elementContext.rotate(by: rotation)
-                    
-                    let rect = CGRect(x: -15, y: -15, width: 30, height: 30)
-                    elementContext.fill(
-                        Path(roundedRect: rect, cornerRadius: 6),
-                        with: .color(Color(hue: Double(i) / 5, saturation: 0.8, brightness: 0.9))
-                    )
-                }
-            }
-        }
-        .frame(height: 300)
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="complex-demo" id="timeline-demo">
-                        <!-- Particles will be generated by JavaScript -->
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="startTimeline()">Start Timeline</button>
-                        <button class="demo-btn" onclick="stopTimeline()">Stop Timeline</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>TimelineView:</strong> Updates content based on a schedule</li>
-                        <li><strong>.animation:</strong> Schedule that updates frequently for smooth animation</li>
-                        <li><strong>Canvas:</strong> Low-level drawing for complex graphics</li>
-                        <li><strong>Mathematical animations:</strong> Use trigonometry for circular motion</li>
-                    </ul>
-                </div>
-
-                <div class="example-number">Example 3: Phase Animations</div>
-                <p>Creating multi-step animations using phase animator.</p>
-
-                <div class="code-block">
-                    <div class="code-label">PhaseAnimator.swift</div>
-                    <pre>import SwiftUI
-
-struct PhaseAnimator: View {
-    var body: some View {
-        VStack(spacing: 30) {
-            // Simple phase animation
-            PhaseAnimator([0, 1, 2]) { phase in
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(phase == 0 ? .red : phase == 1 ? .green : .blue)
-                    .frame(width: 150, height: 150)
-                    .scaleEffect(phase == 1 ? 1.2 : 1.0)
-            } animation: { phase in
-                switch phase {
-                case 0: .easeInOut(duration: 1.0)
-                case 1: .spring(response: 0.6, dampingFraction: 0.7)
-                default: .easeInOut(duration: 0.8)
-                }
-            }
-            
-            Text("Cycling through phases")
-                .font(.headline)
-        }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div class="demo-element" id="phase-demo">Phase</div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="startPhaseAnimation()">Start Phase Animation</button>
-                        <button class="demo-btn" onclick="stopPhaseAnimation()">Stop Phase Animation</button>
-                    </div>
-                </div>
-
-                <div class="explanation">
-                    <h4>Explanation:</h4>
-                    <ul>
-                        <li><strong>PhaseAnimator:</strong> Cycles through predefined phases</li>
-                        <li><strong>Phase array:</strong> Defines the sequence of states</li>
-                        <li><strong>Different animations:</strong> Each phase can have its own animation</li>
-                        <li><strong>Complex sequences:</strong> Create sophisticated multi-step animations</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Real Examples Section -->
-            <div id="examples" class="section">
-                <h2>💡 Real-World Examples</h2>
-
-                <div class="example-number">Example 1: Loading Animation</div>
-                <p>A practical loading spinner with pulsating effect.</p>
-
-                <div class="code-block">
-                    <div class="code-label">LoadingAnimation.swift</div>
-                    <pre>import SwiftUI
-
-struct LoadingAnimation: View {
-    @State private var isLoading = false
-    @State private var progress: Double = 0
-    
-    var body: some View {
-        VStack(spacing: 40) {
-            // Loading spinner
-            ZStack {
-                Circle()
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 8)
-                    .frame(width: 80, height: 80)
-                
-                Circle()
-                    .trim(from: 0, to: 0.7)
-                    .stroke(
-                        LinearGradient(
-                            gradient: Gradient(colors: [.blue, .purple]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                    )
-                    .frame(width: 80, height: 80)
-                    .rotationEffect(Angle(degrees: isLoading ? 360 : 0))
-                    .animation(
-                        .linear(duration: 1).repeatForever(autoreverses: false),
-                        value: isLoading
-                    )
-            }
-            
-            // Progress bar
-            VStack {
-                Text("Downloading... \(Int(progress * 100))%")
-                    .font(.headline)
-                
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .frame(height: 8)
-                        .foregroundColor(Color.gray.opacity(0.3))
-                        .cornerRadius(4)
-                    
-                    Rectangle()
-                        .frame(width: CGFloat(progress) * 300, height: 8)
-                        .foregroundColor(.blue)
-                        .cornerRadius(4)
-                        .animation(.easeInOut(duration: 0.5), value: progress)
-                }
-                .frame(width: 300)
-            }
-            
-            Button(isLoading ? "Stop Loading" : "Start Loading") {
-                isLoading.toggle()
-                if isLoading {
-                    simulateProgress()
-                } else {
-                    progress = 0
-                }
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-    
-    func simulateProgress() {
-        guard isLoading else { return }
-        
-        if progress < 1.0 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                progress += 0.1
-                simulateProgress()
-            }
-        } else {
-            isLoading = false
-        }
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div id="loading-demo" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
-                            <div class="demo-element" id="spinner" style="border-radius: 50%; background: conic-gradient(#6a11cb, #2575fc, #6a11cb); width: 80px; height: 80px;"></div>
-                            <div style="width: 300px; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
-                                <div id="progress-bar" style="width: 0%; height: 100%; background: #6a11cb; transition: width 0.5s;"></div>
-                            </div>
-                            <div id="progress-text">Downloading... 0%</div>
-                        </div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="startLoading()">Start Loading</button>
-                        <button class="demo-btn" onclick="stopLoading()">Stop Loading</button>
-                    </div>
-                </div>
-
-                <div class="example-number">Example 2: Interactive Card Flip</div>
-                <p>A 3D card flip animation with user interaction.</p>
-
-                <div class="code-block">
-                    <div class="code-label">CardFlip.swift</div>
-                    <pre>import SwiftUI
-
-struct CardFlip: View {
-    @State private var flipped = false
-    @State private var flipAngle: Double = 0
-    
-    var body: some View {
-        VStack(spacing: 30) {
-            // 3D Card Flip
-            ZStack {
-                // Front of card
-                if !flipped {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [.blue, .purple]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 300, height: 200)
-                        .overlay(
-                            VStack {
-                                Text("Front Side")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                Text("Tap to flip")
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                        )
-                        .rotation3DEffect(
-                            .degrees(flipAngle),
-                            axis: (x: 0, y: 1, z: 0)
-                        )
-                }
-                
-                // Back of card
-                if flipped {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [.orange, .red]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ))
-                        .frame(width: 300, height: 200)
-                        .overlay(
-                            VStack {
-                                Text("Back Side")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                Text("Secret content here!")
-                                    .foregroundColor(.white.opacity(0.8))
-                            }
-                        )
-                        .rotation3DEffect(
-                            .degrees(flipAngle + 180),
-                            axis: (x: 0, y: 1, z: 0)
-                        )
-                }
-            }
-            .onTapGesture {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                    flipped.toggle()
-                    flipAngle += 180
-                }
-            }
-            
-            Text("Tap the card to flip it!")
-                .font(.headline)
-        }
-        .padding()
-    }
-}</pre>
-                </div>
-
-                <div class="demo-container">
-                    <div class="demo-box">
-                        <div id="card-flip-demo" style="width: 200px; height: 120px; position: relative; perspective: 1000px;">
-                            <div id="card-front" style="position: absolute; width: 100%; height: 100%; background: linear-gradient(135deg, #6a11cb, #2575fc); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-weight: bold; backface-visibility: hidden;">
-                                <div>Front Side</div>
-                                <div style="font-size: 0.8em; opacity: 0.8;">Tap to flip</div>
-                            </div>
-                            <div id="card-back" style="position: absolute; width: 100%; height: 100%; background: linear-gradient(135deg, #ff7e5f, #feb47b); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-weight: bold; backface-visibility: hidden; transform: rotateY(180deg);">
-                                <div>Back Side</div>
-                                <div style="font-size: 0.8em; opacity: 0.8;">Secret content!</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="controls">
-                        <button class="demo-btn" onclick="flipCard()">Flip Card</button>
-                    </div>
+                <div class="note">
+                    <strong>Important:</strong> In iOS 16+, NavigationStack replaces NavigationView and provides better performance and more control over navigation state. For backwards compatibility with iOS 15 and earlier, use NavigationView instead.
                 </div>
             </div>
 
             <!-- Exercises Section -->
             <div id="exercises" class="section">
-                <h2>💪 Practice Exercises</h2>
+                <h2>Practice Exercises</h2>
 
                 <div class="exercise-box">
-                    <h4>Exercise 1: Bouncing Ball Animation</h4>
-                    <p><strong>Task:</strong> Create a ball that bounces up and down with a spring animation. The ball should:</p>
+                    <h4>Exercise 1: Basic Navigation App</h4>
+                    <p><strong>Task:</strong> Create a simple app with three screens: Home, About, and Contact. Each screen should have a NavigationLink to the other two screens.</p>
+                    <p><strong>Requirements:</strong></p>
                     <ul>
-                        <li>Start at the top of the container</li>
-                        <li>Bounce to the bottom with spring physics</li>
-                        <li>Return to the top with easing</li>
-                        <li>Loop continuously until stopped</li>
+                        <li>Use NavigationStack</li>
+                        <li>Add appropriate navigation titles</li>
+                        <li>Use SF Symbols for visual appeal</li>
                     </ul>
-                    <button class="answer-btn" onclick="toggleAnswer('answer1')">Show Solution</button>
+                    <button class="answer-btn" onclick="toggleAnswer('answer1')">Show Answer</button>
                     <div id="answer1" class="answer">
                         <div class="code-block">
-                            <div class="code-label">BouncingBall.swift</div>
+                            <div class="code-label">Solution</div>
                             <pre>import SwiftUI
 
-struct BouncingBall: View {
-    @State private var isBouncing = false
-    
+struct ContentView: View {
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 30) {
+                Text("Welcome Home!")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                NavigationLink(destination: AboutView()) {
+                    Label("About Us", systemImage: "info.circle")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                
+                NavigationLink(destination: ContactView()) {
+                    Label("Contact", systemImage: "envelope.fill")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+            }
+            .padding()
+            .navigationTitle("Home")
+        }
+    }
+}
+
+struct AboutView: View {
     var body: some View {
         VStack(spacing: 30) {
-            ZStack(alignment: .top) {
-                // Container
-                Rectangle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(height: 300)
-                
-                // Ball
-                Circle()
-                    .fill(LinearGradient(
-                        gradient: Gradient(colors: [.red, .orange]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 60, height: 60)
-                    .offset(y: isBouncing ? 240 : 0)
-                    .animation(
-                        .spring(response: 0.5, dampingFraction: 0.4)
-                        .repeatForever(autoreverses: true),
-                        value: isBouncing
-                    )
-            }
-            .frame(height: 300)
+            Image(systemName: "building.2.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.blue)
             
-            Button(isBouncing ? "Stop Bouncing" : "Start Bouncing") {
-                isBouncing.toggle()
+            Text("About Our Company")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Text("We are a leading software development company.")
+                .foregroundColor(.gray)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            NavigationLink(destination: ContactView()) {
+                Label("Contact Us", systemImage: "envelope.fill")
+                    .font(.headline)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
-            .buttonStyle(.borderedProminent)
         }
         .padding()
-        .onAppear {
-            // Auto-start after a brief delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isBouncing = true
+        .navigationTitle("About")
+    }
+}
+
+struct ContactView: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "phone.fill")
+                .font(.system(size: 80))
+                .foregroundColor(.green)
+            
+            Text("Contact Information")
+                .font(.title)
+                .fontWeight(.bold)
+            
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: "envelope")
+                    Text("info@company.com")
+                }
+                HStack {
+                    Image(systemName: "phone")
+                    Text("+1 (555) 123-4567")
+                }
+                HStack {
+                    Image(systemName: "location")
+                    Text("123 Main St, City, State")
+                }
             }
+            .padding()
         }
+        .padding()
+        .navigationTitle("Contact")
     }
 }</pre>
                         </div>
@@ -1472,129 +1328,248 @@ struct BouncingBall: View {
                 </div>
 
                 <div class="exercise-box">
-                    <h4>Exercise 2: Animated Login Form</h4>
-                    <p><strong>Task:</strong> Create a login form with the following animations:</p>
+                    <h4>Exercise 2: Student Directory</h4>
+                    <p><strong>Task:</strong> Create a student directory app that displays a list of students and shows detailed information when tapped.</p>
+                    <p><strong>Requirements:</strong></p>
                     <ul>
-                        <li>Form fields slide in from the right when appearing</li>
-                        <li>Login button scales up when the form is valid</li>
-                        <li>Error message shakes if login fails</li>
-                        <li>Success checkmark appears with scale animation</li>
+                        <li>Create a Student struct with name, age, and major properties</li>
+                        <li>Display at least 5 students in a List</li>
+                        <li>Show full details on the detail screen</li>
+                        <li>Make the Student struct Identifiable</li>
                     </ul>
-                    <button class="answer-btn" onclick="toggleAnswer('answer2')">Show Solution</button>
+                    <button class="answer-btn" onclick="toggleAnswer('answer2')">Show Answer</button>
                     <div id="answer2" class="answer">
                         <div class="code-block">
-                            <div class="code-label">AnimatedLoginForm.swift</div>
+                            <div class="code-label">Solution</div>
                             <pre>import SwiftUI
 
-struct AnimatedLoginForm: View {
-    @State private var username = ""
-    @State private var password = ""
-    @State private var showForm = false
-    @State private var isLoggingIn = false
-    @State private var loginSuccess = false
-    @State private var showError = false
-    
-    var formIsValid: Bool {
-        !username.isEmpty && !password.isEmpty
-    }
+struct Student: Identifiable {
+    let id = UUID()
+    let name: String
+    let age: Int
+    let major: String
+    let gpa: Double
+}
+
+struct ContentView: View {
+    let students = [
+        Student(name: "Alice Johnson", age: 20, major: "Computer Science", gpa: 3.8),
+        Student(name: "Bob Smith", age: 21, major: "Mathematics", gpa: 3.6),
+        Student(name: "Carol Williams", age: 19, major: "Physics", gpa: 3.9),
+        Student(name: "David Brown", age: 22, major: "Engineering", gpa: 3.7),
+        Student(name: "Emma Davis", age: 20, major: "Biology", gpa: 3.85)
+    ]
     
     var body: some View {
-        VStack(spacing: 30) {
-            if showForm {
-                VStack(spacing: 20) {
-                    // Username field
-                    TextField("Username", text: $username)
-                        .textFieldStyle(.roundedBorder)
-                        .padding(.horizontal)
-                        .transition(.move(edge: .trailing))
-                    
-                    // Password field
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(.roundedBorder)
-                        .padding(.horizontal)
-                        .transition(.move(edge: .trailing))
-                    
-                    // Login button
-                    Button(action: {
-                        attemptLogin()
-                    }) {
-                        if isLoggingIn {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else if loginSuccess {
-                            Image(systemName: "checkmark")
-                                .font(.title2)
-                        } else {
-                            Text("Login")
-                                .fontWeight(.semibold)
+        NavigationStack {
+            List(students) { student in
+                NavigationLink(destination: StudentDetailView(student: student)) {
+                    HStack {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Text(String(student.name.prefix(1)))
+                                    .foregroundColor(.white)
+                                    .font(.headline)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(student.name)
+                                .font(.headline)
+                            Text(student.major)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
                         }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(formIsValid ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .scaleEffect(formIsValid ? 1.05 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: formIsValid)
-                    .disabled(!formIsValid || isLoggingIn)
-                    
-                    // Error message
-                    if showError {
-                        Text("Invalid credentials. Please try again.")
-                            .foregroundColor(.red)
-                            .transition(
-                                .asymmetric(
-                                    insertion: .scale.combined(with: .opacity),
-                                    removal: .opacity
-                                )
-                            )
+                    .padding(.vertical, 5)
+                }
+            }
+            .navigationTitle("Student Directory")
+        }
+    }
+}
+
+struct StudentDetailView: View {
+    let student: Student
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 25) {
+                Circle()
+                    .fill(LinearGradient(gradient: Gradient(colors: [.blue, .purple]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing))
+                    .frame(width: 120, height: 120)
+                    .overlay(
+                        Text(String(student.name.prefix(1)))
+                            .foregroundColor(.white)
+                            .font(.system(size: 50, weight: .bold))
+                    )
+                    .padding(.top, 20)
+                
+                Text(student.name)
+                    .font(.title)
+                    .fontWeight(.bold)
+                
+                VStack(spacing: 15) {
+                    InfoRow(icon: "person.fill", label: "Age", value: "\(student.age) years old")
+                    InfoRow(icon: "book.fill", label: "Major", value: student.major)
+                    InfoRow(icon: "chart.bar.fill", label: "GPA", value: String(format: "%.2f", student.gpa))
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(15)
+            }
+            .padding()
+        }
+        .navigationTitle("Student Details")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct InfoRow: View {
+    let icon: String
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(.blue)
+                .frame(width: 30)
+            
+            Text(label)
+                .fontWeight(.semibold)
+            
+            Spacer()
+            
+            Text(value)
+                .foregroundColor(.gray)
+        }
+        .padding(.horizontal)
+    }
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exercise-box">
+                    <h4>Exercise 3: Settings Navigation</h4>
+                    <p><strong>Task:</strong> Create a Settings app with programmatic navigation that can navigate to any setting directly from the home screen.</p>
+                    <p><strong>Requirements:</strong></p>
+                    <ul>
+                        <li>Use NavigationPath for programmatic navigation</li>
+                        <li>Include at least 4 setting categories</li>
+                        <li>Add a button to reset navigation to home</li>
+                        <li>Include a "Go to Privacy directly" button that skips intermediate screens</li>
+                    </ul>
+                    <button class="answer-btn" onclick="toggleAnswer('answer3')">Show Answer</button>
+                    <div id="answer3" class="answer">
+                        <div class="code-block">
+                            <div class="code-label">Solution</div>
+                            <pre>import SwiftUI
+
+enum SettingCategory: String, Hashable {
+    case general = "General"
+    case privacy = "Privacy"
+    case notifications = "Notifications"
+    case account = "Account"
+    
+    var icon: String {
+        switch self {
+        case .general: return "gear"
+        case .privacy: return "lock.shield"
+        case .notifications: return "bell.fill"
+        case .account: return "person.circle.fill"
+        }
+    }
+}
+
+struct ContentView: View {
+    @State private var navigationPath = NavigationPath()
+    
+    let categories: [SettingCategory] = [.general, .privacy, .notifications, .account]
+    
+    var body: some View {
+        NavigationStack(path: $navigationPath) {
+            List {
+                Section("Settings") {
+                    ForEach(categories, id: \.self) { category in
+                        NavigationLink(value: category) {
+                            Label(category.rawValue, systemImage: category.icon)
+                        }
+                    }
+                }
+                
+                Section("Quick Actions") {
+                    Button(action: {
+                        navigationPath.append(SettingCategory.privacy)
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("Go to Privacy Directly")
+                        }
                     }
                 }
             }
-            
-            if !showForm {
-                Button("Show Login Form") {
-                    withAnimation(.spring()) {
-                        showForm = true
+            .navigationTitle("Settings")
+            .navigationDestination(for: SettingCategory.self) { category in
+                SettingDetailView(category: category, navigationPath: $navigationPath)
+            }
+            .toolbar {
+                if !navigationPath.isEmpty {
+                    Button("Home") {
+                        navigationPath.removeLast(navigationPath.count)
                     }
                 }
-                .buttonStyle(.borderedProminent)
             }
         }
-        .padding()
     }
+}
+
+struct SettingDetailView: View {
+    let category: SettingCategory
+    @Binding var navigationPath: NavigationPath
+    @State private var toggleValue = false
     
-    func attemptLogin() {
-        isLoggingIn = true
-        
-        // Simulate network request
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            isLoggingIn = false
+    var body: some View {
+        List {
+            Section {
+                HStack {
+                    Image(systemName: category.icon)
+                        .font(.system(size: 60))
+                        .foregroundColor(.blue)
+                        .frame(maxWidth: .infinity)
+                }
+                .padding()
+            }
             
-            // Simulate random success/failure
-            if Bool.random() {
-                loginSuccess = true
-                showError = false
+            Section("Options") {
+                Toggle("Enable \(category.rawValue)", isOn: $toggleValue)
                 
-                // Reset after success
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    withAnimation {
-                        showForm = false
-                        username = ""
-                        password = ""
-                        loginSuccess = false
+                ForEach(1...3, id: \.self) { index in
+                    HStack {
+                        Text("Option \(index)")
+                        Spacer()
+                        Text("Value")
+                            .foregroundColor(.gray)
                     }
                 }
-            } else {
-                showError = true
-                
-                // Auto-hide error
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    withAnimation {
-                        showError = false
-                    }
+            }
+            
+            Section {
+                Button("Reset All Settings") {
+                    toggleValue = false
                 }
+                .foregroundColor(.red)
+            }
+        }
+        .navigationTitle(category.rawValue)
+        .toolbar {
+            Button("Home") {
+                navigationPath.removeLast(navigationPath.count)
             }
         }
     }
@@ -1606,102 +1581,123 @@ struct AnimatedLoginForm: View {
 
             <!-- Quiz Section -->
             <div id="quiz" class="section">
-                <h2>🧠 Animation Knowledge Quiz</h2>
-                <p>Test your understanding of SwiftUI animations and transitions!</p>
+                <h2>Multiple Choice Quiz</h2>
+                <p>Test your knowledge of NavigationLink in SwiftUI!</p>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">1. Which modifier is used for implicit animations in SwiftUI?</div>
+                    <div class="quiz-question">1. What container is required for NavigationLink to work in iOS 16+?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">A) withAnimation()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q1')">B) .animation()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">C) animate()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">D) .animate()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">A) NavigationView</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q1')">B) NavigationStack</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">C) VStack</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q1')">D) ScrollView</div>
                     </div>
                     <div id="q1-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">2. What does the .spring() animation provide?</div>
+                    <div class="quiz-question">2. Which parameter in NavigationLink specifies where to navigate?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">A) Linear constant speed animation</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q2')">B) Physics-based animation with bounce</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">C) Animation that only works in spring season</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">D) Animation that starts fast and ends slow</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">A) target</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q2')">B) destination</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">C) view</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q2')">D) route</div>
                     </div>
                     <div id="q2-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">3. Which transition would you use to make a view slide in from the bottom?</div>
+                    <div class="quiz-question">3. What protocol must a struct implement to be used with List without specifying an id?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">A) .scale</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">B) .opacity</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q3')">C) .move(edge: .bottom)</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">D) .slide</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">A) Hashable</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q3')">B) Identifiable</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">C) Codable</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q3')">D) Equatable</div>
                     </div>
                     <div id="q3-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">4. What is matchedGeometryEffect used for?</div>
+                    <div class="quiz-question">4. Which type is used for programmatic navigation in NavigationStack?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">A) Matching colors between views</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q4')">B) Creating seamless animations between different views</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">C) Aligning views to a grid</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">D) Matching font sizes across the app</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">A) NavigationState</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q4')">B) NavigationPath</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">C) NavigationRouter</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q4')">D) PathManager</div>
                     </div>
                     <div id="q4-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">5. How do you create an animation that repeats forever?</div>
+                    <div class="quiz-question">5. What method removes the last item from a NavigationPath?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">A) .repeat()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q5')">B) .repeatForever()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">C) .loop()</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">D) .infinite()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">A) pop()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">B) remove()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q5')">C) removeLast()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q5')">D) deleteLast()</div>
                     </div>
                     <div id="q5-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">6. What's the difference between implicit and explicit animations?</div>
+                    <div class="quiz-question">6. Which modifier sets the navigation bar title?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">A) Implicit is faster than explicit</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q6')">B) Implicit is automatic, explicit is manually triggered</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">C) Explicit is for views, implicit is for modifiers</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">D) There is no difference</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q6')">A) .navigationTitle()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">B) .title()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">C) .navTitle()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q6')">D) .header()</div>
                     </div>
                     <div id="q6-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">7. Which property would you animate to create a fade-in effect?</div>
+                    <div class="quiz-question">7. How do you hide the default back button in SwiftUI?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">A) .scaleEffect</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q7')">B) .opacity</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">C) .rotationEffect</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">D) .offset</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">A) .hideBackButton()</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q7')">B) .navigationBarBackButtonHidden(true)</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">C) .backButton(false)</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q7')">D) .noBackButton()</div>
                     </div>
                     <div id="q7-feedback" class="quiz-feedback"></div>
                 </div>
 
                 <div class="quiz-container">
-                    <div class="quiz-question">8. What does the dampingFraction parameter control in spring animations?</div>
+                    <div class="quiz-question">8. What is the purpose of navigationDestination(for:)?</div>
                     <div class="quiz-options">
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">A) The color of the animation</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q8')">B) How quickly the oscillation stops</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">C) The direction of movement</div>
-                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">D) The size of the animated view</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">A) It creates a navigation link</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q8')">B) It maps data types to destination views</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">C) It sets the navigation title</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q8')">D) It dismisses the current view</div>
                     </div>
                     <div id="q8-feedback" class="quiz-feedback"></div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-question">9. Which environment value allows you to programmatically dismiss a view?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q9')">A) @Environment(\.close)</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q9')">B) @Environment(\.dismiss)</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q9')">C) @Environment(\.pop)</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q9')">D) @Environment(\.back)</div>
+                    </div>
+                    <div id="q9-feedback" class="quiz-feedback"></div>
+                </div>
+
+                <div class="quiz-container">
+                    <div class="quiz-question">10. What happens when you call navigationPath.removeAll()?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q10')">A) It removes only the last view</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q10')">B) It causes an error</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, true, 'q10')">C) It returns to the root view</div>
+                        <div class="quiz-option" onclick="checkAnswer(this, false, 'q10')">D) It removes all data from the app</div>
+                    </div>
+                    <div id="q10-feedback" class="quiz-feedback"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Navigation functionality
         function showSection(sectionId, button) {
             // Hide all sections
             const sections = document.querySelectorAll('.section');
@@ -1721,20 +1717,18 @@ struct AnimatedLoginForm: View {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Toggle answer visibility
         function toggleAnswer(answerId) {
             const answer = document.getElementById(answerId);
             answer.classList.toggle('show');
             
             const button = event.target;
             if (answer.classList.contains('show')) {
-                button.textContent = 'Hide Solution';
+                button.textContent = 'Hide Answer';
             } else {
-                button.textContent = 'Show Solution';
+                button.textContent = 'Show Answer';
             }
         }
 
-        // Quiz functionality
         const answeredQuestions = new Set();
 
         function checkAnswer(element, isCorrect, questionId) {
@@ -1772,289 +1766,6 @@ struct AnimatedLoginForm: View {
                 });
             }
         }
-
-        // Demo 1: Scale Animation
-        function animateScale() {
-            const element = document.getElementById('scale-demo');
-            element.style.transform = 'scale(1.5)';
-            element.style.transition = 'transform 0.5s ease-in-out';
-        }
-
-        function resetScale() {
-            const element = document.getElementById('scale-demo');
-            element.style.transform = 'scale(1)';
-        }
-
-        // Demo 2: Multi-property Animation
-        function animateMulti() {
-            const element = document.getElementById('multi-demo');
-            element.style.transform = 'rotate(180deg)';
-            element.style.background = 'linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%)';
-            element.style.transition = 'transform 0.6s ease, background 1s ease-in-out';
-        }
-
-        function resetMulti() {
-            const element = document.getElementById('multi-demo');
-            element.style.transform = 'rotate(0deg)';
-            element.style.background = 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)';
-        }
-
-        // Demo 3: Implicit vs Explicit
-        function animateImplicit() {
-            const element = document.getElementById('implicit-demo');
-            element.style.transform = 'translateX(100px)';
-            element.style.transition = 'transform 1s ease-in-out';
-        }
-
-        function animateExplicit() {
-            const element = document.getElementById('explicit-demo');
-            element.style.transform = 'translateX(100px)';
-            element.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-        }
-
-        function resetBoth() {
-            const elements = [document.getElementById('implicit-demo'), document.getElementById('explicit-demo')];
-            elements.forEach(element => {
-                element.style.transform = 'translateX(0)';
-            });
-        }
-
-        // Demo 4: Transitions
-        let currentTransition = 'scale';
-        
-        function toggleTransition() {
-            const element = document.getElementById('transition-demo');
-            if (element.style.display === 'none' || element.style.display === '') {
-                element.style.display = 'flex';
-                applyTransition(element, 'in');
-            } else {
-                applyTransition(element, 'out');
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 500);
-            }
-        }
-
-        function changeTransition(type) {
-            currentTransition = type;
-        }
-
-        function applyTransition(element, direction) {
-            element.style.transition = 'all 0.5s ease-in-out';
-            
-            switch(currentTransition) {
-                case 'scale':
-                    if (direction === 'in') {
-                        element.style.transform = 'scale(1)';
-                        element.style.opacity = '1';
-                    } else {
-                        element.style.transform = 'scale(0)';
-                        element.style.opacity = '0';
-                    }
-                    break;
-                case 'slide':
-                    if (direction === 'in') {
-                        element.style.transform = 'translateX(0)';
-                        element.style.opacity = '1';
-                    } else {
-                        element.style.transform = 'translateX(100px)';
-                        element.style.opacity = '0';
-                    }
-                    break;
-                case 'opacity':
-                    if (direction === 'in') {
-                        element.style.opacity = '1';
-                    } else {
-                        element.style.opacity = '0';
-                    }
-                    break;
-            }
-        }
-
-        // Demo 5: Asymmetric Transition
-        function toggleAsymmetric() {
-            const element = document.getElementById('asymmetric-demo');
-            if (element.style.display === 'none' || element.style.display === '') {
-                element.style.display = 'flex';
-                element.style.transform = 'translateY(0)';
-                element.style.opacity = '1';
-                element.style.transition = 'transform 0.6s ease-out, opacity 0.6s ease-out';
-            } else {
-                element.style.transform = 'scale(0.1)';
-                element.style.opacity = '0';
-                element.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 400);
-            }
-        }
-
-        // Demo 6: Custom Transition
-        function toggleCustom() {
-            const element = document.getElementById('custom-demo');
-            if (element.style.display === 'none' || element.style.display === '') {
-                element.style.display = 'flex';
-                element.style.transform = 'rotate(0deg)';
-                element.style.opacity = '1';
-                element.style.transition = 'transform 1s ease-in-out, opacity 1s ease-in-out';
-            } else {
-                element.style.transform = 'rotate(90deg)';
-                element.style.opacity = '0';
-                setTimeout(() => {
-                    element.style.display = 'none';
-                }, 1000);
-            }
-        }
-
-        // Demo 7: Matched Geometry
-        function toggleGeometry() {
-            const element = document.getElementById('geometry-demo');
-            if (element.style.width === '100px') {
-                element.style.width = '200px';
-                element.style.height = '150px';
-                element.textContent = 'Detailed View';
-                element.style.transition = 'all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-            } else {
-                element.style.width = '100px';
-                element.style.height = '100px';
-                element.textContent = 'Tap me';
-            }
-        }
-
-        // Demo 8: Timeline Animation
-        let timelineInterval;
-        
-        function startTimeline() {
-            const container = document.getElementById('timeline-demo');
-            container.innerHTML = '';
-            
-            // Create particles
-            for (let i = 0; i < 5; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.width = '30px';
-                particle.style.height = '30px';
-                particle.style.borderRadius = '6px';
-                particle.style.background = `hsl(${i * 72}, 80%, 60%)`;
-                container.appendChild(particle);
-            }
-            
-            const particles = container.querySelectorAll('.particle');
-            let time = 0;
-            
-            timelineInterval = setInterval(() => {
-                time += 0.05;
-                particles.forEach((particle, i) => {
-                    const angle = time + i * Math.PI / 2.5;
-                    const x = Math.cos(angle) * 100 + 200;
-                    const y = Math.sin(angle) * 100 + 150;
-                    
-                    particle.style.transform = `translate(${x - 15}px, ${y - 15}px) rotate(${angle}rad)`;
-                });
-            }, 50);
-        }
-        
-        function stopTimeline() {
-            clearInterval(timelineInterval);
-        }
-
-        // Demo 9: Phase Animation
-        let phaseInterval;
-        let phaseIndex = 0;
-        const phaseColors = ['#dc3545', '#28a745', '#007bff'];
-        
-        function startPhaseAnimation() {
-            const element = document.getElementById('phase-demo');
-            
-            phaseInterval = setInterval(() => {
-                phaseIndex = (phaseIndex + 1) % 3;
-                
-                if (phaseIndex === 1) {
-                    element.style.transform = 'scale(1.2)';
-                    element.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-                } else {
-                    element.style.transform = 'scale(1)';
-                    element.style.transition = 'transform 0.8s ease-in-out';
-                }
-                
-                element.style.background = phaseColors[phaseIndex];
-            }, 1500);
-        }
-        
-        function stopPhaseAnimation() {
-            clearInterval(phaseInterval);
-            const element = document.getElementById('phase-demo');
-            element.style.transform = 'scale(1)';
-            element.style.background = 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)';
-        }
-
-        // Demo 10: Loading Animation
-        let loadingInterval;
-        let progress = 0;
-        
-        function startLoading() {
-            const spinner = document.getElementById('spinner');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            
-            // Start spinner rotation
-            spinner.style.animation = 'spin 1s linear infinite';
-            
-            // Reset progress
-            progress = 0;
-            progressBar.style.width = '0%';
-            progressText.textContent = 'Downloading... 0%';
-            
-            // Simulate progress
-            loadingInterval = setInterval(() => {
-                progress += Math.random() * 10;
-                if (progress > 100) progress = 100;
-                
-                progressBar.style.width = `${progress}%`;
-                progressText.textContent = `Downloading... ${Math.round(progress)}%`;
-                
-                if (progress >= 100) {
-                    clearInterval(loadingInterval);
-                    progressText.textContent = 'Download Complete!';
-                }
-            }, 500);
-        }
-        
-        function stopLoading() {
-            clearInterval(loadingInterval);
-            const spinner = document.getElementById('spinner');
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-            
-            spinner.style.animation = 'none';
-            progressBar.style.width = '0%';
-            progressText.textContent = 'Downloading... 0%';
-        }
-
-        // Demo 11: Card Flip
-        function flipCard() {
-            const card = document.getElementById('card-flip-demo');
-            const front = document.getElementById('card-front');
-            const back = document.getElementById('card-back');
-            
-            if (card.style.transform === 'rotateY(180deg)') {
-                card.style.transform = 'rotateY(0deg)';
-            } else {
-                card.style.transform = 'rotateY(180deg)';
-            }
-            
-            card.style.transition = 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-        }
-
-        // Add CSS for spinner animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
 
         // Initialize the page with the intro section active
         document.addEventListener('DOMContentLoaded', function() {

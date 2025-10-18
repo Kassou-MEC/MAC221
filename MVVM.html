@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVVM Pattern Lecture</title>
+    <style>
+        :root {
+            --primary: #2962ff;
+            --primary-dark: #0039cb;
+            --secondary: #ff6d00;
+            --light: #f5f5f5;
+            --dark: #212121;
+            --success: #00c853;
+            --warning: #ffab00;
+            --error: #d50000;
+            --gray: #757575;
+            --light-gray: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab:hover {
+            background-color: rgba(41, 98, 255, 0.1);
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .content-section {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        h3 {
+            margin: 1.5rem 0 1rem;
+            color: var(--primary-dark);
+        }
+        
+        p {
+            margin-bottom: 1rem;
+        }
+        
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        
+        .code-comment {
+            color: #75715e;
+        }
+        
+        .code-keyword {
+            color: #f92672;
+        }
+        
+        .code-type {
+            color: #66d9ef;
+        }
+        
+        .code-string {
+            color: #e6db74;
+        }
+        
+        .code-property {
+            color: #a6e22e;
+        }
+        
+        .diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .mvvm-component {
+            flex: 1;
+            min-width: 200px;
+            padding: 1.5rem;
+            margin: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .mvvm-component:hover {
+            transform: translateY(-5px);
+        }
+        
+        .model {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .view {
+            background-color: #f3e5f5;
+            border-left: 4px solid #9c27b0;
+        }
+        
+        .viewmodel {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+        }
+        
+        .component-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .arrow {
+            font-size: 2rem;
+            color: var(--gray);
+            margin: 0 1rem;
+        }
+        
+        .example-container {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        
+        .example-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+        }
+        
+        .example-content {
+            padding: 1.5rem;
+        }
+        
+        .interactive-demo {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .demo-output {
+            background-color: white;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            min-height: 100px;
+        }
+        
+        .quiz-question {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .quiz-options {
+            margin: 1rem 0;
+        }
+        
+        .quiz-option {
+            margin: 0.5rem 0;
+            padding: 0.75rem;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .quiz-option:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .quiz-option.correct {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+        }
+        
+        .quiz-option.incorrect {
+            background-color: #ffebee;
+            border-left: 4px solid var(--error);
+        }
+        
+        .feedback {
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background-color: #e8f5e9;
+            color: var(--success);
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background-color: #ffebee;
+            color: var(--error);
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .diagram {
+                flex-direction: column;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 1rem 0;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1> MAC221 Prof. Khalid Kassou</h1>
+            <h1>MVVM Pattern</h1>
+            <p class="subtitle">Model-View-ViewModel Architecture with SwiftUI Examples</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="nav-tabs">
+            <div class="tab active" data-tab="overview">Overview</div>
+            <div class="tab" data-tab="components">Components</div>
+            <div class="tab" data-tab="simple">Simple Example</div>
+            <div class="tab" data-tab="advanced">Advanced Example</div>
+            <div class="tab" data-tab="quiz">Quiz</div>
+        </div>
+        
+        <!-- Overview Section -->
+        <section id="overview" class="content-section active">
+            <h2>What is MVVM?</h2>
+            <p>MVVM (Model-View-ViewModel) is a software architectural pattern that facilitates separation of development of the graphical user interface from the development of the business logic or back-end logic (the data model).</p>
+            
+            <div class="diagram">
+                <div class="mvvm-component model">
+                    <div class="component-title">Model</div>
+                    <p>Represents data and business logic</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="mvvm-component viewmodel">
+                    <div class="component-title">ViewModel</div>
+                    <p>Exposes data and commands for the View</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="mvvm-component view">
+                    <div class="component-title">View</div>
+                    <p>Displays information to the user</p>
+                </div>
+            </div>
+            
+            <h3>Why Use MVVM?</h3>
+            <ul>
+                <li><strong>Separation of Concerns:</strong> Each component has a distinct responsibility</li>
+                <li><strong>Testability:</strong> ViewModels can be tested without the UI</li>
+                <li><strong>Maintainability:</strong> Changes to one component don't heavily impact others</li>
+                <li><strong>Reusability:</strong> ViewModels can be used with different Views</li>
+            </ul>
+            
+            <h3>MVVM in SwiftUI</h3>
+            <p>SwiftUI's declarative syntax and data binding capabilities make it particularly well-suited for the MVVM pattern. The @State, @ObservedObject, and @Published property wrappers facilitate the data flow between components.</p>
+        </section>
+        
+        <!-- Components Section -->
+        <section id="components" class="content-section">
+            <h2>MVVM Components</h2>
+            
+            <h3>Model</h3>
+            <p>The Model represents the data and business logic of your application. It's responsible for data retrieval, storage, and validation.</p>
+            
+            <div class="code-block">
+                <span class="code-comment">// Example Model in Swift</span><br>
+                <span class="code-keyword">struct</span> <span class="code-type">User</span>: <span class="code-type">Codable</span> {<br>
+                &nbsp;&nbsp;<span class="code-keyword">let</span> id: <span class="code-type">UUID</span><br>
+                &nbsp;&nbsp;<span class="code-keyword">var</span> name: <span class="code-type">String</span><br>
+                &nbsp;&nbsp;<span class="code-keyword">var</span> email: <span class="code-type">String</span><br>
+                }
+            </div>
+            
+            <h3>ViewModel</h3>
+            <p>The ViewModel acts as a bridge between the Model and the View. It transforms model data into values that can be displayed and handles user interactions.</p>
+            
+            <div class="code-block">
+                <span class="code-comment">// Example ViewModel in SwiftUI</span><br>
+                <span class="code-keyword">class</span> <span class="code-type">UserViewModel</span>: <span class="code-type">ObservableObject</span> {<br>
+                &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> user: <span class="code-type">User</span><br>
+                &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> isLoading = <span class="code-keyword">false</span><br>
+                <br>
+                &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">loadUser</span>() {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Fetch user data from network or database</span><br>
+                &nbsp;&nbsp;}<br>
+                }
+            </div>
+            
+            <h3>View</h3>
+            <p>The View is responsible for displaying the user interface. In SwiftUI, Views are structs that conform to the View protocol and declare what should appear on screen.</p>
+            
+            <div class="code-block">
+                <span class="code-comment">// Example View in SwiftUI</span><br>
+                <span class="code-keyword">struct</span> <span class="code-type">UserView</span>: <span class="code-type">View</span> {<br>
+                &nbsp;&nbsp;<span class="code-keyword">@StateObject</span> <span class="code-keyword">private</span> <span class="code-keyword">var</span> viewModel = <span class="code-type">UserViewModel</span>()<br>
+                <br>
+                &nbsp;&nbsp;<span class="code-keyword">var</span> body: <span class="code-keyword">some</span> <span class="code-type">View</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">VStack</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(viewModel.user.name)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(viewModel.user.email)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">onAppear</span> {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewModel.<span class="code-property">loadUser</span>()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;}<br>
+                }
+            </div>
+        </section>
+        
+        <!-- Simple Example Section -->
+        <section id="simple" class="content-section">
+            <h2>Simple MVVM Example: Counter App</h2>
+            <p>Let's build a simple counter application using MVVM in SwiftUI. This example demonstrates the basic data flow between components.</p>
+            
+            <div class="example-container">
+                <div class="example-header">Model</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-comment">// The Model is simple in this case - just an integer</span><br>
+                        <span class="code-comment">// In more complex apps, the Model would be a struct or class</span><br>
+                        <span class="code-comment">// representing your data</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="example-container">
+                <div class="example-header">ViewModel</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-keyword">class</span> <span class="code-type">CounterViewModel</span>: <span class="code-type">ObservableObject</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> count = <span class="code-string">0</span><br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">increment</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;count += <span class="code-string">1</span><br>
+                        &nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">decrement</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;count -= <span class="code-string">1</span><br>
+                        &nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">reset</span>() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;count = <span class="code-string">0</span><br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="example-container">
+                <div class="example-header">View</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-keyword">struct</span> <span class="code-type">CounterView</span>: <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">@StateObject</span> <span class="code-keyword">private</span> <span class="code-keyword">var</span> viewModel = <span class="code-type">CounterViewModel</span>()<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> body: <span class="code-keyword">some</span> <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">VStack</span>(spacing: <span class="code-string">20</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(<span class="code-string">"Count: </span>\(viewModel.count)<span class="code-string">"</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">font</span>(.<span class="code-property">largeTitle</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">foregroundColor</span>(viewModel.count < <span class="code-string">0</span> ? .<span class="code-property">red</span> : .<span class="code-property">primary</span>)<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">HStack</span>(spacing: <span class="code-string">20</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Button</span>(<span class="code-string">"Decrement"</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewModel.<span class="code-property">decrement</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">buttonStyle</span>(.<span class="code-property">bordered</span>)<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Button</span>(<span class="code-string">"Reset"</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewModel.<span class="code-property">reset</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">buttonStyle</span>(.<span class="code-property">borderedProminent</span>)<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Button</span>(<span class="code-string">"Increment"</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewModel.<span class="code-property">increment</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">buttonStyle</span>(.<span class="code-property">bordered</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">padding</span>()<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3>Interactive Demo</h3>
+                <p>Try out the counter functionality below:</p>
+                
+                <div class="demo-controls">
+                    <button id="decrement-btn">Decrement</button>
+                    <button id="reset-btn">Reset</button>
+                    <button id="increment-btn">Increment</button>
+                </div>
+                
+                <div class="demo-output">
+                    <p id="counter-value">Count: 0</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Advanced Example Section -->
+        <section id="advanced" class="content-section">
+            <h2>Advanced MVVM Example: User Management</h2>
+            <p>This example demonstrates a more realistic MVVM implementation with networking, state management, and user interactions.</p>
+            
+            <div class="example-container">
+                <div class="example-header">Model</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-keyword">struct</span> <span class="code-type">User</span>: <span class="code-type">Codable</span>, <span class="code-type">Identifiable</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">let</span> id: <span class="code-type">Int</span><br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> name: <span class="code-type">String</span><br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> email: <span class="code-type">String</span><br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> isActive: <span class="code-type">Bool</span><br>
+                        }<br>
+                        <br>
+                        <span class="code-keyword">struct</span> <span class="code-type">UserResponse</span>: <span class="code-type">Codable</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">let</span> users: [<span class="code-type">User</span>]<br>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="example-container">
+                <div class="example-header">ViewModel</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-keyword">class</span> <span class="code-type">UserListViewModel</span>: <span class="code-type">ObservableObject</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> users: [<span class="code-type">User</span>] = []<br>
+                        &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> isLoading = <span class="code-keyword">false</span><br>
+                        &nbsp;&nbsp;<span class="code-keyword">@Published</span> <span class="code-keyword">var</span> errorMessage: <span class="code-type">String</span>?<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">private</span> <span class="code-keyword">let</span> service: <span class="code-type">UserService</span><br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">init</span>(service: <span class="code-type">UserService</span> = .<span class="code-property">shared</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">self</span>.<span class="code-property">service</span> = service<br>
+                        &nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">@MainActor</span><br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">loadUsers</span>() <span class="code-keyword">async</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;isLoading = <span class="code-keyword">true</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;errorMessage = <span class="code-keyword">nil</span><br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">do</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">let</span> fetchedUsers = <span class="code-keyword">try</span> <span class="code-keyword">await</span> service.<span class="code-property">fetchUsers</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">self</span>.<span class="code-property">users</span> = fetchedUsers<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;} <span class="code-keyword">catch</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;errorMessage = <span class="code-string">"Failed to load users: </span>\(error.<span class="code-property">localizedDescription</span>)<span class="code-string">"</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;isLoading = <span class="code-keyword">false</span><br>
+                        &nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">toggleUserActive</span>(<span class="code-keyword">_</span> user: <span class="code-type">User</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> <span class="code-keyword">let</span> index = users.<span class="code-property">firstIndex</span>(where: { $0.id == user.id }) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;users[index].isActive.<span class="code-property">toggle</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">func</span> <span class="code-property">deleteUser</span>(at offsets: <span class="code-type">IndexSet</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;users.<span class="code-property">remove</span>(atOffsets: offsets)<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="example-container">
+                <div class="example-header">View</div>
+                <div class="example-content">
+                    <div class="code-block">
+                        <span class="code-keyword">struct</span> <span class="code-type">UserListView</span>: <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">@StateObject</span> <span class="code-keyword">private</span> <span class="code-keyword">var</span> viewModel = <span class="code-type">UserListViewModel</span>()<br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> body: <span class="code-keyword">some</span> <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">NavigationView</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">List</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> viewModel.isLoading {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">ProgressView</span>(<span class="code-string">"Loading users..."</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if let</span> error = viewModel.errorMessage {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(error)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">foregroundColor</span>(.<span class="code-property">red</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">ForEach</span>(viewModel.users) { user <span class="code-keyword">in</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">UserRow</span>(user: user)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">onTapGesture</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;viewModel.<span class="code-property">toggleUserActive</span>(user)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">onDelete</span>(perform: viewModel.deleteUser)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">navigationTitle</span>(<span class="code-string">"Users"</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">toolbar</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">ToolbarItem</span>(placement: .<span class="code-property">navigationBarTrailing</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Button</span>(<span class="code-string">"Reload"</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Task</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">await</span> viewModel.<span class="code-property">loadUsers</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">task</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">await</span> viewModel.<span class="code-property">loadUsers</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;}<br>
+                        }<br>
+                        <br>
+                        <span class="code-keyword">struct</span> <span class="code-type">UserRow</span>: <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;<span class="code-keyword">let</span> user: <span class="code-type">User</span><br>
+                        <br>
+                        &nbsp;&nbsp;<span class="code-keyword">var</span> body: <span class="code-keyword">some</span> <span class="code-type">View</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">HStack</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">VStack</span>(alignment: .<span class="code-property">leading</span>) {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(user.name)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">font</span>(.<span class="code-property">headline</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Text</span>(user.email)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">font</span>(.<span class="code-property">subheadline</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">foregroundColor</span>(.<span class="code-property">gray</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Spacer</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">Image</span>(systemName: user.isActive ? <span class="code-string">"checkmark.circle.fill"</span> : <span class="code-string">"circle"</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.<span class="code-property">foregroundColor</span>(user.isActive ? .<span class="code-property">green</span> : .<span class="code-property">gray</span>)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                        &nbsp;&nbsp;}<br>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="interactive-demo">
+                <h3>User Management Demo</h3>
+                <p>This demo simulates the user management functionality:</p>
+                
+                <div class="demo-controls">
+                    <button id="load-users-btn">Load Users</button>
+                    <button id="add-user-btn">Add User</button>
+                </div>
+                
+                <div class="demo-output">
+                    <div id="user-list">
+                        <p>No users loaded yet. Click "Load Users" to fetch data.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Quiz Section -->
+        <section id="quiz" class="content-section">
+            <h2>MVVM Knowledge Check</h2>
+            <p>Test your understanding of the MVVM pattern with these questions.</p>
+            
+            <div class="quiz-question">
+                <h3>Question 1: What is the primary role of the ViewModel in MVVM?</h3>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-correct="false">A) To handle UI layout and styling</div>
+                    <div class="quiz-option" data-correct="true">B) To expose data and commands for the View</div>
+                    <div class="quiz-option" data-correct="false">C) To directly interact with the database</div>
+                    <div class="quiz-option" data-correct="false">D) To contain all business logic without separation</div>
+                </div>
+                <div class="feedback"></div>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>Question 2: In SwiftUI, which property wrapper is typically used to observe a ViewModel?</h3>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-correct="false">A) @State</div>
+                    <div class="quiz-option" data-correct="true">B) @StateObject or @ObservedObject</div>
+                    <div class="quiz-option" data-correct="false">C) @Binding</div>
+                    <div class="quiz-option" data-correct="false">D) @Environment</div>
+                </div>
+                <div class="feedback"></div>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>Question 3: Which of these is NOT a benefit of using MVVM?</h3>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-correct="false">A) Improved testability</div>
+                    <div class="quiz-option" data-correct="false">B) Separation of concerns</div>
+                    <div class="quiz-option" data-correct="true">C) Faster compilation times</div>
+                    <div class="quiz-option" data-correct="false">D) Better maintainability</div>
+                </div>
+                <div class="feedback"></div>
+            </div>
+            
+            <div class="quiz-question">
+                <h3>Question 4: In the MVVM pattern, where should network requests typically be made?</h3>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-correct="false">A) Directly in the View</div>
+                    <div class="quiz-option" data-correct="true">B) In the ViewModel, which might use a service</div>
+                    <div class="quiz-option" data-correct="false">C) In the Model itself</div>
+                    <div class="quiz-option" data-correct="false">D) In a separate utility class called from the View</div>
+                </div>
+                <div class="feedback"></div>
+            </div>
+            
+            <button id="check-answers-btn">Check Answers</button>
+        </section>
+    </div>
+
+    <script>
+        // Tab navigation
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and sections
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding section
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Counter demo functionality
+        let count = 0;
+        const counterValue = document.getElementById('counter-value');
+        
+        document.getElementById('increment-btn').addEventListener('click', () => {
+            count++;
+            updateCounterDisplay();
+        });
+        
+        document.getElementById('decrement-btn').addEventListener('click', () => {
+            count--;
+            updateCounterDisplay();
+        });
+        
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            count = 0;
+            updateCounterDisplay();
+        });
+        
+        function updateCounterDisplay() {
+            counterValue.textContent = `Count: ${count}`;
+            counterValue.style.color = count < 0 ? 'red' : 'black';
+        }
+        
+        // User management demo functionality
+        const userList = document.getElementById('user-list');
+        let users = [];
+        
+        document.getElementById('load-users-btn').addEventListener('click', () => {
+            // Simulate loading users from an API
+            users = [
+                { id: 1, name: 'John Doe', email: 'john@example.com', isActive: true },
+                { id: 2, name: 'Jane Smith', email: 'jane@example.com', isActive: false },
+                { id: 3, name: 'Bob Johnson', email: 'bob@example.com', isActive: true }
+            ];
+            
+            renderUserList();
+        });
+        
+        document.getElementById('add-user-btn').addEventListener('click', () => {
+            const newUser = {
+                id: users.length + 1,
+                name: `User ${users.length + 1}`,
+                email: `user${users.length + 1}@example.com`,
+                isActive: true
+            };
+            
+            users.push(newUser);
+            renderUserList();
+        });
+        
+        function renderUserList() {
+            if (users.length === 0) {
+                userList.innerHTML = '<p>No users loaded yet. Click "Load Users" to fetch data.</p>';
+                return;
+            }
+            
+            let html = '<h4>User List</h4><ul>';
+            users.forEach(user => {
+                html += `
+                    <li style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                        <strong>${user.name}</strong> (${user.email}) 
+                        <span style="color: ${user.isActive ? 'green' : 'gray'}">
+                            ${user.isActive ? '✓ Active' : '✗ Inactive'}
+                        </span>
+                        <button onclick="toggleUser(${user.id})" style="margin-left: 10px; padding: 2px 8px;">
+                            Toggle
+                        </button>
+                    </li>
+                `;
+            });
+            html += '</ul>';
+            
+            userList.innerHTML = html;
+        }
+        
+        // Global function for toggling user active state
+        window.toggleUser = function(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                user.isActive = !user.isActive;
+                renderUserList();
+            }
+        };
+        
+        // Quiz functionality
+        document.getElementById('check-answers-btn').addEventListener('click', () => {
+            let allCorrect = true;
+            
+            document.querySelectorAll('.quiz-question').forEach(question => {
+                const options = question.querySelectorAll('.quiz-option');
+                const feedback = question.querySelector('.feedback');
+                
+                let correctSelected = true;
+                
+                options.forEach(option => {
+                    const isCorrect = option.getAttribute('data-correct') === 'true';
+                    
+                    if (isCorrect) {
+                        option.classList.add('correct');
+                    } else if (option.classList.contains('selected')) {
+                        option.classList.add('incorrect');
+                        correctSelected = false;
+                    }
+                });
+                
+                if (correctSelected) {
+                    feedback.textContent = 'Correct!';
+                    feedback.className = 'feedback correct';
+                } else {
+                    feedback.textContent = 'Incorrect. Please review the options.';
+                    feedback.className = 'feedback incorrect';
+                    allCorrect = false;
+                }
+            });
+            
+            if (allCorrect) {
+                alert('Congratulations! All answers are correct!');
+            }
+        });
+        
+        // Add click handlers to quiz options
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove selected class from all options in the same question
+                const question = option.closest('.quiz-question');
+                question.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+                
+                // Remove any existing feedback
+                question.querySelector('.feedback').className = 'feedback';
+            });
+        });
+    </script>
+</body>
+</html>

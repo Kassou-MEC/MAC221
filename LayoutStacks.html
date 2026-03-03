@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 – 3.3 Layout with Stacks: HStack, VStack, ZStack</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* ═══════════════════════════════════════
+   ROOT TOKENS
+═══════════════════════════════════════ */
+:root {
+  --bg:       #080c14;
+  --surf:     #0f1624;
+  --surf2:    #151e2e;
+  --surf3:    #1b2640;
+  --border:   #1e2d47;
+  --border2:  #273650;
+
+  /* Stack brand colours */
+  --h:   #f59e0b;   /* HStack — amber */
+  --v:   #34d399;   /* VStack — emerald */
+  --z:   #a78bfa;   /* ZStack — violet */
+
+  --accent:  #38bdf8;  /* sky blue — general */
+  --red:     #f87171;
+  --pink:    #fb7185;
+
+  --text:  #e8eef6;
+  --text2: #7a93b4;
+  --text3: #3d5070;
+
+  --card:   #0c1422;
+  --codebg: #060b13;
+
+  /* Swift token colours */
+  --kw:   #ff7b72;
+  --str:  #a5d6ff;
+  --ty:   #ffa657;
+  --num:  #79c0ff;
+  --cm:   #5d7a96;
+  --fn:   #d2a8ff;
+  --prop: #e3b341;
+
+  --gh: rgba(245,158,11,.12);
+  --gv: rgba(52,211,153,.10);
+  --gz: rgba(167,139,250,.10);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  font-size:16px;
+  line-height:1.65;
+}
+
+/* ═══════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════ */
+#app{display:flex;height:100vh;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+#sb{
+  width:285px;flex-shrink:0;
+  background:var(--surf);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+#sb-top{
+  padding:22px 20px 16px;
+  border-bottom:1px solid var(--border);
+  background:linear-gradient(160deg,rgba(56,189,248,.07),rgba(167,139,250,.05));
+}
+.sb-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;color:var(--accent);
+  text-transform:uppercase;letter-spacing:2.5px;
+  margin-bottom:7px;
+}
+#sb-top h1{
+  font-size:15.5px;font-weight:700;
+  color:var(--text);line-height:1.35;
+}
+/* stack legend pills */
+#sb-legend{
+  padding:12px 20px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.leg{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  font-size:11.5px;font-weight:600;
+}
+.leg-h{background:rgba(245,158,11,.12);color:var(--h);border:1px solid rgba(245,158,11,.25);}
+.leg-v{background:rgba(52,211,153,.10);color:var(--v);border:1px solid rgba(52,211,153,.22);}
+.leg-z{background:rgba(167,139,250,.10);color:var(--z);border:1px solid rgba(167,139,250,.22);}
+#prog-wrap{padding:12px 20px 10px;border-bottom:1px solid var(--border);}
+#prog-lbl{font-size:11.5px;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between;}
+#prog-bg{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+#prog-bar{height:100%;background:linear-gradient(90deg,var(--h),var(--v),var(--z));border-radius:4px;transition:width .4s ease;width:11%;}
+#nav{overflow-y:auto;flex:1;padding:8px 0;}
+#nav::-webkit-scrollbar{width:3px;}
+#nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.ni{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 20px;cursor:pointer;
+  font-size:13.5px;color:var(--text2);
+  border-left:3px solid transparent;
+  transition:all .18s;line-height:1.35;
+}
+.ni:hover{background:var(--surf2);color:var(--text);}
+.ni.active{background:rgba(56,189,248,.08);color:var(--accent);border-left-color:var(--accent);font-weight:600;}
+.ni.done{color:var(--text3);}
+.ni.done::after{content:'✓';font-size:11px;color:var(--v);margin-left:auto;flex-shrink:0;}
+.ni-n{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text3);min-width:20px;margin-top:2px;flex-shrink:0;}
+.ni.active .ni-n{color:var(--accent);}
+
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto;background:var(--bg);}
+#main::-webkit-scrollbar{width:5px;}
+#main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:5px;}
+
+.sp{display:none;min-height:100vh;padding:46px 54px;max-width:980px;}
+.sp.active{display:block;animation:fadeUp .32s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(9px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════════════════════════════════
+   SECTION CHROME
+═══════════════════════════════════════ */
+.s-tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;letter-spacing:2px;
+  text-transform:uppercase;margin-bottom:10px;
+}
+.c-h .s-tag{color:var(--h);}
+.c-v .s-tag{color:var(--v);}
+.c-z .s-tag{color:var(--z);}
+.c-g .s-tag{color:var(--accent);}
+
+.sp h2{
+  font-size:40px;font-weight:900;
+  color:var(--text);line-height:1.1;
+  margin-bottom:10px;
+}
+.lead{
+  font-size:17px;color:var(--text2);
+  line-height:1.8;margin-bottom:32px;
+  max-width:720px;
+}
+
+/* ═══════════════════════════════════════
+   OBJECTIVES
+═══════════════════════════════════════ */
+.obj{
+  border:1px solid var(--border);
+  border-left:4px solid var(--accent);
+  border-radius:12px;
+  background:var(--surf);
+  padding:18px 24px;margin-bottom:28px;
+}
+.c-h .obj{border-left-color:var(--h);}
+.c-v .obj{border-left-color:var(--v);}
+.c-z .obj{border-left-color:var(--z);}
+.obj-t{font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);margin-bottom:10px;}
+.obj ul{list-style:none;}
+.obj ul li{font-size:15px;color:var(--text2);padding:4px 0 4px 20px;position:relative;line-height:1.5;}
+.obj ul li::before{content:'→';position:absolute;left:0;color:var(--accent);}
+.c-h .obj ul li::before{color:var(--h);}
+.c-v .obj ul li::before{color:var(--v);}
+.c-z .obj ul li::before{color:var(--z);}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:24px 28px;
+  margin-bottom:20px;
+}
+.card h3{font-size:20px;font-weight:700;color:var(--text);margin-bottom:11px;}
+.card p{font-size:15.5px;color:var(--text2);line-height:1.78;}
+.card p+p{margin-top:10px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+
+/* ═══════════════════════════════════════
+   CODE BLOCKS
+═══════════════════════════════════════ */
+.cw{
+  background:var(--codebg);
+  border:1px solid var(--border);
+  border-radius:13px;
+  overflow:hidden;
+  margin-bottom:20px;
+  font-family:'JetBrains Mono',monospace;
+}
+.cw.h-theme{border-color:rgba(245,158,11,.3);}
+.cw.v-theme{border-color:rgba(52,211,153,.3);}
+.cw.z-theme{border-color:rgba(167,139,250,.3);}
+.ch{
+  background:var(--surf2);
+  padding:9px 18px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.cd{width:10px;height:10px;border-radius:50%;}
+.cl{font-size:10.5px;color:var(--text3);margin-left:auto;text-transform:uppercase;letter-spacing:1px;}
+.cb{padding:20px 22px;font-size:14px;line-height:1.9;overflow-x:auto;white-space:pre;}
+/* swift tokens */
+.kw{color:var(--kw);font-weight:500;}
+.st{color:var(--str);}
+.ty{color:var(--ty);}
+.nu{color:var(--num);}
+.cm{color:var(--cm);font-style:italic;}
+.fn{color:var(--fn);}
+.pr{color:var(--prop);}
+.i1{display:inline-block;width:1.8em;}
+.i2{display:inline-block;width:3.6em;}
+.i3{display:inline-block;width:5.4em;}
+.i4{display:inline-block;width:7.2em;}
+
+/* ═══════════════════════════════════════
+   CODE + PREVIEW SIDE BY SIDE
+═══════════════════════════════════════ */
+.cp{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:16px;margin-bottom:20px;align-items:start;
+}
+.pvbox{
+  background:var(--surf);
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:20px 22px;
+}
+.pvlbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--text3);
+  margin-bottom:14px;
+}
+
+/* ── SIMULATED STACK VIEWS ── */
+.sim{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;}
+.sim.col{flex-direction:column;}
+.sim.layer{position:relative;min-height:90px;width:100%;}
+
+.sv{
+  background:var(--surf2);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:8px 14px;
+  font-size:13.5px;
+  color:var(--text2);
+  font-weight:500;
+  white-space:nowrap;
+}
+.sv.h{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--h);}
+.sv.v{background:rgba(52,211,153,.09);border-color:rgba(52,211,153,.28);color:var(--v);}
+.sv.z{background:rgba(167,139,250,.09);border-color:rgba(167,139,250,.28);color:var(--z);}
+.sv.blue{background:rgba(56,189,248,.09);border-color:rgba(56,189,248,.28);color:var(--accent);}
+.sv.wide{width:100%;text-align:center;}
+
+/* iPhone mock */
+.iphone{
+  background:#0a1220;
+  border:2px solid var(--border2);
+  border-radius:28px;
+  padding:28px 14px 18px;
+  max-width:190px;
+  margin:0 auto;
+  position:relative;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+  min-height:200px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.iphone::before{
+  content:'';position:absolute;
+  top:12px;left:50%;transform:translateX(-50%);
+  width:38px;height:4px;
+  background:var(--border2);border-radius:4px;
+}
+
+/* stack diagram  */
+.diag{
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  min-height:90px;
+}
+.diag.col{flex-direction:column;}
+.diag.layer-d{position:relative;min-height:120px;}
+
+/* layer positioning for ZStack sim */
+.z-layer{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* interactive stack switcher */
+#switcher-demo{
+  background:var(--surf2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:24px;
+  margin-bottom:20px;
+}
+#switcher-demo h4{font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.sw-btns{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+.sw-btn{
+  padding:8px 20px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--card);font-size:13.5px;font-weight:600;
+  font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;
+}
+.sw-btn.h-on{background:rgba(245,158,11,.15);border-color:var(--h);color:var(--h);}
+.sw-btn.v-on{background:rgba(52,211,153,.12);border-color:var(--v);color:var(--v);}
+.sw-btn.z-on{background:rgba(167,139,250,.12);border-color:var(--z);color:var(--z);}
+.sw-btn:not(.h-on):not(.v-on):not(.z-on){color:var(--text2);}
+#sw-display{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:30px;
+  min-height:120px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+#sw-label{
+  position:absolute;bottom:12px;right:16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--text3);
+}
+
+/* ═══════════════════════════════════════
+   ACCORDION
+═══════════════════════════════════════ */
+.acc{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.acc-h{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;cursor:pointer;
+  background:var(--surf);font-size:15px;font-weight:500;color:var(--text);
+  transition:background .18s;gap:12px;
+}
+.acc-h:hover{background:var(--surf2);}
+.acc-h .arr{font-size:12px;color:var(--text3);transition:transform .3s;flex-shrink:0;}
+.acc-h.open .arr{transform:rotate(180deg);}
+.acc-b{
+  display:none;padding:18px 20px;
+  background:var(--card);
+  border-top:1px solid var(--border);
+  font-size:15px;color:var(--text2);line-height:1.78;
+}
+.acc-b.open{display:block;}
+
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+.tabs{margin-bottom:20px;}
+.tbs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tb{
+  padding:8px 18px;border-radius:9px;
+  border:1px solid var(--border);
+  background:var(--surf);
+  color:var(--text2);font-size:14px;font-weight:500;
+  font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;
+}
+.tb:hover{background:var(--surf2);color:var(--text);}
+.tb.ah{background:rgba(245,158,11,.15);color:var(--h);border-color:var(--h);}
+.tb.av{background:rgba(52,211,153,.12);color:var(--v);border-color:var(--v);}
+.tb.az{background:rgba(167,139,250,.12);color:var(--z);border-color:var(--z);}
+.tp{display:none;}
+.tp.active{display:block;}
+
+/* ═══════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════ */
+.quiz{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:14px;padding:24px 26px;margin:24px 0;
+}
+.qbadge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--accent);margin-bottom:10px;
+}
+.qq{font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px;line-height:1.55;}
+.qopts{display:flex;flex-direction:column;gap:9px;}
+.qo{
+  padding:11px 18px;border-radius:10px;
+  border:1.5px solid var(--border);
+  background:var(--card);color:var(--text2);
+  font-size:14.5px;cursor:pointer;
+  transition:all .2s;text-align:left;
+  font-family:'Outfit',sans-serif;line-height:1.4;
+}
+.qo:hover{border-color:var(--accent2,var(--accent));color:var(--text);}
+.qo.correct{background:rgba(52,211,153,.1);border-color:var(--v);color:var(--v);}
+.qo.wrong{background:rgba(248,113,113,.07);border-color:var(--red);color:var(--red);}
+.qfb{
+  margin-top:14px;padding:12px 16px;border-radius:9px;
+  font-size:14.5px;display:none;line-height:1.65;
+}
+.qfb.show{display:block;}
+.qfb.ok{background:rgba(52,211,153,.09);color:var(--v);border:1px solid rgba(52,211,153,.28);}
+.qfb.bad{background:rgba(248,113,113,.07);color:#fca5a5;border:1px solid rgba(248,113,113,.25);}
+
+/* ═══════════════════════════════════════
+   PRACTICE CHALLENGES
+═══════════════════════════════════════ */
+.chal{
+  border:1px solid rgba(167,139,250,.3);
+  background:linear-gradient(135deg,rgba(167,139,250,.06),rgba(245,158,11,.04));
+  border-radius:14px;padding:22px 26px;margin-bottom:18px;
+}
+.chal-badge{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--z);margin-bottom:8px;
+}
+.chal h4{font-size:16px;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.4;}
+.chal p{font-size:15px;color:var(--text2);line-height:1.7;}
+.rvl-btn{
+  margin-top:14px;padding:8px 20px;
+  border-radius:9px;border:1.5px solid var(--z);
+  background:transparent;color:var(--z);
+  font-size:13px;font-weight:600;
+  font-family:'Outfit',sans-serif;cursor:pointer;
+  transition:all .2s;
+}
+.rvl-btn:hover{background:rgba(167,139,250,.1);}
+.rvl{
+  display:none;margin-top:14px;
+  padding:14px 18px;background:var(--card);
+  border:1px solid var(--border);border-radius:9px;
+  font-size:14.5px;color:var(--text2);line-height:1.7;
+}
+.rvl.show{display:block;}
+
+/* ═══════════════════════════════════════
+   MISC
+═══════════════════════════════════════ */
+.tip{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.22);border-radius:10px;padding:14px 18px;font-size:15px;color:#fcd34d;line-height:1.65;margin:16px 0;}
+.info{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.2);border-radius:10px;padding:14px 18px;font-size:15px;color:var(--text2);line-height:1.65;margin:16px 0;}
+.warn{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.22);border-radius:10px;padding:14px 18px;font-size:15px;color:#fca5a5;line-height:1.65;margin:16px 0;}
+hr{border:none;border-top:1px solid var(--border);margin:28px 0;}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;background:var(--surf2);padding:2px 7px;border-radius:5px;color:var(--ty);}
+.hl{color:var(--h);font-weight:600;}
+.hlv{color:var(--v);font-weight:600;}
+.hlz{color:var(--z);font-weight:600;}
+.hla{color:var(--accent);font-weight:600;}
+
+.badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+.bh{background:rgba(245,158,11,.13);color:var(--h);border:1px solid rgba(245,158,11,.28);}
+.bv{background:rgba(52,211,153,.11);color:var(--v);border:1px solid rgba(52,211,153,.25);}
+.bz{background:rgba(167,139,250,.11);color:var(--z);border:1px solid rgba(167,139,250,.25);}
+.ba{background:rgba(56,189,248,.11);color:var(--accent);border:1px solid rgba(56,189,248,.25);}
+
+.ic{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:20px 22px;transition:all .22s;cursor:default;}
+.ic:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.3);}
+.ic .ico{font-size:28px;margin-bottom:10px;}
+.ic h4{font-size:15.5px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.ic p{font-size:13.5px;color:var(--text2);line-height:1.55;}
+.ic.ih:hover{border-color:var(--h);}
+.ic.iv:hover{border-color:var(--v);}
+.ic.iz:hover{border-color:var(--z);}
+
+/* mistake toggle */
+.mist{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.mist-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;font-size:15px;font-weight:500;color:var(--text);}
+.mist-b{display:none;padding:13px 18px 16px;border-top:1px solid var(--border);font-size:14.5px;color:var(--text2);line-height:1.7;}
+.mist-b.open{display:block;}
+
+/* term flip */
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
+.tcard{background:var(--surf);border:1px solid var(--border);border-radius:12px;min-height:90px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s;}
+.tcard:hover{border-color:var(--accent);}
+.tf,.tb2{position:absolute;inset:0;padding:16px 18px;transition:opacity .3s;display:flex;flex-direction:column;justify-content:center;}
+.tf{opacity:1;}
+.tb2{opacity:0;background:var(--surf2);font-size:13.5px;color:var(--text2);line-height:1.6;}
+.tcard.flipped .tf{opacity:0;}
+.tcard.flipped .tb2{opacity:1;}
+.tf h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.tf small{font-size:11.5px;color:var(--text3);}
+
+/* comparison table */
+.comp-tbl{width:100%;border-collapse:collapse;margin-bottom:20px;}
+.comp-tbl th,.comp-tbl td{padding:12px 16px;text-align:left;border:1px solid var(--border);font-size:14.5px;line-height:1.5;}
+.comp-tbl th{background:var(--surf2);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--text2);}
+.comp-tbl tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+.comp-tbl td:first-child{font-weight:600;}
+.th-col{color:var(--h);}
+.tv-col{color:var(--v);}
+.tz-col{color:var(--z);}
+
+/* nav buttons */
+#nav-btns{display:flex;gap:12px;margin-top:44px;padding-top:26px;border-top:1px solid var(--border);}
+.btn{padding:12px 26px;border-radius:10px;border:none;font-family:'Outfit',sans-serif;font-size:14.5px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-p{background:var(--accent);color:var(--bg);}
+.btn-p:hover{opacity:.88;transform:translateY(-1px);}
+.btn-g{background:var(--surf);border:1.5px solid var(--border);color:var(--text2);}
+.btn-g:hover{background:var(--surf2);color:var(--text);}
+.btn-h{background:var(--h);color:var(--bg);}
+.btn-v{background:var(--v);color:var(--bg);}
+.btn-z{background:var(--z);color:#fff;}
+
+/* spacing param demo */
+#sp-demo{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;}
+#sp-demo h4{font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.sp-slider{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.sp-slider label{font-size:14px;color:var(--text2);min-width:110px;}
+.sp-slider input[type=range]{flex:1;accent-color:var(--v);}
+#sp-val{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--v);min-width:30px;}
+#sp-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:28px;
+  display:flex;flex-direction:column;align-items:center;
+  transition:gap .3s;
+}
+.sp-item{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);border-radius:8px;padding:10px 22px;font-size:14px;color:var(--v);font-weight:500;}
+
+/* alignment param demo */
+#al-demo{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:20px;}
+#al-demo h4{font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;}
+.al-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.al-btn{
+  padding:7px 16px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--text2);font-size:13px;font-weight:500;
+  font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;
+}
+.al-btn.on{border-color:var(--h);color:var(--h);background:rgba(245,158,11,.1);}
+#al-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:20px;
+  display:flex;flex-direction:row;
+  align-items:flex-start;gap:10px;
+  transition:align-items .3s;
+  min-height:100px;
+}
+.al-item{
+  background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);
+  border-radius:8px;color:var(--h);font-size:13px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;
+}
+#al-i1{width:60px;height:60px;}
+#al-i2{width:60px;height:90px;}
+#al-i3{width:60px;height:45px;}
+
+/* summary grid */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0;}
+.si{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.si h4{font-size:14px;font-weight:600;margin-bottom:8px;}
+.si ul{list-style:none;}
+.si ul li{font-size:13.5px;color:var(--text2);padding:3px 0 3px 16px;position:relative;line-height:1.5;}
+.si ul li::before{content:'•';position:absolute;left:0;}
+.si.sh h4{color:var(--h);} .si.sh ul li::before{color:var(--h);}
+.si.sv h4{color:var(--v);} .si.sv ul li::before{color:var(--v);}
+.si.sz h4{color:var(--z);} .si.sz ul li::before{color:var(--z);}
+.si.sa h4{color:var(--accent);} .si.sa ul li::before{color:var(--accent);}
+
+/* next grid */
+.ng{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0;}
+.ni2{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.ni2 h4{font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.ni2 p{font-size:13px;color:var(--text2);line-height:1.5;}
+.ni2 .badge{margin-bottom:8px;display:inline-block;}
+
+@media(max-width:880px){
+  #sb{display:none;}
+  .sp{padding:24px 20px;}
+  .grid2,.grid3,.cp,.sg,.ng,.tgrid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════ -->
+<nav id="sb">
+  <div id="sb-top">
+    <div class="sb-tag">MAC 221 · iOS Dev</div>
+    <h1>3.3 Layout with Stacks<br>HStack · VStack · ZStack</h1>
+    <h1> Prof. Khalid Kassou</h1>
+  </div>
+  <div id="sb-legend">
+    <span class="leg leg-h">⟷ HStack</span>
+    <span class="leg leg-v">↕ VStack</span>
+    <span class="leg leg-z">⧉ ZStack</span>
+  </div>
+  <div id="prog-wrap">
+    <div id="prog-lbl"><span>Progress</span><span id="pct">11%</span></div>
+    <div id="prog-bg"><div id="prog-bar"></div></div>
+  </div>
+  <div id="nav">
+    <div class="ni active" onclick="goTo(0)"><span class="ni-n">01</span>Introduction to Layout</div>
+    <div class="ni" onclick="goTo(1)"><span class="ni-n">02</span>Stack-Based Layout</div>
+    <div class="ni" onclick="goTo(2)"><span class="ni-n">03</span>HStack — Horizontal</div>
+    <div class="ni" onclick="goTo(3)"><span class="ni-n">04</span>VStack — Vertical</div>
+    <div class="ni" onclick="goTo(4)"><span class="ni-n">05</span>ZStack — Layered</div>
+    <div class="ni" onclick="goTo(5)"><span class="ni-n">06</span>Comparing All Three</div>
+    <div class="ni" onclick="goTo(6)"><span class="ni-n">07</span>Practice Activities</div>
+    <div class="ni" onclick="goTo(7)"><span class="ni-n">08</span>Common Mistakes</div>
+    <div class="ni" onclick="goTo(8)"><span class="ni-n">09</span>Final Review</div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MAIN
+══════════════════════════════════════ -->
+<main id="main">
+
+<!-- ══════════════════════════════════════
+     S0 — INTRODUCTION
+══════════════════════════════════════ -->
+<div class="sp active c-g" id="s0">
+  <div class="s-tag">Section 01 · Introduction</div>
+  <h2>Layout in SwiftUI</h2>
+  <p class="lead">Before you can build a real iOS app screen, you need to know how to arrange views on screen. In SwiftUI, everything comes down to three simple containers — and once you understand them, you can lay out any interface.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Understand what "layout" means in SwiftUI</li>
+      <li>Explain why stacks are the foundation of SwiftUI UI design</li>
+      <li>Identify which stack types exist and their purpose</li>
+      <li>Understand how container views hold and arrange child views</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is Layout in SwiftUI?</h3>
+    <p><span class="hla">Layout</span> refers to how views are positioned and arranged on screen. In SwiftUI, you don't drag views onto a canvas and set pixel coordinates — instead, you <em>describe</em> how views should be arranged relative to each other using container views called <strong>stacks</strong>.</p>
+    <p>SwiftUI's layout system is smart. It knows the screen size, calculates how much space each view needs, and places everything automatically — but it does this based on the layout rules you define through stacks.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="ic ih">
+      <div class="ico">⟷</div>
+      <h4 style="color:var(--h)">HStack</h4>
+      <p>Horizontal Stack. Places views side by side from left to right.</p>
+      <div style="margin-top:10px"><span class="badge bh">left → right</span></div>
+    </div>
+    <div class="ic iv">
+      <div class="ico">↕</div>
+      <h4 style="color:var(--v)">VStack</h4>
+      <p>Vertical Stack. Places views one above the other, top to bottom.</p>
+      <div style="margin-top:10px"><span class="badge bv">top → bottom</span></div>
+    </div>
+    <div class="ic iz">
+      <div class="ico">⧉</div>
+      <h4 style="color:var(--z)">ZStack</h4>
+      <p>Depth Stack. Layers views on top of each other, like a stack of cards.</p>
+      <div style="margin-top:10px"><span class="badge bz">back → front</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Why Stacks Matter</h3>
+    <p>Every iOS app you've ever used was built using stacks. Profile cards, tab bars, navigation headers, settings screens, chat bubbles — all of these are combinations of HStack, VStack, and ZStack.</p>
+    <p>Understanding these three containers is <em>the most important skill in SwiftUI layout</em>. Once you can choose the right stack and nest them together, you can build virtually any interface.</p>
+  </div>
+
+  <div class="tip"><strong>💡 Key Mental Model:</strong> Think of stacks like boxes. HStack is a horizontal box that packs items side by side. VStack is a vertical box that stacks items top to bottom. ZStack is a transparent box where items float on top of each other. You choose the box based on the direction you want to arrange things.</div>
+
+  <!-- interactive teaser -->
+  <div id="switcher-demo">
+    <h4>🎛️ Same 3 Views — Different Stacks</h4>
+    <div class="sw-btns">
+      <button class="sw-btn h-on" id="sw-h" onclick="setSwitcher('h')">⟷ HStack</button>
+      <button class="sw-btn" id="sw-v" onclick="setSwitcher('v')">↕ VStack</button>
+      <button class="sw-btn" id="sw-z" onclick="setSwitcher('z')">⧉ ZStack</button>
+    </div>
+    <div id="sw-display">
+      <div id="sw-inner" style="display:flex;flex-direction:row;gap:10px;align-items:center;">
+        <div class="sv h">Home</div>
+        <div class="sv h">Search</div>
+        <div class="sv h">Profile</div>
+      </div>
+      <div id="sw-label">HStack</div>
+    </div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-p" onclick="goTo(1)">Next: Stack-Based Layout →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S1 — STACK-BASED LAYOUT
+══════════════════════════════════════ -->
+<div class="sp c-g" id="s1">
+  <div class="s-tag">Section 02 · Concept</div>
+  <h2>Stack-Based Layout</h2>
+  <p class="lead">A stack is a container view that holds other views and arranges them according to a specific direction. Everything in SwiftUI layout is built by choosing the right stack and nesting stacks inside each other.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Define what a stack is in SwiftUI</li>
+      <li>Explain how stacks group child views</li>
+      <li>Describe how views can be nested inside stacks</li>
+      <li>Understand how combining stacks creates complex layouts</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is a Stack?</h3>
+    <p>A <span class="hla">stack</span> is a container view — it holds child views inside it and tells SwiftUI how to arrange them. You write views inside the stack's curly braces, and the stack takes care of positioning them on screen.</p>
+    <p>Stacks are themselves views, which means you can put a stack inside another stack. This is called <strong>nesting</strong>, and it's how complex iOS layouts are built from simple pieces.</p>
+  </div>
+
+  <div class="cw">
+    <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Swift — Anatomy of a Stack</span></div>
+    <div class="cb"><span class="cm">// A stack holds child views inside curly braces</span>
+<span class="ty">VStack</span> {               <span class="cm">// ← the container / stack</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Hello"</span>)        <span class="cm">// ← child view 1</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"World"</span>)        <span class="cm">// ← child view 2</span>
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Tap Me"</span>) { } <span class="cm">// ← child view 3</span>
+}                      <span class="cm">// ← stack ends here</span></div>
+  </div>
+
+  <div class="card">
+    <h3>Nesting Stacks</h3>
+    <p>Real app layouts require combining stacks. For example: a <code>VStack</code> for the overall vertical layout, containing an <code>HStack</code> for a row of buttons. Stacks can be nested as many levels deep as needed — though deeper nesting should be kept readable.</p>
+  </div>
+
+  <div class="cp">
+    <div class="cw v-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Nested Stacks</span></div>
+      <div class="cb"><span class="ty">VStack</span> {                    <span class="cm">// outer: vertical</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"My Profile"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>).<span class="fn">bold</span>()
+
+<span class="i1"></span><span class="ty">HStack</span> {               <span class="cm">// inner: horizontal</span>
+<span class="i2"></span><span class="ty">Image</span>(systemName: <span class="st">"person"</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Khalid K."</span>)
+<span class="i2"></span><span class="ty">Spacer</span>()
+<span class="i2"></span><span class="ty">Image</span>(systemName: <span class="st">"chevron.right"</span>)
+<span class="i1"></span>}
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"iOS Developer"</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div class="iphone" style="max-width:200px">
+        <div style="display:flex;flex-direction:column;gap:8px;width:100%;align-items:center">
+          <div style="font-size:18px;font-weight:800;color:var(--text)">My Profile</div>
+          <div style="display:flex;align-items:center;gap:8px;width:100%;padding:0 4px">
+            <span style="font-size:16px">👤</span>
+            <span style="font-size:13px;color:var(--text);font-weight:500">Khalid K.</span>
+            <span style="flex:1"></span>
+            <span style="font-size:12px;color:var(--text3)">›</span>
+          </div>
+          <div style="font-size:12px;color:var(--text2)">iOS Developer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)">Do stacks automatically size themselves? <span class="arr">▼</span></div>
+    <div class="acc-b">Yes. Stacks calculate their size based on their children. A VStack becomes as tall as all its children combined (plus spacing). An HStack becomes as wide as all its children combined. This automatic sizing is part of SwiftUI's layout system — you describe the structure, and SwiftUI handles the math.</div>
+  </div>
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)">How deep can you nest stacks? <span class="arr">▼</span></div>
+    <div class="acc-b">As deep as needed — there's no hard limit. However, very deeply nested stacks can slow down Xcode previews and make code harder to read. In practice, if you find yourself nesting more than 3-4 levels deep, it's usually a sign you should extract some views into separate structs to keep the code clean.</div>
+  </div>
+  <div class="acc">
+    <div class="acc-h" onclick="toggleAcc(this)">What happens when I put nothing inside a stack? <span class="arr">▼</span></div>
+    <div class="acc-b">An empty stack (like <code>VStack { }</code>) compiles but renders as an empty, zero-size view. Xcode might show a warning. Always have at least one child view inside a stack. In practice, start by putting placeholder Text views while you build the structure, then replace them with real content.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(0)">← Previous</button>
+    <button class="btn btn-h" onclick="goTo(2)">Next: HStack →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S2 — HSTACK
+══════════════════════════════════════ -->
+<div class="sp c-h" id="s2">
+  <div class="s-tag">Section 03 · HStack</div>
+  <h2>HStack<br><span style="font-size:22px;color:var(--h);font-weight:500">Horizontal Stack</span></h2>
+  <p class="lead">HStack places its child views <span class="hl">side by side, horizontally</span>, from left to right. Use it whenever you want things arranged in a row.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Create an HStack and arrange views horizontally</li>
+      <li>Apply spacing and alignment parameters to HStack</li>
+      <li>Identify real app use cases for HStack</li>
+      <li>Build common UI patterns: icon+text rows, button rows, info cards</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is HStack?</h3>
+    <p><code>HStack</code> (Horizontal Stack) arranges its child views in a <span class="hl">row from left to right</span>. Think of it like a shelf — you place items on the shelf and they line up horizontally. Every tab bar, toolbar button row, and side-by-side label in iOS is built with HStack.</p>
+  </div>
+
+  <!-- visual diagram -->
+  <div class="diag" style="border:1.5px solid rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+    <div class="sv h" style="font-size:13px">View 1</div>
+    <span style="color:var(--h);font-size:18px">→</span>
+    <div class="sv h" style="font-size:13px">View 2</div>
+    <span style="color:var(--h);font-size:18px">→</span>
+    <div class="sv h" style="font-size:13px">View 3</div>
+    <span style="font-size:11px;color:var(--text3);margin-left:14px;font-family:'JetBrains Mono',monospace">HStack { }</span>
+  </div>
+
+  <!-- HStack syntax -->
+  <div class="cw h-theme">
+    <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Swift — HStack Syntax</span></div>
+    <div class="cb"><span class="cm">// Basic HStack — two items side by side</span>
+<span class="ty">HStack</span> {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Left"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Right"</span>)
+}
+
+<span class="cm">// With spacing — control gap between items</span>
+<span class="ty">HStack</span>(spacing: <span class="nu">20</span>) {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Left"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Right"</span>)
+}
+
+<span class="cm">// With alignment — align items vertically within row</span>
+<span class="ty">HStack</span>(alignment: .<span class="pr">top</span>, spacing: <span class="nu">16</span>) {
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"star.fill"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Featured Item"</span>)
+}</div>
+  </div>
+
+  <hr>
+  <h3 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;">HStack Examples</h3>
+
+  <!-- EXAMPLE 1 -->
+  <div class="cp">
+    <div class="cw h-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 1 — Icon + Text Row</span></div>
+      <div class="cb"><span class="cm">// Common pattern: icon on the left, text on the right</span>
+<span class="ty">HStack</span>(spacing: <span class="nu">12</span>) {
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"envelope.fill"</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">blue</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title3</span>)
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"student@lagcc.cuny.edu"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">body</span>)
+}
+.<span class="fn">padding</span>()
+.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="pr">secondarySystemBackground</span>))
+.<span class="fn">cornerRadius</span>(<span class="nu">10</span>)</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surf2);padding:14px 16px;border-radius:10px">
+        <span style="font-size:20px">📧</span>
+        <span style="font-size:14px;color:var(--text)">student@lagcc.cuny.edu</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 2 -->
+  <div class="cp">
+    <div class="cw h-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 2 — Star Rating Row</span></div>
+      <div class="cb"><span class="cm">// Star icons in a horizontal row</span>
+<span class="ty">HStack</span>(spacing: <span class="nu">4</span>) {
+<span class="i1"></span><span class="ty">ForEach</span>(<span class="nu">0</span>..&lt;<span class="nu">5</span>) { _ <span class="kw">in</span>
+<span class="i2"></span><span class="ty">Image</span>(systemName: <span class="st">"star.fill"</span>)
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">yellow</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">headline</span>)
+<span class="i1"></span>}
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"(128 reviews)"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;align-items:center;gap:5px">
+        <span style="color:#fbbf24;font-size:18px">★★★★★</span>
+        <span style="font-size:12px;color:var(--text2)">(128 reviews)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 3 -->
+  <div class="cp">
+    <div class="cw h-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 3 — Button Row</span></div>
+      <div class="cb"><span class="cm">// Multiple buttons arranged horizontally</span>
+<span class="ty">HStack</span>(spacing: <span class="nu">12</span>) {
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Cancel"</span>) { }
+<span class="i1"></span>.<span class="fn">frame</span>(maxWidth: .<span class="pr">infinity</span>)
+<span class="i1"></span>.<span class="fn">padding</span>()
+<span class="i1"></span>.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="pr">systemGray5</span>))
+<span class="i1"></span>.<span class="fn">cornerRadius</span>(<span class="nu">12</span>)
+
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Confirm"</span>) { }
+<span class="i1"></span>.<span class="fn">frame</span>(maxWidth: .<span class="pr">infinity</span>)
+<span class="i1"></span>.<span class="fn">padding</span>()
+<span class="i1"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pr">blue</span>)
+<span class="i1"></span>.<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>.<span class="fn">cornerRadius</span>(<span class="nu">12</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;gap:10px;width:100%">
+        <div style="flex:1;background:var(--surf3);padding:12px;border-radius:12px;text-align:center;font-size:14px;font-weight:600;color:var(--text2)">Cancel</div>
+        <div style="flex:1;background:#3b82f6;padding:12px;border-radius:12px;text-align:center;font-size:14px;font-weight:600;color:#fff">Confirm</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 4 -->
+  <div class="cp">
+    <div class="cw h-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 4 — Profile Name Row (with Spacer)</span></div>
+      <div class="cb"><span class="cm">// HStack with Spacer to push items apart</span>
+<span class="ty">HStack</span> {
+<span class="i1"></span><span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>) {
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Khalid K."</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">headline</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Instructor"</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+<span class="i1"></span>}
+
+<span class="i1"></span><span class="ty">Spacer</span>() <span class="cm">// ← pushes name left, chevron right</span>
+
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"chevron.right"</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result (Settings Row)</div>
+      <div style="display:flex;align-items:center;padding:12px;background:var(--surf2);border-radius:10px;gap:10px">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:15px;font-weight:600;color:var(--text)">Khalid Hassan</div>
+          <div style="font-size:12px;color:var(--text2)">Instructor</div>
+        </div>
+        <div style="flex:1"></div>
+        <div style="color:var(--text3);font-size:13px">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- alignment interactive demo -->
+  <div id="al-demo">
+    <h4>🎛️ HStack Alignment — Click to Change</h4>
+    <div class="al-btns">
+      <button class="al-btn on" onclick="setAlign(this,'flex-start')">alignment: .top</button>
+      <button class="al-btn" onclick="setAlign(this,'center')">alignment: .center</button>
+      <button class="al-btn" onclick="setAlign(this,'flex-end')">alignment: .bottom</button>
+    </div>
+    <div id="al-box">
+      <div class="al-item" id="al-i1" style="font-size:12px;color:var(--h)">A</div>
+      <div class="al-item" id="al-i2" style="font-size:12px;color:var(--h)">B (tall)</div>
+      <div class="al-item" id="al-i3" style="font-size:12px;color:var(--h)">C</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text3);margin-top:10px">The alignment parameter controls how items of different heights line up vertically within the HStack.</p>
+  </div>
+
+  <div class="quiz">
+    <div class="qbadge">🧠 Quick Check — HStack</div>
+    <div class="qq">You want to build a navigation bar row with a "Back" button on the left and a "Done" button on the right, with the title "Settings" in the middle. Which combination gives you the right layout?</div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">VStack { Button("Back"); Text("Settings"); Button("Done") }</button>
+      <button class="qo" onclick="checkQ(this,'correct')">HStack { Button("Back"); Spacer(); Text("Settings"); Spacer(); Button("Done") }</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">ZStack { Button("Back"); Text("Settings"); Button("Done") }</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">HStack { Button("Back"); Button("Done"); Text("Settings") }</button>
+    </div>
+    <div class="qfb ok">✅ Correct! HStack arranges items horizontally. The two Spacer() views push "Back" all the way left, "Done" all the way right, and "Settings" to the center. This is the classic navigation bar pattern used in almost every iOS app.</div>
+    <div class="qfb bad">❌ Not quite. You need an HStack (horizontal arrangement) with Spacers between the elements to push them to their correct positions. <code>HStack { Button("Back"); Spacer(); Text("Settings"); Spacer(); Button("Done") }</code> is the correct pattern.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(1)">← Previous</button>
+    <button class="btn btn-v" onclick="goTo(3)">Next: VStack →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S3 — VSTACK
+══════════════════════════════════════ -->
+<div class="sp c-v" id="s3">
+  <div class="s-tag">Section 04 · VStack</div>
+  <h2>VStack<br><span style="font-size:22px;color:var(--v);font-weight:500">Vertical Stack</span></h2>
+  <p class="lead">VStack places its child views <span class="hlv">stacked vertically</span>, from top to bottom. It's the most commonly used stack in SwiftUI — almost every screen has at least one VStack as its backbone.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Create a VStack and arrange views top to bottom</li>
+      <li>Use spacing and alignment parameters effectively</li>
+      <li>Identify when VStack is the right choice</li>
+      <li>Build card layouts, profile screens, and form-like content</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is VStack?</h3>
+    <p><code>VStack</code> (Vertical Stack) arranges its child views in a <span class="hlv">column from top to bottom</span>. Think of it like a grocery list — each item goes below the one above it. Profile screens, article views, settings pages, sign-in forms — virtually every iOS screen uses VStack as its primary layout container.</p>
+  </div>
+
+  <!-- visual diagram -->
+  <div class="diag col" style="border:1.5px solid rgba(52,211,153,.3);background:rgba(52,211,153,.03)">
+    <div class="sv v" style="font-size:13px;width:120px;text-align:center">View 1</div>
+    <span style="color:var(--v);font-size:18px">↓</span>
+    <div class="sv v" style="font-size:13px;width:120px;text-align:center">View 2</div>
+    <span style="color:var(--v);font-size:18px">↓</span>
+    <div class="sv v" style="font-size:13px;width:120px;text-align:center">View 3</div>
+    <span style="font-size:11px;color:var(--text3);margin-top:6px;font-family:'JetBrains Mono',monospace">VStack { }</span>
+  </div>
+
+  <div class="cw v-theme">
+    <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Swift — VStack Syntax</span></div>
+    <div class="cb"><span class="cm">// Basic VStack</span>
+<span class="ty">VStack</span> {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Title"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Subtitle"</span>)
+}
+
+<span class="cm">// With spacing</span>
+<span class="ty">VStack</span>(spacing: <span class="nu">16</span>) {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Header"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Body"</span>)
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Action"</span>) { }
+}
+
+<span class="cm">// With alignment — controls horizontal alignment</span>
+<span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>, spacing: <span class="nu">8</span>) {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Left-aligned title"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Left-aligned description text"</span>)
+}</div>
+  </div>
+
+  <hr>
+  <h3 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;">VStack Examples</h3>
+
+  <!-- EXAMPLE 1 -->
+  <div class="cp">
+    <div class="cw v-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 1 — Title + Description</span></div>
+      <div class="cb"><span class="cm">// Classic title + subtitle pattern</span>
+<span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>, spacing: <span class="nu">6</span>) {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Introduction to iOS"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title2</span>)
+<span class="i1"></span>  .<span class="fn">bold</span>()
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Learn to build iPhone apps using SwiftUI"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">body</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+<span class="i1"></span>  .<span class="fn">lineLimit</span>(<span class="nu">2</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:flex-start;padding:8px 0">
+        <div style="font-size:19px;font-weight:800;color:var(--text)">Introduction to iOS</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.5">Learn to build iPhone apps using SwiftUI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 2 -->
+  <div class="cp">
+    <div class="cw v-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 2 — Profile Card</span></div>
+      <div class="cb"><span class="cm">// Profile card — content stacked top to bottom</span>
+<span class="ty">VStack</span>(spacing: <span class="nu">10</span>) {
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">system</span>(size: <span class="nu">64</span>))
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">blue</span>)
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Alex Morgan"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title2</span>).<span class="fn">bold</span>()
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"iOS Developer"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">subheadline</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Follow"</span>) { }
+<span class="i1"></span>  .<span class="fn">padding</span>(.init(top:<span class="nu">8</span>, leading:<span class="nu">24</span>, bottom:<span class="nu">8</span>, trailing:<span class="nu">24</span>))
+<span class="i1"></span>  .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pr">blue</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">cornerRadius</span>(<span class="nu">20</span>)
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div class="iphone" style="max-width:190px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="font-size:52px">👤</div>
+          <div style="font-size:17px;font-weight:800;color:var(--text)">Alex Morgan</div>
+          <div style="font-size:13px;color:var(--text2)">iOS Developer</div>
+          <div style="background:#3b82f6;color:#fff;padding:7px 22px;border-radius:20px;font-size:13px;font-weight:600">Follow</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 3 -->
+  <div class="cp">
+    <div class="cw v-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 3 — Vertical Button List</span></div>
+      <div class="cb"><span class="cm">// Vertically stacked full-width buttons</span>
+<span class="ty">VStack</span>(spacing: <span class="nu">12</span>) {
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Sign in with Apple"</span>) { }
+<span class="i1"></span>  .<span class="fn">frame</span>(maxWidth: .<span class="pr">infinity</span>)
+<span class="i1"></span>  .<span class="fn">padding</span>()
+<span class="i1"></span>  .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pr">black</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">cornerRadius</span>(<span class="nu">12</span>)
+
+<span class="i1"></span><span class="ty">Button</span>(<span class="st">"Sign in with Google"</span>) { }
+<span class="i1"></span>  .<span class="fn">frame</span>(maxWidth: .<span class="pr">infinity</span>)
+<span class="i1"></span>  .<span class="fn">padding</span>()
+<span class="i1"></span>  .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">black</span>)
+<span class="i1"></span>  .<span class="fn">cornerRadius</span>(<span class="nu">12</span>)
+<span class="i1"></span>  .<span class="fn">overlay</span>(<span class="ty">RoundedRectangle</span>(cornerRadius:<span class="nu">12</span>).<span class="fn">stroke</span>(<span class="ty">Color</span>.<span class="pr">gray</span>, lineWidth:<span class="nu">1</span>))
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+        <div style="background:#111;color:#fff;padding:13px;border-radius:12px;text-align:center;font-size:14px;font-weight:600">🍎 Sign in with Apple</div>
+        <div style="background:#fff;color:#111;padding:13px;border-radius:12px;text-align:center;font-size:14px;font-weight:600;border:1px solid #ccc">G Sign in with Google</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 4 — Settings List Row -->
+  <div class="cp">
+    <div class="cw v-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 4 — Settings List (VStack of rows)</span></div>
+      <div class="cb"><span class="ty">VStack</span>(spacing: <span class="nu">0</span>) {
+<span class="i1"></span><span class="cm">// Each "row" is an HStack inside the VStack</span>
+<span class="i1"></span><span class="kw">ForEach</span>([<span class="st">"Notifications"</span>, <span class="st">"Privacy"</span>, <span class="st">"Appearance"</span>], id: \.<span class="pr">self</span>) { item <span class="kw">in</span>
+<span class="i2"></span><span class="ty">HStack</span> {
+<span class="i3"></span><span class="ty">Text</span>(item)
+<span class="i3"></span><span class="ty">Spacer</span>()
+<span class="i3"></span><span class="ty">Image</span>(systemName: <span class="st">"chevron.right"</span>)
+<span class="i3"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+<span class="i2"></span>}
+<span class="i2"></span>.<span class="fn">padding</span>()
+<span class="i2"></span><span class="ty">Divider</span>()
+<span class="i1"></span>}
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;flex-direction:column;background:var(--surf2);border-radius:10px;overflow:hidden">
+        <div style="display:flex;align-items:center;padding:13px 14px;gap:10px"><span style="font-size:14px;color:var(--text);flex:1">Notifications</span><span style="font-size:13px;color:var(--text3)">›</span></div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;align-items:center;padding:13px 14px;gap:10px"><span style="font-size:14px;color:var(--text);flex:1">Privacy</span><span style="font-size:13px;color:var(--text3)">›</span></div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;align-items:center;padding:13px 14px;gap:10px"><span style="font-size:14px;color:var(--text);flex:1">Appearance</span><span style="font-size:13px;color:var(--text3)">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- spacing interactive demo -->
+  <div id="sp-demo">
+    <h4>🎛️ VStack Spacing — Drag to Change</h4>
+    <div class="sp-slider">
+      <label>spacing: <span id="sp-val">12</span></label>
+      <input type="range" min="0" max="40" value="12" oninput="updateSpacing(this.value)">
+    </div>
+    <div id="sp-box" style="gap:12px">
+      <div class="sp-item">Title Text</div>
+      <div class="sp-item">Subtitle Text</div>
+      <div class="sp-item">Action Button</div>
+    </div>
+    <p style="font-size:12.5px;color:var(--text3);margin-top:10px">The spacing parameter controls the gap between each child view in the VStack.</p>
+  </div>
+
+  <div class="quiz">
+    <div class="qbadge">🧠 Quick Check — VStack</div>
+    <div class="qq">You're building a profile card that shows a photo at the top, then the user's name below it, then their bio below that. Which stack do you use, and what alignment makes the text left-aligned?</div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">HStack with alignment: .leading</button>
+      <button class="qo" onclick="checkQ(this,'correct')">VStack(alignment: .leading) — because content flows top to bottom and text aligns to the left edge</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">ZStack with leading alignment</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">VStack(alignment: .center) — the default, always correct</button>
+    </div>
+    <div class="qfb ok">✅ Correct! VStack arranges views top to bottom, which matches the photo → name → bio order. Setting <code>alignment: .leading</code> aligns all text to the left edge, which is standard for profile cards and article layouts.</div>
+    <div class="qfb bad">❌ Not quite. VStack is correct (top-to-bottom arrangement), and <code>alignment: .leading</code> aligns the text to the left edge. The default alignment is <code>.center</code>, which would center the text horizontally instead.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(2)">← Previous</button>
+    <button class="btn btn-z" onclick="goTo(4)">Next: ZStack →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S4 — ZSTACK
+══════════════════════════════════════ -->
+<div class="sp c-z" id="s4">
+  <div class="s-tag">Section 05 · ZStack</div>
+  <h2>ZStack<br><span style="font-size:22px;color:var(--z);font-weight:500">Depth Stack</span></h2>
+  <p class="lead">ZStack places its child views <span class="hlz">layered on top of each other</span>, like a stack of transparent slides. The first view goes to the back, the last view goes to the front.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Create a ZStack and layer views front-to-back</li>
+      <li>Understand the back-to-front rendering order</li>
+      <li>Build overlays, badges, and text-on-image layouts</li>
+      <li>Identify when ZStack is the right choice</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is ZStack?</h3>
+    <p><code>ZStack</code> (Depth Stack) arranges its child views by <span class="hlz">layering them on top of each other</span>. The "Z" refers to the Z-axis — depth into the screen. Views declared first appear at the back; views declared later appear in front. This is how overlays, badges, full-screen backgrounds, and text-on-image effects are built.</p>
+  </div>
+
+  <!-- Z diagram -->
+  <div class="diag layer-d" style="border:1.5px solid rgba(167,139,250,.3);background:rgba(167,139,250,.03);min-height:130px;position:relative;">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px">
+      <div style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:8px;padding:12px 28px;font-size:13px;color:var(--z)">Bottom Layer (first in code)</div>
+      <div style="background:rgba(167,139,250,.25);border:1px solid rgba(167,139,250,.4);border-radius:8px;padding:10px 22px;font-size:13px;color:var(--z);margin-top:-6px;margin-left:12px">Middle Layer</div>
+      <div style="background:rgba(167,139,250,.4);border:1px solid var(--z);border-radius:8px;padding:8px 16px;font-size:13px;color:#fff;font-weight:600;margin-top:-6px;margin-left:24px">Top Layer (last in code)</div>
+    </div>
+    <span style="position:absolute;bottom:8px;right:14px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">ZStack { }</span>
+  </div>
+
+  <div class="cw z-theme">
+    <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Swift — ZStack Syntax</span></div>
+    <div class="cb"><span class="cm">// Basic ZStack</span>
+<span class="ty">ZStack</span> {
+<span class="i1"></span><span class="ty">Color</span>.<span class="pr">blue</span>            <span class="cm">// ← renders at the BACK (bottom)</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Hello!"</span>)        <span class="cm">// ← renders in the FRONT (top)</span>
+}
+
+<span class="cm">// With alignment — where layers align</span>
+<span class="ty">ZStack</span>(alignment: .<span class="pr">bottomTrailing</span>) {
+<span class="i1"></span><span class="ty">Image</span>(<span class="st">"profile"</span>)    <span class="cm">// ← background image</span>
+<span class="i1"></span><span class="ty">Circle</span>()           <span class="cm">// ← badge at bottom-right</span>
+<span class="i1"></span>  .<span class="fn">fill</span>(<span class="ty">Color</span>.<span class="pr">green</span>)
+<span class="i1"></span>  .<span class="fn">frame</span>(width: <span class="nu">16</span>, height: <span class="nu">16</span>)
+}</div>
+  </div>
+
+  <hr>
+  <h3 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;">ZStack Examples</h3>
+
+  <!-- EXAMPLE 1 -->
+  <div class="cp">
+    <div class="cw z-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 1 — Text Over Coloured Background</span></div>
+      <div class="cb"><span class="cm">// ZStack: background colour behind text</span>
+<span class="ty">ZStack</span> {
+<span class="i1"></span><span class="cm">// Layer 1 — background (rendered first = back)</span>
+<span class="i1"></span><span class="ty">Color</span>.<span class="pr">indigo</span>
+<span class="i1"></span>  .<span class="fn">cornerRadius</span>(<span class="nu">16</span>)
+
+<span class="i1"></span><span class="cm">// Layer 2 — content on top</span>
+<span class="i1"></span><span class="ty">VStack</span> {
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"🎓"</span>).<span class="fn">font</span>(.<span class="pr">system</span>(size: <span class="nu">36</span>))
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"MAC221"</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>).<span class="fn">bold</span>().<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"iOS Development"</span>)
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>.<span class="fn">opacity</span>(<span class="nu">0.8</span>))
+<span class="i1"></span>}
+}
+.<span class="fn">frame</span>(height: <span class="nu">160</span>)</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:16px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div style="font-size:32px">🎓</div>
+        <div style="font-size:22px;font-weight:800;color:#fff">MAC221</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.8)">iOS Development</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 2 — Online Badge -->
+  <div class="cp">
+    <div class="cw z-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 2 — Online Status Badge</span></div>
+      <div class="cb"><span class="cm">// Profile photo with green "online" dot overlay</span>
+<span class="ty">ZStack</span>(alignment: .<span class="pr">bottomTrailing</span>) {
+
+<span class="i1"></span><span class="cm">// Layer 1 — profile photo (back)</span>
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">system</span>(size: <span class="nu">64</span>))
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">blue</span>)
+
+<span class="i1"></span><span class="cm">// Layer 2 — online dot badge (front)</span>
+<span class="i1"></span><span class="ty">Circle</span>()
+<span class="i1"></span>  .<span class="fn">fill</span>(<span class="ty">Color</span>.<span class="pr">green</span>)
+<span class="i1"></span>  .<span class="fn">frame</span>(width: <span class="nu">18</span>, height: <span class="nu">18</span>)
+<span class="i1"></span>  .<span class="fn">overlay</span>(
+<span class="i2"></span><span class="ty">Circle</span>().<span class="fn">stroke</span>(<span class="ty">Color</span>.<span class="pr">white</span>, lineWidth: <span class="nu">2</span>)
+<span class="i1"></span>  )
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;justify-content:center;padding:16px 0">
+        <div style="position:relative;display:inline-block">
+          <div style="font-size:64px">👤</div>
+          <div style="position:absolute;bottom:4px;right:0px;width:18px;height:18px;background:#22c55e;border-radius:50%;border:3px solid var(--bg)"></div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text3);text-align:center">Green dot layered on top-right of profile image</p>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 3 — Notification Badge -->
+  <div class="cp">
+    <div class="cw z-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 3 — Notification Count Badge</span></div>
+      <div class="cb"><span class="cm">// Bell icon with red notification count badge</span>
+<span class="ty">ZStack</span>(alignment: .<span class="pr">topTrailing</span>) {
+
+<span class="i1"></span><span class="cm">// Layer 1 — icon (back)</span>
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"bell.fill"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">primary</span>)
+<span class="i1"></span>  .<span class="fn">padding</span>(<span class="nu">8</span>)
+
+<span class="i1"></span><span class="cm">// Layer 2 — red badge number (front)</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"3"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">caption2</span>).<span class="fn">bold</span>()
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">padding</span>(<span class="nu">4</span>)
+<span class="i1"></span>  .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pr">red</span>)
+<span class="i1"></span>  .<span class="fn">clipShape</span>(<span class="ty">Circle</span>())
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div style="display:flex;justify-content:center;padding:16px 0">
+        <div style="position:relative;display:inline-block;padding:8px">
+          <div style="font-size:32px">🔔</div>
+          <div style="position:absolute;top:2px;right:2px;background:#ef4444;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAMPLE 4 — Full screen overlay -->
+  <div class="cp">
+    <div class="cw z-theme" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Example 4 — Full Screen Background</span></div>
+      <div class="cb"><span class="cm">// ZStack for full-screen gradient background</span>
+<span class="ty">ZStack</span> {
+<span class="i1"></span><span class="cm">// Layer 1 — gradient background</span>
+<span class="i1"></span><span class="ty">LinearGradient</span>(
+<span class="i2"></span>colors: [.<span class="pr">blue</span>, .<span class="pr">purple</span>],
+<span class="i2"></span>startPoint: .<span class="pr">topLeading</span>,
+<span class="i2"></span>endPoint: .<span class="pr">bottomTrailing</span>
+<span class="i1"></span>)
+<span class="i1"></span>.<span class="fn">ignoresSafeArea</span>()   <span class="cm">// fills entire screen</span>
+
+<span class="i1"></span><span class="cm">// Layer 2 — content on top</span>
+<span class="i1"></span><span class="ty">VStack</span> {
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Welcome"</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">largeTitle</span>).<span class="fn">bold</span>()
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Please sign in to continue"</span>)
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>.<span class="fn">opacity</span>(<span class="nu">0.8</span>))
+<span class="i1"></span>}
+}</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Visual Result</div>
+      <div class="iphone" style="max-width:180px;background:linear-gradient(135deg,#2563eb,#7c3aed);">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <div style="font-size:24px;font-weight:900;color:#fff">Welcome</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.75);text-align:center">Please sign in to continue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz">
+    <div class="qbadge">🧠 Quick Check — ZStack</div>
+    <div class="qq">In ZStack, if you write three views — Rectangle(), Text("Hello"), Image(systemName: "star") — in that order, which view appears on top (visible in front)?</div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">Rectangle() — it's the largest so it comes to the front</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Text("Hello") — text always renders on top</button>
+      <button class="qo" onclick="checkQ(this,'correct')">Image — it's the last view declared, so it renders at the front</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">All three are equally visible — ZStack doesn't layer</button>
+    </div>
+    <div class="qfb ok">✅ Correct! In ZStack, the order of views in code determines their depth. First declared = back (lowest layer), last declared = front (top layer). So Rectangle renders first (at the back), Text renders in the middle, and Image renders last (at the front, on top).</div>
+    <div class="qfb bad">❌ Not quite. In ZStack, the <em>last declared view</em> renders at the front. So Image appears on top of Text, which appears on top of Rectangle. Think of it like painting: the last stroke covers the earlier ones.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(3)">← Previous</button>
+    <button class="btn btn-p" onclick="goTo(5)">Next: Comparing All Three →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S5 — COMPARING ALL THREE
+══════════════════════════════════════ -->
+<div class="sp c-g" id="s5">
+  <div class="s-tag">Section 06 · Comparison</div>
+  <h2>HStack vs VStack vs ZStack</h2>
+  <p class="lead">Now you know each stack individually. Let's compare them clearly so you can always pick the right one for the job — and learn how to nest them together.</p>
+
+  <div class="obj">
+    <div class="obj-t">Learning Objectives</div>
+    <ul>
+      <li>Compare all three stacks side by side</li>
+      <li>Choose the correct stack for any layout task</li>
+      <li>Understand how to combine stacks to build complex UI</li>
+    </ul>
+  </div>
+
+  <!-- comparison table -->
+  <table class="comp-tbl">
+    <thead>
+      <tr>
+        <th>Property</th>
+        <th class="th-col">HStack ⟷</th>
+        <th class="tv-col">VStack ↕</th>
+        <th class="tz-col">ZStack ⧉</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Direction</td>
+        <td style="color:var(--h)">Left → Right</td>
+        <td style="color:var(--v)">Top → Bottom</td>
+        <td style="color:var(--z)">Back → Front</td>
+      </tr>
+      <tr>
+        <td>Axis</td>
+        <td>Horizontal (X)</td>
+        <td>Vertical (Y)</td>
+        <td>Depth (Z)</td>
+      </tr>
+      <tr>
+        <td>Alignment param controls</td>
+        <td>Vertical alignment of items</td>
+        <td>Horizontal alignment of items</td>
+        <td>Where layers align</td>
+      </tr>
+      <tr>
+        <td>Best for</td>
+        <td>Rows, toolbars, side-by-side</td>
+        <td>Columns, screens, cards</td>
+        <td>Overlays, backgrounds, badges</td>
+      </tr>
+      <tr>
+        <td>Most common use</td>
+        <td>Icon+label rows, button pairs</td>
+        <td>Screen structure, form fields</td>
+        <td>Text on image, notification dot</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- same views, 3 stacks demo -->
+  <div class="card">
+    <h3>Same 3 Views — 3 Different Results</h3>
+    <p>The content below is identical: one orange block, one green block, one blue block. Only the stack type changes. Notice how radically different the layout looks.</p>
+  </div>
+
+  <div class="grid3">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--h);margin-bottom:10px;text-align:center">HStack { }</div>
+      <div style="background:var(--surf2);border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:18px;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px">
+        <div style="width:34px;height:34px;background:var(--h);border-radius:6px;opacity:.85"></div>
+        <div style="width:34px;height:34px;background:var(--v);border-radius:6px;opacity:.85"></div>
+        <div style="width:34px;height:34px;background:var(--accent);border-radius:6px;opacity:.85"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--v);margin-bottom:10px;text-align:center">VStack { }</div>
+      <div style="background:var(--surf2);border:1.5px solid rgba(52,211,153,.3);border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+        <div style="width:80px;height:28px;background:var(--h);border-radius:6px;opacity:.85"></div>
+        <div style="width:80px;height:28px;background:var(--v);border-radius:6px;opacity:.85"></div>
+        <div style="width:80px;height:28px;background:var(--accent);border-radius:6px;opacity:.85"></div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--z);margin-bottom:10px;text-align:center">ZStack { }</div>
+      <div style="background:var(--surf2);border:1.5px solid rgba(167,139,250,.3);border-radius:12px;padding:18px;display:flex;align-items:center;justify-content:center;min-height:100px;position:relative">
+        <div style="position:absolute;width:70px;height:70px;background:var(--h);border-radius:8px;opacity:.7;top:16px;left:20px"></div>
+        <div style="position:absolute;width:70px;height:70px;background:var(--v);border-radius:8px;opacity:.7;top:22px;left:28px"></div>
+        <div style="position:absolute;width:70px;height:70px;background:var(--accent);border-radius:8px;opacity:.7;top:28px;left:36px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nested stacks example -->
+  <hr>
+  <div class="card">
+    <h3>Nesting Stacks Together</h3>
+    <p>Real iOS screens combine all three stack types. A typical pattern: a <span class="hlv">VStack</span> for the overall screen layout, containing <span class="hl">HStack</span>s for each row, with <span class="hlz">ZStack</span>s for any overlaid content. Here's a real-world example:</p>
+  </div>
+
+  <div class="cp">
+    <div class="cw" style="margin-bottom:0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Nested Stacks — Course Card</span></div>
+      <div class="cb"><span class="cm">// VStack (outer) holds everything top-to-bottom</span>
+<span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>, spacing: <span class="nu">0</span>) {
+
+<span class="i1"></span><span class="cm">// ZStack (header) — image with text overlay</span>
+<span class="i1"></span><span class="ty">ZStack</span>(alignment: .<span class="pr">bottomLeading</span>) {
+<span class="i2"></span><span class="ty">Color</span>.<span class="pr">indigo</span>.<span class="fn">frame</span>(height: <span class="nu">120</span>)  <span class="cm">// background</span>
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"MAC221"</span>)                    <span class="cm">// overlay text</span>
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>).<span class="fn">bold</span>()
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i2"></span>  .<span class="fn">padding</span>()
+<span class="i1"></span>}
+
+<span class="i1"></span><span class="cm">// HStack (info row) — icon + text side by side</span>
+<span class="i1"></span><span class="ty">HStack</span> {
+<span class="i2"></span><span class="ty">Image</span>(systemName: <span class="st">"person.2.fill"</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"28 Students enrolled"</span>)
+<span class="i2"></span><span class="ty">Spacer</span>()
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"⭐ 4.9"</span>)
+<span class="i1"></span>}
+<span class="i1"></span>.<span class="fn">padding</span>()
+<span class="i1"></span>.<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i1"></span>.<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}
+.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="pr">secondarySystemBackground</span>))
+.<span class="fn">cornerRadius</span>(<span class="nu">14</span>)</div>
+    </div>
+    <div class="pvbox">
+      <div class="pvlbl">📱 Result — Course Card</div>
+      <div style="background:var(--surf2);border-radius:14px;overflow:hidden;border:1px solid var(--border)">
+        <div style="background:linear-gradient(135deg,#4338ca,#7c3aed);padding:20px 16px 16px;height:110px;display:flex;align-items:flex-end">
+          <div style="font-size:22px;font-weight:900;color:#fff">MAC221</div>
+        </div>
+        <div style="display:flex;align-items:center;padding:10px 14px;gap:8px">
+          <span style="font-size:12px;color:var(--text2)">👥 28 Students enrolled</span>
+          <span style="flex:1"></span>
+          <span style="font-size:12px;color:var(--text2)">⭐ 4.9</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip"><strong>💡 Decision Rule:</strong><br>
+  • Things in a <strong>row</strong> → <span class="hl">HStack</span><br>
+  • Things in a <strong>column</strong> → <span class="hlv">VStack</span><br>
+  • Things <strong>overlapping</strong> → <span class="hlz">ZStack</span><br>
+  • Not sure? Start with VStack — it's almost always the right outer container.</div>
+
+  <div class="quiz">
+    <div class="qbadge">🧠 Quick Check — Choosing the Right Stack</div>
+    <div class="qq">You're building a "Now Playing" music card. It has: an album artwork image with a play button icon centered on top of it, a song title below the image, and the artist name below that. How do you structure the stacks?</div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">HStack containing the image, ZStack for titles</button>
+      <button class="qo" onclick="checkQ(this,'correct')">VStack(outer) → ZStack(album art + play button) → Text(song title) → Text(artist)</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">ZStack for everything — all elements overlap</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">HStack with the image on the left and VStack of titles on the right</button>
+    </div>
+    <div class="qfb ok">✅ Correct! The overall layout is top-to-bottom → VStack. The artwork needs an overlay (play button on image) → ZStack. The text below stacks vertically → more VStack. Nesting ZStack inside VStack is the right approach.</div>
+    <div class="qfb bad">❌ Not quite. Think layer by layer: the overall order is vertical (artwork, then song title, then artist) → VStack. The artwork has something on top of it (play button) → ZStack. So the answer is VStack containing a ZStack for the image+button, then the Text views.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(4)">← Previous</button>
+    <button class="btn btn-p" onclick="goTo(6)">Next: Practice Activities →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S6 — PRACTICE
+══════════════════════════════════════ -->
+<div class="sp c-g" id="s6">
+  <div class="s-tag">Section 07 · Student Practice</div>
+  <h2>Practice Activities</h2>
+  <p class="lead">Solidify your knowledge with hands-on challenges. Predict layouts, spot mistakes, choose the right stack, and conceptually build real interfaces.</p>
+
+  <!-- Activity 1 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 1 — Predict the Layout</div>
+    <h4>What does this code produce? Describe the visual result before revealing.</h4>
+    <div class="cw" style="margin:14px 0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">What does this look like?</span></div>
+      <div class="cb"><span class="ty">HStack</span>(spacing: <span class="nu">16</span>) {
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"flame.fill"</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">orange</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title2</span>)
+
+<span class="i1"></span><span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>, spacing: <span class="nu">2</span>) {
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Hot Topic"</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">headline</span>)
+<span class="i2"></span><span class="ty">Text</span>(<span class="st">"Trending now"</span>)
+<span class="i2"></span>  .<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i2"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+<span class="i1"></span>}
+
+<span class="i1"></span><span class="ty">Spacer</span>()
+<span class="i1"></span><span class="ty">Image</span>(systemName: <span class="st">"chevron.right"</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+    </div>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Answer</button>
+    <div class="rvl">
+      <strong>Result:</strong> A horizontal row — an orange flame icon on the far left, then a vertical column of "Hot Topic" (headline, bold) above "Trending now" (caption, grey), then a flexible spacer pushing everything left, then a right-pointing chevron on the far right. This is a classic <strong>iOS List Row</strong> pattern used in News, Settings, and Mail apps.
+      <div style="margin-top:14px;background:var(--surf2);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:14px">
+        <span style="font-size:22px;color:var(--accent)">🔥</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-size:15px;font-weight:600;color:var(--text)">Hot Topic</div>
+          <div style="font-size:12px;color:var(--text2)">Trending now</div>
+        </div>
+        <div style="flex:1"></div>
+        <span style="color:var(--text3)">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity 2 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 2 — Spot the Stack Mistake</div>
+    <h4>A student wants a title above a description, but their layout is horizontal. Find and fix the mistake.</h4>
+    <div class="cw" style="margin:14px 0">
+      <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">What is wrong here?</span></div>
+      <div class="cb"><span class="ty">HStack</span> {  <span class="cm">// 🐛 Bug here</span>
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Course Overview"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title2</span>).<span class="fn">bold</span>()
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"This course covers SwiftUI layout from the ground up."</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">body</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+    </div>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Fix</button>
+    <div class="rvl">
+      <strong>Bug:</strong> <code>HStack</code> is used, which arranges the title and description <em>side by side</em> horizontally. The student wants them stacked vertically (title on top, description below).<br><br>
+      <strong>Fix:</strong> Replace <code>HStack</code> with <code>VStack</code> and add <code>alignment: .leading</code> so both texts align to the left edge:
+      <div class="cw" style="margin-top:12px">
+        <div class="cb"><span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>, spacing: <span class="nu">6</span>) {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Course Overview"</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title2</span>).<span class="fn">bold</span>()
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"This course covers SwiftUI layout from the ground up."</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">body</span>)
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">secondary</span>)
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity 3 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 3 — Which Stack?</div>
+    <h4>Match each layout task to the correct stack type</h4>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:14.5px;color:var(--text2)">1. Profile photo with a green "online" dot in the corner</div>
+        <div style="font-size:14.5px;color:var(--text2)">2. A menu screen with five options listed top to bottom</div>
+        <div style="font-size:14.5px;color:var(--text2)">3. An icon row: 🏠 Search Profile Notifications</div>
+        <div style="font-size:14.5px;color:var(--text2)">4. A full-screen gradient background behind all content</div>
+        <div style="font-size:14.5px;color:var(--text2)">5. A currency label: "USD" on the left, "$1,200.00" on the right</div>
+      </div>
+    </div>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Answers</button>
+    <div class="rvl">
+      1. <span class="hlz">ZStack</span> — the dot is layered <em>on top of</em> the photo<br>
+      2. <span class="hlv">VStack</span> — options arranged top to bottom vertically<br>
+      3. <span class="hl">HStack</span> — icons arranged left to right horizontally<br>
+      4. <span class="hlz">ZStack</span> — background color/gradient behind all other content<br>
+      5. <span class="hl">HStack</span> — "USD" and the amount are side by side in a row
+    </div>
+  </div>
+
+  <!-- Activity 4 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 4 — Build This in Xcode</div>
+    <h4>Write SwiftUI code to build this weather card using stacks</h4>
+    <div style="background:var(--surf2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:14px 0">
+      <div style="background:linear-gradient(135deg,#0369a1,#0ea5e9);padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:13px;color:rgba(255,255,255,.7)">New York City</div>
+            <div style="font-size:46px;font-weight:900;color:#fff;line-height:1.1">72°</div>
+            <div style="font-size:14px;color:rgba(255,255,255,.8)">Partly Cloudy</div>
+          </div>
+          <div style="font-size:52px">⛅</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-around;padding:14px">
+        <div style="text-align:center"><div style="font-size:12px;color:var(--text2)">H: 78°</div></div>
+        <div style="text-align:center"><div style="font-size:12px;color:var(--text2)">L: 64°</div></div>
+        <div style="text-align:center"><div style="font-size:12px;color:var(--text2)">Humidity: 65%</div></div>
+      </div>
+    </div>
+    <p>Hint: The card uses a VStack (outer), with a ZStack for the header (gradient + content), and HStack for the bottom stats row.</p>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Solution</button>
+    <div class="rvl">
+      <div class="cw" style="margin:0">
+        <div class="ch"><div class="cd" style="background:#ff5f57"></div><div class="cd" style="background:#febc2e"></div><div class="cd" style="background:#28c840"></div><span class="cl">Swift — Weather Card Solution</span></div>
+        <div class="cb"><span class="kw">struct</span> <span class="ty">WeatherCard</span>: <span class="ty">View</span> {
+<span class="i1"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+
+<span class="i2"></span><span class="ty">VStack</span>(spacing: <span class="nu">0</span>) {   <span class="cm">// outer structure</span>
+
+<span class="i3"></span><span class="cm">// Header — gradient background with content</span>
+<span class="i3"></span><span class="ty">ZStack</span> {
+<span class="i4"></span><span class="ty">LinearGradient</span>(colors: [.<span class="pr">blue</span>, .<span class="pr">cyan</span>],
+<span class="i4"></span>  startPoint: .<span class="pr">topLeading</span>, endPoint: .<span class="pr">bottomTrailing</span>)
+
+<span class="i4"></span><span class="ty">HStack</span> {     <span class="cm">// city info left, icon right</span>
+<span class="i4"></span><span class="i1"></span><span class="ty">VStack</span>(alignment: .<span class="pr">leading</span>) {
+<span class="i4"></span><span class="i2"></span><span class="ty">Text</span>(<span class="st">"New York City"</span>).<span class="fn">foregroundColor</span>(.<span class="pr">white</span>.<span class="fn">opacity</span>(<span class="nu">0.7</span>))
+<span class="i4"></span><span class="i2"></span><span class="ty">Text</span>(<span class="st">"72°"</span>).<span class="fn">font</span>(.<span class="pr">system</span>(size:<span class="nu">56</span>)).<span class="fn">bold</span>().<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i4"></span><span class="i2"></span><span class="ty">Text</span>(<span class="st">"Partly Cloudy"</span>).<span class="fn">foregroundColor</span>(.<span class="pr">white</span>.<span class="fn">opacity</span>(<span class="nu">0.8</span>))
+<span class="i4"></span><span class="i1"></span>}
+<span class="i4"></span><span class="i1"></span><span class="ty">Spacer</span>()
+<span class="i4"></span><span class="i1"></span><span class="ty">Text</span>(<span class="st">"⛅"</span>).<span class="fn">font</span>(.<span class="pr">system</span>(size:<span class="nu">56</span>))
+<span class="i4"></span>}.<span class="fn">padding</span>()
+<span class="i3"></span>}
+<span class="i3"></span>.<span class="fn">frame</span>(height: <span class="nu">160</span>)
+
+<span class="i3"></span><span class="cm">// Bottom stats row</span>
+<span class="i3"></span><span class="ty">HStack</span> {
+<span class="i4"></span><span class="ty">Spacer</span>()
+<span class="i4"></span><span class="ty">Text</span>(<span class="st">"H: 78°"</span>).<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i4"></span><span class="ty">Spacer</span>()
+<span class="i4"></span><span class="ty">Text</span>(<span class="st">"L: 64°"</span>).<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i4"></span><span class="ty">Spacer</span>()
+<span class="i4"></span><span class="ty">Text</span>(<span class="st">"Humidity: 65%"</span>).<span class="fn">font</span>(.<span class="pr">caption</span>)
+<span class="i4"></span><span class="ty">Spacer</span>()
+<span class="i3"></span>}.<span class="fn">padding</span>(.<span class="pr">vertical</span>, <span class="nu">12</span>)
+
+<span class="i2"></span>}
+<span class="i2"></span>.<span class="fn">cornerRadius</span>(<span class="nu">16</span>)
+<span class="i2"></span>.<span class="fn">shadow</span>(radius: <span class="nu">8</span>)
+<span class="i1"></span>}
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity 5 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 5 — Fix the ZStack Order</div>
+    <h4>This code should show text on top of a blue rectangle, but the text is hidden. Why? Fix it.</h4>
+    <div class="cw" style="margin:14px 0">
+      <div class="cb"><span class="ty">ZStack</span> {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Hello, World!"</span>)   <span class="cm">// 🐛 declared first</span>
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>)
+
+<span class="i1"></span><span class="ty">Color</span>.<span class="pr">blue</span>            <span class="cm">// 🐛 declared second = renders on TOP</span>
+}</div>
+    </div>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Fix</button>
+    <div class="rvl">
+      <strong>Problem:</strong> In ZStack, the last declared view renders on top. Here, <code>Color.blue</code> is declared after <code>Text</code>, so the solid blue colour completely covers the text — making it invisible!<br><br>
+      <strong>Fix:</strong> Swap the order — declare the background first, content second:
+      <div class="cw" style="margin-top:10px">
+        <div class="cb"><span class="ty">ZStack</span> {
+<span class="i1"></span><span class="ty">Color</span>.<span class="pr">blue</span>            <span class="cm">// ✅ background first = renders at the back</span>
+
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Hello, World!"</span>)   <span class="cm">// ✅ content second = renders in front</span>
+<span class="i1"></span>  .<span class="fn">foregroundColor</span>(.<span class="pr">white</span>)
+<span class="i1"></span>  .<span class="fn">font</span>(.<span class="pr">title</span>)
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity 6 -->
+  <div class="chal">
+    <div class="chal-badge">🎯 Activity 6 — What Stacks Were Used?</div>
+    <h4>Look at this layout and identify which stacks were used and how they are nested</h4>
+    <div class="iphone" style="max-width:240px;margin:14px auto">
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--h),var(--z));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;position:relative">
+            👤
+            <div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#22c55e;border-radius:50%;border:2px solid var(--bg)"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;flex:1">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">Maria Chen</div>
+            <div style="font-size:11px;color:var(--text2)">SwiftUI Developer</div>
+          </div>
+          <div style="font-size:13px;color:var(--text3)">›</div>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-around">
+          <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:var(--text)">48</div><div style="font-size:11px;color:var(--text2)">Projects</div></div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:var(--text)">312</div><div style="font-size:11px;color:var(--text2)">Followers</div></div>
+          <div style="width:1px;background:var(--border)"></div>
+          <div style="text-align:center"><div style="font-size:16px;font-weight:700;color:var(--text)">⭐ 4.9</div><div style="font-size:11px;color:var(--text2)">Rating</div></div>
+        </div>
+      </div>
+    </div>
+    <button class="rvl-btn" onclick="toggleReveal(this)">👁️ Reveal Stack Analysis</button>
+    <div class="rvl">
+      <strong>Stack breakdown:</strong><br><br>
+      1. <span class="hlv">VStack</span> (outer) — holds the profile row, divider, and stats row vertically<br>
+      2. <span class="hl">HStack</span> (profile row) — avatar, name block, and chevron side by side<br>
+      3. <span class="hlz">ZStack</span> (avatar) — the circle image with the green online dot layered on top<br>
+      4. <span class="hlv">VStack</span> (name block inside HStack) — name above subtitle, left-aligned<br>
+      5. <span class="hl">HStack</span> (stats row) — three stat columns side by side<br>
+      6. <span class="hlv">VStack</span> (each stat) — number above label in each column<br><br>
+      <em>Total: 3 HStacks, 3 VStacks, 1 ZStack — all nested together to build one compact card.</em>
+    </div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(5)">← Previous</button>
+    <button class="btn btn-p" onclick="goTo(7)">Next: Common Mistakes →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S7 — COMMON MISTAKES
+══════════════════════════════════════ -->
+<div class="sp c-g" id="s7">
+  <div class="s-tag">Section 08 · Watch Out For</div>
+  <h2>Common Beginner Mistakes</h2>
+  <p class="lead">These are the layout mistakes that trip up almost every new SwiftUI developer. Learning to recognize them now will save you hours of debugging in your labs.</p>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Using the wrong stack type</div>
+    <div class="mist-b">The most basic mistake. Wanting a vertical layout but using HStack, or wanting side-by-side content but using VStack. Before writing any code, ask yourself: "Should the views be in a row or a column?" Row = HStack. Column = VStack. Overlapping = ZStack.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Forgetting that ZStack draws items back-to-front</div>
+    <div class="mist-b">Students often write background colors or images after foreground content, then wonder why their text is hidden. In ZStack, first = back, last = front. Always write your background (color, image, shape) as the first item in a ZStack, and foreground content last.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Not using Spacer() to push views apart</div>
+    <div class="mist-b">If you want two views at opposite ends of a row (left edge and right edge), you need a Spacer() between them inside an HStack. Similarly, a Spacer() at the bottom of a VStack pushes content to the top. Without Spacer(), views cluster together in the center of the stack. Spacer() is like invisible elastic that fills all available space.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Nesting stacks the wrong way</div>
+    <div class="mist-b">A common confusion: putting an HStack inside an HStack when you meant to put a VStack inside an HStack. Before nesting, always ask: "What direction does the inner container go?" Then check if that matches what you wrote. Sketching the layout on paper first (even just a quick rectangle diagram) prevents this mistake.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Confusing VStack alignment with HStack alignment</div>
+    <div class="mist-b">In VStack, the <code>alignment</code> parameter controls <em>horizontal</em> alignment (.leading = left, .trailing = right, .center = middle). In HStack, the <code>alignment</code> parameter controls <em>vertical</em> alignment (.top, .center, .bottom). This trips students up because the parameter name is the same but it controls a different axis depending on the stack type.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Creating overly deeply nested stacks</div>
+    <div class="mist-b">Having a VStack inside an HStack inside a VStack inside a ZStack inside another VStack is a warning sign. Deep nesting makes code unreadable and hard to debug. When you find yourself nesting more than 3-4 levels, extract some views into separate View structs. This keeps each view focused and readable.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Using ZStack when you just need a background modifier</div>
+    <div class="mist-b">Not everything that appears "behind" something needs a ZStack. If you just want a background color behind a view, use the <code>.background()</code> modifier instead: <code>Text("Hello").padding().background(Color.blue)</code>. ZStack is for when you need truly independent layered elements, like an image and text that don't have a direct parent-child relationship.</div>
+  </div>
+
+  <div class="mist">
+    <div class="mist-h" onclick="toggleMistake(this)">🔴 Missing the alignment parameter on VStack for left-aligned text</div>
+    <div class="mist-b">By default, VStack uses <code>alignment: .center</code> — all children center horizontally. This looks wrong for most content cards, articles, and forms where text should be left-aligned. Always remember to add <code>alignment: .leading</code> to your VStack when building content that should be left-aligned. This is one of the most frequently forgotten parameters in beginner code.</div>
+  </div>
+
+  <div class="quiz">
+    <div class="qbadge">🧠 Mistake Recognition Quiz</div>
+    <div class="qq">A student writes this code and gets a layout where "Name" and "Email" appear side by side on the same line instead of one above the other. What's wrong?</div>
+    <div class="cw" style="margin:14px 0">
+      <div class="cb"><span class="ty">HStack</span> {
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Name: Khalid"</span>)
+<span class="i1"></span><span class="ty">Text</span>(<span class="st">"Email: khalid@lagcc.cuny.edu"</span>)
+}</div>
+    </div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">They need to add Spacer() between the texts</button>
+      <button class="qo" onclick="checkQ(this,'correct')">HStack should be VStack — HStack puts views side by side, VStack stacks them top to bottom</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">They need to use ZStack instead</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Add .frame(maxWidth: .infinity) to each text</button>
+    </div>
+    <div class="qfb ok">✅ Correct! HStack places views side by side — that's why both texts appear on the same line. To stack them vertically (Name on top, Email below), change HStack to VStack and add alignment: .leading so the text aligns to the left.</div>
+    <div class="qfb bad">❌ Not quite. The issue is that HStack places views side by side horizontally. To get one above the other, change HStack to VStack. Adding alignment: .leading will also keep the text left-aligned, which is the expected look for profile/form content.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(6)">← Previous</button>
+    <button class="btn btn-p" onclick="goTo(8)">Next: Final Review →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     S8 — FINAL REVIEW
+══════════════════════════════════════ -->
+<div class="sp c-g" id="s8">
+  <div class="s-tag">Section 09 · Summary</div>
+  <h2>Final Review</h2>
+  <p class="lead">Everything you've learned about stacks in one place — key terms, a summary table, a final quiz, and a look at what comes next.</p>
+
+  <div class="sg">
+    <div class="si sh">
+      <h4>HStack Summary</h4>
+      <ul>
+        <li>Horizontal arrangement (left → right)</li>
+        <li>Alignment controls vertical positioning</li>
+        <li>Best for: rows, toolbars, side-by-side</li>
+        <li>Use Spacer() to push items apart</li>
+        <li>Common: icon+text, button pairs</li>
+      </ul>
+    </div>
+    <div class="si sv">
+      <h4>VStack Summary</h4>
+      <ul>
+        <li>Vertical arrangement (top → bottom)</li>
+        <li>Alignment controls horizontal positioning</li>
+        <li>Best for: screens, cards, columns</li>
+        <li>Use alignment: .leading for left text</li>
+        <li>Most commonly used stack overall</li>
+      </ul>
+    </div>
+    <div class="si sz">
+      <h4>ZStack Summary</h4>
+      <ul>
+        <li>Depth arrangement (back → front)</li>
+        <li>First declared = back layer</li>
+        <li>Best for: overlays, badges, backgrounds</li>
+        <li>Alignment controls where layers align</li>
+        <li>Use for text-on-image effects</li>
+      </ul>
+    </div>
+    <div class="si sa">
+      <h4>Nesting Stacks</h4>
+      <ul>
+        <li>Stacks can be placed inside stacks</li>
+        <li>VStack → HStack → ZStack is common</li>
+        <li>Each stack just needs to answer: direction?</li>
+        <li>Extract deeply nested views into structs</li>
+        <li>Real apps combine all three constantly</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-size:20px;font-weight:700;color:var(--text);margin:24px 0 14px">📚 Key Terms — Click to Flip</h3>
+  <div class="tgrid">
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>HStack</h4><small>Click to define</small></div>
+      <div class="tb2">Horizontal Stack. Arranges child views side by side from left to right. The alignment parameter controls vertical positioning of items within the row.</div>
+    </div>
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>VStack</h4><small>Click to define</small></div>
+      <div class="tb2">Vertical Stack. Arranges child views top to bottom. The alignment parameter controls horizontal positioning. The most commonly used stack in SwiftUI.</div>
+    </div>
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>ZStack</h4><small>Click to define</small></div>
+      <div class="tb2">Depth Stack. Layers views on top of each other. First declared = back layer, last declared = front layer. Used for overlays, badges, and backgrounds.</div>
+    </div>
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>spacing</h4><small>Click to define</small></div>
+      <div class="tb2">An optional parameter on HStack and VStack that controls the gap between child views. Example: VStack(spacing: 20) { }. Default spacing is system-defined (~8pt).</div>
+    </div>
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>alignment</h4><small>Click to define</small></div>
+      <div class="tb2">Controls how child views align perpendicular to the stack's direction. In VStack, controls horizontal alignment (.leading, .center, .trailing). In HStack, controls vertical alignment (.top, .center, .bottom).</div>
+    </div>
+    <div class="tcard" onclick="flipTerm(this)">
+      <div class="tf"><h4>Spacer()</h4><small>Click to define</small></div>
+      <div class="tb2">A flexible invisible view that expands to fill all available space. In HStack, creates horizontal space between items. In VStack, creates vertical space. Used to push views to edges.</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="quiz">
+    <div class="qbadge">🏆 Final Review Quiz</div>
+    <div class="qq">You are building a social media post card. It needs: a full-width gradient background, then overlaid on that — a VStack with the user's avatar on top, their name below, and their post text below that. Additionally, there's a small "verified" checkmark badge on top-right of the avatar. What is the top-level stack and what's inside the avatar area?</div>
+    <div class="qopts">
+      <button class="qo" onclick="checkQ(this,'wrong')">HStack top-level, VStack for the avatar</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">VStack top-level for everything, HStack for avatar</button>
+      <button class="qo" onclick="checkQ(this,'correct')">ZStack top-level (gradient behind content), VStack for the post body, ZStack for the avatar+badge</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">ZStack for everything — all items overlap anyway</button>
+    </div>
+    <div class="qfb ok">✅ Perfect! The card itself needs a ZStack at the top level (gradient background layer + content layer). Inside, the post content uses VStack (avatar then name then text top-to-bottom). The avatar with its checkmark badge uses another ZStack (avatar image at back, badge circle in front, aligned to topTrailing). This is exactly how real social app cards are built.</div>
+    <div class="qfb bad">❌ Not quite. The card as a whole needs a ZStack (gradient behind all the content). The post content flows top-to-bottom → VStack. The avatar with a badge on top needs another ZStack (avatar at back, badge in front, aligned .topTrailing). So the answer is: ZStack (card) → VStack (content) → ZStack (avatar + badge).</div>
+  </div>
+
+  <hr>
+
+  <h3 style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;">🗺️ What Comes Next in MAC221</h3>
+  <div class="ng">
+    <div class="ni2">
+      <span class="badge bv" style="margin-bottom:8px;display:inline-block">3.4</span>
+      <h4>Spacers, Dividers &amp; Alignment</h4>
+      <p>Deep dive into Spacer(), Divider(), and fine-grained alignment control inside stacks.</p>
+    </div>
+    <div class="ni2">
+      <span class="badge bz" style="margin-bottom:8px;display:inline-block">3.5</span>
+      <h4>State &amp; Data Flow</h4>
+      <p>@State, @Binding, counters, toggles — how user interactions update the UI dynamically.</p>
+    </div>
+    <div class="ni2">
+      <span class="badge ba" style="margin-bottom:8px;display:inline-block">3.6</span>
+      <h4>Xcode Previews</h4>
+      <p>Master the Canvas preview to build and test layouts visually without running the simulator.</p>
+    </div>
+    <div class="ni2">
+      <span class="badge bh" style="margin-bottom:8px;display:inline-block">Week 5–6</span>
+      <h4>Navigation &amp; Lists</h4>
+      <p>NavigationView, TabView, List, ForEach — multi-screen apps with real dynamic data.</p>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(52,211,153,.07),rgba(167,139,250,.07));border:1px solid var(--border);border-radius:16px;padding:30px;text-align:center;margin:24px 0">
+    <div style="font-size:38px;margin-bottom:12px">🏗️</div>
+    <div style="font-size:26px;font-weight:900;color:var(--text);margin-bottom:10px;">You Can Now Build Any Layout</div>
+    <p style="font-size:16px;color:var(--text2);max-width:520px;margin:0 auto;line-height:1.8">HStack, VStack, and ZStack are the three building blocks of every iOS interface ever designed. With these three containers and the ability to nest them, you can recreate any app layout you've ever seen. From here, every new SwiftUI topic builds on this foundation.</p>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-g" onclick="goTo(7)">← Previous</button>
+    <button class="btn" style="background:var(--v);color:var(--bg)" onclick="goTo(0)">↩ Back to Start</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let current = 0;
+const total = 9;
+const visited = new Set([0]);
+
+/* ════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════ */
+function goTo(idx) {
+  document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => { n.classList.remove('active'); n.classList.remove('done'); });
+
+  document.getElementById('s' + idx).classList.add('active');
+  document.querySelectorAll('.ni')[idx].classList.add('active');
+  visited.add(idx);
+
+  document.querySelectorAll('.ni').forEach((item, i) => {
+    if (visited.has(i) && i !== idx) item.classList.add('done');
+  });
+
+  const pct = Math.round((visited.size / total) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+  document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
+  current = idx;
+}
+
+/* ════════════════════════════════════
+   SWITCHER DEMO (intro)
+════════════════════════════════════ */
+function setSwitcher(type) {
+  const inner = document.getElementById('sw-inner');
+  const label = document.getElementById('sw-label');
+  const h = document.getElementById('sw-h');
+  const v = document.getElementById('sw-v');
+  const z = document.getElementById('sw-z');
+  h.className = 'sw-btn'; v.className = 'sw-btn'; z.className = 'sw-btn';
+
+  if (type === 'h') {
+    h.classList.add('h-on');
+    inner.style.cssText = 'display:flex;flex-direction:row;gap:10px;align-items:center;';
+    inner.innerHTML = '<div class="sv h">Home</div><div class="sv h">Search</div><div class="sv h">Profile</div>';
+    label.textContent = 'HStack';
+  } else if (type === 'v') {
+    v.classList.add('v-on');
+    inner.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:center;';
+    inner.innerHTML = '<div class="sv v">Home</div><div class="sv v">Search</div><div class="sv v">Profile</div>';
+    label.textContent = 'VStack';
+  } else {
+    z.classList.add('z-on');
+    inner.style.cssText = 'position:relative;width:130px;height:80px;';
+    inner.innerHTML = '<div class="sv z" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:8px;opacity:.5;font-size:15px">Home</div>' +
+      '<div class="sv z" style="position:absolute;inset:8px;display:flex;align-items:center;justify-content:center;border-radius:8px;opacity:.75;font-size:14px">Search</div>' +
+      '<div class="sv z" style="position:absolute;inset:16px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:700">Profile</div>';
+    label.textContent = 'ZStack';
+  }
+}
+
+/* ════════════════════════════════════
+   ACCORDION
+════════════════════════════════════ */
+function toggleAcc(h) {
+  const b = h.nextElementSibling;
+  const isOpen = h.classList.contains('open');
+  h.closest('.sp').querySelectorAll('.acc-h').forEach(x => {
+    x.classList.remove('open');
+    x.nextElementSibling.classList.remove('open');
+  });
+  if (!isOpen) { h.classList.add('open'); b.classList.add('open'); }
+}
+
+/* ════════════════════════════════════
+   TABS
+════════════════════════════════════ */
+function switchTab(btn, id) {
+  const wrap = btn.closest('.tabs');
+  wrap.querySelectorAll('.tb').forEach(b => b.classList.remove('active','ah','av','az'));
+  wrap.querySelectorAll('.tp').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ════════════════════════════════════
+   QUIZ
+════════════════════════════════════ */
+function checkQ(btn, result) {
+  const wrap = btn.closest('.quiz');
+  if (wrap.dataset.answered) return;
+  wrap.dataset.answered = '1';
+  wrap.querySelectorAll('.qo').forEach(o => o.style.pointerEvents = 'none');
+  wrap.querySelectorAll('.qfb').forEach(f => f.classList.remove('show'));
+  if (result === 'correct') {
+    btn.classList.add('correct');
+    wrap.querySelector('.qfb.ok').classList.add('show');
+  } else {
+    btn.classList.add('wrong');
+    wrap.querySelector('.qfb.bad').classList.add('show');
+    wrap.querySelectorAll('.qo').forEach(o => {
+      if (o.getAttribute('onclick') && o.getAttribute('onclick').includes("'correct'")) o.classList.add('correct');
+    });
+  }
+}
+
+/* ════════════════════════════════════
+   REVEAL
+════════════════════════════════════ */
+function toggleReveal(btn) {
+  const content = btn.nextElementSibling;
+  content.classList.toggle('show');
+  btn.textContent = content.classList.contains('show') ? '🙈 Hide Answer' : '👁️ Reveal Answer';
+}
+
+/* ════════════════════════════════════
+   FLIP TERMS
+════════════════════════════════════ */
+function flipTerm(card) { card.classList.toggle('flipped'); }
+
+/* ════════════════════════════════════
+   MISTAKE TOGGLE
+════════════════════════════════════ */
+function toggleMistake(h) { h.nextElementSibling.classList.toggle('open'); }
+
+/* ════════════════════════════════════
+   SPACING DEMO
+════════════════════════════════════ */
+function updateSpacing(val) {
+  document.getElementById('sp-val').textContent = val;
+  document.getElementById('sp-box').style.gap = val + 'px';
+}
+
+/* ════════════════════════════════════
+   ALIGNMENT DEMO
+════════════════════════════════════ */
+function setAlign(btn, cssVal) {
+  document.querySelectorAll('.al-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('al-box').style.alignItems = cssVal;
+}
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+goTo(0);
+</script>
+</body>
+</html>

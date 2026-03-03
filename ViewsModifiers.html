@@ -1,0 +1,2709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 – SwiftUI Fundamentals: Views, Modifiers & Controls</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&family=Fraunces:wght@700;800;900&display=swap');
+
+/* ═══════════════════════════════════════════
+   ROOT VARIABLES
+═══════════════════════════════════════════ */
+:root {
+  --bg: #0e1117;
+  --surface: #161c26;
+  --surface2: #1c2333;
+  --surface3: #212a3e;
+  --border: #2a3548;
+  --border2: #333f55;
+
+  --accent:  #f97316;   /* orange - primary */
+  --accent2: #38bdf8;   /* sky blue */
+  --accent3: #4ade80;   /* green */
+  --purple:  #a78bfa;   /* violet */
+  --pink:    #f472b6;   /* pink */
+  --yellow:  #fbbf24;   /* amber */
+
+  --text:  #eef2f7;
+  --text2: #8fa3bd;
+  --text3: #4d5e75;
+
+  --card:    #131922;
+  --codebg:  #0a0f16;
+
+  /* Swift syntax colours */
+  --kw:   #ff7b72;
+  --str:  #a5d6ff;
+  --type: #ffa657;
+  --num:  #79c0ff;
+  --cm:   #6a7f96;
+  --fn:   #d2a8ff;
+  --prop: #e3b341;
+
+  --glow: rgba(249,115,22,.13);
+  --glow2: rgba(56,189,248,.10);
+}
+
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════ */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: 290px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#sb-head {
+  padding: 24px 22px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(249,115,22,.1) 0%, rgba(56,189,248,.06) 100%);
+}
+.sb-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin-bottom: 7px;
+}
+#sb-head h1 {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+#prog-wrap {
+  padding: 14px 22px 12px;
+  border-bottom: 1px solid var(--border);
+}
+#prog-lbl {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 7px;
+  display: flex;
+  justify-content: space-between;
+}
+#prog-bg {
+  height: 5px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+#prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 5px;
+  transition: width .4s ease;
+  width: 17%;
+}
+
+#nav { overflow-y: auto; flex: 1; padding: 8px 0; }
+#nav::-webkit-scrollbar { width: 3px; }
+#nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.ni {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 22px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text2);
+  transition: all .2s;
+  border-left: 3px solid transparent;
+  line-height: 1.35;
+}
+.ni:hover { background: var(--surface2); color: var(--text); }
+.ni.active {
+  background: var(--glow);
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+.ni.done { color: var(--text3); }
+.ni.done::after { content: '✓'; font-size: 12px; color: var(--accent3); margin-left: auto; flex-shrink: 0; }
+.ni-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text3);
+  min-width: 20px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.ni.active .ni-num { color: var(--accent); }
+
+/* ── MAIN ── */
+#main {
+  flex: 1;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+#main::-webkit-scrollbar { width: 6px; }
+#main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 6px; }
+
+.sp {
+  display: none;
+  min-height: 100vh;
+  padding: 46px 54px;
+  max-width: 980px;
+}
+.sp.active { display: block; animation: fadeUp .35s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════ */
+.s-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--accent2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.sp h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.lead {
+  font-size: 17px;
+  color: var(--text2);
+  line-height: 1.75;
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+
+/* ═══════════════════════════════════════════
+   OBJECTIVES BOX
+═══════════════════════════════════════════ */
+.obj {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent2);
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 30px;
+}
+.obj-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.obj ul { list-style: none; }
+.obj ul li {
+  font-size: 15px;
+  color: var(--text2);
+  padding: 5px 0 5px 20px;
+  position: relative;
+  line-height: 1.5;
+}
+.obj ul li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.card h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+.card p {
+  font-size: 15.5px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+.card p + p { margin-top: 10px; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+/* ═══════════════════════════════════════════
+   CODE BLOCKS
+═══════════════════════════════════════════ */
+.code-wrap {
+  background: var(--codebg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  font-family: 'DM Mono', monospace;
+}
+.code-header {
+  background: var(--surface2);
+  padding: 9px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.code-dot { width: 11px; height: 11px; border-radius: 50%; }
+.code-lang {
+  font-size: 11px;
+  color: var(--text3);
+  margin-left: auto;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.code-body {
+  padding: 20px 22px;
+  font-size: 14.5px;
+  line-height: 1.85;
+  overflow-x: auto;
+  white-space: pre;
+}
+/* Swift Syntax colours */
+.kw  { color: var(--kw);   font-weight: 500; }
+.str { color: var(--str);  }
+.ty  { color: var(--type); }
+.num { color: var(--num);  }
+.cm  { color: var(--cm);   font-style: italic; }
+.fn  { color: var(--fn);   }
+.prop{ color: var(--prop); }
+.ind { display: inline-block; width: 1.8em; }
+.ind2{ display: inline-block; width: 3.6em; }
+.ind3{ display: inline-block; width: 5.4em; }
+
+/* ═══════════════════════════════════════════
+   SIDE-BY-SIDE CODE + PREVIEW
+═══════════════════════════════════════════ */
+.code-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: start;
+}
+.preview-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+
+/* ── iPhone frame mockup ── */
+.iphone {
+  background: #1a1a2e;
+  border: 2px solid #333;
+  border-radius: 28px;
+  padding: 30px 14px 20px;
+  max-width: 180px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.iphone::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 5px;
+  background: #333;
+  border-radius: 5px;
+}
+
+/* Simulated SwiftUI elements */
+.sim-text { font-size: 15px; color: var(--text); text-align: center; }
+.sim-text.large { font-size: 22px; font-weight: 700; }
+.sim-text.title { font-size: 19px; font-weight: 600; }
+.sim-text.caption { font-size: 12px; color: var(--text2); }
+.sim-text.headline { font-size: 17px; font-weight: 600; }
+.sim-text.blue { color: var(--accent2); }
+.sim-text.orange { color: var(--accent); }
+.sim-text.green { color: var(--accent3); }
+
+.sim-pad { padding: 10px 14px; }
+.sim-bg-blue { background: rgba(56,189,248,.18); border-radius: 8px; }
+.sim-bg-orange { background: rgba(249,115,22,.18); border-radius: 8px; }
+.sim-bg-green { background: rgba(74,222,128,.15); border-radius: 8px; }
+.sim-bg-purple { background: rgba(167,139,250,.15); border-radius: 10px; }
+.sim-corner { border-radius: 10px; }
+.sim-shadow { box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+.sim-bold { font-weight: 700; }
+
+.sim-btn {
+  background: var(--accent);
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.sim-btn:hover { opacity: .85; }
+.sim-btn.blue { background: var(--accent2); color: var(--bg); }
+.sim-btn.green { background: var(--accent3); color: var(--bg); }
+.sim-btn.outline {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.sim-tf {
+  border: 1.5px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: var(--text2);
+  background: var(--surface2);
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+}
+.sim-tf:focus { outline: none; border-color: var(--accent2); }
+
+.sim-img {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.sim-img.rect {
+  width: 80px; height: 80px;
+  border-radius: 12px;
+}
+.sim-img.lg {
+  width: 100px; height: 100px;
+  border-radius: 16px;
+}
+.sim-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--border2);
+  margin: 6px 0;
+}
+.sim-hstack { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.sim-vstack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+/* ═══════════════════════════════════════════
+   ACCORDION
+═══════════════════════════════════════════ */
+.acc {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.acc-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  cursor: pointer;
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background .2s;
+  gap: 12px;
+}
+.acc-h:hover { background: var(--surface2); }
+.acc-h .arr { color: var(--text3); font-size: 13px; transition: transform .3s; flex-shrink: 0; }
+.acc-h.open .arr { transform: rotate(180deg); }
+.acc-b {
+  display: none;
+  padding: 18px 20px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.75;
+}
+.acc-b.open { display: block; }
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+.tabs { margin-bottom: 20px; }
+.tab-btns {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.tb {
+  padding: 8px 18px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all .2s;
+  font-weight: 500;
+}
+.tb:hover { background: var(--surface2); color: var(--text); }
+.tb.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tp { display: none; }
+.tp.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════ */
+.quiz {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 26px;
+  margin: 24px 0;
+}
+.quiz-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.quiz-q {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.55;
+}
+.quiz-opts { display: flex; flex-direction: column; gap: 9px; }
+.qo {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: all .2s;
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.4;
+}
+.qo:hover { border-color: var(--accent2); color: var(--text); }
+.qo.correct { background: rgba(74,222,128,.12); border-color: var(--accent3); color: var(--accent3); }
+.qo.wrong   { background: rgba(248,113,113,.08); border-color: #f87171; color: #f87171; }
+.quiz-fb {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 9px;
+  font-size: 14.5px;
+  display: none;
+  line-height: 1.6;
+}
+.quiz-fb.show { display: block; }
+.quiz-fb.ok  { background: rgba(74,222,128,.1); color: var(--accent3); border: 1px solid rgba(74,222,128,.3); }
+.quiz-fb.bad { background: rgba(248,113,113,.07); color: #f87171; border: 1px solid rgba(248,113,113,.25); }
+
+/* ═══════════════════════════════════════════
+   PRACTICE CHALLENGES
+═══════════════════════════════════════════ */
+.challenge {
+  background: linear-gradient(135deg, rgba(167,139,250,.07), rgba(249,115,22,.05));
+  border: 1px solid rgba(167,139,250,.3);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+}
+.challenge-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--purple);
+  margin-bottom: 8px;
+}
+.challenge h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.challenge p {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+.reveal-btn {
+  margin-top: 14px;
+  padding: 9px 20px;
+  border-radius: 9px;
+  border: 1.5px solid var(--purple);
+  background: transparent;
+  color: var(--purple);
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.reveal-btn:hover { background: rgba(167,139,250,.1); }
+.reveal-content {
+  display: none;
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-size: 14.5px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+.reveal-content.show { display: block; }
+
+/* ═══════════════════════════════════════════
+   MISC UI
+═══════════════════════════════════════════ */
+.tip {
+  background: rgba(251,191,36,.07);
+  border: 1px solid rgba(251,191,36,.25);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  color: #fcd34d;
+  line-height: 1.65;
+  margin: 16px 0;
+}
+.tip strong { color: var(--yellow); }
+
+.info {
+  background: rgba(56,189,248,.07);
+  border: 1px solid rgba(56,189,248,.22);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.65;
+  margin: 16px 0;
+}
+
+.warn {
+  background: rgba(248,113,113,.07);
+  border: 1px solid rgba(248,113,113,.25);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 15px;
+  color: #fca5a5;
+  line-height: 1.65;
+  margin: 16px 0;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+code {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  background: var(--surface2);
+  padding: 2px 7px;
+  border-radius: 5px;
+  color: var(--type);
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.b-orange { background: rgba(249,115,22,.15); color: var(--accent); border: 1px solid rgba(249,115,22,.3); }
+.b-blue   { background: rgba(56,189,248,.12); color: var(--accent2); border: 1px solid rgba(56,189,248,.28); }
+.b-green  { background: rgba(74,222,128,.12); color: var(--accent3); border: 1px solid rgba(74,222,128,.28); }
+.b-purple { background: rgba(167,139,250,.12); color: var(--purple);  border: 1px solid rgba(167,139,250,.28); }
+
+/* modifier order demo */
+.mod-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+}
+.mod-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.mod-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+  min-width: 90px;
+  text-align: right;
+}
+.mod-result {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* interactive modifier demo */
+#mod-interactive {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+#mod-interactive h4 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+.mod-toggles { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.mod-toggle {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  transition: all .2s;
+}
+.mod-toggle.on { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,.1); }
+#mod-preview-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+#mod-text-demo {
+  font-size: 18px;
+  color: var(--text);
+  transition: all .3s;
+  text-align: center;
+}
+
+/* nav buttons */
+#nav-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 44px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+}
+.btn {
+  padding: 12px 26px;
+  border-radius: 10px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #ea6508; transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+/* icon card for controls overview */
+.ic {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 22px;
+  transition: all .25s;
+  cursor: default;
+}
+.ic:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.3); }
+.ic .ico { font-size: 28px; margin-bottom: 10px; }
+.ic h4 {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.ic p { font-size: 13.5px; color: var(--text2); line-height: 1.55; }
+
+/* numbered steps */
+.steps { list-style: none; counter-reset: sc; }
+.steps li {
+  counter-increment: sc;
+  padding: 12px 16px 12px 50px;
+  position: relative;
+  font-size: 15px;
+  color: var(--text2);
+  border-left: 2px solid var(--border);
+  margin-left: 14px;
+  margin-bottom: 10px;
+  line-height: 1.65;
+}
+.steps li::before {
+  content: counter(sc);
+  position: absolute;
+  left: -14px;
+  top: 12px;
+  width: 26px; height: 26px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+
+/* summary grid */
+.sum-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+.sum-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.sum-item h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.sum-item ul { list-style: none; }
+.sum-item ul li {
+  font-size: 13.5px;
+  color: var(--text2);
+  padding: 3px 0 3px 16px;
+  position: relative;
+  line-height: 1.5;
+}
+.sum-item ul li::before { content: '•'; position: absolute; left: 0; color: var(--accent2); }
+
+/* what's next list */
+.next-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.next-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.next-item .badge { margin-bottom: 8px; display: inline-block; }
+.next-item h4 { font-size: 14.5px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.next-item p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+/* mistake item */
+.mistake {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.mistake-h {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+.mistake-icon { font-size: 18px; flex-shrink: 0; }
+.mistake-b {
+  display: none;
+  padding: 14px 18px 16px;
+  border-top: 1px solid var(--border);
+  font-size: 14.5px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+.mistake-b.open { display: block; }
+
+/* highlight inline */
+.hl { color: var(--accent); font-weight: 600; }
+.hl2 { color: var(--accent2); font-weight: 600; }
+.hl3 { color: var(--accent3); font-weight: 600; }
+
+/* term flip cards */
+.term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+.term-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-height: 90px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.term-card:hover { border-color: var(--accent2); }
+.term-front, .term-back {
+  position: absolute; inset: 0;
+  padding: 16px 18px;
+  transition: opacity .3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.term-front { opacity: 1; }
+.term-back  { opacity: 0; background: var(--surface2); font-size: 13.5px; color: var(--text2); line-height: 1.6; }
+.term-card.flipped .term-front { opacity: 0; }
+.term-card.flipped .term-back  { opacity: 1; }
+.term-front h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.term-front small { font-size: 12px; color: var(--text3); }
+
+/* responsive */
+@media(max-width:900px){
+  #sidebar { display: none; }
+  .sp { padding: 24px 20px; }
+  .grid2, .grid3, .code-preview, .sum-grid, .next-grid, .term-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════ -->
+<nav id="sidebar">
+  <div id="sb-head">
+    <div class="sb-tag">MAC 221 · iOS Dev</div>
+    <h1>SwiftUI Fundamentals<br>Views · Modifiers · Controls</h1>
+    <h1>Prof. Khalid Kassou</h1>
+  </div>
+  <div id="prog-wrap">
+    <div id="prog-lbl"><span>Course Progress</span><span id="pct">17%</span></div>
+    <div id="prog-bg"><div id="prog-bar"></div></div>
+  </div>
+  <div id="nav">
+    <div class="ni active" onclick="goTo(0)"><span class="ni-num">01</span>Introduction to SwiftUI</div>
+    <div class="ni" onclick="goTo(1)"><span class="ni-num">02</span>3.1 Views &amp; Modifiers</div>
+    <div class="ni" onclick="goTo(2)"><span class="ni-num">03</span>3.2 Basic Controls</div>
+    <div class="ni" onclick="goTo(3)"><span class="ni-num">04</span>Practice &amp; Try-It Activities</div>
+    <div class="ni" onclick="goTo(4)"><span class="ni-num">05</span>Common Beginner Mistakes</div>
+    <div class="ni" onclick="goTo(5)"><span class="ni-num">06</span>Final Review &amp; What's Next</div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════ -->
+<main id="main">
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 — INTRODUCTION
+══════════════════════════════════════════ -->
+<div class="sp active" id="s0">
+  <div class="s-tag">Section 01 · Introduction</div>
+  <h2>Welcome to SwiftUI</h2>
+  <p class="lead">Before you build your first iOS app, you need to understand the fundamentals that everything else is built on: views, modifiers, and basic controls. This is where SwiftUI begins.</p>
+
+  <div class="obj">
+    <div class="obj-title">Learning Objectives</div>
+    <ul>
+      <li>Understand what SwiftUI is and why it matters</li>
+      <li>Explain declarative UI in simple terms</li>
+      <li>Know why views, modifiers, and controls are the foundation of all iOS apps</li>
+      <li>Understand how SwiftUI connects with Xcode's live preview</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is SwiftUI?</h3>
+    <p>SwiftUI is Apple's modern framework for building user interfaces on iPhone, iPad, Mac, Apple Watch, and Apple TV. You write code that <strong>describes what your UI should look like</strong>, and SwiftUI takes care of making it happen. It was introduced in 2019 and is now the standard way to build Apple apps.</p>
+    <p>Before SwiftUI, developers used UIKit — an older, more complex system where you had to manually manage every step of how the interface was built and updated. SwiftUI replaces most of that complexity with clean, readable code that's much easier to learn.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="ic">
+      <div class="ico">📝</div>
+      <h4>Declarative</h4>
+      <p>You describe <em>what</em> you want the UI to look like. SwiftUI figures out <em>how</em> to build it and update it.</p>
+    </div>
+    <div class="ic">
+      <div class="ico">🔁</div>
+      <h4>Reactive</h4>
+      <p>When your data changes, the UI updates automatically. No manual refresh calls needed.</p>
+    </div>
+    <div class="ic">
+      <div class="ico">⚡</div>
+      <h4>Live Preview</h4>
+      <p>Xcode shows you the result of your code instantly in the Canvas — no simulator required while designing.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Declarative UI — What Does That Mean?</h3>
+    <p>In traditional (imperative) code, you tell the computer <em>every step</em>: "Create a button. Set its color to blue. Add it to the screen. When data changes, find the button, change its label." That's a lot of manual steps.</p>
+    <p>In <span class="hl">declarative UI</span>, you simply describe the end result: "Show a blue button with this label." When data changes, SwiftUI automatically re-renders the interface based on your description. You never manually update UI elements — the framework does it for you.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift</span>
+    </div>
+    <div class="code-body"><span class="cm">// SwiftUI — Declarative style</span>
+<span class="cm">// You describe WHAT you want, SwiftUI handles the rest</span>
+
+<span class="kw">struct</span> <span class="ty">WelcomeView</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span> {
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Welcome to MAC221"</span>)
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Let's build iOS apps!"</span>)
+<span class="ind3"></span><span class="ty">Button</span>(<span class="str">"Get Started"</span>) { }
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+  </div>
+
+  <div class="tip"><strong>💡 Key Insight:</strong> Every SwiftUI view is a <code>struct</code> that has a <code>body</code> property. That <code>body</code> returns what appears on screen. Everything visible in an iOS app is made of views.</div>
+
+  <div class="card">
+    <h3>Why Learn This First?</h3>
+    <p>Before you can build navigation, lists, forms, or animations — you need to know how to create views and style them with modifiers. And before you can lay out a screen, you need to know what basic controls look like. These two topics (<span class="hl">3.1</span> and <span class="hl2">3.2</span>) are the absolute foundation. Everything in SwiftUI builds on what you learn in this lecture.</p>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-primary" onclick="goTo(1)">Next: Views &amp; Modifiers →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 — VIEWS & MODIFIERS
+══════════════════════════════════════════ -->
+<div class="sp" id="s1">
+  <div class="s-tag">Section 02 · Core Concept</div>
+  <h2>3.1 Views &amp; Modifiers</h2>
+  <p class="lead">A View is anything visible on screen. A modifier customizes a view. Together, they are how every single iOS interface is built in SwiftUI.</p>
+
+  <div class="obj">
+    <div class="obj-title">Learning Objectives</div>
+    <ul>
+      <li>Define what a View is and explain the <code>body</code> property</li>
+      <li>Explain how views are composed (nested) to build interfaces</li>
+      <li>Apply modifiers to change a view's appearance and behavior</li>
+      <li>Chain multiple modifiers correctly</li>
+      <li>Explain why modifier order matters</li>
+    </ul>
+  </div>
+
+  <!-- WHAT IS A VIEW -->
+  <div class="card">
+    <h3>What Is a View?</h3>
+    <p>In SwiftUI, a <span class="hl">View</span> is any piece of the interface that can appear on screen. Text labels, buttons, images, text fields, dividers — they are all views. Even a container that holds other views is itself a view.</p>
+    <p>Every SwiftUI view is a Swift <code>struct</code> that conforms to the <code>View</code> protocol. That protocol requires exactly one thing: a <code>body</code> property that returns "some View" — in other words, it returns whatever the interface looks like.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Anatomy of a View</span>
+    </div>
+    <div class="code-body"><span class="cm">// Every SwiftUI screen is a struct that conforms to View</span>
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {   <span class="cm">// ← conforms to the View protocol</span>
+
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {      <span class="cm">// ← body is required — this is what appears on screen</span>
+<span class="ind2"></span><span class="ty">Text</span>(<span class="str">"Hello, LaGuardia!"</span>)  <span class="cm">// ← the view being returned</span>
+<span class="ind"></span>}
+}</div>
+  </div>
+
+  <!-- COMPOSING VIEWS -->
+  <div class="card">
+    <h3>Views Compose — You Build UIs by Nesting Views</h3>
+    <p>SwiftUI interfaces are built by <span class="hl">combining small views into bigger ones</span>. You put views inside container views. A <code>VStack</code> (covered in 3.3) holds multiple views arranged vertically. Inside that, you can put a <code>Text</code>, an <code>Image</code>, and a <code>Button</code>. Each of those is its own view.</p>
+    <p>This composability means you build complex interfaces from simple, reusable pieces — just like how a house is made of bricks, not one giant slab.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Views Nested Inside Views</span>
+    </div>
+    <div class="code-body"><span class="kw">struct</span> <span class="ty">ProfileView</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+
+<span class="ind2"></span><span class="ty">VStack</span> {                       <span class="cm">// ← container view (vertical stack)</span>
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"person.circle"</span>)  <span class="cm">// ← view 1: an icon image</span>
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Khalid Hassan"</span>)            <span class="cm">// ← view 2: a text label</span>
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"iOS Developer"</span>)            <span class="cm">// ← view 3: a subtitle label</span>
+<span class="ind3"></span><span class="ty">Button</span>(<span class="str">"Follow"</span>) { }            <span class="cm">// ← view 4: a button</span>
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+  </div>
+
+  <hr>
+
+  <!-- MODIFIERS -->
+  <div class="card">
+    <h3>What Are Modifiers?</h3>
+    <p>A <span class="hl">modifier</span> is a method you call on a view to change how it looks or behaves. Modifiers are called with dot syntax immediately after a view. They return a <em>new modified version</em> of the view — they don't change the original view, they wrap it.</p>
+    <p>Think of modifiers like clothing layers: you start with a plain view, then add a font style, then a color, then padding, then a background. Each modifier adds another layer of customization.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Your First Modifiers</span>
+    </div>
+    <div class="code-body"><span class="cm">// A plain Text view — no styling yet</span>
+<span class="ty">Text</span>(<span class="str">"Good morning!"</span>)
+
+<span class="cm">// Now let's add modifiers one by one:</span>
+<span class="ty">Text</span>(<span class="str">"Good morning!"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title</span>)                <span class="cm">// ← larger title font</span>
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">orange</span>)   <span class="cm">// ← orange text colour</span>
+<span class="ind"></span>.<span class="fn">bold</span>()                      <span class="cm">// ← make it bold</span>
+<span class="ind"></span>.<span class="fn">padding</span>()                   <span class="cm">// ← add breathing room around it</span>
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">yellow</span>.<span class="fn">opacity</span>(<span class="num">0.2</span>))  <span class="cm">// ← soft yellow background</span>
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">10</span>)            <span class="cm">// ← rounded corners</span></div>
+  </div>
+
+  <!-- MODIFIER REFERENCE -->
+  <h3 style="font-family:'Fraunces',serif;font-size:22px;margin:24px 0 14px;">Essential Modifier Reference</h3>
+
+  <div class="tabs">
+    <div class="tab-btns">
+      <button class="tb active" onclick="switchTab(this,'t-font')">font()</button>
+      <button class="tb" onclick="switchTab(this,'t-color')">foregroundColor()</button>
+      <button class="tb" onclick="switchTab(this,'t-padding')">padding()</button>
+      <button class="tb" onclick="switchTab(this,'t-bg')">background()</button>
+      <button class="tb" onclick="switchTab(this,'t-corner')">cornerRadius()</button>
+      <button class="tb" onclick="switchTab(this,'t-frame')">frame()</button>
+      <button class="tb" onclick="switchTab(this,'t-shadow')">shadow()</button>
+    </div>
+
+    <!-- font() -->
+    <div class="tp active" id="t-font">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .font() sets the text size/style</span>
+
+<span class="ty">Text</span>(<span class="str">"Large Title"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+
+<span class="ty">Text</span>(<span class="str">"Regular Title"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title</span>)
+
+<span class="ty">Text</span>(<span class="str">"Headline"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+
+<span class="ty">Text</span>(<span class="str">"Body text"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">body</span>)
+
+<span class="ty">Text</span>(<span class="str">"Small caption"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">caption</span>)
+
+<span class="cm">// Or use a custom size:</span>
+<span class="ty">Text</span>(<span class="str">"Custom"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="num">28</span>, weight: .<span class="prop">bold</span>))</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:10px;align-items:flex-start;width:100%">
+              <div style="font-size:28px;font-family:'Fraunces',serif;font-weight:900;color:var(--text)">Large Title</div>
+              <div style="font-size:22px;font-family:'Fraunces',serif;font-weight:700;color:var(--text)">Regular Title</div>
+              <div style="font-size:17px;font-weight:600;color:var(--text)">Headline</div>
+              <div style="font-size:15px;color:var(--text2)">Body text</div>
+              <div style="font-size:12px;color:var(--text3)">Small caption</div>
+              <div style="font-size:28px;font-weight:700;color:var(--text)">Custom</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info">📌 Use Apple's built-in text styles (<code>.title</code>, <code>.headline</code>, <code>.body</code>, <code>.caption</code>) instead of custom sizes when possible — they automatically adapt to the user's preferred text size setting (Dynamic Type).</div>
+    </div>
+
+    <!-- foregroundColor() -->
+    <div class="tp" id="t-color">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .foregroundColor() sets text or icon colour</span>
+
+<span class="ty">Text</span>(<span class="str">"Primary blue"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">blue</span>)
+
+<span class="ty">Text</span>(<span class="str">"Success green"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">green</span>)
+
+<span class="ty">Text</span>(<span class="str">"Warning orange"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">orange</span>)
+
+<span class="ty">Text</span>(<span class="str">"Secondary grey"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+
+<span class="cm">// Exact colour with hex (iOS 15+):</span>
+<span class="ty">Text</span>(<span class="str">"Custom colour"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(<span class="ty">Color</span>(hex: <span class="str">"#FF6B35"</span>))</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:10px;align-items:flex-start;width:100%">
+              <div style="font-size:16px;color:#60a5fa">Primary blue</div>
+              <div style="font-size:16px;color:var(--accent3)">Success green</div>
+              <div style="font-size:16px;color:var(--accent)">Warning orange</div>
+              <div style="font-size:16px;color:var(--text3)">Secondary grey</div>
+              <div style="font-size:16px;color:#FF6B35">Custom colour</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- padding() -->
+    <div class="tp" id="t-padding">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .padding() adds space around a view</span>
+
+<span class="cm">// Equal padding on all sides (default ~16pt)</span>
+<span class="ty">Text</span>(<span class="str">"Default padding"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>()
+
+<span class="cm">// Specific amount of padding</span>
+<span class="ty">Text</span>(<span class="str">"Custom amount"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">20</span>)
+
+<span class="cm">// Padding on specific edges only</span>
+<span class="ty">Text</span>(<span class="str">"Top only"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">top</span>, <span class="num">12</span>)
+
+<span class="ty">Text</span>(<span class="str">"Horizontal"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">horizontal</span>, <span class="num">24</span>)</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:12px;width:100%">
+              <div style="border:1.5px dashed var(--border2);border-radius:8px;padding:2px">
+                <div style="font-size:14px;color:var(--text);background:rgba(56,189,248,.1);border-radius:6px;padding:14px">Default padding</div>
+              </div>
+              <div style="border:1.5px dashed var(--border2);border-radius:8px;padding:2px">
+                <div style="font-size:14px;color:var(--text);background:rgba(56,189,248,.1);border-radius:6px;padding:20px">Custom 20pt</div>
+              </div>
+              <div style="border:1.5px dashed var(--border2);border-radius:8px;padding:2px">
+                <div style="font-size:14px;color:var(--text);background:rgba(56,189,248,.1);border-radius:6px;padding-top:12px;padding-bottom:4px">Top only</div>
+              </div>
+              <div style="font-size:12px;color:var(--text3);font-style:italic">Dashed line = the view boundary</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- background() -->
+    <div class="tp" id="t-bg">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .background() fills behind the view</span>
+
+<span class="ty">Text</span>(<span class="str">"Blue badge"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">10</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+
+<span class="ty">Text</span>(<span class="str">"Soft green"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">10</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">green</span>.<span class="fn">opacity</span>(<span class="num">0.2</span>))
+
+<span class="cm">// Gradient background:</span>
+<span class="ty">Text</span>(<span class="str">"Gradient"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>()
+<span class="ind"></span>.<span class="fn">background</span>(
+<span class="ind2"></span><span class="ty">LinearGradient</span>(
+<span class="ind3"></span>gradient: <span class="ty">Gradient</span>(colors: [.<span class="prop">orange</span>, .<span class="prop">pink</span>]),
+<span class="ind3"></span>startPoint: .<span class="prop">leading</span>,
+<span class="ind3"></span>endPoint: .<span class="prop">trailing</span>
+<span class="ind2"></span>)
+<span class="ind"></span>)</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:12px;align-items:flex-start">
+              <div style="font-size:14px;color:#fff;background:#60a5fa;padding:10px 16px;border-radius:6px">Blue badge</div>
+              <div style="font-size:14px;color:var(--text);background:rgba(74,222,128,.2);padding:10px 16px;border-radius:6px">Soft green</div>
+              <div style="font-size:14px;color:#fff;background:linear-gradient(90deg,var(--accent),var(--pink));padding:10px 22px;border-radius:8px">Gradient</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- cornerRadius() -->
+    <div class="tp" id="t-corner">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .cornerRadius() rounds the corners</span>
+<span class="cm">// ⚠️ Must be applied AFTER .background()</span>
+
+<span class="ty">Text</span>(<span class="str">"Sharp"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">0</span>)   <span class="cm">// no rounding</span>
+
+<span class="ty">Text</span>(<span class="str">"Slightly rounded"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">8</span>)
+
+<span class="ty">Text</span>(<span class="str">"Very rounded"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">20</span>)
+
+<span class="ty">Text</span>(<span class="str">"Pill / Capsule"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.init(top: <span class="num">10</span>, leading: <span class="num">20</span>, bottom: <span class="num">10</span>, trailing: <span class="num">20</span>))
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">orange</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">999</span>)</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:12px;align-items:flex-start">
+              <div style="font-size:14px;color:#fff;background:#60a5fa;padding:12px;border-radius:0">Sharp (0)</div>
+              <div style="font-size:14px;color:#fff;background:#60a5fa;padding:12px;border-radius:8px">Slightly rounded (8)</div>
+              <div style="font-size:14px;color:#fff;background:#60a5fa;padding:12px;border-radius:20px">Very rounded (20)</div>
+              <div style="font-size:14px;color:#fff;background:var(--accent);padding:10px 20px;border-radius:999px">Pill / Capsule</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- frame() -->
+    <div class="tp" id="t-frame">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .frame() sets a fixed or max/min size</span>
+
+<span class="cm">// Fixed size:</span>
+<span class="ty">Text</span>(<span class="str">"Fixed 200×50"</span>)
+<span class="ind"></span>.<span class="fn">frame</span>(width: <span class="num">200</span>, height: <span class="num">50</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+
+<span class="cm">// Fill full available width:</span>
+<span class="ty">Text</span>(<span class="str">"Full width"</span>)
+<span class="ind"></span>.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">orange</span>)
+
+<span class="cm">// Alignment inside the frame:</span>
+<span class="ty">Text</span>(<span class="str">"Left aligned"</span>)
+<span class="ind"></span>.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>, alignment: .<span class="prop">leading</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">green</span>.<span class="fn">opacity</span>(<span class="num">0.3</span>))</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:10px;width:100%">
+              <div style="font-size:13px;color:#fff;background:#60a5fa;width:180px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:6px">Fixed 200×50</div>
+              <div style="font-size:13px;color:#fff;background:var(--accent);width:100%;padding:8px;text-align:center;border-radius:6px">Full width</div>
+              <div style="font-size:13px;color:var(--text);background:rgba(74,222,128,.25);width:100%;padding:8px;text-align:left;border-radius:6px">Left aligned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tip"><strong>💡 Pro Tip:</strong> <code>.frame(maxWidth: .infinity)</code> is one of the most used modifiers in SwiftUI. It stretches a view to take up all available horizontal space — essential for full-width buttons.</div>
+    </div>
+
+    <!-- shadow() -->
+    <div class="tp" id="t-shadow">
+      <div class="code-preview">
+        <div>
+          <div class="code-wrap" style="margin-bottom:0">
+            <div class="code-header">
+              <div class="code-dot" style="background:#ff5f57"></div>
+              <div class="code-dot" style="background:#febc2e"></div>
+              <div class="code-dot" style="background:#28c840"></div>
+              <span class="code-lang">Swift</span>
+            </div>
+            <div class="code-body"><span class="cm">// .shadow() adds a drop shadow</span>
+
+<span class="ty">Text</span>(<span class="str">"Soft shadow"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">16</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">shadow</span>(radius: <span class="num">5</span>)
+
+<span class="ty">Text</span>(<span class="str">"Deep shadow"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">16</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">shadow</span>(
+<span class="ind2"></span>color: <span class="ty">Color</span>.<span class="prop">black</span>.<span class="fn">opacity</span>(<span class="num">0.3</span>),
+<span class="ind2"></span>radius: <span class="num">12</span>,
+<span class="ind2"></span>x: <span class="num">0</span>,
+<span class="ind2"></span>y: <span class="num">6</span>
+<span class="ind"></span>)</div>
+          </div>
+        </div>
+        <div>
+          <div class="preview-box" style="height:100%;background:var(--surface3)">
+            <div class="preview-label">📱 Visual Result</div>
+            <div class="sim-vstack" style="gap:20px">
+              <div style="font-size:14px;color:#111;background:#fff;padding:16px 22px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.4)">Soft shadow (radius 5)</div>
+              <div style="font-size:14px;color:#111;background:#fff;padding:16px 22px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.6)">Deep shadow (radius 12)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- MODIFIER ORDER -->
+  <div class="card">
+    <h3>⚠️ Modifier Order Matters!</h3>
+    <p>This is one of the most important concepts to understand. Because each modifier <em>wraps</em> the view and returns a new view, the order you apply modifiers directly affects the final result. <span class="hl">SwiftUI applies modifiers from top to bottom (innermost to outermost).</span></p>
+  </div>
+
+  <div class="code-preview">
+    <div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Order Example A</span>
+        </div>
+        <div class="code-body"><span class="cm">// A: padding() THEN background()</span>
+<span class="cm">// Background fills the padded area ✅</span>
+<span class="ty">Text</span>(<span class="str">"Order A"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">20</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="cm">// Result: blue box with space around text</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Order Example B</span>
+        </div>
+        <div class="code-body"><span class="cm">// B: background() THEN padding()</span>
+<span class="cm">// Background only fills text area ❌</span>
+<span class="ty">Text</span>(<span class="str">"Order B"</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">20</span>)
+<span class="cm">// Result: tiny blue box, big empty space</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="preview-box">
+      <div class="preview-label">Result A — padding first, then background</div>
+      <div style="display:flex;justify-content:center;padding:10px 0">
+        <div style="font-size:15px;color:#fff;background:#60a5fa;padding:20px;border-radius:6px">Order A ✅</div>
+      </div>
+      <p style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px">Blue fills the full padded area</p>
+    </div>
+    <div class="preview-box">
+      <div class="preview-label">Result B — background first, then padding</div>
+      <div style="display:flex;justify-content:center;padding:10px 0">
+        <div style="font-size:15px;color:#fff;display:inline-block">
+          <span style="background:#60a5fa;padding:3px 5px">Order B</span>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text3);text-align:center;margin-top:8px">Blue only behind text — empty space outside</p>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE MODIFIER DEMO -->
+  <div id="mod-interactive">
+    <h4>🎛️ Interactive Modifier Demo — Click Modifiers to Toggle</h4>
+    <div class="mod-toggles">
+      <button class="mod-toggle" onclick="toggleMod(this,'font')">.<span>font(.title)</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'bold')">.<span>bold()</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'color')">.<span>foregroundColor(.orange)</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'padding')">.<span>padding()</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'bg')">.<span>background(.blue.opacity(0.2))</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'corner')">.<span>cornerRadius(12)</span></button>
+      <button class="mod-toggle" onclick="toggleMod(this,'shadow')">.<span>shadow(radius:6)</span></button>
+    </div>
+    <div id="mod-preview-box">
+      <div id="mod-text-demo">Hello, SwiftUI!</div>
+    </div>
+    <p style="font-size:12px;color:var(--text3);margin-top:10px">Toggle modifiers above to see how they affect the view in real time.</p>
+  </div>
+
+  <div class="quiz">
+    <div class="quiz-badge">🧠 Quick Check — Views &amp; Modifiers</div>
+    <div class="quiz-q">You want a Text view with orange text AND a rounded background. In what order should you apply the modifiers to get the background to include padding?</div>
+    <div class="quiz-opts">
+      <button class="qo" onclick="checkQ(this,'wrong')">.background() → .padding() → .cornerRadius() → .foregroundColor()</button>
+      <button class="qo" onclick="checkQ(this,'correct')">.foregroundColor() → .padding() → .background() → .cornerRadius()</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">.cornerRadius() → .foregroundColor() → .background() → .padding()</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Order doesn't matter in SwiftUI</button>
+    </div>
+    <div class="quiz-fb ok">✅ Correct! Apply .foregroundColor() first (text color), then .padding() to add space, then .background() to fill the padded area, then .cornerRadius() to round it. Background applies to whatever is already there — so padding must come before it.</div>
+    <div class="quiz-fb bad">❌ Not quite. Apply .foregroundColor() → .padding() → .background() → .cornerRadius(). The background fills whatever size the view is at the moment it's applied — so padding must come first to expand the area.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(0)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(2)">Next: Basic Controls →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 — BASIC CONTROLS
+══════════════════════════════════════════ -->
+<div class="sp" id="s2">
+  <div class="s-tag">Section 03 · Core Controls</div>
+  <h2>3.2 Basic Controls</h2>
+  <p class="lead">SwiftUI comes with a set of built-in controls that handle the most common interface needs. Master these four — Text, Image, Button, and TextField — and you can build most beginner app screens.</p>
+
+  <div class="obj">
+    <div class="obj-title">Learning Objectives</div>
+    <ul>
+      <li>Create and style Text views for labels, titles, and descriptions</li>
+      <li>Display system icons and images with Image</li>
+      <li>Build tappable Buttons with actions and styles</li>
+      <li>Add user input fields with TextField</li>
+      <li>Combine these controls into a simple mini-UI</li>
+    </ul>
+  </div>
+
+  <div class="grid2">
+    <div class="ic"><div class="ico">🔤</div><h4>Text</h4><p>Displays a string of text on screen. Every label, title, and body copy you see in an iOS app is a Text view.</p></div>
+    <div class="ic"><div class="ico">🖼️</div><h4>Image</h4><p>Displays images — either from SF Symbols (Apple's built-in icon library) or from your app's Assets.</p></div>
+    <div class="ic"><div class="ico">🔘</div><h4>Button</h4><p>A tappable element. Buttons trigger actions — submitting a form, navigating to a screen, toggling state.</p></div>
+    <div class="ic"><div class="ico">📝</div><h4>TextField</h4><p>Lets users type input. Used for names, emails, search boxes, messages, and any text entry field.</p></div>
+  </div>
+
+  <hr>
+
+  <!-- TEXT -->
+  <h3 style="font-family:'Fraunces',serif;font-size:26px;margin:10px 0 16px;color:var(--accent2)">🔤 Text</h3>
+
+  <div class="card">
+    <h3>What is Text?</h3>
+    <p>The <code>Text</code> view displays a read-only string on screen. It's the most-used view in SwiftUI — every time you need to show words to the user, you use <code>Text</code>. Text views support rich formatting through modifiers and can even render markdown-style attributed strings.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Text Examples</span>
+    </div>
+    <div class="code-body"><span class="cm">// 1. Basic text</span>
+<span class="ty">Text</span>(<span class="str">"Hello, World!"</span>)
+
+<span class="cm">// 2. Large title style</span>
+<span class="ty">Text</span>(<span class="str">"Welcome Back"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+<span class="ind"></span>.<span class="fn">bold</span>()
+
+<span class="cm">// 3. Styled body text</span>
+<span class="ty">Text</span>(<span class="str">"Start building amazing iOS apps today."</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">body</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+<span class="ind"></span>.<span class="fn">multilineTextAlignment</span>(.<span class="prop">center</span>)
+<span class="ind"></span>.<span class="fn">lineSpacing</span>(<span class="num">6</span>)
+
+<span class="cm">// 4. Coloured label</span>
+<span class="ty">Text</span>(<span class="str">"Account Balance: $1,200"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">green</span>)
+
+<span class="cm">// 5. Formatted date</span>
+<span class="ty">Text</span>(<span class="ty">Date</span>(), style: .<span class="prop">date</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">caption</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">gray</span>)
+
+<span class="cm">// 6. Italic text</span>
+<span class="ty">Text</span>(<span class="str">"Professor Khalid Hassan"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">subheadline</span>)
+<span class="ind"></span>.<span class="fn">italic</span>()
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+
+<span class="cm">// 7. Strikethrough (crossed out text)</span>
+<span class="ty">Text</span>(<span class="str">"Was $99.99"</span>)
+<span class="ind"></span>.<span class="fn">strikethrough</span>()
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">gray</span>)</div>
+  </div>
+
+  <div class="code-preview">
+    <div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Real App Use Case: Welcome Screen Header</span>
+        </div>
+        <div class="code-body"><span class="kw">struct</span> <span class="ty">WelcomeHeader</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span>(alignment: .<span class="prop">leading</span>, spacing: <span class="num">6</span>) {
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Good morning! 👋"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">caption</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Welcome Back"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">bold</span>()
+
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"You have 3 new notifications"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">subheadline</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+      </div>
+    </div>
+    <div>
+      <div class="preview-box" style="height:100%">
+        <div class="preview-label">📱 Visual Result</div>
+        <div class="sim-vstack" style="align-items:flex-start;gap:5px;padding:10px 0">
+          <div style="font-size:12px;color:var(--text3)">Good morning! 👋</div>
+          <div style="font-size:28px;font-family:'Fraunces',serif;font-weight:900;color:var(--text)">Welcome Back</div>
+          <div style="font-size:14px;color:var(--text2)">You have 3 new notifications</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- IMAGE -->
+  <h3 style="font-family:'Fraunces',serif;font-size:26px;margin:10px 0 16px;color:var(--accent2)">🖼️ Image</h3>
+
+  <div class="card">
+    <h3>What is Image?</h3>
+    <p>The <code>Image</code> view displays images on screen. In SwiftUI there are two main types: <span class="hl">System Images (SF Symbols)</span> — Apple's built-in library of 5,000+ icons accessible with <code>Image(systemName:)</code> — and <span class="hl2">Asset Images</span> — your own photos or graphics stored in the Xcode Assets catalog, loaded with <code>Image("name")</code>.</p>
+    <p>SF Symbols are especially useful for beginners because you get professional icons instantly without needing design files.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Image Examples</span>
+    </div>
+    <div class="code-body"><span class="cm">// 1. SF Symbol icon (system image)</span>
+<span class="ty">Image</span>(systemName: <span class="str">"star.fill"</span>)
+
+<span class="cm">// 2. Sized and coloured icon</span>
+<span class="ty">Image</span>(systemName: <span class="str">"heart.fill"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">largeTitle</span>)          <span class="cm">// ← font() sets icon SIZE for SF Symbols</span>
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">red</span>)
+
+<span class="cm">// 3. Asset image from project</span>
+<span class="ty">Image</span>(<span class="str">"profile_photo"</span>)
+<span class="ind"></span>.<span class="fn">resizable</span>()                 <span class="cm">// ← must add this before frame for images</span>
+<span class="ind"></span>.<span class="fn">scaledToFit</span>()
+<span class="ind"></span>.<span class="fn">frame</span>(width: <span class="num">80</span>, height: <span class="num">80</span>)
+
+<span class="cm">// 4. Circular profile image</span>
+<span class="ty">Image</span>(<span class="str">"profile_photo"</span>)
+<span class="ind"></span>.<span class="fn">resizable</span>()
+<span class="ind"></span>.<span class="fn">scaledToFill</span>()
+<span class="ind"></span>.<span class="fn">frame</span>(width: <span class="num">80</span>, height: <span class="num">80</span>)
+<span class="ind"></span>.<span class="fn">clipShape</span>(<span class="ty">Circle</span>())         <span class="cm">// ← clips to a perfect circle</span>
+
+<span class="cm">// 5. Icon with padding and background (icon badge)</span>
+<span class="ty">Image</span>(systemName: <span class="str">"bell.fill"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">12</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">orange</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">14</span>)
+
+<span class="cm">// 6. Tinted SF Symbol (iOS 15+)</span>
+<span class="ty">Image</span>(systemName: <span class="str">"checkmark.circle.fill"</span>)
+<span class="ind"></span>.<span class="fn">symbolRenderingMode</span>(.<span class="prop">multicolor</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">system</span>(size: <span class="num">40</span>))</div>
+  </div>
+
+  <div class="code-preview">
+    <div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Icon Row (common UI pattern)</span>
+        </div>
+        <div class="code-body"><span class="kw">struct</span> <span class="ty">IconRow</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">HStack</span>(spacing: <span class="num">18</span>) {
+
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"house.fill"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">blue</span>)
+
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"magnifyingglass"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">gray</span>)
+
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"plus.circle.fill"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">orange</span>)
+
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"person.fill"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">gray</span>)
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+      </div>
+    </div>
+    <div>
+      <div class="preview-box" style="height:100%">
+        <div class="preview-label">📱 Visual Result — Tab Bar Icons</div>
+        <div class="iphone" style="max-width:220px">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center">
+            <div style="font-size:13px;color:var(--text2)">App Content Area</div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;gap:28px;justify-content:center;width:100%">
+            <div style="font-size:22px">🏠</div>
+            <div style="font-size:22px;opacity:.5">🔍</div>
+            <div style="font-size:22px;color:var(--accent)">⊕</div>
+            <div style="font-size:22px;opacity:.5">👤</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip"><strong>💡 SF Symbols Tip:</strong> Download the free <strong>SF Symbols app</strong> from Apple's developer website to browse all 5,000+ icons. Search by name, category, or keyword — then copy the exact symbol name to use in <code>Image(systemName: "...")</code>.</div>
+
+  <hr>
+
+  <!-- BUTTON -->
+  <h3 style="font-family:'Fraunces',serif;font-size:26px;margin:10px 0 16px;color:var(--accent2)">🔘 Button</h3>
+
+  <div class="card">
+    <h3>What is Button?</h3>
+    <p>The <code>Button</code> view creates a tappable element that triggers an <span class="hl">action</span> when the user taps it. Every Button has two parts: a <strong>label</strong> (what it looks like) and an <strong>action</strong> (what it does when tapped). The action is a closure — a block of code that runs on tap.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Button Examples</span>
+    </div>
+    <div class="code-body"><span class="cm">// 1. Simplest button — string label shorthand</span>
+<span class="ty">Button</span>(<span class="str">"Tap Me"</span>) {
+<span class="ind"></span><span class="cm">// code to run when tapped</span>
+<span class="ind"></span>print(<span class="str">"Button was tapped!"</span>)
+}
+
+<span class="cm">// 2. Full syntax — label is any View</span>
+<span class="ty">Button</span>(action: {
+<span class="ind"></span>print(<span class="str">"Tapped!"</span>)
+}) {
+<span class="ind"></span><span class="ty">Text</span>(<span class="str">"Submit"</span>)
+}
+
+<span class="cm">// 3. Styled button — primary action style</span>
+<span class="ty">Button</span>(<span class="str">"Sign In"</span>) {
+<span class="ind"></span>print(<span class="str">"Signing in..."</span>)
+}
+.<span class="fn">font</span>(.<span class="prop">headline</span>)
+.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>)
+.<span class="fn">padding</span>()
+.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+.<span class="fn">cornerRadius</span>(<span class="num">14</span>)
+
+<span class="cm">// 4. Outline / ghost button style</span>
+<span class="ty">Button</span>(<span class="str">"Cancel"</span>) { }
+.<span class="fn">font</span>(.<span class="prop">headline</span>)
+.<span class="fn">foregroundColor</span>(.<span class="prop">blue</span>)
+.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>)
+.<span class="fn">padding</span>()
+.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">clear</span>)
+.<span class="fn">overlay</span>(
+<span class="ind"></span><span class="ty">RoundedRectangle</span>(cornerRadius: <span class="num">14</span>)
+<span class="ind2"></span>.<span class="fn">stroke</span>(<span class="ty">Color</span>.<span class="prop">blue</span>, lineWidth: <span class="num">1.5</span>)
+)
+
+<span class="cm">// 5. Icon button</span>
+<span class="ty">Button</span>(action: { }) {
+<span class="ind"></span><span class="ty">Image</span>(systemName: <span class="str">"heart.fill"</span>)
+<span class="ind2"></span>.<span class="fn">font</span>(.<span class="prop">title</span>)
+<span class="ind2"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">red</span>)
+}
+
+<span class="cm">// 6. Button with icon + text (HStack label)</span>
+<span class="ty">Button</span>(action: { }) {
+<span class="ind"></span><span class="ty">HStack</span> {
+<span class="ind2"></span><span class="ty">Image</span>(systemName: <span class="str">"arrow.right.circle.fill"</span>)
+<span class="ind2"></span><span class="ty">Text</span>(<span class="str">"Continue"</span>)
+<span class="ind"></span>}
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">padding</span>()
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">orange</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">14</span>)
+}</div>
+  </div>
+
+  <div class="code-preview">
+    <div>
+      <div class="preview-box" style="height:100%">
+        <div class="preview-label">📱 Button Styles</div>
+        <div class="sim-vstack" style="gap:12px;width:100%">
+          <div class="sim-btn" onclick="this.textContent='Tapped! ✓';setTimeout(()=>this.textContent='Sign In',1200)">Sign In</div>
+          <div class="sim-btn outline">Cancel</div>
+          <div style="display:flex;justify-content:center;gap:20px">
+            <div style="font-size:28px;cursor:pointer" onclick="this.style.color=this.style.color=='var(--accent3)'?'#ef4444':'var(--accent3)'">❤️</div>
+            <div style="font-size:28px;cursor:pointer">⭐</div>
+            <div style="font-size:28px;cursor:pointer">🔔</div>
+          </div>
+          <div class="sim-btn" style="background:var(--accent);display:flex;gap:8px;align-items:center;justify-content:center;cursor:pointer">
+            ➡️ Continue
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="preview-box">
+        <div class="preview-label">📱 Full-Width Buttons (common in login screens)</div>
+        <div class="iphone" style="max-width:220px">
+          <div class="sim-vstack" style="gap:10px;width:100%">
+            <div style="font-size:20px;font-family:'Fraunces',serif;font-weight:800;color:var(--text);margin-bottom:6px">Sign In</div>
+            <div style="font-size:13px;color:var(--text2)">Enter your credentials</div>
+            <div style="width:100%;height:1px;background:var(--border);margin:6px 0"></div>
+            <div class="sim-btn" style="width:100%;text-align:center">Sign In</div>
+            <div class="sim-btn outline" style="width:100%;text-align:center">Cancel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- TEXT FIELD -->
+  <h3 style="font-family:'Fraunces',serif;font-size:26px;margin:10px 0 16px;color:var(--accent2)">📝 TextField</h3>
+
+  <div class="card">
+    <h3>What is TextField?</h3>
+    <p>The <code>TextField</code> view provides a user-editable text input area. It requires a <span class="hl">binding</span> — a two-way connection to a <code>@State</code> variable — so whatever the user types is stored in your app's state automatically. TextField shows a <span class="hl2">placeholder</span> (hint text) when the field is empty.</p>
+    <p>Use <code>SecureField</code> instead of TextField when you need a password field — it hides the text the user types.</p>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — TextField Examples</span>
+    </div>
+    <div class="code-body"><span class="cm">// TextFields require @State for two-way binding</span>
+<span class="kw">struct</span> <span class="ty">LoginForm</span>: <span class="ty">View</span> {
+
+<span class="ind"></span><span class="cm">// @State stores the current text input values</span>
+<span class="ind"></span><span class="kw">@State private var</span> name: <span class="ty">String</span> = <span class="str">""</span>
+<span class="ind"></span><span class="kw">@State private var</span> email: <span class="ty">String</span> = <span class="str">""</span>
+<span class="ind"></span><span class="kw">@State private var</span> password: <span class="ty">String</span> = <span class="str">""</span>
+
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span>(spacing: <span class="num">16</span>) {
+
+<span class="ind3"></span><span class="cm">// 1. Basic text field</span>
+<span class="ind3"></span><span class="ty">TextField</span>(<span class="str">"Enter your name"</span>, text: <span class="prop">$name</span>)
+
+<span class="ind3"></span><span class="cm">// 2. Styled text field</span>
+<span class="ind3"></span><span class="ty">TextField</span>(<span class="str">"Email address"</span>, text: <span class="prop">$email</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">textFieldStyle</span>(.<span class="prop">roundedBorder</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">keyboardType</span>(.<span class="prop">emailAddress</span>)
+
+<span class="ind3"></span><span class="cm">// 3. Password field (hidden text)</span>
+<span class="ind3"></span><span class="ty">SecureField</span>(<span class="str">"Password"</span>, text: <span class="prop">$password</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">textFieldStyle</span>(.<span class="prop">roundedBorder</span>)
+
+<span class="ind3"></span><span class="cm">// 4. Custom styled field</span>
+<span class="ind3"></span><span class="ty">TextField</span>(<span class="str">"Search..."</span>, text: <span class="prop">$name</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">padding</span>(<span class="num">12</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="prop">systemGray6</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">10</span>)
+
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+  </div>
+
+  <div class="code-preview">
+    <div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Live Binding Demo</span>
+        </div>
+        <div class="code-body"><span class="kw">struct</span> <span class="ty">GreetingView</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">@State private var</span> userName = <span class="str">""</span>
+
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span>(spacing: <span class="num">20</span>) {
+
+<span class="ind3"></span><span class="ty">TextField</span>(<span class="str">"Type your name..."</span>,
+<span class="ind3"></span><span class="ind"></span><span class="ind"></span>text: <span class="prop">$userName</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">padding</span>()
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="prop">secondarySystemBackground</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">10</span>)
+
+<span class="cm">// This text updates as the user types!</span>
+<span class="ind3"></span><span class="ty">Text</span>(userName.<span class="fn">isEmpty</span> ?
+<span class="ind3"></span><span class="ind"></span><span class="str">"Start typing above..."</span> :
+<span class="ind3"></span><span class="ind"></span><span class="str">"Hello, \(userName)! 👋"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title2</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">bold</span>()
+
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+      </div>
+    </div>
+    <div>
+      <div class="preview-box" style="height:100%">
+        <div class="preview-label">📱 Try it here — live demo!</div>
+        <div class="sim-vstack" style="gap:14px;width:100%">
+          <input class="sim-tf" placeholder="Type your name..." id="tf-name-demo" oninput="updateGreeting()">
+          <div id="greeting-output" style="font-size:18px;font-weight:700;color:var(--text);text-align:center;min-height:30px">Start typing above...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="warn">⚠️ <strong>TextField always needs a @State binding.</strong> If you try to create a TextField without a <code>$variable</code> binding, Xcode will show a compile error. The <code>$</code> prefix means "binding" — a two-way connection between the field and the variable.</div>
+
+  <hr>
+
+  <!-- MINI APP EXAMPLE -->
+  <h3 style="font-family:'Fraunces',serif;font-size:22px;margin:10px 0 16px;">🧩 Combining Controls: Mini Sign-In Screen</h3>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="code-dot" style="background:#ff5f57"></div>
+      <div class="code-dot" style="background:#febc2e"></div>
+      <div class="code-dot" style="background:#28c840"></div>
+      <span class="code-lang">Swift — Sign-In Screen Using All 4 Controls</span>
+    </div>
+    <div class="code-body"><span class="kw">struct</span> <span class="ty">SignInView</span>: <span class="ty">View</span> {
+
+<span class="ind"></span><span class="kw">@State private var</span> email = <span class="str">""</span>
+<span class="ind"></span><span class="kw">@State private var</span> password = <span class="str">""</span>
+
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span>(spacing: <span class="num">20</span>) {
+
+<span class="ind3"></span><span class="cm">// App logo — Image</span>
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"swift"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">system</span>(size: <span class="num">56</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">orange</span>)
+
+<span class="ind3"></span><span class="cm">// Title — Text</span>
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Welcome Back"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">bold</span>()
+
+<span class="ind3"></span><span class="cm">// Subtitle — Text</span>
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Sign in to continue"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">subheadline</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+
+<span class="ind3"></span><span class="cm">// Email input — TextField</span>
+<span class="ind3"></span><span class="ty">TextField</span>(<span class="str">"Email"</span>, text: <span class="prop">$email</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">padding</span>()
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="prop">secondarySystemBackground</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">keyboardType</span>(.<span class="prop">emailAddress</span>)
+
+<span class="ind3"></span><span class="cm">// Password input — SecureField</span>
+<span class="ind3"></span><span class="ty">SecureField</span>(<span class="str">"Password"</span>, text: <span class="prop">$password</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">padding</span>()
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>(.<span class="prop">secondarySystemBackground</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)
+
+<span class="ind3"></span><span class="cm">// Sign-In button — Button</span>
+<span class="ind3"></span><span class="ty">Button</span>(<span class="str">"Sign In"</span>) {
+<span class="ind3"></span><span class="ind"></span>print(<span class="str">"Signing in: \(email)"</span>)
+<span class="ind3"></span>}
+<span class="ind3"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+<span class="ind3"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind3"></span>.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>)
+<span class="ind3"></span>.<span class="fn">padding</span>()
+<span class="ind3"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind3"></span>.<span class="fn">cornerRadius</span>(<span class="num">14</span>)
+
+<span class="ind2"></span>}
+<span class="ind2"></span>.<span class="fn">padding</span>()
+<span class="ind"></span>}
+}</div>
+  </div>
+
+  <div style="display:flex;justify-content:center;margin:20px 0">
+    <div class="iphone" style="max-width:240px">
+      <div class="sim-vstack" style="gap:12px;width:100%;padding:8px 0">
+        <div style="font-size:42px;text-align:center">🧡</div>
+        <div style="font-size:22px;font-family:'Fraunces',serif;font-weight:800;color:var(--text);text-align:center">Welcome Back</div>
+        <div style="font-size:13px;color:var(--text2);text-align:center">Sign in to continue</div>
+        <input class="sim-tf" placeholder="Email" style="width:100%">
+        <input class="sim-tf" placeholder="Password" type="password" style="width:100%">
+        <div class="sim-btn" style="width:100%;text-align:center;cursor:pointer" onclick="this.textContent='✓ Signed In!';setTimeout(()=>this.textContent='Sign In',1500)">Sign In</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz">
+    <div class="quiz-badge">🧠 Quick Check — Basic Controls</div>
+    <div class="quiz-q">A user needs to type their email address. Which SwiftUI control should you use AND what does it require to work?</div>
+    <div class="quiz-opts">
+      <button class="qo" onclick="checkQ(this,'wrong')">Text — it can be tapped to edit</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Button — it opens a keyboard</button>
+      <button class="qo" onclick="checkQ(this,'correct')">TextField — and it requires a @State binding with the $ prefix</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Image — with the text systemName parameter</button>
+    </div>
+    <div class="quiz-fb ok">✅ Correct! TextField is the right control for text input. It requires a <code>@State</code> variable and you pass it with the <code>$</code> binding prefix: <code>TextField("placeholder", text: $myVar)</code>. The <code>$</code> creates a two-way connection so what the user types is stored automatically.</div>
+    <div class="quiz-fb bad">❌ Not quite. <code>TextField</code> is the right choice — and it always requires a <code>@State</code> variable passed with the <code>$</code> binding prefix. Without the binding, the field has nowhere to store what the user types.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(3)">Next: Practice Activities →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 — PRACTICE ACTIVITIES
+══════════════════════════════════════════ -->
+<div class="sp" id="s3">
+  <div class="s-tag">Section 04 · Student Practice</div>
+  <h2>Practice &amp; Try-It Activities</h2>
+  <p class="lead">Knowledge becomes skill through practice. Work through these challenges — predict outputs, spot mistakes, and build small components in your head before trying them in Xcode.</p>
+
+  <!-- ACTIVITY 1 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 1 — Predict the Output</div>
+    <h4>What will this code display on screen?</h4>
+    <div class="code-wrap" style="margin:14px 0">
+      <div class="code-header">
+        <div class="code-dot" style="background:#ff5f57"></div>
+        <div class="code-dot" style="background:#febc2e"></div>
+        <div class="code-dot" style="background:#28c840"></div>
+        <span class="code-lang">Swift</span>
+      </div>
+      <div class="code-body"><span class="ty">Text</span>(<span class="str">"LaGuardia College"</span>)
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">title</span>)
+<span class="ind"></span>.<span class="fn">bold</span>()
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">16</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)</div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Answer</button>
+    <div class="reveal-content">
+      <strong>Result:</strong> A white, bold, title-size text that reads "LaGuardia College" inside a blue rounded rectangle with 16pt of padding on all sides. The order works correctly here — padding is applied before background, so the blue fills the entire padded area including the space around the text. The <code>.cornerRadius(12)</code> at the end rounds all four corners of the blue box.
+      <div style="margin-top:12px;display:flex;justify-content:center">
+        <div style="font-size:20px;font-weight:700;color:#fff;background:#60a5fa;padding:16px 24px;border-radius:12px;display:inline-block">LaGuardia College</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 2 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 2 — Spot the Bug</div>
+    <h4>This code has a mistake. Can you find it?</h4>
+    <div class="code-wrap" style="margin:14px 0">
+      <div class="code-header">
+        <div class="code-dot" style="background:#ff5f57"></div>
+        <div class="code-dot" style="background:#febc2e"></div>
+        <div class="code-dot" style="background:#28c840"></div>
+        <span class="code-lang">Swift — Find the Bug</span>
+      </div>
+      <div class="code-body"><span class="kw">struct</span> <span class="ty">InputView</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> userName = <span class="str">""</span>   <span class="cm">// 🐛 bug is here</span>
+
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">TextField</span>(<span class="str">"Enter your name"</span>, text: <span class="prop">$userName</span>)
+<span class="ind"></span>}
+}</div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal the Bug</button>
+    <div class="reveal-content">
+      <strong>Bug:</strong> <code>var userName</code> is declared without <code>@State</code>. SwiftUI structs are value types — without <code>@State</code>, the variable cannot trigger a UI update when it changes. Also, <code>TextField</code> requires a binding (<code>$</code> prefix), which only works with <code>@State</code> variables. Without <code>@State</code>, Xcode shows a compiler error: "Cannot find '$userName' in scope."
+      <br><br>
+      <strong>Fix:</strong> Change <code>var userName = ""</code> to <code>@State private var userName = ""</code>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 3 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 3 — Modifier Order Challenge</div>
+    <h4>Two code blocks — which one produces a small blue badge? Which produces text with a thin blue highlight?</h4>
+    <div class="grid2" style="margin:14px 0">
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Block A</span>
+        </div>
+        <div class="code-body"><span class="ty">Text</span>(<span class="str">"NEW"</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">10</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">8</span>)</div>
+      </div>
+      <div class="code-wrap" style="margin-bottom:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Block B</span>
+        </div>
+        <div class="code-body"><span class="ty">Text</span>(<span class="str">"NEW"</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(<span class="num">10</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">8</span>)</div>
+      </div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Answer</button>
+    <div class="reveal-content">
+      <strong>Block A</strong> produces a full blue badge — padding is applied first (expanding the view), THEN background fills the larger padded area, making a proper blue rounded badge with space around the text.
+      <br><br>
+      <strong>Block B</strong> produces white text with a thin blue highlight only directly behind the letters, and white/transparent space around it — because background was applied before padding, so only the text-size area gets the blue fill.
+      <div style="margin-top:14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Block A ✅</div>
+          <div style="color:#fff;background:#60a5fa;padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px">NEW</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Block B (not ideal)</div>
+          <div style="padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;color:#fff"><span style="background:#60a5fa;padding:2px 3px">NEW</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 4 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 4 — Which Control?</div>
+    <h4>Match each task to the correct SwiftUI control</h4>
+    <div class="grid2" style="margin:14px 0">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <p style="font-size:14.5px;color:var(--text2);margin-bottom:8px">1. Show the user's full name as a label</p>
+        <p style="font-size:14.5px;color:var(--text2);margin-bottom:8px">2. Display the app logo icon</p>
+        <p style="font-size:14.5px;color:var(--text2);margin-bottom:8px">3. Let the user type their search query</p>
+        <p style="font-size:14.5px;color:var(--text2)">4. Trigger a "Save" action</p>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="badge b-blue">Text</span>
+          <span class="badge b-green">Image</span>
+          <span class="badge b-orange">Button</span>
+          <span class="badge b-purple">TextField</span>
+        </div>
+      </div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Answers</button>
+    <div class="reveal-content">
+      1. → <strong>Text</strong> — Static display of a string. <code>Text("John Doe")</code><br>
+      2. → <strong>Image</strong> — Display a graphic or SF Symbol. <code>Image(systemName: "app.fill")</code><br>
+      3. → <strong>TextField</strong> — User input. <code>TextField("Search...", text: $query)</code><br>
+      4. → <strong>Button</strong> — Triggers an action. <code>Button("Save") { saveData() }</code>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 5 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 5 — Build This in Xcode</div>
+    <h4>Write the SwiftUI code to build this profile card</h4>
+    <p>Your card should show: a circular person icon (SF Symbol), the name "Alex Morgan" in bold headline style, the subtitle "Student at LaGuardia" in secondary color, and a blue "View Profile" button below.</p>
+    <div style="display:flex;justify-content:center;margin:14px 0">
+      <div class="iphone" style="max-width:220px">
+        <div class="sim-vstack" style="gap:10px">
+          <div class="sim-img">👤</div>
+          <div style="font-size:17px;font-weight:700;color:var(--text)">Alex Morgan</div>
+          <div style="font-size:13px;color:var(--text2)">Student at LaGuardia</div>
+          <div class="sim-btn blue" style="font-size:13px;padding:8px 18px">View Profile</div>
+        </div>
+      </div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Solution</button>
+    <div class="reveal-content">
+      <div class="code-wrap" style="margin:0">
+        <div class="code-header">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">Swift — Solution</span>
+        </div>
+        <div class="code-body"><span class="kw">struct</span> <span class="ty">ProfileCard</span>: <span class="ty">View</span> {
+<span class="ind"></span><span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+<span class="ind2"></span><span class="ty">VStack</span>(spacing: <span class="num">12</span>) {
+
+<span class="ind3"></span><span class="ty">Image</span>(systemName: <span class="str">"person.circle.fill"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">system</span>(size: <span class="num">60</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">blue</span>)
+
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Alex Morgan"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">bold</span>()
+
+<span class="ind3"></span><span class="ty">Text</span>(<span class="str">"Student at LaGuardia"</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">subheadline</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">secondary</span>)
+
+<span class="ind3"></span><span class="ty">Button</span>(<span class="str">"View Profile"</span>) { }
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">padding</span>(.init(top: <span class="num">8</span>, leading: <span class="num">20</span>, bottom: <span class="num">8</span>, trailing: <span class="num">20</span>))
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind3"></span><span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">10</span>)
+<span class="ind2"></span>}
+<span class="ind"></span>}
+}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 6 -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 6 — Fix the Modifier Order</div>
+    <h4>This code is supposed to produce a green pill badge. What's wrong?</h4>
+    <div class="code-wrap" style="margin:14px 0">
+      <div class="code-header">
+        <div class="code-dot" style="background:#ff5f57"></div>
+        <div class="code-dot" style="background:#febc2e"></div>
+        <div class="code-dot" style="background:#28c840"></div>
+        <span class="code-lang">Swift — Fix This</span>
+      </div>
+      <div class="code-body"><span class="ty">Text</span>(<span class="str">"Active"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">999</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">green</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">horizontal</span>, <span class="num">14</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">vertical</span>, <span class="num">6</span>)</div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Fix</button>
+    <div class="reveal-content">
+      <strong>Two problems:</strong><br>
+      1. <code>.cornerRadius()</code> is applied before <code>.background()</code> — corner rounding needs to come AFTER background.<br>
+      2. <code>.background()</code> is applied before the padding — so the green background won't fill the padded pill shape.<br><br>
+      <strong>Correct order:</strong>
+      <div class="code-wrap" style="margin-top:10px">
+        <div class="code-body"><span class="ty">Text</span>(<span class="str">"Active"</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">horizontal</span>, <span class="num">14</span>)   <span class="cm">// 1. add space</span>
+<span class="ind"></span>.<span class="fn">padding</span>(.<span class="prop">vertical</span>, <span class="num">6</span>)     <span class="cm">// 2. add space</span>
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">green</span>)    <span class="cm">// 3. fill the expanded area</span>
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">999</span>)         <span class="cm">// 4. round the filled background</span></div>
+      </div>
+      <div style="margin-top:10px">
+        <div style="color:#fff;background:var(--accent3);padding:6px 14px;border-radius:999px;display:inline-block;font-size:14px;font-weight:600">Active ✅</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY 7 — DRAG-AND-DROP CONCEPT -->
+  <div class="challenge">
+    <div class="challenge-badge">🎯 Activity 7 — What Modifier Is Missing?</div>
+    <h4>This button code renders correctly but is very small and hard to tap. Which modifier(s) should be added to make it a full-width, properly-sized button?</h4>
+    <div class="code-wrap" style="margin:14px 0">
+      <div class="code-header">
+        <div class="code-dot" style="background:#ff5f57"></div>
+        <div class="code-dot" style="background:#febc2e"></div>
+        <div class="code-dot" style="background:#28c840"></div>
+        <span class="code-lang">Swift</span>
+      </div>
+      <div class="code-body"><span class="ty">Button</span>(<span class="str">"Create Account"</span>) { }
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)</div>
+    </div>
+    <button class="reveal-btn" onclick="toggleReveal(this)">👁️ Reveal Answer</button>
+    <div class="reveal-content">
+      The button is missing <strong>.padding()</strong> and <strong>.frame(maxWidth: .infinity)</strong>. Without padding, the background only covers the tiny text area. Without maxWidth, it doesn't stretch across the screen. Here's the fix:
+      <div class="code-wrap" style="margin-top:10px">
+        <div class="code-body"><span class="ty">Button</span>(<span class="str">"Create Account"</span>) { }
+<span class="ind"></span>.<span class="fn">font</span>(.<span class="prop">headline</span>)
+<span class="ind"></span>.<span class="fn">foregroundColor</span>(.<span class="prop">white</span>)
+<span class="ind"></span>.<span class="fn">frame</span>(maxWidth: .<span class="prop">infinity</span>)   <span class="cm">// ← stretch full width</span>
+<span class="ind"></span>.<span class="fn">padding</span>()                     <span class="cm">// ← add tap target & visual height</span>
+<span class="ind"></span>.<span class="fn">background</span>(<span class="ty">Color</span>.<span class="prop">blue</span>)        <span class="cm">// ← fills the padded full-width area</span>
+<span class="ind"></span>.<span class="fn">cornerRadius</span>(<span class="num">12</span>)</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(2)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(4)">Next: Common Mistakes →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 — COMMON MISTAKES
+══════════════════════════════════════════ -->
+<div class="sp" id="s4">
+  <div class="s-tag">Section 05 · Watch Out For</div>
+  <h2>Common Beginner Mistakes</h2>
+  <p class="lead">Every developer makes these mistakes — especially when starting out. Learning to recognize them early will save you hours of debugging frustration in your labs.</p>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Applying modifiers in the wrong order</div>
+    <div class="mistake-b">The most common SwiftUI mistake. Remember: modifiers apply from top to bottom, and each wraps the current state of the view. The most important rule: <strong>.padding() must come before .background()</strong> if you want the background to fill the padded area. And <strong>.cornerRadius() must come after .background()</strong> to round the filled shape.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Forgetting @State on a TextField binding variable</div>
+    <div class="mistake-b">If you declare <code>var name = ""</code> instead of <code>@State private var name = ""</code>, Xcode will show a compile error when you try to use <code>$name</code> in a TextField. The <code>$</code> binding syntax only works with <code>@State</code> (and other property wrappers). Always use <code>@State private var</code> for any variable tied to a TextField.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Using Image without .resizable() when sizing</div>
+    <div class="mistake-b">If you try to use <code>.frame(width: 80, height: 80)</code> on an Image without first calling <code>.resizable()</code>, the image won't resize — it will stay at its original size and either overflow or show incorrectly. Always add <code>.resizable()</code> as the first modifier on any Image you want to resize, followed by <code>.scaledToFit()</code> or <code>.scaledToFill()</code>.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Confusing Text (display) with TextField (input)</div>
+    <div class="mistake-b"><code>Text</code> is read-only — it displays information but users cannot type in it. <code>TextField</code> is editable — users can type into it. A common mistake is trying to use Text for user input or adding unnecessary bindings to Text views. If users need to type: use TextField. If you're showing information: use Text.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Missing the $ prefix in TextField binding</div>
+    <div class="mistake-b">Writing <code>TextField("Name", text: userName)</code> instead of <code>TextField("Name", text: $userName)</code>. The dollar sign <code>$</code> creates a binding (a two-way connection) between the TextField and the state variable. Without it, the TextField cannot write changes back to the variable. Xcode will show "Cannot convert value of type 'String' to expected argument type 'Binding&lt;String&gt;'"</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Not using .font() to size SF Symbol images</div>
+    <div class="mistake-b">SF Symbol icons (Image with systemName) are treated like text — their size is controlled by <code>.font()</code>, not <code>.frame()</code>. For example: <code>Image(systemName: "star.fill").font(.largeTitle)</code> makes a large icon. Using <code>.frame(width: 50)</code> alone won't resize an SF Symbol the way you might expect. For non-symbol (asset) images, use <code>.resizable()</code> + <code>.frame()</code>.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Button action closure is empty or missing</div>
+    <div class="mistake-b">Buttons require an action closure — even if it's empty for now: <code>Button("Save") { }</code>. The curly braces cannot be omitted completely. Also, beginners sometimes confuse the label and action positions. Always remember: <code>Button("label text") { /* action here */ }</code>. If the button should navigate or do something later, put a <code>print()</code> statement inside as a placeholder so you can verify the button works in the simulator.</div>
+  </div>
+
+  <div class="mistake">
+    <div class="mistake-h" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span>Expecting UI to update without state</div>
+    <div class="mistake-b">This is fundamental to SwiftUI: if you change a regular variable, the UI will NOT update. SwiftUI only re-renders views when <code>@State</code> (or other tracked properties like <code>@ObservedObject</code>) change. If your UI isn't updating when you expect it to, the first thing to check is whether the variable causing the update is marked with <code>@State</code>.</div>
+  </div>
+
+  <div class="quiz">
+    <div class="quiz-badge">🧠 Mistake Recognition Quiz</div>
+    <div class="quiz-q">A student writes this code and complains "my Image is huge and taking over the screen!" What is the most likely fix?</div>
+    <div class="code-wrap" style="margin:14px 0">
+      <div class="code-body"><span class="ty">Image</span>(<span class="str">"banner_photo"</span>)
+<span class="ind"></span>.<span class="fn">frame</span>(width: <span class="num">100</span>, height: <span class="num">100</span>)</div>
+    </div>
+    <div class="quiz-opts">
+      <button class="qo" onclick="checkQ(this,'wrong')">Add .cornerRadius() to constrain the image</button>
+      <button class="qo" onclick="checkQ(this,'correct')">Add .resizable() before .frame() so the image can be resized</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Change Image to Text to display the image name</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">Use a smaller frame value like width: 10</button>
+    </div>
+    <div class="quiz-fb ok">✅ Correct! Asset images are not resizable by default. You must add <code>.resizable()</code> as the first modifier, then add <code>.scaledToFit()</code> or <code>.scaledToFill()</code>, and then <code>.frame()</code> to constrain the size. Without <code>.resizable()</code>, the image ignores the frame entirely.</div>
+    <div class="quiz-fb bad">❌ Not quite. The fix is to add <code>.resizable()</code> before <code>.frame()</code>. Without it, SwiftUI ignores the frame size for images. The corrected code: <code>Image("banner_photo").resizable().scaledToFit().frame(width: 100, height: 100)</code></div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(3)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(5)">Next: Final Review →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 — FINAL REVIEW
+══════════════════════════════════════════ -->
+<div class="sp" id="s5">
+  <div class="s-tag">Section 06 · Summary &amp; Next Steps</div>
+  <h2>Final Review</h2>
+  <p class="lead">Let's cement what you've learned with a summary, key terms, a final quiz, and a preview of what's coming next in MAC221.</p>
+
+  <div class="sum-grid">
+    <div class="sum-item">
+      <h4>3.1 Views &amp; Modifiers</h4>
+      <ul>
+        <li>Every visible element is a View</li>
+        <li>Views are structs with a body property</li>
+        <li>Modifiers wrap and transform views</li>
+        <li>Chaining: view → mod1 → mod2 → mod3</li>
+        <li>Order matters: padding before background</li>
+        <li>background before cornerRadius</li>
+      </ul>
+    </div>
+    <div class="sum-item">
+      <h4>3.2 Basic Controls</h4>
+      <ul>
+        <li>Text — display strings, supports rich modifiers</li>
+        <li>Image — SF Symbols or asset photos</li>
+        <li>Button — label + action closure required</li>
+        <li>TextField — requires @State + $ binding</li>
+        <li>SecureField — use for passwords</li>
+        <li>Controls combine to build real screens</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Fraunces',serif;font-size:22px;margin:24px 0 14px;">📚 Key Terms — Click to Reveal Definitions</h3>
+  <div class="term-grid">
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>View</h4><small>Click to define</small></div>
+      <div class="term-back">A SwiftUI struct conforming to the View protocol. Has a <code>body</code> property that returns the visual content. Everything visible on screen is a View.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Modifier</h4><small>Click to define</small></div>
+      <div class="term-back">A method called on a View that returns a new transformed version of that View. Applied using dot syntax. Order affects the result.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>@State</h4><small>Click to define</small></div>
+      <div class="term-back">A property wrapper that tells SwiftUI to watch this variable. When it changes, SwiftUI automatically re-renders the affected views. Required for TextField bindings.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Binding ($)</h4><small>Click to define</small></div>
+      <div class="term-back">A two-way connection between a value and a view. The $ prefix creates a binding from a @State variable. Used with TextField to link the field to a variable.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>SF Symbols</h4><small>Click to define</small></div>
+      <div class="term-back">Apple's library of 5,000+ icons built into iOS. Loaded with <code>Image(systemName: "name")</code>. Sized using <code>.font()</code>. Free to use in all Apple apps.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>body property</h4><small>Click to define</small></div>
+      <div class="term-back">The required computed property in every SwiftUI View. It returns "some View" — the description of what should appear on screen. SwiftUI calls this to render the interface.</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="quiz">
+    <div class="quiz-badge">🏆 Final Review Quiz</div>
+    <div class="quiz-q">You want to display a system icon of a star that is large, colored gold, has padding around it, and sits on a dark background with rounded corners. What is the CORRECT modifier order?</div>
+    <div class="quiz-opts">
+      <button class="qo" onclick="checkQ(this,'wrong')">.background() → .padding() → .cornerRadius() → .font() → .foregroundColor()</button>
+      <button class="qo" onclick="checkQ(this,'correct')">.font() → .foregroundColor() → .padding() → .background() → .cornerRadius()</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">.cornerRadius() → .background() → .padding() → .font() → .foregroundColor()</button>
+      <button class="qo" onclick="checkQ(this,'wrong')">.foregroundColor() → .cornerRadius() → .background() → .font() → .padding()</button>
+    </div>
+    <div class="quiz-fb ok">✅ Perfect! The correct sequence: 1) <code>.font()</code> to size the icon, 2) <code>.foregroundColor()</code> to colour it gold, 3) <code>.padding()</code> to add space around it, 4) <code>.background()</code> to fill the padded area with dark colour, 5) <code>.cornerRadius()</code> to round the filled background. This is the standard pattern you'll use hundreds of times in MAC221.</div>
+    <div class="quiz-fb bad">❌ Not quite. The correct order is: <code>.font()</code> → <code>.foregroundColor()</code> → <code>.padding()</code> → <code>.background()</code> → <code>.cornerRadius()</code>. Remember: size and colour the view first, then add space (padding), then fill (background), then round the filled background (cornerRadius).</div>
+  </div>
+
+  <hr>
+
+  <h3 style="font-family:'Fraunces',serif;font-size:22px;margin:24px 0 14px;">🗺️ What Comes Next in MAC221</h3>
+  <div class="next-grid">
+    <div class="next-item">
+      <span class="badge b-orange">3.3</span>
+      <h4>Layout with Stacks</h4>
+      <p>HStack, VStack, ZStack — arrange your views horizontally, vertically, and in layers. The foundation of all iOS layouts.</p>
+    </div>
+    <div class="next-item">
+      <span class="badge b-blue">3.4</span>
+      <h4>Spacers &amp; Alignment</h4>
+      <p>Push views apart with Spacer(), separate sections with Divider(), and precisely control alignment in any stack.</p>
+    </div>
+    <div class="next-item">
+      <span class="badge b-purple">3.5</span>
+      <h4>State &amp; Data Flow</h4>
+      <p>@State in depth, @Binding, counters, toggles, and how user interactions update the UI in real time.</p>
+    </div>
+    <div class="next-item">
+      <span class="badge b-green">3.6</span>
+      <h4>Xcode Previews</h4>
+      <p>Master the Canvas preview, preview multiple device sizes at once, and build faster with live visual feedback.</p>
+    </div>
+    <div class="next-item">
+      <span class="badge b-orange">Week 5–6</span>
+      <h4>Navigation &amp; Lists</h4>
+      <p>NavigationView, TabView, dynamic List with ForEach — building multi-screen apps with real data.</p>
+    </div>
+    <div class="next-item">
+      <span class="badge b-blue">Week 7–8</span>
+      <h4>User Input &amp; Forms</h4>
+      <p>Toggle, Picker, Slider, DatePicker, Form, Section — all the controls for rich data entry interfaces.</p>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,rgba(249,115,22,.1),rgba(56,189,248,.08));border:1px solid rgba(249,115,22,.25);border-radius:16px;padding:28px;text-align:center;margin:24px 0">
+    <div style="font-size:40px;margin-bottom:12px">🚀</div>
+    <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:800;color:var(--text);margin-bottom:10px">You're Ready to Build</div>
+    <p style="font-size:15.5px;color:var(--text2);max-width:520px;margin:0 auto;line-height:1.75">Views, modifiers, and basic controls are the building blocks of every iOS app ever made. You now have the foundation. Everything from here gets more powerful — but it all starts with what you learned today.</p>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(4)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(0)" style="background:var(--accent3);color:#0e1117">↩ Back to Start</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+let current = 0;
+const total = 6;
+const visited = new Set([0]);
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+function goTo(idx) {
+  document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => { n.classList.remove('active'); n.classList.remove('done'); });
+
+  document.getElementById('s' + idx).classList.add('active');
+  document.querySelectorAll('.ni')[idx].classList.add('active');
+
+  visited.add(idx);
+
+  document.querySelectorAll('.ni').forEach((item, i) => {
+    if (visited.has(i) && i !== idx) item.classList.add('done');
+  });
+
+  const pct = Math.round((visited.size / total) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+
+  document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
+  current = idx;
+}
+
+/* ════════════════════════════════════════
+   ACCORDION
+════════════════════════════════════════ */
+function toggleAcc(h) {
+  const b = h.nextElementSibling;
+  const isOpen = h.classList.contains('open');
+  h.closest('.sp').querySelectorAll('.acc-h').forEach(x => {
+    x.classList.remove('open');
+    x.nextElementSibling.classList.remove('open');
+  });
+  if (!isOpen) { h.classList.add('open'); b.classList.add('open'); }
+}
+
+/* ════════════════════════════════════════
+   TABS
+════════════════════════════════════════ */
+function switchTab(btn, id) {
+  const wrap = btn.closest('.tabs');
+  wrap.querySelectorAll('.tb').forEach(b => b.classList.remove('active'));
+  wrap.querySelectorAll('.tp').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+/* ════════════════════════════════════════
+   QUIZ
+════════════════════════════════════════ */
+function checkQ(btn, result) {
+  const wrap = btn.closest('.quiz');
+  if (wrap.dataset.answered) return;
+  wrap.dataset.answered = '1';
+  wrap.querySelectorAll('.qo').forEach(o => o.style.pointerEvents = 'none');
+  wrap.querySelectorAll('.quiz-fb').forEach(f => f.classList.remove('show'));
+  if (result === 'correct') {
+    btn.classList.add('correct');
+    wrap.querySelector('.quiz-fb.ok').classList.add('show');
+  } else {
+    btn.classList.add('wrong');
+    wrap.querySelector('.quiz-fb.bad').classList.add('show');
+    wrap.querySelectorAll('.qo').forEach(o => {
+      if (o.getAttribute('onclick') && o.getAttribute('onclick').includes("'correct'")) o.classList.add('correct');
+    });
+  }
+}
+
+/* ════════════════════════════════════════
+   REVEAL / CHALLENGE
+════════════════════════════════════════ */
+function toggleReveal(btn) {
+  const content = btn.nextElementSibling;
+  content.classList.toggle('show');
+  btn.textContent = content.classList.contains('show') ? '🙈 Hide Answer' : '👁️ Reveal Answer';
+}
+
+/* ════════════════════════════════════════
+   FLIP TERMS
+════════════════════════════════════════ */
+function flipTerm(card) {
+  card.classList.toggle('flipped');
+}
+
+/* ════════════════════════════════════════
+   MISTAKE TOGGLE
+════════════════════════════════════════ */
+function toggleMistake(h) {
+  h.nextElementSibling.classList.toggle('open');
+}
+
+/* ════════════════════════════════════════
+   LIVE GREETING DEMO
+════════════════════════════════════════ */
+function updateGreeting() {
+  const val = document.getElementById('tf-name-demo').value;
+  const out = document.getElementById('greeting-output');
+  out.textContent = val.trim() === '' ? 'Start typing above...' : 'Hello, ' + val + '! 👋';
+}
+
+/* ════════════════════════════════════════
+   INTERACTIVE MODIFIER DEMO
+════════════════════════════════════════ */
+const mods = {};
+
+function toggleMod(btn, key) {
+  btn.classList.toggle('on');
+  mods[key] = btn.classList.contains('on');
+  applyMods();
+}
+
+function applyMods() {
+  const el = document.getElementById('mod-text-demo');
+  // reset
+  el.style.cssText = 'font-size:18px;color:var(--text);transition:all .3s;text-align:center;background:none;padding:0;border-radius:0;box-shadow:none;font-weight:normal;';
+  if (mods['font'])    el.style.fontSize = '26px';
+  if (mods['bold'])    el.style.fontWeight = '700';
+  if (mods['color'])   el.style.color = 'var(--accent)';
+  if (mods['padding']) el.style.padding = '14px 20px';
+  if (mods['bg'])      el.style.background = 'rgba(56,189,248,.18)';
+  if (mods['corner'])  el.style.borderRadius = '12px';
+  if (mods['shadow'])  el.style.boxShadow = '0 4px 16px rgba(0,0,0,.5)';
+}
+
+/* init */
+goTo(0);
+</script>
+</body>
+</html>

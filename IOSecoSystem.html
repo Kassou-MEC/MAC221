@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 – The iOS Ecosystem & Xcode</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #8b5cf6;
+    --apple: #147ce5;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --card: #151f30;
+    --glow: rgba(59,130,246,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 270px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+  }
+
+  #sidebar-header {
+    padding: 24px 20px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  #sidebar-header .course-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  #sidebar-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  /* progress */
+  #progress-wrap { padding: 14px 20px 10px; border-bottom: 1px solid var(--border); }
+  #progress-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; display:flex; justify-content:space-between; }
+  #progress-bar-bg { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  #progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:4px; transition: width .4s ease; width: 10%; }
+
+  /* nav */
+  #nav { overflow-y: auto; flex: 1; padding: 10px 0; }
+  #nav::-webkit-scrollbar { width: 4px; }
+  #nav::-webkit-scrollbar-track { background: transparent; }
+  #nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text2);
+    transition: all .2s;
+    border-left: 3px solid transparent;
+    line-height: 1.3;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--glow); color: var(--accent); border-left-color: var(--accent); }
+  .nav-item .num { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); min-width: 18px; }
+  .nav-item.done .num { color: var(--green); }
+  .nav-item.done { color: var(--text2); }
+  .nav-item.done::after { content: '✓'; font-size: 12px; color: var(--green); margin-left: auto; }
+
+  /* ── MAIN ── */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    position: relative;
+  }
+  #main::-webkit-scrollbar { width: 6px; }
+  #main::-webkit-scrollbar-track { background: var(--bg); }
+  #main::-webkit-scrollbar-thumb { background: var(--border); border-radius:4px; }
+
+  /* section pages */
+  .section-page {
+    display: none;
+    min-height: 100vh;
+    padding: 40px 48px;
+    max-width: 900px;
+  }
+  .section-page.active { display: block; }
+
+  /* section header */
+  .section-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .section-page h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .section-page .lead {
+    font-size: 17px;
+    color: var(--text2);
+    margin-bottom: 30px;
+    max-width: 680px;
+    line-height: 1.7;
+  }
+
+  /* objectives box */
+  .objectives {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+  }
+  .objectives h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 10px; font-family: 'Syne', sans-serif; }
+  .objectives ul { list-style: none; }
+  .objectives ul li { font-size: 15px; color: var(--text2); padding: 4px 0; padding-left: 16px; position: relative; }
+  .objectives ul li::before { content: '→'; position: absolute; left: 0; color: var(--accent2); }
+
+  /* content cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 18px;
+  }
+  .card h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  .card p { font-size: 15px; color: var(--text2); line-height: 1.7; }
+  .card p + p { margin-top: 10px; }
+
+  /* grid */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+
+  /* icon card */
+  .icon-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: all .25s;
+    cursor: default;
+  }
+  .icon-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .icon-card .ico { font-size: 28px; margin-bottom: 10px; }
+  .icon-card h4 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .icon-card p { font-size: 14px; color: var(--text3); line-height: 1.5; }
+
+  /* accordion */
+  .accordion { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .acc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    background: var(--surface);
+    transition: background .2s;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .acc-header:hover { background: var(--surface2); }
+  .acc-header .arr { transition: transform .3s; font-size: 14px; color: var(--text3); }
+  .acc-header.open .arr { transform: rotate(180deg); }
+  .acc-body { display: none; padding: 16px 20px; background: var(--card); font-size: 15px; color: var(--text2); line-height: 1.7; border-top: 1px solid var(--border); }
+  .acc-body.open { display: block; }
+
+  /* tabs */
+  .tabs { margin-bottom: 18px; }
+  .tab-buttons { display: flex; gap: 4px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Xcode mock */
+  #xcode-mock {
+    background: #1e1e2e;
+    border: 1px solid #2a2a3e;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  #xcode-titlebar {
+    background: #252535;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #2a2a3e;
+  }
+  .xc-dot { width:12px; height:12px; border-radius:50%; }
+  .xc-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #666; margin-left: 10px; }
+  #xcode-body { display: grid; grid-template-columns: 200px 1fr 180px; height: 340px; }
+  .xc-panel { border-right: 1px solid #2a2a3e; overflow: hidden; position: relative; cursor: pointer; transition: background .2s; }
+  .xc-panel:last-child { border-right: none; }
+  .xc-panel:hover { background: rgba(59,130,246,.06); }
+  .xc-panel-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(59,130,246,.85);
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 12px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity .2s;
+    font-weight: 600;
+  }
+  .xc-panel:hover .xc-panel-label { opacity: 1; }
+  .xc-panel-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #555; padding: 10px 12px 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .xc-file { display: flex; align-items: center; gap: 6px; padding: 5px 12px; font-size: 13px; color: #888; cursor: pointer; }
+  .xc-file:hover { background: rgba(255,255,255,.04); color: #ccc; }
+  .xc-file.sel { background: rgba(59,130,246,.2); color: #7eb8f7; }
+  .xc-file-dot { width:6px; height:6px; border-radius:1px; background: var(--accent2); flex-shrink:0; }
+  .xc-code { padding: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #cdd6f4; line-height: 1.7; }
+  .kw { color: #cba6f7; }
+  .str { color: #a6e3a1; }
+  .cm { color: #585b70; }
+  .ty { color: #89b4fa; }
+  .ln { color: #45475a; margin-right: 10px; user-select:none; }
+  .xc-inspector { padding: 10px 12px; }
+  .xc-prop { border-bottom: 1px solid #2a2a3e; padding: 8px 0; }
+  .xc-prop-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+  .xc-prop-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #89dceb; }
+  #xcode-bottom { border-top: 1px solid #2a2a3e; padding: 8px 14px; display: flex; align-items: center; gap: 10px; background: #1a1a2a; }
+  .xc-dbg-msg { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a6e3a1; }
+  .xc-err { color: #f38ba8; }
+
+  /* workflow diagram */
+  #workflow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .wf-step {
+    flex-shrink: 0;
+    text-align: center;
+    cursor: pointer;
+  }
+  .wf-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    transition: all .25s;
+    min-width: 100px;
+  }
+  .wf-step:hover .wf-box { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .wf-ico { font-size: 22px; margin-bottom: 6px; }
+  .wf-arrow { color: var(--text3); font-size: 20px; padding: 0 6px; flex-shrink:0; margin-top:-10px; }
+  #wf-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 15px;
+    color: var(--text2);
+    min-height: 60px;
+    margin-top: 4px;
+    transition: all .3s;
+  }
+
+  /* quiz */
+  .quiz-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin: 20px 0; }
+  .quiz-wrap h4 { font-family: 'Syne', sans-serif; font-size: 16px; color: var(--accent2); margin-bottom: 6px; }
+  .quiz-q { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 14px; line-height: 1.5; }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    padding: 10px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text2);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+  }
+  .quiz-opt:hover { border-color: var(--accent); color: var(--text); }
+  .quiz-opt.correct { background: rgba(16,185,129,.15); border-color: var(--green); color: var(--green); }
+  .quiz-opt.wrong { background: rgba(239,68,68,.1); border-color: var(--red); color: var(--red); }
+  .quiz-feedback { margin-top: 12px; font-size: 15px; padding: 10px 14px; border-radius: 8px; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(16,185,129,.1); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+  .quiz-feedback.bad { background: rgba(239,68,68,.08); color: #f87171; border: 1px solid rgba(239,68,68,.3); }
+
+  /* nav buttons */
+  #nav-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 11px 24px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  /* badge */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .badge-blue { background: rgba(59,130,246,.15); color: var(--accent); border: 1px solid rgba(59,130,246,.3); }
+  .badge-cyan { background: rgba(6,182,212,.12); color: var(--accent2); border: 1px solid rgba(6,182,212,.3); }
+  .badge-purple { background: rgba(139,92,246,.12); color: #a78bfa; border: 1px solid rgba(139,92,246,.3); }
+  .badge-green { background: rgba(16,185,129,.12); color: var(--green); border: 1px solid rgba(16,185,129,.3); }
+
+  /* platform tabs special */
+  .platform-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 26px;
+  }
+  .platform-card h3 { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; margin-bottom:6px; }
+  .platform-card .sub { font-size: 14px; color: var(--text3); margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; }
+  .platform-card p { font-size: 15px; color: var(--text2); line-height: 1.7; }
+  .platform-card ul { list-style: none; margin-top: 12px; }
+  .platform-card ul li { font-size: 15px; color: var(--text2); padding: 3px 0 3px 16px; position: relative; }
+  .platform-card ul li::before { content: '▸'; position: absolute; left: 0; color: var(--accent); }
+
+  /* key term reveal */
+  .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+  .term-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    perspective: 600px;
+    min-height: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .term-front, .term-back {
+    position: absolute; inset: 0;
+    padding: 14px 16px;
+    border-radius: 10px;
+    transition: opacity .3s;
+  }
+  .term-front { opacity: 1; }
+  .term-back { opacity: 0; background: var(--surface2); font-size: 14px; color: var(--text2); line-height: 1.5; display: flex; align-items: center; }
+  .term-card.flipped .term-front { opacity: 0; }
+  .term-card.flipped .term-back { opacity: 1; }
+  .term-front h4 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .term-front small { font-size: 13px; color: var(--text3); }
+
+  /* mistake reveal */
+  .mistake {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .mistake-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; }
+  .mistake-icon { font-size: 18px; }
+  .mistake-title { font-size: 15px; font-weight: 500; color: var(--text); }
+  .mistake-body { display: none; padding: 12px 16px 14px; border-top: 1px solid var(--border); font-size: 15px; color: var(--text2); line-height: 1.6; }
+  .mistake-body.open { display: block; }
+
+  /* steps list */
+  .steps { list-style: none; counter-reset: step-ctr; }
+  .steps li {
+    counter-increment: step-ctr;
+    padding: 12px 16px 12px 48px;
+    position: relative;
+    font-size: 15px;
+    color: var(--text2);
+    border-left: 2px solid var(--border);
+    margin-left: 16px;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  .steps li::before {
+    content: counter(step-ctr);
+    position: absolute;
+    left: -14px;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* tip box */
+  .tip {
+    background: rgba(245,158,11,.07);
+    border: 1px solid rgba(245,158,11,.25);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #fbbf24;
+    margin: 14px 0;
+    line-height: 1.6;
+  }
+  .tip strong { color: #f59e0b; }
+
+  /* info box */
+  .info {
+    background: rgba(59,130,246,.06);
+    border: 1px solid rgba(59,130,246,.2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: var(--text2);
+    margin: 14px 0;
+    line-height: 1.6;
+  }
+
+  /* horizontal rule */
+  hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* code inline */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent2);
+  }
+
+  /* summary section */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+  .summary-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .summary-item h4 { font-family: 'Syne', sans-serif; font-size: 15px; color: var(--accent); margin-bottom: 8px; }
+  .summary-item ul { list-style: none; }
+  .summary-item ul li { font-size: 14px; color: var(--text2); padding: 3px 0 3px 14px; position: relative; }
+  .summary-item ul li::before { content: '•'; position: absolute; left: 0; color: var(--accent2); }
+
+  /* ready section */
+  #ready-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,.15), rgba(139,92,246,.1));
+    border: 1px solid rgba(59,130,246,.3);
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    margin: 20px 0;
+  }
+  #ready-banner h3 { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  #ready-banner p { color: var(--text2); font-size: 16px; max-width: 520px; margin: 0 auto 16px; line-height: 1.7; }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    .section-page { padding: 24px 20px; }
+    .grid-2, .grid-3, .term-grid, .summary-grid { grid-template-columns: 1fr; }
+    #xcode-body { grid-template-columns: 1fr; height: auto; }
+  }
+
+  /* animations */
+  .section-page.active { animation: fadeIn .4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── HERO SECTION ── */
+  #hero-gfx {
+    margin-bottom: 28px;
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+  }
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: .4;
+    pointer-events: none;
+  }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <div class="course-tag">MAC 221</div>
+    <h1>iOS Ecosystem<br>&amp; Xcode</h1>
+        <h1>Prof. Khalid Kassou</h1>
+
+  </div>
+  <div id="progress-wrap">
+    <div id="progress-label"><span>Progress</span><span id="pct">10%</span></div>
+    <div id="progress-bar-bg"><div id="progress-bar"></div></div>
+  </div>
+  <div id="nav">
+    <div class="nav-item active" onclick="goTo(0)"><span class="num">01</span> Introduction &amp; Ecosystem</div>
+    <div class="nav-item" onclick="goTo(1)"><span class="num">02</span> Apple Platforms Overview</div>
+    <div class="nav-item" onclick="goTo(2)"><span class="num">03</span> The Role of Xcode</div>
+    <div class="nav-item" onclick="goTo(3)"><span class="num">04</span> Xcode Interface Tour</div>
+    <div class="nav-item" onclick="goTo(4)"><span class="num">05</span> Creating a New Project</div>
+    <div class="nav-item" onclick="goTo(5)"><span class="num">06</span> Core Dev Workflow</div>
+    <div class="nav-item" onclick="goTo(6)"><span class="num">07</span> Simulator &amp; Debugging</div>
+    <div class="nav-item" onclick="goTo(7)"><span class="num">08</span> Code Signing &amp; App Store</div>
+    <div class="nav-item" onclick="goTo(8)"><span class="num">09</span> Best Practices</div>
+    <div class="nav-item" onclick="goTo(9)"><span class="num">10</span> What Comes Next</div>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<main id="main">
+
+<!-- ══════════════════════════════════════════
+     SECTION 1 – INTRODUCTION
+══════════════════════════════════════════ -->
+<div class="section-page active" id="s0">
+  <div id="hero-gfx">
+    <div class="hero-orb" style="width:200px;height:200px;background:#3b82f6;top:-80px;left:-40px;"></div>
+    <div class="hero-orb" style="width:160px;height:160px;background:#8b5cf6;top:-60px;left:200px;"></div>
+    <div class="hero-orb" style="width:120px;height:120px;background:#06b6d4;top:-30px;left:450px;"></div>
+  </div>
+  <div class="section-tag">Section 01 · Introduction</div>
+  <h2>The iOS Ecosystem</h2>
+  <p class="lead">Welcome to MAC221. Before writing a single line of Swift, you need to understand the world you're building for — the Apple iOS ecosystem, and the tools that make it tick.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Explain what the iOS ecosystem is and why it matters</li>
+      <li>Describe how hardware, software, and services work together</li>
+      <li>Understand Apple's controlled platform philosophy</li>
+      <li>Identify why ecosystem knowledge makes you a better developer</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is the iOS Ecosystem?</h3>
+    <p>An <strong>ecosystem</strong> in technology refers to an interconnected collection of hardware, software, services, and development tools designed to work together seamlessly. Apple's iOS ecosystem is one of the most tightly integrated platforms in the world.</p>
+    <p>From your iPhone to iCloud, from Xcode to the App Store — every component is designed with the same design language, security model, and user experience standards. As a developer, you're not just writing an app — you're joining this ecosystem.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="icon-card">
+      <div class="ico">📱</div>
+      <h4>Hardware</h4>
+      <p>iPhones, iPads, Apple Watch, Mac, Apple TV — all Apple silicon, all unified.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">⚙️</div>
+      <h4>Software</h4>
+      <p>iOS, iPadOS, macOS, watchOS — consistent APIs and shared frameworks.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">☁️</div>
+      <h4>Services</h4>
+      <p>iCloud, App Store, Apple ID, Sign in with Apple — the glue that binds it all.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Why Does the Ecosystem Matter to You as a Developer?</h3>
+    <p>Apple's controlled ecosystem means <strong>consistent device specs, predictable screen sizes, and well-documented APIs</strong>. Unlike Android's fragmented hardware landscape, iOS apps run on a relatively limited set of devices — making testing easier and quality higher.</p>
+    <p>The ecosystem also gives you access to powerful frameworks like <code>SwiftUI</code>, <code>CoreData</code>, <code>ARKit</code>, and <code>HealthKit</code> — pre-built capabilities you can add to your apps with very few lines of code.</p>
+  </div>
+
+  <div class="tip"><strong>💡 Instructor Note:</strong> Think of the ecosystem as an apartment building — Apple owns and maintains the building, sets the rules, and provides shared utilities. As a developer, you're a tenant building your own apartment (app) within that structure.</div>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin:20px 0 12px;">Key Concepts – Click to Expand</h3>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What does "walled garden" mean? <span class="arr">▼</span></div>
+    <div class="acc-body">Apple's "walled garden" refers to the closed, controlled nature of the iOS platform. Every app must go through App Store review. Only code-signed apps run on devices. This ensures security and quality, but means developers must follow Apple's guidelines — a trade-off that benefits end users and, ultimately, your reputation as a developer.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">How does Apple enforce consistency? <span class="arr">▼</span></div>
+    <div class="acc-body">Through Human Interface Guidelines (HIG), App Store review, mandatory frameworks for privacy-sensitive features (like Camera), and SwiftUI's opinionated component library. When you build to Apple's standards, your app feels native — users trust it immediately.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What is the App Store's role in the ecosystem? <span class="arr">▼</span></div>
+    <div class="acc-body">The App Store is the only official distribution channel for iOS apps. It handles payments, reviews, ratings, and updates. For developers, it's both the gatekeeping mechanism and the marketplace. Over 1.8 million apps are available. Getting your app on the App Store is the final milestone in this course.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <h4>🧠 Check Your Understanding</h4>
+    <div class="quiz-q">What term describes Apple's tightly controlled platform where all apps must be approved before distribution?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">Walled Garden</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Open Source Model</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">App Sandbox</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Developer Mode</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! Apple's "walled garden" ensures quality, security, and a consistent user experience — core values of the iOS ecosystem.</div>
+    <div class="quiz-feedback bad">❌ Not quite. The "walled garden" describes Apple's closed, controlled platform where all apps go through review before distribution.</div>
+  </div>
+
+  <div id="nav-btns"><button class="btn btn-primary" onclick="goTo(1)">Next Section →</button></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 2 – APPLE PLATFORMS
+══════════════════════════════════════════ -->
+<div class="section-page" id="s1">
+  <div class="section-tag">Section 02 · Platforms</div>
+  <h2>Apple Platforms Overview</h2>
+  <p class="lead">Apple doesn't just make iPhones. Understanding the full platform landscape helps you write apps that integrate well, scale across devices, and align with Apple's ecosystem vision.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Identify all major Apple platforms and their operating systems</li>
+      <li>Understand how apps differ across platforms</li>
+      <li>Recognize ecosystem integration features like iCloud and Continuity</li>
+    </ul>
+  </div>
+
+  <div class="tabs">
+    <div class="tab-buttons">
+      <button class="tab-btn active" onclick="switchTab(this,'t-ios')">📱 iOS</button>
+      <button class="tab-btn" onclick="switchTab(this,'t-ipados')">🖥️ iPadOS</button>
+      <button class="tab-btn" onclick="switchTab(this,'t-macos')">💻 macOS</button>
+      <button class="tab-btn" onclick="switchTab(this,'t-watchos')">⌚ watchOS</button>
+      <button class="tab-btn" onclick="switchTab(this,'t-tvos')">📺 tvOS</button>
+      <button class="tab-btn" onclick="switchTab(this,'t-visionos')">🥽 visionOS</button>
+    </div>
+
+    <div class="tab-panel active platform-card" id="t-ios">
+      <h3 style="color:#3b82f6">iOS — iPhone</h3>
+      <div class="sub">Primary platform for MAC221</div>
+      <p>iOS powers the iPhone and is the foundation of everything Apple. With over 1 billion active iPhones, it's the most important platform for developers entering the Apple ecosystem. iOS apps are distributed exclusively through the App Store.</p>
+      <ul>
+        <li>Touch-first interface with gestures</li>
+        <li>Runs on Apple A-series and A-series chips</li>
+        <li>Strict security and privacy sandboxing</li>
+        <li>Portrait and landscape orientations</li>
+        <li>Screen sizes from iPhone SE to iPhone Pro Max</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel platform-card" id="t-ipados">
+      <h3 style="color:#06b6d4">iPadOS — iPad</h3>
+      <div class="sub">iOS extended for larger screens</div>
+      <p>iPadOS shares a codebase with iOS, and many iPhone apps run on iPad with little modification. However, iPad introduces larger screen real estate, multitasking (Split View, Slide Over), and optional keyboard/mouse/trackpad support.</p>
+      <ul>
+        <li>Compatible with iOS apps via universal builds</li>
+        <li>Supports Apple Pencil for drawing and annotation</li>
+        <li>Split View and Stage Manager multitasking</li>
+        <li>Keyboard shortcuts for power users</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel platform-card" id="t-macos">
+      <h3 style="color:#8b5cf6">macOS — Mac</h3>
+      <div class="sub">Desktop development environment</div>
+      <p>macOS runs on Mac computers (iMac, MacBook, Mac mini, Mac Pro). With Apple Silicon (M-series chips), iOS and iPadOS apps can now run natively on Mac without modification using Mac Catalyst or direct porting.</p>
+      <ul>
+        <li>SwiftUI apps can target macOS directly</li>
+        <li>Xcode itself runs on macOS — you need a Mac to build iOS apps</li>
+        <li>Menu bars, windows, and keyboard-first interaction</li>
+        <li>M-series chips run iOS apps natively</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel platform-card" id="t-watchos">
+      <h3 style="color:#10b981">watchOS — Apple Watch</h3>
+      <div class="sub">Wearable, health-focused platform</div>
+      <p>watchOS runs on Apple Watch and focuses on glanceable, health-centric apps. Watch apps are companions to iPhone apps and use WatchKit or SwiftUI. Screen sizes are small, so UI must be highly simplified.</p>
+      <ul>
+        <li>SwiftUI works on watchOS</li>
+        <li>Health and fitness APIs (HealthKit, WorkoutKit)</li>
+        <li>Complications on watch faces</li>
+        <li>Haptic feedback and Digital Crown input</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel platform-card" id="t-tvos">
+      <h3 style="color:#f59e0b">tvOS — Apple TV</h3>
+      <div class="sub">Living room / big screen experience</div>
+      <p>tvOS apps run on the Apple TV box connected to a television. UI is controlled via the Siri Remote — no touch screen. Focus-based navigation is used, and content (video, games) is typically the primary focus.</p>
+      <ul>
+        <li>No touch input — focus-based navigation</li>
+        <li>Siri voice integration</li>
+        <li>Ideal for media, gaming, and smart home apps</li>
+        <li>SwiftUI compatible</li>
+      </ul>
+    </div>
+
+    <div class="tab-panel platform-card" id="t-visionos">
+      <h3 style="color:#ec4899">visionOS — Apple Vision Pro</h3>
+      <div class="sub">Spatial computing — the future</div>
+      <p>visionOS is Apple's newest platform, powering the Apple Vision Pro headset. It introduces spatial computing — apps exist in 3D space, controlled by eyes, hands, and voice. Existing SwiftUI apps run on visionOS with minimal changes.</p>
+      <ul>
+        <li>3D spatial UI with windows, volumes, and immersive spaces</li>
+        <li>RealityKit and ARKit for 3D content</li>
+        <li>Eye tracking, hand gestures, and voice input</li>
+        <li>SwiftUI apps run in Compatibility Mode automatically</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="card">
+    <h3>🔗 Ecosystem Integration — What Connects It All</h3>
+    <p>Apple platforms don't just coexist — they actively communicate. Understanding these integration features helps you design apps that feel natural across devices.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <div style="font-size:22px;margin-bottom:8px;">☁️</div>
+      <h4 style="font-size:13px;margin-bottom:5px;">iCloud</h4>
+      <p>Sync data, documents, and preferences across all of a user's Apple devices automatically. Use <code>CloudKit</code> to add iCloud to your apps.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <div style="font-size:22px;margin-bottom:8px;">🔄</div>
+      <h4 style="font-size:13px;margin-bottom:5px;">Continuity</h4>
+      <p>Handoff, Universal Clipboard, AirDrop, Sidecar — features that let users start a task on iPhone and finish on Mac seamlessly.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <div style="font-size:22px;margin-bottom:8px;">🆔</div>
+      <h4 style="font-size:13px;margin-bottom:5px;">Apple ID &amp; Sign in with Apple</h4>
+      <p>A single identity across all platforms. Sign in with Apple offers privacy-preserving authentication you can add to your app in minutes.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <div style="font-size:22px;margin-bottom:8px;">🛒</div>
+      <h4 style="font-size:13px;margin-bottom:5px;">App Store &amp; In-App Purchase</h4>
+      <p>One App Store account, one purchase — your app can unlock features across iPhone, iPad, and Mac if built as a universal purchase.</p>
+    </div>
+  </div>
+
+  <div class="quiz-wrap">
+    <h4>🧠 Check Your Understanding</h4>
+    <div class="quiz-q">Which Apple platform requires focus-based navigation instead of touch input?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">iPadOS</button>
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">tvOS</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">watchOS</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">visionOS</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! tvOS runs on Apple TV which has no touch screen — users navigate using a remote, so apps use focus-based interactions.</div>
+    <div class="quiz-feedback bad">❌ Not quite. tvOS (Apple TV) uses focus-based navigation via a remote control, since there is no touch screen.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(0)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(2)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 3 – THE ROLE OF XCODE
+══════════════════════════════════════════ -->
+<div class="section-page" id="s2">
+  <div class="section-tag">Section 03 · Tools</div>
+  <h2>The Role of Xcode</h2>
+  <p class="lead">Xcode is your complete development environment for every Apple platform. If you're building for iOS, Xcode is non-negotiable — it's where you write, design, test, and ship your app.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Define what Xcode is and why it's the only IDE for Apple development</li>
+      <li>List the major capabilities Xcode provides</li>
+      <li>Understand what students use Xcode for in MAC221</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>What Is Xcode?</h3>
+    <p>Xcode is Apple's official <strong>Integrated Development Environment (IDE)</strong> — a single application that contains everything you need to build software for any Apple platform. It is free, available on the Mac App Store, and runs only on macOS.</p>
+    <p>Xcode bundles a code editor, interface designer, debugger, simulator, asset manager, and App Store submission tools all in one place. Unlike many IDEs where you assemble plugins, Xcode gives you a complete, curated toolset that works out of the box.</p>
+  </div>
+
+  <div class="grid-3">
+    <div class="icon-card">
+      <div class="ico">✍️</div>
+      <h4>Code Editing</h4>
+      <p>Syntax highlighting, autocomplete, inline documentation, and refactoring tools for Swift and Objective-C.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">🎨</div>
+      <h4>Interface Design</h4>
+      <p>SwiftUI Canvas for live previews, or Storyboards for UIKit — visual layout alongside your code.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">📁</div>
+      <h4>Project Organization</h4>
+      <p>Navigator, Groups, Targets, and Build Phases — Xcode structures your app's files and resources cleanly.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">📱</div>
+      <h4>Simulator Access</h4>
+      <p>Run your app on simulated iPhones, iPads, Apple Watches, and Macs — no physical device needed.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">🐛</div>
+      <h4>Debugging</h4>
+      <p>Breakpoints, variable inspection, LLDB console, and view hierarchy debugger — find and fix bugs faster.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ico">🚀</div>
+      <h4>Build &amp; Archive</h4>
+      <p>Compile, sign, archive your app, and submit directly to App Store Connect or TestFlight.</p>
+    </div>
+  </div>
+
+  <div class="info">📌 <strong>For MAC221:</strong> You will use Xcode to write all SwiftUI code, preview your layouts in real-time, run apps in the simulator, and eventually test on a physical device. Mastering Xcode is the same as mastering your workshop — know your tools.</div>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin:20px 0 12px;">Why Can't I Use VS Code or Another IDE?</h3>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">Can I build iOS apps in VS Code? <span class="arr">▼</span></div>
+    <div class="acc-body">No. While VS Code is excellent for web or cross-platform development, you cannot compile and run native iOS/SwiftUI apps without Xcode. Apple's build toolchain (the Swift compiler, linker, and simulator) is only available inside Xcode. Some workflows use Xcode in the background, but Xcode itself is always required on a Mac.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">Do I need a paid Apple Developer account to use Xcode? <span class="arr">▼</span></div>
+    <div class="acc-body">No — Xcode is free. A free Apple ID lets you run apps on the simulator and even side-load to your own physical device for testing. The paid Apple Developer Program ($99/year) is needed only to distribute apps via the App Store or TestFlight. For this class, a free account is sufficient for most labs.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What version of Xcode should I use? <span class="arr">▼</span></div>
+    <div class="acc-body">Always use the latest stable release of Xcode (currently Xcode 16.x for iOS 18 development). Older Xcode versions cannot submit to the App Store and may not support the latest SwiftUI APIs. Keep Xcode updated through the App Store. Warning: Xcode is large (~10–15 GB) — download it in advance!</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <h4>🧠 Check Your Understanding</h4>
+    <div class="quiz-q">Which of the following statements about Xcode is TRUE?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Xcode costs $99/year through the Apple Developer Program</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Xcode runs on Windows and macOS</button>
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">Xcode is free and available only on macOS</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">VS Code can replace Xcode for iOS development</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! Xcode is free, macOS-only, and required for all Apple platform development.</div>
+    <div class="quiz-feedback bad">❌ Not quite. Xcode is free (from the Mac App Store), runs only on macOS, and cannot be replaced by VS Code for iOS development.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(1)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(3)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 4 – XCODE INTERFACE TOUR
+══════════════════════════════════════════ -->
+<div class="section-page" id="s3">
+  <div class="section-tag">Section 04 · Interface</div>
+  <h2>Xcode Interface Tour</h2>
+  <p class="lead">Xcode's interface can feel overwhelming at first. Click each area below to learn what it does — then you'll never feel lost again.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Identify and name each major area of the Xcode interface</li>
+      <li>Explain the purpose of the Navigator, Editor, Inspector, Debug, and Canvas areas</li>
+    </ul>
+  </div>
+
+  <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">👇 <em>Hover over each panel to learn its name and purpose</em></p>
+
+  <div id="xcode-mock">
+    <div id="xcode-titlebar">
+      <div class="xc-dot" style="background:#ff5f57"></div>
+      <div class="xc-dot" style="background:#febc2e"></div>
+      <div class="xc-dot" style="background:#28c840"></div>
+      <span class="xc-title">MyFirstApp — iPhone 15 Pro ▶</span>
+    </div>
+    <div id="xcode-body">
+      <!-- Navigator -->
+      <div class="xc-panel" onclick="showPanel('navigator')">
+        <div class="xc-panel-title">Navigator</div>
+        <div class="xc-file sel"><div class="xc-file-dot" style="background:#3b82f6"></div> ContentView.swift</div>
+        <div class="xc-file"><div class="xc-file-dot" style="background:#a78bfa"></div> MyApp.swift</div>
+        <div class="xc-file"><div class="xc-file-dot" style="background:#10b981"></div> Assets.xcassets</div>
+        <div class="xc-file"><div class="xc-file-dot" style="background:#f59e0b"></div> Info.plist</div>
+        <div class="xc-file"><div class="xc-file-dot" style="background:#ef4444"></div> Preview Content</div>
+        <div class="xc-panel-label">📁 Navigator Area — Click me!</div>
+      </div>
+      <!-- Editor -->
+      <div class="xc-panel" onclick="showPanel('editor')">
+        <div class="xc-code">
+          <div><span class="ln">1</span><span class="cm">// ContentView.swift</span></div>
+          <div><span class="ln">2</span><span class="kw">import</span> <span class="ty">SwiftUI</span></div>
+          <div><span class="ln">3</span></div>
+          <div><span class="ln">4</span><span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</div>
+          <div><span class="ln">5</span>  <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {</div>
+          <div><span class="ln">6</span>    <span class="ty">VStack</span> {</div>
+          <div><span class="ln">7</span>      <span class="ty">Image</span>(systemName: <span class="str">"swift"</span>)</div>
+          <div><span class="ln">8</span>      <span class="ty">Text</span>(<span class="str">"Hello, MAC221!"</span>)</div>
+          <div><span class="ln">9</span>    }</div>
+          <div><span class="ln">10</span>  }</div>
+          <div><span class="ln">11</span>}</div>
+        </div>
+        <div class="xc-panel-label">✍️ Editor Area — Click me!</div>
+      </div>
+      <!-- Inspector -->
+      <div class="xc-panel" onclick="showPanel('inspector')">
+        <div class="xc-inspector">
+          <div class="xc-panel-title">Inspector</div>
+          <div class="xc-prop"><div class="xc-prop-label">Font</div><div class="xc-prop-val">System 17pt</div></div>
+          <div class="xc-prop"><div class="xc-prop-label">Color</div><div class="xc-prop-val">Label</div></div>
+          <div class="xc-prop"><div class="xc-prop-label">Alignment</div><div class="xc-prop-val">Center</div></div>
+          <div class="xc-prop"><div class="xc-prop-label">Padding</div><div class="xc-prop-val">16px</div></div>
+        </div>
+        <div class="xc-panel-label">🔍 Inspector Area — Click me!</div>
+      </div>
+    </div>
+    <div id="xcode-bottom">
+      <span style="font-size:10px;color:#555;font-family:'JetBrains Mono',monospace;">Debug Area</span>
+      <span class="xc-dbg-msg">Build Succeeded (0 errors, 0 warnings)</span>
+    </div>
+  </div>
+
+  <div id="panel-detail" class="card" style="display:none;">
+    <h3 id="pd-title"></h3>
+    <p id="pd-body"></p>
+  </div>
+
+  <div class="grid-2" style="margin-top:18px;">
+    <div class="card">
+      <h3>🧭 Navigator Area (Left)</h3>
+      <p>The left sidebar. Contains the <strong>Project Navigator</strong> (all your files), Search Navigator, Issue Navigator, and more. You'll spend most time here browsing your project's structure.</p>
+    </div>
+    <div class="card">
+      <h3>✍️ Editor Area (Center)</h3>
+      <p>Where you write code. For SwiftUI files, split the editor to see a live <strong>Canvas Preview</strong> on the right side. The editor shows syntax highlighting, autocomplete, and inline errors.</p>
+    </div>
+    <div class="card">
+      <h3>🔍 Inspector Area (Right)</h3>
+      <p>Context-sensitive properties panel. When a file is selected, it shows file properties. When you're in Interface Builder, it shows the selected view's visual attributes.</p>
+    </div>
+    <div class="card">
+      <h3>🐛 Debug Area (Bottom)</h3>
+      <p>Shows the <strong>console output</strong> and variable inspector when your app is running. This is where <code>print()</code> statements appear, and where you'll read error messages from the runtime.</p>
+    </div>
+  </div>
+
+  <div class="tip"><strong>💡 Tip:</strong> Press <code>⌘ + 0</code> to toggle the Navigator, <code>⌘ + ⌥ + 0</code> for the Inspector, and <code>⇧ + ⌘ + Y</code> for the Debug area. Learn these shortcuts early — they'll save you minutes every day.</div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(2)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(4)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 5 – CREATING A NEW PROJECT
+══════════════════════════════════════════ -->
+<div class="section-page" id="s4">
+  <div class="section-tag">Section 05 · Getting Started</div>
+  <h2>Creating a New Project</h2>
+  <p class="lead">Your first Xcode project is a rite of passage. Follow these steps every time you start a new iOS app — they'll become second nature within a week.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Walk through the new project setup wizard in Xcode</li>
+      <li>Understand bundle identifiers, organization names, and project settings</li>
+      <li>Choose the correct template for a MAC221 SwiftUI project</li>
+    </ul>
+  </div>
+
+  <ol class="steps">
+    <li><strong>Launch Xcode</strong> — Open Xcode from your Applications folder or Dock. If it's the first launch, allow it to install additional components.</li>
+    <li><strong>Click "Create New Project"</strong> — On the welcome screen, click the option to create a new Xcode project. If Xcode is already open, go to <code>File → New → Project...</code></li>
+    <li><strong>Choose a Platform: iOS</strong> — In the template chooser, select the <strong>iOS</strong> tab at the top.</li>
+    <li><strong>Select the App Template</strong> — Choose <strong>"App"</strong> from the Application section. This is the blank canvas template — perfect for MAC221 projects.</li>
+    <li><strong>Fill in Project Details</strong> — Enter your Product Name, Team, Organization Identifier, and Bundle ID. See below for details.</li>
+    <li><strong>Choose Interface: SwiftUI</strong> — Select <strong>SwiftUI</strong> for Interface (not Storyboard). Set Language to <strong>Swift</strong>.</li>
+    <li><strong>Choose a Save Location</strong> — Select where to save your project. Keep a dedicated <code>MAC221</code> folder on your desktop for all class projects.</li>
+    <li><strong>You're in!</strong> — Xcode opens your new project. You'll see <code>ContentView.swift</code> and a live Canvas preview on the right.</li>
+  </ol>
+
+  <hr>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>📋 Project Name</h3>
+      <p>The human-readable name of your app. This becomes the app's name on the home screen. Use <strong>TitleCase</strong>, no spaces in class names (e.g., <code>WeatherApp</code>, <code>TodoList</code>).</p>
+    </div>
+    <div class="card">
+      <h3>🏢 Organization Identifier</h3>
+      <p>A reverse-domain-name string that uniquely identifies you. Common pattern: <code>com.yourname</code> or <code>edu.lagcc.mac221</code>. Combined with the project name, it forms the <strong>Bundle ID</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>📦 Bundle Identifier</h3>
+      <p>Auto-generated: <code>com.yourname.ProjectName</code>. This is your app's unique ID in the App Store ecosystem — no two published apps can share the same Bundle ID.</p>
+    </div>
+    <div class="card">
+      <h3>🖼️ SwiftUI vs UIKit</h3>
+      <p><strong>SwiftUI</strong> is Apple's modern, declarative UI framework — what we use in MAC221. <strong>UIKit</strong> is the older, imperative framework. Always choose SwiftUI for this course.</p>
+    </div>
+  </div>
+
+  <div class="tip"><strong>💡 Folder Structure Tip:</strong> A new Xcode project creates several files automatically — <code>ContentView.swift</code> (your first UI), <code>YourAppName.swift</code> (the entry point), <code>Assets.xcassets</code> (images and colors), and <code>Info.plist</code> (app configuration). Don't delete any of these.</div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What's in ContentView.swift by default? <span class="arr">▼</span></div>
+    <div class="acc-body">Xcode generates a "Hello, World!" SwiftUI view. It contains a <code>ContentView</code> struct conforming to the <code>View</code> protocol, returning a <code>Text</code> view inside a <code>VStack</code>. This is your blank canvas. You'll replace this content with your app's actual UI throughout MAC221.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What is the "Preview" and why does it sometimes not load? <span class="arr">▼</span></div>
+    <div class="acc-body">The SwiftUI Canvas Preview renders your UI in real-time without running the simulator. It can fail if your code has errors, or if Xcode's preview process crashes. Try pressing <code>⌘ + ⌥ + P</code> to resume the preview, or close and reopen the file. If it still fails, run the simulator instead.</div>
+  </div>
+
+  <div class="quiz-wrap">
+    <h4>🧠 Check Your Understanding</h4>
+    <div class="quiz-q">What does the Bundle Identifier look like for a project named "WeatherApp" with the organization identifier "com.khalid"?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">WeatherApp.com.khalid</button>
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">com.khalid.WeatherApp</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">khalid.WeatherApp</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">ios.WeatherApp.khalid</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! The Bundle ID follows the pattern <code>OrganizationIdentifier.ProjectName</code>, which in this case is <code>com.khalid.WeatherApp</code>.</div>
+    <div class="quiz-feedback bad">❌ Not quite. The Bundle ID is formed as <code>OrganizationIdentifier.ProjectName</code> — so it would be <code>com.khalid.WeatherApp</code>.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(3)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(5)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 6 – CORE DEV WORKFLOW
+══════════════════════════════════════════ -->
+<div class="section-page" id="s5">
+  <div class="section-tag">Section 06 · Workflow</div>
+  <h2>Core Development Workflow</h2>
+  <p class="lead">Great iOS developers don't just know Swift — they have a disciplined workflow. This is the repeating loop you'll follow in every MAC221 lab session.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Describe the iterative development cycle for iOS apps</li>
+      <li>Apply a consistent beginner workflow in lab settings</li>
+    </ul>
+  </div>
+
+  <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">👇 <em>Click a step to learn more</em></p>
+
+  <div id="workflow">
+    <div class="wf-step" onclick="wfDetail(0)">
+      <div class="wf-box"><div class="wf-ico">💡</div>Plan</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(1)">
+      <div class="wf-box"><div class="wf-ico">📁</div>Create</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(2)">
+      <div class="wf-box"><div class="wf-ico">✍️</div>Code</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(3)">
+      <div class="wf-box"><div class="wf-ico">▶️</div>Run</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(4)">
+      <div class="wf-box"><div class="wf-ico">🔍</div>Test</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(5)">
+      <div class="wf-box"><div class="wf-ico">🔧</div>Fix</div>
+    </div>
+    <div class="wf-arrow">→</div>
+    <div class="wf-step" onclick="wfDetail(6)">
+      <div class="wf-box"><div class="wf-ico">🔁</div>Iterate</div>
+    </div>
+  </div>
+
+  <div id="wf-detail">Click a step above to see details about that phase of development.</div>
+
+  <hr>
+
+  <div class="card">
+    <h3>🔁 Why Iteration Matters</h3>
+    <p>Professional iOS apps are never built in one shot. They evolve through <strong>many small loops</strong> of code → run → observe → fix → repeat. As a student, resist the urge to write 100 lines before running your app. Write 5–10 lines, run it, verify the behavior, then continue.</p>
+    <p>The Canvas Preview helps here — it gives you near-instant feedback on your UI changes without launching the full simulator each time.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">🏃 Run Early, Run Often</h4>
+      <p>Don't wait until your code is "finished" to run it. Each run cycle catches errors while the context is fresh in your mind.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">📝 Comment As You Go</h4>
+      <p>Add inline comments to explain your intent. Future-you (and your instructor) will thank present-you during grading.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">💾 Save Versions</h4>
+      <p>Use <code>File → Duplicate</code> or Git commits to save working states before trying risky changes. Never lose working code.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">🧪 Test on Multiple Simulators</h4>
+      <p>An app that looks great on iPhone 15 Pro may break on iPhone SE. Test on at least 2 different simulated devices.</p>
+    </div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(4)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(6)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 7 – SIMULATOR & DEBUGGING
+══════════════════════════════════════════ -->
+<div class="section-page" id="s6">
+  <div class="section-tag">Section 07 · Testing</div>
+  <h2>Simulator, Testing &amp; Debugging</h2>
+  <p class="lead">The iOS Simulator lets you run your app on a virtual iPhone or iPad without physical hardware. Debugging helps you find and fix the bugs that are guaranteed to appear.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Use the iOS Simulator to run and interact with your app</li>
+      <li>Distinguish between syntax errors and logic errors</li>
+      <li>Set breakpoints and use the console for basic debugging</li>
+    </ul>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>📱 The iOS Simulator</h3>
+      <p>A software emulation of iPhone/iPad that runs on your Mac. It supports touch gestures (using mouse/trackpad), portrait/landscape rotation, and most hardware features except camera, Face ID biometrics, and telephony.</p>
+      <p>Select a device from the toolbar dropdown, then press <code>▶</code> (or <code>⌘ + R</code>) to build and run.</p>
+    </div>
+    <div class="card">
+      <h3>🖱️ Interacting with the Simulator</h3>
+      <p>Click = tap. Click + drag = swipe. <code>⌘ + → or ←</code> = rotate device. <code>⌘ + K</code> = toggle soft keyboard. You can simulate low memory warnings, location changes, and push notifications from the <strong>Device menu</strong>.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:14px;">🐛 Understanding Errors</h3>
+
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(239,68,68,.3)">
+      <h3 style="color:#f87171">Syntax Errors</h3>
+      <p>Caught by Xcode before you even run the app. Red markers appear inline in your code. Fix these first — your app won't compile until syntax errors are resolved.</p>
+      <p style="margin-top:10px;"><strong>Example:</strong> Missing closing brace <code>}</code>, misspelled keyword, wrong type.</p>
+    </div>
+    <div class="card" style="border-color:rgba(245,158,11,.3)">
+      <h3 style="color:#fbbf24">Logic Errors</h3>
+      <p>Your code compiles and runs, but the <em>behavior is wrong</em>. These are harder to find because Xcode can't detect them — you must observe your app's behavior and reason through the code.</p>
+      <p style="margin-top:10px;"><strong>Example:</strong> A counter that decrements instead of increments. No error shown — just wrong output.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">How do I set a Breakpoint? <span class="arr">▼</span></div>
+    <div class="acc-body">Click on the line number in the Editor area where you want execution to pause. A blue arrow (the breakpoint) appears. When your app reaches that line, Xcode pauses and you can inspect the values of all variables in the Debug area. Press <code>F6</code> to step to the next line, or <code>F8</code> to continue execution. Click the breakpoint again to remove it.</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">What is the console and how do I use print()? <span class="arr">▼</span></div>
+    <div class="acc-body">The console (bottom of Xcode, Debug area) shows all runtime output. Add <code>print("some value")</code> anywhere in your code to output text to the console. This is the simplest debugging technique — use it to verify that your code is executing and to see variable values at specific moments. It's "the developer's flashlight."</div>
+  </div>
+  <div class="accordion">
+    <div class="acc-header" onclick="toggleAcc(this)">How do I read Xcode error messages? <span class="arr">▼</span></div>
+    <div class="acc-body">Click the red/yellow dot next to the error in the Issue Navigator (left sidebar, ⌘ + 4) or inline in the code. Read the entire message — Xcode often tells you exactly what went wrong AND suggests a fix. Click the fix suggestion (shown as a white button) to auto-apply it. Don't just ignore the message — read it word by word.</div>
+  </div>
+
+  <div class="tip"><strong>💡 Debugging Mindset:</strong> When your app behaves unexpectedly, don't randomly change code. Instead: (1) reproduce the problem consistently, (2) hypothesize the cause, (3) test your hypothesis, (4) fix and verify. Systematic beats random every time.</div>
+
+  <div class="quiz-wrap">
+    <h4>🧠 Check Your Understanding</h4>
+    <div class="quiz-q">Your app compiles and runs, but a button does nothing when tapped. What type of error is this?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Syntax Error</button>
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">Logic Error</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Runtime Crash</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Build Error</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! If the app compiles and runs but behaves incorrectly, it's a logic error — the code is syntactically valid but semantically wrong.</div>
+    <div class="quiz-feedback bad">❌ Not quite. Since the app compiles and runs without crashing, this is a logic error — the code is valid but produces the wrong behavior.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(5)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(7)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 8 – CODE SIGNING & APP STORE
+══════════════════════════════════════════ -->
+<div class="section-page" id="s7">
+  <div class="section-tag">Section 08 · Distribution</div>
+  <h2>Code Signing &amp; App Store Overview</h2>
+  <p class="lead">Before anyone else can run your app — on a real device or in the App Store — it needs to be code-signed. This is Apple's security mechanism, and it's simpler than it sounds.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Explain what code signing is and why Apple requires it</li>
+      <li>Understand the difference between free and paid developer accounts</li>
+      <li>Know the high-level steps for deploying to a real device and submitting to the App Store</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>🔏 What Is Code Signing?</h3>
+    <p>Code signing is a digital signature that proves an app was built by a verified developer and hasn't been tampered with. Apple uses it to ensure only trusted, reviewed code runs on iOS devices. Think of it as a wax seal on a royal letter — it proves authenticity.</p>
+    <p>Xcode handles most of this automatically. When you build your app, Xcode requests or uses an existing certificate tied to your Apple ID to sign the binary.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(16,185,129,.25)">
+      <h3 style="color:var(--green)">Free Apple ID ✓</h3>
+      <p>Sufficient for MAC221. Lets you:</p>
+      <ul style="list-style:none;margin-top:10px;">
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--green)">✓</span> Run apps on the simulator</li>
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--green)">✓</span> Sideload to your own physical device</li>
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--green)">✓</span> Use all Xcode features</li>
+      </ul>
+    </div>
+    <div class="card" style="border-color:rgba(59,130,246,.25)">
+      <h3 style="color:var(--accent)">Paid Developer ($99/yr) 🚀</h3>
+      <p>Required for real distribution:</p>
+      <ul style="list-style:none;margin-top:10px;">
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--accent)">+</span> Publish to the App Store</li>
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--accent)">+</span> TestFlight beta distribution</li>
+        <li style="font-size:13px;color:var(--text2);padding:3px 0 3px 16px;position:relative;"><span style="position:absolute;left:0;color:var(--accent)">+</span> Share app with others' devices</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin:20px 0 12px;">🗺️ App Store Pipeline — High Level</h3>
+  <ol class="steps">
+    <li><strong>Develop &amp; Test</strong> — Build your app in Xcode, test thoroughly on simulator and real device.</li>
+    <li><strong>Archive</strong> — In Xcode, go to <code>Product → Archive</code>. This creates a distributable build of your app.</li>
+    <li><strong>Validate</strong> — Xcode checks your archive against App Store requirements (icons, bundle ID, entitlements).</li>
+    <li><strong>Upload to App Store Connect</strong> — Submit through Xcode Organizer or Transporter to your App Store Connect account.</li>
+    <li><strong>TestFlight (optional)</strong> — Distribute a beta to up to 10,000 external testers before public release.</li>
+    <li><strong>App Store Review</strong> — Apple reviews your app (typically 1–3 days). They check for policy compliance, crashes, and content.</li>
+    <li><strong>Go Live!</strong> — Once approved, your app is available worldwide on the App Store. 🎉</li>
+  </ol>
+
+  <div class="info">📌 <strong>For MAC221:</strong> You won't submit to the App Store in this course (that requires the paid account). But you <em>will</em> sideload your final project to your own iPhone or iPad for the final lab — and that's a genuinely exciting milestone.</div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(6)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(8)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 9 – BEST PRACTICES
+══════════════════════════════════════════ -->
+<div class="section-page" id="s8">
+  <div class="section-tag">Section 09 · Habits</div>
+  <h2>Best Practices for MAC221 Students</h2>
+  <p class="lead">These aren't optional guidelines — they're the habits that separate students who struggle with Xcode from students who thrive. Start practicing them from Day 1.</p>
+
+  <div class="objectives">
+    <h4>Learning Objectives</h4>
+    <ul>
+      <li>Apply professional development habits from the start of the course</li>
+      <li>Avoid the most common beginner mistakes in Xcode and SwiftUI</li>
+    </ul>
+  </div>
+
+  <div class="grid-2">
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">📂 Organize Files Clearly</h4>
+      <p>Group related files in folders (Groups in Xcode). Keep Views, Models, and ViewModels in separate groups. A messy project = messy thinking.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">🏷️ Name Things Meaningfully</h4>
+      <p>Use descriptive names: <code>studentNameText</code> not <code>t1</code>. <code>submitButton</code> not <code>btn</code>. Your code is communication — write it for humans, not just computers.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">🔄 Test Often</h4>
+      <p>Run the simulator after every meaningful change. Don't accumulate bugs. Each run session should verify one small thing you just built.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">💾 Save Versions</h4>
+      <p>Use Xcode's built-in source control (Git). Commit after each working feature. If something breaks, you can always revert. Never lose hours of work.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">📖 Read Error Messages</h4>
+      <p>The most important skill in this course. Read every compiler error word by word. Xcode's error messages are descriptive — they usually tell you exactly what's wrong.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <h4 style="font-size:13px;margin-bottom:5px;">🧱 Build Incrementally</h4>
+      <p>Don't try to build the whole app at once. Break it into small pieces. Get each piece working before moving to the next. Complexity is just many small things stacked up.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:14px;">⚠️ Common Beginner Mistakes — Click to Reveal</h3>
+
+  <div class="mistake">
+    <div class="mistake-header" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span><span class="mistake-title">Editing code without running it for 30+ minutes</span></div>
+    <div class="mistake-body">Write a few lines → run → verify → repeat. Writing too much without running means when something breaks, you won't know which change caused it. Smaller loops = faster debugging.</div>
+  </div>
+  <div class="mistake">
+    <div class="mistake-header" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span><span class="mistake-title">Dismissing red errors to "fix later"</span></div>
+    <div class="mistake-body">Xcode won't compile code with errors — "fixing later" isn't possible. Fix each red error immediately before adding more code on top of it.</div>
+  </div>
+  <div class="mistake">
+    <div class="mistake-header" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span><span class="mistake-title">Not using the Canvas Preview at all</span></div>
+    <div class="mistake-body">The SwiftUI canvas gives instant visual feedback. Students who ignore it miss the most powerful learning tool in Xcode. Use the canvas to verify every layout change in real time.</div>
+  </div>
+  <div class="mistake">
+    <div class="mistake-header" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span><span class="mistake-title">Copying code without understanding it</span></div>
+    <div class="mistake-body">It might work once — but you won't be able to modify it, extend it, or debug it later. If you copy something (from Stack Overflow, documentation, a classmate), type it out manually and trace through it line by line.</div>
+  </div>
+  <div class="mistake">
+    <div class="mistake-header" onclick="toggleMistake(this)"><span class="mistake-icon">🔴</span><span class="mistake-title">Using single-letter variable names</span></div>
+    <div class="mistake-body"><code>var x = 5</code> is meaningless. <code>var studentAge = 5</code> is self-documenting. Good naming makes your code readable, and readable code has fewer bugs.</div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(7)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(9)">Next Section →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SECTION 10 – WHAT COMES NEXT
+══════════════════════════════════════════ -->
+<div class="section-page" id="s9">
+  <div class="section-tag">Section 10 · What's Next</div>
+  <h2>What Comes Next</h2>
+  <p class="lead">You now understand the iOS ecosystem, the Apple platforms, and Xcode. Here's what you'll be building in the coming weeks of MAC221.</p>
+
+  <div id="ready-banner">
+    <h3>🎉 You're Ready to Build</h3>
+    <p>The ecosystem knowledge you've gained today is the foundation. Every SwiftUI line you write, every simulator test you run — it all happens inside this ecosystem. Now let's build in it.</p>
+  </div>
+
+  <div class="card">
+    <h3>🗺️ MAC221 Course Roadmap</h3>
+    <p>Here's a snapshot of what's coming in the rest of this course. Notice how each topic builds directly on what you've learned today.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-blue" style="margin-bottom:8px;display:inline-block;">Week 3–4</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">Swift Fundamentals</h4>
+      <p>Variables, constants, optionals, functions, closures, protocols. The language that powers everything you'll build.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-cyan" style="margin-bottom:8px;display:inline-block;">Week 3–4</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">SwiftUI Views &amp; Modifiers</h4>
+      <p>Text, Image, Button, TextField — the building blocks of every iOS screen. Modifiers shape, style, and animate them.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-purple" style="margin-bottom:8px;display:inline-block;">Week 5–6</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">Layout with Stacks</h4>
+      <p>VStack, HStack, ZStack — the three layout primitives that let you arrange any UI. Combined, they can build anything.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-blue" style="margin-bottom:8px;display:inline-block;">Week 5–6</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">State &amp; Data Flow</h4>
+      <p><code>@State</code>, <code>@Binding</code>, <code>@ObservedObject</code> — how your app remembers things and reacts to changes. This is where apps come alive.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-green" style="margin-bottom:8px;display:inline-block;">Week 7–8</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">Navigation &amp; Lists</h4>
+      <p>NavigationView, NavigationLink, TabView, dynamic ForEach lists with real data. Multi-screen apps.</p>
+    </div>
+    <div class="icon-card" style="text-align:left;padding:18px;">
+      <span class="badge badge-cyan" style="margin-bottom:8px;display:inline-block;">Week 9–12</span>
+      <h4 style="font-size:14px;margin-bottom:5px;">Animations, Persistence &amp; Networking</h4>
+      <p>Smooth animations, saving data with UserDefaults and Core Data, and fetching data from real web APIs.</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <h3 style="font-family:'Syne',sans-serif;font-size:16px;margin-bottom:14px;">📚 Key Terms to Remember</h3>
+  <p style="font-size:13px;color:var(--text3);margin-bottom:12px;">Click each card to reveal the definition</p>
+
+  <div class="term-grid">
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Ecosystem</h4><small>Click to define</small></div>
+      <div class="term-back">The interconnected system of Apple hardware, software, services, and tools that work together as a unified platform.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Bundle Identifier</h4><small>Click to define</small></div>
+      <div class="term-back">A unique string (e.g., <code>com.developer.AppName</code>) that identifies your app in the iOS ecosystem. No two App Store apps share the same Bundle ID.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Code Signing</h4><small>Click to define</small></div>
+      <div class="term-back">A digital signature that verifies an app was created by an identified developer and hasn't been altered since. Required by Apple to run apps on real devices.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>SwiftUI</h4><small>Click to define</small></div>
+      <div class="term-back">Apple's modern, declarative UI framework introduced in 2019. You describe <em>what</em> your UI should look like, and SwiftUI figures out <em>how</em> to render it.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>Simulator</h4><small>Click to define</small></div>
+      <div class="term-back">A software emulation of iPhone/iPad that runs on your Mac, built into Xcode. It lets you test your app without a physical device.</div>
+    </div>
+    <div class="term-card" onclick="flipTerm(this)">
+      <div class="term-front"><h4>TestFlight</h4><small>Click to define</small></div>
+      <div class="term-back">Apple's official beta-testing platform. Lets developers distribute pre-release apps to up to 10,000 testers before App Store launch.</div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- FINAL QUIZ -->
+  <div class="quiz-wrap">
+    <h4>🏆 Final Review Quiz</h4>
+    <div class="quiz-q">Which Xcode area shows all your project's files and folders?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Editor Area</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Inspector Area</button>
+      <button class="quiz-opt" onclick="checkQ(this,'correct')">Navigator Area</button>
+      <button class="quiz-opt" onclick="checkQ(this,'wrong')">Debug Area</button>
+    </div>
+    <div class="quiz-feedback ok">✅ Correct! The Navigator area (left sidebar) is where you browse all your project files, search, and manage issues.</div>
+    <div class="quiz-feedback bad">❌ Not quite. The Navigator area on the left sidebar shows all project files and folders.</div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-item">
+      <h4>iOS Ecosystem Summary</h4>
+      <ul>
+        <li>Hardware + Software + Services = Ecosystem</li>
+        <li>Apple's controlled platform ensures quality</li>
+        <li>6 platforms: iOS, iPadOS, macOS, watchOS, tvOS, visionOS</li>
+        <li>iCloud, App Store, Apple ID connect them all</li>
+      </ul>
+    </div>
+    <div class="summary-item">
+      <h4>Xcode Summary</h4>
+      <ul>
+        <li>Free, macOS-only IDE for all Apple platforms</li>
+        <li>Navigator, Editor, Inspector, Debug, Canvas</li>
+        <li>SwiftUI Canvas for live previews</li>
+        <li>Build → Archive → App Store pipeline</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="nav-btns">
+    <button class="btn btn-ghost" onclick="goTo(8)">← Previous</button>
+    <button class="btn btn-primary" onclick="goTo(0)" style="background:var(--green)">↩ Back to Start</button>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── STATE ── */
+let currentSection = 0;
+const totalSections = 10;
+const completedSections = new Set([0]);
+
+/* ── NAVIGATION ── */
+function goTo(index) {
+  // Hide current
+  document.querySelectorAll('.section-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  // Show new
+  document.getElementById('s' + index).classList.add('active');
+  document.querySelectorAll('.nav-item')[index].classList.add('active');
+
+  completedSections.add(index);
+  currentSection = index;
+
+  // Update nav done states
+  document.querySelectorAll('.nav-item').forEach((item, i) => {
+    if (completedSections.has(i) && i !== index) item.classList.add('done');
+    else item.classList.remove('done');
+  });
+
+  // Update progress
+  const pct = Math.round((completedSections.size / totalSections) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('pct').textContent = pct + '%';
+
+  // Scroll to top
+  document.getElementById('main').scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ── ACCORDIONS ── */
+function toggleAcc(header) {
+  const body = header.nextElementSibling;
+  const isOpen = header.classList.contains('open');
+  // Close all in same parent
+  header.parentElement.parentElement.querySelectorAll('.acc-header').forEach(h => {
+    h.classList.remove('open');
+    h.nextElementSibling.classList.remove('open');
+  });
+  if (!isOpen) {
+    header.classList.add('open');
+    body.classList.add('open');
+  }
+}
+
+/* ── TABS ── */
+function switchTab(btn, targetId) {
+  const tabsEl = btn.closest('.tabs');
+  tabsEl.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tabsEl.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(targetId).classList.add('active');
+}
+
+/* ── QUIZ ── */
+function checkQ(btn, result) {
+  const wrap = btn.closest('.quiz-wrap');
+  // Prevent re-answering
+  if (wrap.dataset.answered) return;
+  wrap.dataset.answered = '1';
+
+  wrap.querySelectorAll('.quiz-opt').forEach(o => o.style.pointerEvents = 'none');
+  const feedbacks = wrap.querySelectorAll('.quiz-feedback');
+  feedbacks.forEach(f => f.classList.remove('show'));
+
+  if (result === 'correct') {
+    btn.classList.add('correct');
+    wrap.querySelector('.quiz-feedback.ok').classList.add('show');
+  } else {
+    btn.classList.add('wrong');
+    wrap.querySelector('.quiz-feedback.bad').classList.add('show');
+    // Highlight correct
+    wrap.querySelectorAll('.quiz-opt').forEach(o => {
+      if (o.getAttribute('onclick').includes("'correct'")) o.classList.add('correct');
+    });
+  }
+}
+
+/* ── XCODE PANEL DETAIL ── */
+const panelInfo = {
+  navigator: {
+    title: '📁 Navigator Area',
+    body: 'The left sidebar contains 9 navigators accessible via icons at the top. The Project Navigator (folder icon) shows all your files. The Issue Navigator (warning icon) lists all errors and warnings. The Search Navigator lets you search across your entire codebase. You\'ll live in the Project Navigator during normal development.'
+  },
+  editor: {
+    title: '✍️ Editor Area',
+    body: 'The central Editor is where you write code. For SwiftUI, split the editor (⌘ + ⌥ + ↩) to open the Canvas Preview on the right side — you\'ll see your UI update in real time as you type. The editor supports autocomplete (press Tab to accept suggestions), inline documentation (⌥ + click a symbol), and error annotations inline.'
+  },
+  inspector: {
+    title: '🔍 Inspector Area',
+    body: 'The right-side Inspector shows context-sensitive properties. In SwiftUI, it shows attributes of the selected view — you can modify font, color, padding, and more without typing code (though the code is auto-generated). There\'s also a File Inspector (top) for file metadata and a History Inspector for Git blame information.'
+  }
+};
+
+function showPanel(key) {
+  const info = panelInfo[key];
+  const detail = document.getElementById('panel-detail');
+  document.getElementById('pd-title').textContent = info.title;
+  document.getElementById('pd-body').textContent = info.body;
+  detail.style.display = 'block';
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ── WORKFLOW STEPS ── */
+const wfData = [
+  { title: '💡 Plan', text: 'Sketch your app idea on paper or a whiteboard before opening Xcode. Define: What does this app do? What screens does it have? What data does it need? Planning even 5 minutes saves 30 minutes of refactoring later.' },
+  { title: '📁 Create Project', text: 'Open Xcode, choose "App" template, select SwiftUI, name your project meaningfully, and set your organization identifier. Save it in your dedicated MAC221 projects folder.' },
+  { title: '✍️ Write Code', text: 'Start with the simplest possible version of your first screen. Write one view at a time. Use the Canvas Preview to verify each view visually as you build it.' },
+  { title: '▶️ Run in Simulator', text: 'Press ⌘ + R to build and run. Choose a device model from the toolbar that matches your target audience. Watch the app launch and verify it matches your plan.' },
+  { title: '🔍 Test Behavior', text: 'Interact with your app the way a real user would. Try edge cases: What happens if a text field is empty? What if the list has 0 items? Test on at least 2 different simulated device sizes.' },
+  { title: '🔧 Fix Issues', text: 'Read error messages carefully. Use print() to inspect variable values. Set breakpoints if you need to pause and inspect program state step by step. Fix one issue at a time.' },
+  { title: '🔁 Iterate', text: 'Return to the Code step and continue adding the next small feature. Each loop of this cycle should produce something slightly better than the last. Shipping 80% today beats perfect never.' }
+];
+
+function wfDetail(index) {
+  const d = wfData[index];
+  const el = document.getElementById('wf-detail');
+  el.innerHTML = `<strong style="color:var(--text);font-size:14px;">${d.title}</strong><br><br>${d.text}`;
+  el.style.borderColor = 'var(--accent)';
+}
+
+/* ── TERM FLIP CARDS ── */
+function flipTerm(card) {
+  card.classList.toggle('flipped');
+}
+
+/* ── MISTAKE TOGGLE ── */
+function toggleMistake(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+/* ── INIT ── */
+goTo(0);
+</script>
+</body>
+</html>

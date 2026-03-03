@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 – Swift Language Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES & RESET
+   ============================================================ */
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1f2937;
+  --card: #1a2233;
+  --border: #2d3748;
+  --accent: #f97316;
+  --accent2: #fb923c;
+  --blue: #38bdf8;
+  --green: #4ade80;
+  --purple: #a78bfa;
+  --pink: #f472b6;
+  --yellow: #facc15;
+  --red: #f87171;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --code-bg: #0a0f1a;
+  --radius: 12px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+#app { display: flex; height: 100vh; overflow: hidden; }
+
+/* SIDEBAR */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+}
+#sidebar-header {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-header .course-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+#sidebar-header h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+}
+#sidebar-header .swift-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-top: 8px;
+}
+
+/* Progress bar in sidebar */
+#progress-wrap { padding: 12px 18px; border-bottom: 1px solid var(--border); }
+#progress-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+#progress-bar-bg { background: var(--bg3); border-radius: 10px; height: 6px; }
+#progress-bar { height: 6px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 10px; transition: width 0.4s ease; }
+#progress-pct { font-size: 11px; color: var(--accent); margin-top: 4px; font-weight: 600; }
+
+/* NAV ITEMS */
+#nav-list { list-style: none; padding: 10px 0; flex: 1; }
+#nav-list li { position: relative; }
+#nav-list li button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 18px;
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+#nav-list li button:hover { color: var(--text); background: var(--bg3); }
+#nav-list li.active button {
+  color: var(--accent);
+  background: rgba(249,115,22,0.1);
+  border-right: 3px solid var(--accent);
+  font-weight: 600;
+}
+#nav-list li button .nav-num {
+  font-size: 10px;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+#nav-list li.active button .nav-num { background: var(--accent); color: white; }
+#nav-list li.completed button .nav-num { background: var(--green); color: #0d1117; }
+
+/* MAIN CONTENT */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+#topbar .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+#topbar .section-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.nav-btns { display: flex; gap: 10px; }
+.nav-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+.nav-btn.primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+#content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+.section { display: none; animation: fadeIn 0.35s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Section hero */
+.section-hero {
+  background: linear-gradient(135deg, var(--bg2) 0%, var(--card) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.section-hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.12), transparent);
+}
+.section-hero .hero-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.section-hero h1 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+.section-hero p { font-size: 15px; color: var(--text2); line-height: 1.7; max-width: 680px; }
+
+/* Objectives */
+.objectives {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  margin-bottom: 24px;
+}
+.objectives h3 { font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--blue); text-transform: uppercase; margin-bottom: 10px; }
+.objectives ul { list-style: none; }
+.objectives ul li { font-size: 14px; color: var(--text2); padding: 4px 0; display: flex; gap: 8px; }
+.objectives ul li::before { content: '→'; color: var(--blue); flex-shrink: 0; }
+
+/* Grid layout helpers */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+
+/* Card */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+.card p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* Concept card with colored top */
+.concept-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.concept-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.concept-card .cc-top {
+  height: 6px;
+}
+.concept-card .cc-body { padding: 16px; }
+.concept-card .cc-icon { font-size: 22px; margin-bottom: 8px; }
+.concept-card .cc-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.concept-card .cc-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* Code block */
+.code-wrap {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.code-header {
+  background: var(--bg3);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.code-header .dots { display: flex; gap: 6px; }
+.code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ef4444; }
+.dot-y { background: #eab308; }
+.dot-g { background: #22c55e; }
+.code-header .code-label { font-size: 11px; color: var(--text3); font-family: 'Sora', sans-serif; }
+.code-body { padding: 18px 20px; font-size: 13.5px; line-height: 1.8; overflow-x: auto; }
+.code-body pre { white-space: pre; }
+
+/* Syntax highlight colors */
+.kw { color: #f97316; font-weight: 600; } /* keywords */
+.kw2 { color: #a78bfa; font-weight: 600; } /* secondary keywords */
+.str { color: #4ade80; } /* strings */
+.num { color: #38bdf8; } /* numbers */
+.cmt { color: #4b5563; font-style: italic; } /* comments */
+.fn { color: #facc15; } /* functions */
+.tp { color: #f472b6; } /* types */
+.op { color: #94a3b8; } /* operators */
+
+/* Output box */
+.output-box {
+  background: #030712;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
+.output-box .out-label { font-size: 10px; color: var(--text3); font-family: 'Sora', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.output-box .out-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--green); }
+
+/* Quiz */
+.quiz-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  margin: 20px 0;
+}
+.quiz-box .quiz-tag { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--yellow); text-transform: uppercase; margin-bottom: 10px; }
+.quiz-box .quiz-q { font-size: 15px; font-weight: 600; margin-bottom: 16px; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.quiz-opt {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+.quiz-opt:hover { border-color: var(--accent); color: var(--accent); }
+.quiz-opt.correct { border-color: var(--green); background: rgba(74,222,128,0.1); color: var(--green); }
+.quiz-opt.wrong { border-color: var(--red); background: rgba(248,113,113,0.1); color: var(--red); }
+.quiz-feedback { font-size: 13px; padding: 10px 14px; border-radius: 8px; display: none; line-height: 1.6; }
+.quiz-feedback.show { display: block; }
+.quiz-feedback.ok { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.quiz-feedback.nope { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+
+/* Reveal button */
+.reveal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 8px 0;
+}
+.reveal-btn:hover { background: var(--accent); color: white; }
+.reveal-content { display: none; margin-top: 12px; }
+.reveal-content.show { display: block; }
+
+/* Accordion */
+.accordion { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+.accordion-header {
+  background: var(--bg3);
+  padding: 14px 18px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+  user-select: none;
+}
+.accordion-header:hover { background: var(--card); }
+.accordion-header .acc-arrow { transition: transform 0.3s; color: var(--text3); }
+.accordion-header.open .acc-arrow { transform: rotate(180deg); }
+.accordion-body { display: none; padding: 16px 18px; border-top: 1px solid var(--border); background: var(--card); }
+.accordion-body.show { display: block; }
+.accordion-body p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.data-table th { background: var(--bg3); padding: 10px 14px; text-align: left; color: var(--accent); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+.data-table tr:hover td { background: var(--bg3); }
+.data-table code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; color: var(--blue); }
+
+/* Tabs */
+.tabs { margin-bottom: 20px; }
+.tab-btns { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.tab-btn {
+  padding: 9px 16px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-panel { display: none; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius) var(--radius); padding: 20px; }
+.tab-panel.active { display: block; }
+
+/* Flashcard */
+.flashcard-wrap { perspective: 1000px; margin: 16px 0; }
+.flashcard {
+  position: relative;
+  height: 120px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.fc-front, .fc-back {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.fc-front { background: var(--card); }
+.fc-back { background: linear-gradient(135deg, rgba(249,115,22,0.15), var(--card)); transform: rotateY(180deg); }
+.fc-front p { font-size: 15px; font-weight: 600; }
+.fc-back p { font-size: 13px; color: var(--text2); line-height: 1.6; }
+.fc-hint { font-size: 10px; color: var(--text3); margin-top: 8px; text-align: center; font-style: italic; }
+
+/* Cheat sheet */
+.cheat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+.cheat-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+.cheat-item .ci-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.cheat-item code { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--blue); }
+
+/* Section divider */
+.sec-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+/* Callout */
+.callout {
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 14px 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.callout.tip { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.3); color: var(--blue); }
+.callout.warn { background: rgba(250,204,21,0.08); border: 1px solid rgba(250,204,21,0.3); color: var(--yellow); }
+.callout.danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+.callout.success { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+.callout .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 3px;
+}
+.badge-orange { background: rgba(249,115,22,0.2); color: var(--accent); }
+.badge-blue { background: rgba(56,189,248,0.2); color: var(--blue); }
+.badge-green { background: rgba(74,222,128,0.2); color: var(--green); }
+.badge-purple { background: rgba(167,139,250,0.2); color: var(--purple); }
+
+/* Comparison table */
+.compare-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+.compare-table th { padding: 12px 16px; text-align: center; font-size: 13px; }
+.compare-table th:first-child { text-align: left; color: var(--text3); }
+.compare-table th.class-col { background: rgba(56,189,248,0.1); color: var(--blue); border-radius: 8px 8px 0 0; }
+.compare-table th.struct-col { background: rgba(167,139,250,0.1); color: var(--purple); border-radius: 8px 8px 0 0; }
+.compare-table td { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.compare-table td:first-child { color: var(--text2); }
+.compare-table td.class-col { text-align: center; background: rgba(56,189,248,0.04); }
+.compare-table td.struct-col { text-align: center; background: rgba(167,139,250,0.04); }
+
+/* Final quiz large */
+.final-q { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 16px; }
+.fq-num { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.fq-q { font-size: 15px; font-weight: 600; margin-bottom: 14px; line-height: 1.5; }
+.fq-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fq-opt {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg3);
+  color: var(--text);
+  font-family: 'Sora', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+.fq-opt:hover { border-color: var(--accent); }
+.fq-opt.correct { border-color: var(--green); background: rgba(74,222,128,0.1); color: var(--green); }
+.fq-opt.wrong { border-color: var(--red); background: rgba(248,113,113,0.1); color: var(--red); }
+
+/* Score box */
+#score-box {
+  display: none;
+  background: linear-gradient(135deg, var(--card), var(--bg3));
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  margin-top: 20px;
+}
+#score-box h2 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+#score-box p { font-size: 15px; color: var(--text2); }
+#score-val { color: var(--accent); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border); }
+
+/* Inline code */
+.ic { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--code-bg); color: var(--blue); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border); }
+
+h2.sec-h { font-size: 18px; font-weight: 700; margin: 24px 0 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+h2.sec-h .sh-bar { width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+
+p.body-text { font-size: 14px; color: var(--text2); line-height: 1.75; margin-bottom: 12px; }
+
+/* =========== RESPONSIVE =========== */
+@media (max-width: 900px) {
+  #sidebar { width: 200px; min-width: 200px; }
+  .grid-2, .cheat-grid, .fq-opts { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ======= SIDEBAR ======= -->
+  <nav id="sidebar">
+    <div id="sidebar-header">
+      <div class="course-tag">MAC221</div>
+      <h2>Swift Language Overview</h2>
+      <h2>Prof. Khalid Kassou</h2>
+      <span class="swift-badge">🍎 Swift 5.9</span>
+    </div>
+    <div id="progress-wrap">
+      <div id="progress-label">Progress</div>
+      <div id="progress-bar-bg"><div id="progress-bar" style="width:0%"></div></div>
+      <div id="progress-pct">0% Complete</div>
+    </div>
+    <ul id="nav-list">
+      <li class="active" data-section="0">
+        <button><span class="nav-num">1</span> Introduction</button>
+      </li>
+      <li data-section="1">
+        <button><span class="nav-num">2</span> Variables &amp; Constants</button>
+      </li>
+      <li data-section="2">
+        <button><span class="nav-num">3</span> Data Types</button>
+      </li>
+      <li data-section="3">
+        <button><span class="nav-num">4</span> Control Flow</button>
+      </li>
+      <li data-section="4">
+        <button><span class="nav-num">5</span> Functions</button>
+      </li>
+      <li data-section="5">
+        <button><span class="nav-num">6</span> Classes &amp; Structures</button>
+      </li>
+      <li data-section="6">
+        <button><span class="nav-num">★</span> Review &amp; Cheat Sheet</button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- ======= MAIN ======= -->
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <div class="section-title" id="top-title">Introduction to Swift</div>
+        <div class="section-sub" id="top-sub">Section 1 of 6</div>
+      </div>
+      <div class="nav-btns">
+        <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+        <button class="nav-btn primary" id="nextBtn" onclick="navigate(1)">Next →</button>
+      </div>
+    </div>
+
+    <div id="content-area">
+
+<!-- ================================================================
+     SECTION 0: INTRODUCTION
+     ================================================================ -->
+<div class="section active" id="sec-0">
+  <div class="section-hero">
+    <div class="hero-tag">Section 1 · Introduction</div>
+    <h1>Welcome to Swift 🍎</h1>
+    <p>Swift is Apple's powerful, modern programming language for iOS, macOS, watchOS, and tvOS. Designed to be safe, fast, and expressive — it's the foundation of every app you'll build in MAC221.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Understand what Swift is and why Apple created it</li>
+      <li>Connect Swift to Xcode, SwiftUI, and iOS development</li>
+      <li>Write and understand your first Swift program</li>
+      <li>Get a roadmap of what we'll cover today</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>What is Swift?</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>🚀 Modern Language</h3>
+      <p>Swift was introduced by Apple in 2014 as a replacement for Objective-C. It combines safety, performance, and modern syntax inspired by Python, Rust, and Haskell.</p>
+    </div>
+    <div class="card">
+      <h3>🔒 Safe by Design</h3>
+      <p>Swift eliminates entire classes of common bugs. <strong>Optionals</strong> handle missing values, type safety prevents errors at compile-time, and memory management is automatic via ARC.</p>
+    </div>
+    <div class="card">
+      <h3>⚡ Blazing Fast</h3>
+      <p>Swift compiles to native machine code. Apple benchmarks show it's faster than Python for many tasks, and comparable to C++ in performance-critical code.</p>
+    </div>
+    <div class="card">
+      <h3>🌍 Open Source</h3>
+      <p>Swift is open source and runs on Linux and Windows too. You can use it for server-side Swift, command-line tools, and of course — iOS apps.</p>
+    </div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>The iOS Development Stack</h2>
+  <div class="card" style="background: linear-gradient(135deg, var(--bg2), var(--card));">
+    <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+      <div style="text-align:center; padding: 12px 20px; background: var(--bg3); border-radius:10px; flex:1; min-width:100px;">
+        <div style="font-size:24px;">📝</div>
+        <div style="font-size:13px; font-weight:700; margin-top:6px; color:var(--accent);">Swift</div>
+        <div style="font-size:11px; color:var(--text3);">The Language</div>
+      </div>
+      <div style="font-size:20px; color:var(--border);">+</div>
+      <div style="text-align:center; padding: 12px 20px; background: var(--bg3); border-radius:10px; flex:1; min-width:100px;">
+        <div style="font-size:24px;">🛠️</div>
+        <div style="font-size:13px; font-weight:700; margin-top:6px; color:var(--blue);">Xcode</div>
+        <div style="font-size:11px; color:var(--text3);">The IDE</div>
+      </div>
+      <div style="font-size:20px; color:var(--border);">+</div>
+      <div style="text-align:center; padding: 12px 20px; background: var(--bg3); border-radius:10px; flex:1; min-width:100px;">
+        <div style="font-size:24px;">🎨</div>
+        <div style="font-size:13px; font-weight:700; margin-top:6px; color:var(--purple);">SwiftUI</div>
+        <div style="font-size:11px; color:var(--text3);">The UI Framework</div>
+      </div>
+      <div style="font-size:20px; color:var(--border);">=</div>
+      <div style="text-align:center; padding: 12px 20px; background: linear-gradient(135deg,rgba(249,115,22,0.2),rgba(251,146,60,0.1)); border-radius:10px; flex:1; min-width:100px; border:1px solid rgba(249,115,22,0.3);">
+        <div style="font-size:24px;">📱</div>
+        <div style="font-size:13px; font-weight:700; margin-top:6px; color:var(--accent);">iOS Apps</div>
+        <div style="font-size:11px; color:var(--text3);">What You Build</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Hello, Swift! — Your First Program</h2>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="code-label">Hello.swift</span>
+    </div>
+    <div class="code-body"><pre><span class="cmt">// This is a single-line comment in Swift</span>
+
+<span class="cmt">/* This is a
+   multi-line comment */</span>
+
+<span class="kw">import</span> <span class="tp">Foundation</span>
+
+<span class="cmt">// Print to the console</span>
+<span class="fn">print</span>(<span class="str">"Hello, MAC221!"</span>)
+<span class="fn">print</span>(<span class="str">"Welcome to Swift 🍎"</span>)
+
+<span class="cmt">// Swift is expressive — this is valid too!</span>
+<span class="kw">let</span> studentName <span class="op">=</span> <span class="str">"Alex"</span>
+<span class="fn">print</span>(<span class="str">"Hello, \(studentName)!"</span>)</pre></div>
+  </div>
+  <div class="output-box">
+    <div class="out-label">Output</div>
+    <div class="out-text">Hello, MAC221!<br>Welcome to Swift 🍎<br>Hello, Alex!</div>
+  </div>
+
+  <div class="callout tip">
+    <span class="icon">💡</span>
+    <span><strong>Pro tip:</strong> Swift doesn't require semicolons at the end of lines! You can add them if you want to put multiple statements on one line, but it's not necessary or idiomatic.</span>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Today's Roadmap</h2>
+  <div class="card">
+    <p style="font-size:14px;color:var(--text2);margin-bottom:14px;">In the next 4 hours, we'll cover everything you need to start building iOS apps with Swift:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--accent);font-weight:700;">02</span>
+        <span style="font-size:13px;">Variables &amp; Constants</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--blue);font-weight:700;">03</span>
+        <span style="font-size:13px;">Data Types</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--green);font-weight:700;">04</span>
+        <span style="font-size:13px;">Control Flow</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--yellow);font-weight:700;">05</span>
+        <span style="font-size:13px;">Functions &amp; Closures</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--purple);font-weight:700;">06</span>
+        <span style="font-size:13px;">Classes &amp; Structures</span>
+      </div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;display:flex;gap:10px;align-items:center;">
+        <span style="color:var(--pink);font-weight:700;">★</span>
+        <span style="font-size:13px;">Review &amp; Cheat Sheet</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiz-box" style="margin-top:24px;">
+    <div class="quiz-tag">🧠 Quick Check</div>
+    <div class="quiz-q">Swift was introduced by Apple in which year?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'intro-q1','❌ Not quite — Android and Java are Google\'s technologies.')">A. 2010, to replace Java on Android</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'intro-q1','✅ Correct! Apple introduced Swift at WWDC 2014 as a modern replacement for Objective-C.')">B. 2014, as a replacement for Objective-C</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'intro-q1','❌ Not quite — 2020 was SwiftUI\'s second year, not Swift\'s launch.')">C. 2020, when SwiftUI was released</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'intro-q1','❌ Not quite — Swift is open source but was created by Apple, not the open source community.')">D. 2012, by the open source community</button>
+    </div>
+    <div class="quiz-feedback" id="intro-q1"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 1: VARIABLES & CONSTANTS
+     ================================================================ -->
+<div class="section" id="sec-1">
+  <div class="section-hero">
+    <div class="hero-tag">Section 2 · Variables &amp; Constants</div>
+    <h1>var vs let 📦</h1>
+    <p>Every program stores data. Swift gives you two ways to store values: <strong>variables</strong> that can change, and <strong>constants</strong> that can't. Choosing the right one makes your code safer and clearer.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Declare variables with <code>var</code> and constants with <code>let</code></li>
+      <li>Understand type inference vs explicit type annotations</li>
+      <li>Use string interpolation to embed values in strings</li>
+      <li>Apply naming best practices used in iOS development</li>
+      <li>Recognize and avoid beginner mistakes</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>var and let</h2>
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(249,115,22,0.4)">
+      <h3 style="color:var(--accent);">var — Variable</h3>
+      <p>The value <strong>can change</strong> after it's set. Use when data will update (score, temperature, username input).</p>
+    </div>
+    <div class="card" style="border-color:rgba(56,189,248,0.4)">
+      <h3 style="color:var(--blue);">let — Constant</h3>
+      <p>The value <strong>cannot change</strong> once assigned. Use when data is fixed (pi, app name, API key). Prefer <code>let</code> by default!</p>
+    </div>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="code-label">VarsAndConstants.swift</span>
+    </div>
+    <div class="code-body"><pre><span class="cmt">// VARIABLES — can be reassigned</span>
+<span class="kw">var</span> score <span class="op">=</span> <span class="num">0</span>
+score <span class="op">=</span> <span class="num">10</span>        <span class="cmt">// ✅ OK!</span>
+score <span class="op">=</span> score <span class="op">+</span> <span class="num">5</span>  <span class="cmt">// ✅ Now score = 15</span>
+
+<span class="kw">var</span> userName <span class="op">=</span> <span class="str">"Guest"</span>
+userName <span class="op">=</span> <span class="str">"Maria"</span>  <span class="cmt">// ✅ Updated</span>
+
+<span class="cmt">// CONSTANTS — cannot be reassigned</span>
+<span class="kw">let</span> appName <span class="op">=</span> <span class="str">"MyApp"</span>
+<span class="kw">let</span> pi <span class="op">=</span> <span class="num">3.14159</span>
+
+<span class="cmt">// appName = "OtherApp"  // ❌ ERROR: Cannot assign to 'let'</span>
+<span class="cmt">// pi = 3.0              // ❌ ERROR: Constants are immutable</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Type Inference vs Explicit Annotations</h2>
+  <p class="body-text">Swift is smart — it can figure out the type from the value you assign. This is called <strong>type inference</strong>. But you can also be explicit about the type.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="code-label">TypeAnnotations.swift</span>
+    </div>
+    <div class="code-body"><pre><span class="cmt">// TYPE INFERENCE — Swift figures it out</span>
+<span class="kw">var</span> age <span class="op">=</span> <span class="num">20</span>           <span class="cmt">// Swift infers: Int</span>
+<span class="kw">var</span> gpa <span class="op">=</span> <span class="num">3.75</span>         <span class="cmt">// Swift infers: Double</span>
+<span class="kw">var</span> isEnrolled <span class="op">=</span> <span class="kw2">true</span>  <span class="cmt">// Swift infers: Bool</span>
+<span class="kw">var</span> name <span class="op">=</span> <span class="str">"Jordan"</span>    <span class="cmt">// Swift infers: String</span>
+
+<span class="cmt">// EXPLICIT ANNOTATIONS — you specify the type</span>
+<span class="kw">var</span> credits<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">15</span>
+<span class="kw">var</span> tuition<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">5500.00</span>
+<span class="kw">var</span> major<span class="op">:</span> <span class="tp">String</span> <span class="op">=</span> <span class="str">"Computer Science"</span>
+<span class="kw">var</span> isFullTime<span class="op">:</span> <span class="tp">Bool</span> <span class="op">=</span> <span class="kw2">true</span>
+
+<span class="cmt">// Declaring without assigning (must annotate)</span>
+<span class="kw">var</span> finalGrade<span class="op">:</span> <span class="tp">String</span>  <span class="cmt">// No value yet — must annotate</span>
+finalGrade <span class="op">=</span> <span class="str">"A"</span>         <span class="cmt">// Assign later</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>String Interpolation</h2>
+  <p class="body-text">String interpolation lets you embed values directly inside a string using <span class="ic">\( )</span> syntax.</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="code-label">StringInterpolation.swift</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">let</span> student <span class="op">=</span> <span class="str">"Aisha"</span>
+<span class="kw">let</span> course <span class="op">=</span> <span class="str">"MAC221"</span>
+<span class="kw">var</span> grade <span class="op">=</span> <span class="num">95</span>
+
+<span class="fn">print</span>(<span class="str">"Student: \(student)"</span>)
+<span class="fn">print</span>(<span class="str">"Course: \(course)"</span>)
+<span class="fn">print</span>(<span class="str">"Grade: \(grade)"</span>)
+<span class="fn">print</span>(<span class="str">"\(student) scored \(grade) in \(course)!"</span>)
+
+<span class="cmt">// You can put expressions inside!</span>
+<span class="fn">print</span>(<span class="str">"Next year grade: \(grade + 5)"</span>)
+<span class="fn">print</span>(<span class="str">"Passed: \(grade >= 60)"</span>)</pre></div>
+  </div>
+  <div class="output-box">
+    <div class="out-label">Output</div>
+    <div class="out-text">
+      Student: Aisha<br>
+      Course: MAC221<br>
+      Grade: 95<br>
+      Aisha scored 95 in MAC221!<br>
+      Next year grade: 100<br>
+      Passed: true
+    </div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Naming Rules &amp; Best Practices</h2>
+  <div class="card">
+    <h3>Swift Naming Conventions</h3>
+    <table class="data-table" style="margin-top:8px;">
+      <tr><th>Rule</th><th>Example</th><th>Notes</th></tr>
+      <tr><td>camelCase for variables/constants</td><td><code>studentName</code>, <code>maxScore</code></td><td>First word lowercase</td></tr>
+      <tr><td>Descriptive names</td><td><code>userAge</code> not <code>x</code></td><td>Self-documenting code</td></tr>
+      <tr><td>No spaces or hyphens</td><td><code>firstName</code> not <code>first-name</code></td><td>Use camelCase instead</td></tr>
+      <tr><td>Can start with _</td><td><code>_privateVar</code></td><td>Convention for private</td></tr>
+      <tr><td>No starting with number</td><td><code>score1</code> ✅, <code>1score</code> ❌</td><td>Compile error</td></tr>
+    </table>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Arithmetic Operators</h2>
+  <div class="code-wrap">
+    <div class="code-header">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="code-label">Operators.swift</span>
+    </div>
+    <div class="code-body"><pre><span class="kw">var</span> a <span class="op">=</span> <span class="num">10</span>
+<span class="kw">var</span> b <span class="op">=</span> <span class="num">3</span>
+
+<span class="fn">print</span>(a <span class="op">+</span> b)   <span class="cmt">// 13 — addition</span>
+<span class="fn">print</span>(a <span class="op">-</span> b)   <span class="cmt">// 7  — subtraction</span>
+<span class="fn">print</span>(a <span class="op">*</span> b)   <span class="cmt">// 30 — multiplication</span>
+<span class="fn">print</span>(a <span class="op">/</span> b)   <span class="cmt">// 3  — integer division (truncates!)</span>
+<span class="fn">print</span>(a <span class="op">%</span> b)   <span class="cmt">// 1  — remainder (modulo)</span>
+
+<span class="cmt">// Compound assignment operators</span>
+a <span class="op">+=</span> <span class="num">5</span>   <span class="cmt">// a = a + 5 → 15</span>
+a <span class="op">-=</span> <span class="num">2</span>   <span class="cmt">// a = a - 2 → 13</span>
+a <span class="op">*=</span> <span class="num">2</span>   <span class="cmt">// a = a * 2 → 26</span>
+
+<span class="cmt">// With Doubles</span>
+<span class="kw">let</span> x<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">10.0</span>
+<span class="kw">let</span> y<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">3.0</span>
+<span class="fn">print</span>(x <span class="op">/</span> y)   <span class="cmt">// 3.3333... — true decimal division</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>⚠️ Common Beginner Mistakes</h2>
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      ❌ Mistake 1: Trying to change a <code>let</code> constant
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <p><code>let</code> is immutable. If you need to change a value, declare it with <code>var</code>. Swift will give you a compile-time error if you try to mutate a constant.</p>
+      <div class="code-wrap" style="margin-top:10px;">
+        <div class="code-body"><pre><span class="kw">let</span> score <span class="op">=</span> <span class="num">100</span>
+score <span class="op">=</span> <span class="num">90</span>  <span class="cmt">// ❌ ERROR: Cannot assign to value: 'score' is a 'let' constant</span>
+
+<span class="kw">var</span> score2 <span class="op">=</span> <span class="num">100</span>
+score2 <span class="op">=</span> <span class="num">90</span> <span class="cmt">// ✅ Fine!</span></pre></div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      ❌ Mistake 2: Mixing types without conversion
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <p>Swift is strictly typed. You cannot add an <code>Int</code> and a <code>Double</code> directly — you must convert explicitly.</p>
+      <div class="code-wrap" style="margin-top:10px;">
+        <div class="code-body"><pre><span class="kw">let</span> age<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">20</span>
+<span class="kw">let</span> bonus<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">0.5</span>
+
+<span class="cmt">// let result = age + bonus  // ❌ ERROR: cannot add Int + Double</span>
+
+<span class="kw">let</span> result <span class="op">=</span> <span class="tp">Double</span>(age) <span class="op">+</span> bonus  <span class="cmt">// ✅ Convert Int to Double first</span>
+<span class="fn">print</span>(result)  <span class="cmt">// 20.5</span></pre></div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      ❌ Mistake 3: Using string concatenation instead of interpolation
+      <span class="acc-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <p>In Swift, you can't add a non-String to a String with <code>+</code>. Use string interpolation instead — it's cleaner and more powerful.</p>
+      <div class="code-wrap" style="margin-top:10px;">
+        <div class="code-body"><pre><span class="kw">let</span> count <span class="op">=</span> <span class="num">5</span>
+<span class="cmt">// print("Items: " + count)          // ❌ ERROR!</span>
+<span class="fn">print</span>(<span class="str">"Items: \(count)"</span>)            <span class="cmt">// ✅ Use interpolation</span>
+<span class="fn">print</span>(<span class="str">"Items: "</span> <span class="op">+</span> <span class="tp">String</span>(count))  <span class="cmt">// ✅ Or convert first</span></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Quick Check — var or let?</div>
+    <div class="quiz-q">A user's current location in a map app updates frequently. Should you use <code>var</code> or <code>let</code>?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'var-q1','✅ Correct! Location changes constantly, so use var. Reserve let for values that never change.')">var — because location changes</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'var-q1','❌ Not quite — let is for values that never change. A location that updates must be var.')">let — because it\'s a location</button>
+    </div>
+    <div class="quiz-feedback" id="var-q1"></div>
+  </div>
+
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Quick Check</div>
+    <div class="quiz-q">What does Swift use to figure out the type of a variable without you writing it?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'var-q2','❌ Type casting is converting from one type to another, not figuring it out automatically.')">Type casting</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'var-q2','✅ Correct! Type inference lets Swift determine the type from the assigned value automatically.')">Type inference</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'var-q2','❌ Type annotation is when YOU explicitly write the type. Inference is the automatic version.')">Type annotation</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'var-q2','❌ Interpolation is for embedding values in strings, not for type detection.')">String interpolation</button>
+    </div>
+    <div class="quiz-feedback" id="var-q2"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 2: DATA TYPES
+     ================================================================ -->
+<div class="section" id="sec-2">
+  <div class="section-hero">
+    <div class="hero-tag">Section 3 · Data Types</div>
+    <h1>Swift Data Types 🗂️</h1>
+    <p>Swift is a strongly-typed language with a rich set of built-in types. Understanding each type — and when to use it — is fundamental to writing correct Swift code.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Use Int, Double, Float, Bool, String, and Character correctly</li>
+      <li>Understand and safely unwrap Optionals</li>
+      <li>Work with Arrays, Dictionaries, Sets, and Tuples</li>
+      <li>Perform type conversions</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Core Types — Click to Explore</h2>
+  <div class="tabs">
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-int')">Int</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-double')">Double/Float</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-bool')">Bool</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-string')">String</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-char')">Character</button>
+    </div>
+    <div class="tab-panel active" id="tab-int">
+      <p class="body-text"><strong style="color:var(--blue)">Int</strong> stores whole numbers (no decimal). On modern Apple devices, <code>Int</code> is 64-bit, ranging from -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Int.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> studentCount<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">856</span>
+<span class="kw">var</span> tapCount <span class="op">=</span> <span class="num">0</span>          <span class="cmt">// inferred as Int</span>
+tapCount <span class="op">+=</span> <span class="num">1</span>
+
+<span class="cmt">// Useful Int properties</span>
+<span class="fn">print</span>(<span class="tp">Int</span>.max)  <span class="cmt">// 9223372036854775807</span>
+<span class="fn">print</span>(<span class="tp">Int</span>.min)  <span class="cmt">// -9223372036854775808</span>
+
+<span class="cmt">// Arithmetic</span>
+<span class="kw">let</span> total <span class="op">=</span> <span class="num">10</span> <span class="op">+</span> <span class="num">5</span>    <span class="cmt">// 15</span>
+<span class="kw">let</span> remain <span class="op">=</span> <span class="num">17</span> <span class="op">%</span> <span class="num">5</span>   <span class="cmt">// 2 (modulo)</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-double">
+      <p class="body-text"><strong style="color:var(--blue)">Double</strong> is 64-bit (15 decimal places of precision). <strong style="color:var(--blue)">Float</strong> is 32-bit (6 decimal places). <strong>Always prefer Double</strong> in Swift — it's the default for floating-point literals.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Double.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> price<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">4.99</span>
+<span class="kw">let</span> pi <span class="op">=</span> <span class="num">3.14159</span>         <span class="cmt">// inferred as Double</span>
+<span class="kw">let</span> rating<span class="op">:</span> <span class="tp">Float</span> <span class="op">=</span> <span class="num">4.5</span>
+
+<span class="cmt">// Calculation example</span>
+<span class="kw">let</span> radius <span class="op">=</span> <span class="num">5.0</span>
+<span class="kw">let</span> area <span class="op">=</span> pi <span class="op">*</span> radius <span class="op">*</span> radius
+<span class="fn">print</span>(<span class="str">"Area: \(area)"</span>)   <span class="cmt">// Area: 78.53975</span>
+
+<span class="cmt">// Important: Int / Int = Int (truncated!)</span>
+<span class="fn">print</span>(<span class="num">7</span> <span class="op">/</span> <span class="num">2</span>)             <span class="cmt">// 3, NOT 3.5!</span>
+<span class="fn">print</span>(<span class="num">7.0</span> <span class="op">/</span> <span class="num">2.0</span>)         <span class="cmt">// 3.5 ✅</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-bool">
+      <p class="body-text"><strong style="color:var(--blue)">Bool</strong> holds only two values: <code>true</code> or <code>false</code>. Essential for conditions, toggles, and feature flags in apps.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Bool.swift</span></div>
+      <div class="code-body"><pre><span class="kw">var</span> isLoggedIn<span class="op">:</span> <span class="tp">Bool</span> <span class="op">=</span> <span class="kw2">false</span>
+<span class="kw">var</span> hasNotifications <span class="op">=</span> <span class="kw2">true</span>
+<span class="kw">let</span> darkModeEnabled <span class="op">=</span> <span class="kw2">false</span>
+
+<span class="cmt">// Toggle a boolean</span>
+isLoggedIn.toggle()   <span class="cmt">// Now true</span>
+isLoggedIn.toggle()   <span class="cmt">// Back to false</span>
+
+<span class="cmt">// From comparison</span>
+<span class="kw">let</span> score <span class="op">=</span> <span class="num">85</span>
+<span class="kw">let</span> passed <span class="op">=</span> score <span class="op">>=</span> <span class="num">60</span>   <span class="cmt">// true</span>
+<span class="kw">let</span> honors <span class="op">=</span> score <span class="op">>=</span> <span class="num">90</span>   <span class="cmt">// false</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-string">
+      <p class="body-text"><strong style="color:var(--blue)">String</strong> is a sequence of characters. Swift Strings are Unicode-compliant, support emoji, and have powerful built-in methods.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">String.swift</span></div>
+      <div class="code-body"><pre><span class="kw">var</span> greeting <span class="op">=</span> <span class="str">"Hello"</span>
+<span class="kw">let</span> emoji <span class="op">=</span> <span class="str">"Swift 🍎"</span>
+
+<span class="cmt">// String properties</span>
+<span class="fn">print</span>(greeting.count)         <span class="cmt">// 5</span>
+<span class="fn">print</span>(greeting.isEmpty)       <span class="cmt">// false</span>
+<span class="fn">print</span>(greeting.uppercased())  <span class="cmt">// HELLO</span>
+<span class="fn">print</span>(greeting.lowercased())  <span class="cmt">// hello</span>
+
+<span class="cmt">// Checking content</span>
+<span class="fn">print</span>(greeting.hasPrefix(<span class="str">"He"</span>))  <span class="cmt">// true</span>
+<span class="fn">print</span>(greeting.hasSuffix(<span class="str">"lo"</span>))  <span class="cmt">// true</span>
+<span class="fn">print</span>(greeting.contains(<span class="str">"ell"</span>))  <span class="cmt">// true</span>
+
+<span class="cmt">// Concatenation</span>
+greeting <span class="op">+=</span> <span class="str">", World!"</span>          <span class="cmt">// "Hello, World!"</span>
+
+<span class="cmt">// Multiline string</span>
+<span class="kw">let</span> bio <span class="op">=</span> <span class="str">"""
+  Name: Alex
+  Major: CS
+  Year: Sophomore
+  """</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-char">
+      <p class="body-text"><strong style="color:var(--blue)">Character</strong> holds a single Unicode character. Must use double quotes, not single. Less commonly used directly — often encountered when iterating over Strings.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Character.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> initial<span class="op">:</span> <span class="tp">Character</span> <span class="op">=</span> <span class="str">"A"</span>
+<span class="kw">let</span> grade<span class="op">:</span> <span class="tp">Character</span> <span class="op">=</span> <span class="str">"B"</span>
+<span class="kw">let</span> emojiChar<span class="op">:</span> <span class="tp">Character</span> <span class="op">=</span> <span class="str">"🍎"</span>
+
+<span class="cmt">// Iterating String as Characters</span>
+<span class="kw">let</span> word <span class="op">=</span> <span class="str">"Swift"</span>
+<span class="kw">for</span> char <span class="kw">in</span> word {
+    <span class="fn">print</span>(char)   <span class="cmt">// S, w, i, f, t (one per line)</span>
+}</pre></div></div>
+    </div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Optionals — Handling Missing Values</h2>
+  <div class="callout warn">
+    <span class="icon">⚠️</span>
+    <span>Optionals are one of Swift's most important features. They force you to handle the case when a value might be <code>nil</code> (missing), preventing entire categories of crashes.</span>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Optionals.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// Optional: a variable that might have a value or nil</span>
+<span class="kw">var</span> middleName<span class="op">:</span> <span class="tp">String?</span> <span class="op">=</span> <span class="kw2">nil</span>   <span class="cmt">// ? makes it Optional</span>
+<span class="kw">var</span> nickname<span class="op">:</span> <span class="tp">String?</span> <span class="op">=</span> <span class="str">"Alex"</span>
+
+<span class="cmt">// --- WAY 1: if let (Safe Unwrapping) ---</span>
+<span class="kw">if</span> <span class="kw">let</span> name <span class="op">=</span> nickname {
+    <span class="fn">print</span>(<span class="str">"Nickname: \(name)"</span>)  <span class="cmt">// Safe — only runs if not nil</span>
+} <span class="kw">else</span> {
+    <span class="fn">print</span>(<span class="str">"No nickname"</span>)
+}
+
+<span class="cmt">// --- WAY 2: guard let (Early Exit) ---</span>
+<span class="kw">func</span> <span class="fn">greet</span>(name<span class="op">:</span> <span class="tp">String?</span>) {
+    <span class="kw">guard</span> <span class="kw">let</span> n <span class="op">=</span> name <span class="kw">else</span> {
+        <span class="fn">print</span>(<span class="str">"No name provided"</span>)
+        <span class="kw">return</span>
+    }
+    <span class="fn">print</span>(<span class="str">"Hello, \(n)!"</span>)
+}
+
+<span class="cmt">// --- WAY 3: Nil Coalescing (??) ---</span>
+<span class="kw">let</span> display <span class="op">=</span> middleName <span class="op">??</span> <span class="str">"N/A"</span>   <span class="cmt">// "N/A" if nil</span>
+<span class="fn">print</span>(<span class="str">"Middle: \(display)"</span>)
+
+<span class="cmt">// --- WAY 4: Force Unwrap (use with caution!) ---</span>
+<span class="kw">let</span> forced <span class="op">=</span> nickname<span class="op">!</span>   <span class="cmt">// ⚠️ Crashes if nil! Only when SURE</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Collections</h2>
+  <div class="tabs">
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-arr')">Arrays</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-dict')">Dictionaries</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-set')">Sets</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-tuple')">Tuples</button>
+    </div>
+    <div class="tab-panel active" id="tab-arr">
+      <p class="body-text"><strong>Arrays</strong> are ordered collections of same-type values. Index starts at 0.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Arrays.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// Creating arrays</span>
+<span class="kw">var</span> courses<span class="op">:</span> [<span class="tp">String</span>] <span class="op">=</span> [<span class="str">"MAC221"</span>, <span class="str">"MAC280"</span>, <span class="str">"MAT115"</span>]
+<span class="kw">var</span> scores <span class="op">=</span> [<span class="num">88</span>, <span class="num">92</span>, <span class="num">76</span>, <span class="num">95</span>]  <span class="cmt">// inferred [Int]</span>
+<span class="kw">var</span> empty<span class="op">:</span> [<span class="tp">Int</span>] <span class="op">=</span> []           <span class="cmt">// empty array</span>
+
+<span class="cmt">// Accessing</span>
+<span class="fn">print</span>(courses[<span class="num">0</span>])   <span class="cmt">// "MAC221"</span>
+<span class="fn">print</span>(courses.first) <span class="cmt">// Optional("MAC221")</span>
+<span class="fn">print</span>(courses.last)  <span class="cmt">// Optional("MAT115")</span>
+
+<span class="cmt">// Modifying</span>
+courses.append(<span class="str">"MAC286"</span>)       <span class="cmt">// add to end</span>
+courses.insert(<span class="str">"MAC101"</span>, at<span class="op">:</span> <span class="num">0</span>) <span class="cmt">// insert at index</span>
+courses.remove(at<span class="op">:</span> <span class="num">2</span>)          <span class="cmt">// remove index 2</span>
+
+<span class="cmt">// Properties</span>
+<span class="fn">print</span>(courses.count)     <span class="cmt">// number of items</span>
+<span class="fn">print</span>(courses.isEmpty)   <span class="cmt">// false</span>
+
+<span class="cmt">// Looping</span>
+<span class="kw">for</span> course <span class="kw">in</span> courses {
+    <span class="fn">print</span>(course)
+}</pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-dict">
+      <p class="body-text"><strong>Dictionaries</strong> store key-value pairs. Fast lookup by key. Keys must be unique. Values are Optional when accessed.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Dictionary.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// Creating dictionaries</span>
+<span class="kw">var</span> grades<span class="op">:</span> [<span class="tp">String</span><span class="op">:</span> <span class="tp">Int</span>] <span class="op">=</span> [
+    <span class="str">"Math"</span><span class="op">:</span> <span class="num">90</span>,
+    <span class="str">"Swift"</span><span class="op">:</span> <span class="num">95</span>,
+    <span class="str">"History"</span><span class="op">:</span> <span class="num">82</span>
+]
+
+<span class="cmt">// Accessing (returns Optional!)</span>
+<span class="fn">print</span>(grades[<span class="str">"Swift"</span>])     <span class="cmt">// Optional(95)</span>
+<span class="fn">print</span>(grades[<span class="str">"Swift"</span>]<span class="op">!</span>)    <span class="cmt">// 95 (force unwrap)</span>
+<span class="fn">print</span>(grades[<span class="str">"Art"</span>] <span class="op">??</span> <span class="num">0</span>) <span class="cmt">// 0 (default if missing)</span>
+
+<span class="cmt">// Adding / Updating</span>
+grades[<span class="str">"English"</span>] <span class="op">=</span> <span class="num">88</span>
+grades[<span class="str">"Math"</span>] <span class="op">=</span> <span class="num">93</span>         <span class="cmt">// updates existing</span>
+
+<span class="cmt">// Removing</span>
+grades[<span class="str">"History"</span>] <span class="op">=</span> <span class="kw2">nil</span>
+
+<span class="cmt">// Looping</span>
+<span class="kw">for</span> (subject, grade) <span class="kw">in</span> grades {
+    <span class="fn">print</span>(<span class="str">"\(subject): \(grade)"</span>)
+}</pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-set">
+      <p class="body-text"><strong>Sets</strong> are unordered collections of <em>unique</em> values. Great for membership testing and removing duplicates. No guaranteed order.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Set.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// Creating sets</span>
+<span class="kw">var</span> favorites<span class="op">:</span> <span class="tp">Set</span>&lt;<span class="tp">String</span>&gt; <span class="op">=</span> [<span class="str">"Swift"</span>, <span class="str">"iOS"</span>, <span class="str">"Xcode"</span>]
+<span class="kw">var</span> nums<span class="op">:</span> <span class="tp">Set</span>&lt;<span class="tp">Int</span>&gt; <span class="op">=</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>]  <span class="cmt">// {1, 2, 3} — duplicates removed</span>
+
+<span class="cmt">// Operations</span>
+favorites.insert(<span class="str">"SwiftUI"</span>)
+favorites.remove(<span class="str">"Xcode"</span>)
+<span class="fn">print</span>(favorites.contains(<span class="str">"Swift"</span>))  <span class="cmt">// true</span>
+
+<span class="cmt">// Set math</span>
+<span class="kw">let</span> a<span class="op">:</span> <span class="tp">Set</span> <span class="op">=</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+<span class="kw">let</span> b<span class="op">:</span> <span class="tp">Set</span> <span class="op">=</span> [<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]
+<span class="fn">print</span>(a.union(b))        <span class="cmt">// {1,2,3,4}</span>
+<span class="fn">print</span>(a.intersection(b)) <span class="cmt">// {2,3}</span>
+<span class="fn">print</span>(a.subtracting(b))  <span class="cmt">// {1}</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-tuple">
+      <p class="body-text"><strong>Tuples</strong> group multiple values of different types into a single compound value. Useful for returning multiple values from a function.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Tuple.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// Basic tuple</span>
+<span class="kw">let</span> location <span class="op">=</span> (<span class="num">40.7128</span>, <span class="op">-</span><span class="num">74.0060</span>)   <span class="cmt">// (lat, long)</span>
+<span class="fn">print</span>(location.<span class="num">0</span>)  <span class="cmt">// 40.7128</span>
+<span class="fn">print</span>(location.<span class="num">1</span>)  <span class="cmt">// -74.0060</span>
+
+<span class="cmt">// Named tuple (much better!)</span>
+<span class="kw">let</span> student <span class="op">=</span> (name<span class="op">:</span> <span class="str">"Kim"</span>, grade<span class="op">:</span> <span class="num">92</span>, passed<span class="op">:</span> <span class="kw2">true</span>)
+<span class="fn">print</span>(student.name)   <span class="cmt">// Kim</span>
+<span class="fn">print</span>(student.grade)  <span class="cmt">// 92</span>
+<span class="fn">print</span>(student.passed) <span class="cmt">// true</span>
+
+<span class="cmt">// Tuple decomposition</span>
+<span class="kw">let</span> (n, g, p) <span class="op">=</span> student
+<span class="fn">print</span>(<span class="str">"\(n) scored \(g)"</span>)  <span class="cmt">// Kim scored 92</span></pre></div></div>
+    </div>
+  </div>
+
+  <!-- Type conversion -->
+  <h2 class="sec-h"><span class="sh-bar"></span>Type Conversion</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">TypeConversion.swift</span></div>
+    <div class="code-body"><pre><span class="kw">let</span> age<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">21</span>
+<span class="kw">let</span> height<span class="op">:</span> <span class="tp">Double</span> <span class="op">=</span> <span class="num">5.9</span>
+
+<span class="kw">let</span> sum <span class="op">=</span> <span class="tp">Double</span>(age) <span class="op">+</span> height  <span class="cmt">// Convert Int → Double</span>
+<span class="kw">let</span> ageInt <span class="op">=</span> <span class="tp">Int</span>(height)         <span class="cmt">// 5 — truncates decimal!</span>
+
+<span class="cmt">// String conversions</span>
+<span class="kw">let</span> numStr <span class="op">=</span> <span class="tp">String</span>(age)         <span class="cmt">// "21"</span>
+<span class="kw">let</span> parsed <span class="op">=</span> <span class="tp">Int</span>(<span class="str">"42"</span>)           <span class="cmt">// Optional(42)</span>
+<span class="kw">let</span> bad <span class="op">=</span> <span class="tp">Int</span>(<span class="str">"hello"</span>)           <span class="cmt">// nil (can't convert)</span></pre></div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Classify the Value</div>
+    <div class="quiz-q">What is the type of <code>let x = 3.14</code> in Swift?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q1','❌ Float is 32-bit. Swift infers Double (64-bit) for floating-point literals by default.')">Float</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'dt-q1','✅ Correct! Swift infers Double for all floating-point literals by default.')">Double</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q1','❌ Int is for whole numbers only. 3.14 has a decimal, so it\'s a floating-point type.')">Int</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q1','❌ Number is not a Swift type! Swift uses Int, Double, Float, etc.')">Number</button>
+    </div>
+    <div class="quiz-feedback" id="dt-q1"></div>
+  </div>
+
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Optional Check</div>
+    <div class="quiz-q">You're building a profile screen. A user might or might not have a bio. Which type should you use for <code>bio</code>?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q2','❌ A plain String requires a value. Since bio might be absent, we need an Optional.')">String</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'dt-q2','✅ Correct! String? (Optional String) allows bio to be nil when not provided.')">String?</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q2','❌ Bool is true/false. We need a String type for text content.')">Bool</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'dt-q2','❌ A Character holds a single character. A bio needs a full String.')">Character</button>
+    </div>
+    <div class="quiz-feedback" id="dt-q2"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 3: CONTROL FLOW
+     ================================================================ -->
+<div class="section" id="sec-3">
+  <div class="section-hero">
+    <div class="hero-tag">Section 4 · Control Flow</div>
+    <h1>Control Flow 🔀</h1>
+    <p>Control flow lets your program make decisions and repeat actions. Swift offers powerful, readable syntax for branching with <code>if/switch</code> and looping with <code>for/while</code>.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Use if/else if/else for conditional branching</li>
+      <li>Use switch statements for pattern matching</li>
+      <li>Loop with for-in, while, and repeat-while</li>
+      <li>Use break and continue to control loop execution</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>if / else if / else</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">IfElse.swift</span></div>
+    <div class="code-body"><pre><span class="kw">let</span> score <span class="op">=</span> <span class="num">82</span>
+
+<span class="kw">if</span> score <span class="op">>=</span> <span class="num">90</span> {
+    <span class="fn">print</span>(<span class="str">"Grade: A"</span>)
+} <span class="kw">else if</span> score <span class="op">>=</span> <span class="num">80</span> {
+    <span class="fn">print</span>(<span class="str">"Grade: B"</span>)   <span class="cmt">// ← This runs</span>
+} <span class="kw">else if</span> score <span class="op">>=</span> <span class="num">70</span> {
+    <span class="fn">print</span>(<span class="str">"Grade: C"</span>)
+} <span class="kw">else</span> {
+    <span class="fn">print</span>(<span class="str">"Grade: F"</span>)
+}
+
+<span class="cmt">// Comparison operators</span>
+<span class="cmt">// ==  equal to        !=  not equal</span>
+<span class="cmt">// >   greater than    <   less than</span>
+<span class="cmt">// >=  greater/equal   <=  less/equal</span>
+
+<span class="cmt">// Logical operators</span>
+<span class="kw">let</span> age <span class="op">=</span> <span class="num">20</span>
+<span class="kw">let</span> hasID <span class="op">=</span> <span class="kw2">true</span>
+
+<span class="kw">if</span> age <span class="op">>=</span> <span class="num">18</span> <span class="op">&&</span> hasID {           <span class="cmt">// AND: both true</span>
+    <span class="fn">print</span>(<span class="str">"Access granted"</span>)
+}
+
+<span class="kw">if</span> age <span class="op"><</span> <span class="num">18</span> <span class="op">||</span> <span class="op">!</span>hasID {           <span class="cmt">// OR: either true</span>
+    <span class="fn">print</span>(<span class="str">"Access denied"</span>)
+}</pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>switch — Pattern Matching</h2>
+  <p class="body-text">Swift's <code>switch</code> is far more powerful than other languages. No need for <code>break</code> — each case automatically ends. You can match ranges, tuples, and more.</p>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Switch.swift</span></div>
+    <div class="code-body"><pre><span class="kw">let</span> day <span class="op">=</span> <span class="str">"Monday"</span>
+
+<span class="kw">switch</span> day {
+<span class="kw">case</span> <span class="str">"Saturday"</span>, <span class="str">"Sunday"</span>:
+    <span class="fn">print</span>(<span class="str">"Weekend! 🎉"</span>)
+<span class="kw">case</span> <span class="str">"Monday"</span>:
+    <span class="fn">print</span>(<span class="str">"Start of the week"</span>)   <span class="cmt">// ← This runs</span>
+<span class="kw">default</span>:
+    <span class="fn">print</span>(<span class="str">"Weekday"</span>)
+}
+
+<span class="cmt">// Switch with ranges</span>
+<span class="kw">let</span> score <span class="op">=</span> <span class="num">85</span>
+<span class="kw">switch</span> score {
+<span class="kw">case</span> <span class="num">90</span><span class="op">...</span><span class="num">100</span>: <span class="fn">print</span>(<span class="str">"A"</span>)
+<span class="kw">case</span> <span class="num">80</span><span class="op">..&lt;</span><span class="num">90</span>:  <span class="fn">print</span>(<span class="str">"B"</span>)    <span class="cmt">// ← This runs (85 is in 80..<90)</span>
+<span class="kw">case</span> <span class="num">70</span><span class="op">..&lt;</span><span class="num">80</span>:  <span class="fn">print</span>(<span class="str">"C"</span>)
+<span class="kw">default</span>:         <span class="fn">print</span>(<span class="str">"Below C"</span>)
+}
+
+<span class="cmt">// Switch must be exhaustive (cover all cases)</span>
+<span class="cmt">// Use 'default' if you can't list every case</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Loops</h2>
+  <div class="tabs">
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="switchTab(this,'tab-forin')">for-in</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-while')">while</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-repeat')">repeat-while</button>
+      <button class="tab-btn" onclick="switchTab(this,'tab-break')">break / continue</button>
+    </div>
+    <div class="tab-panel active" id="tab-forin">
+      <p class="body-text">Use <code>for-in</code> to iterate over a range, array, dictionary, or any sequence.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">ForIn.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// Loop over a range</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span><span class="op">...</span><span class="num">5</span> {
+    <span class="fn">print</span>(<span class="str">"Round \(i)"</span>)  <span class="cmt">// Round 1, 2, 3, 4, 5</span>
+}
+
+<span class="cmt">// Half-open range (excludes 5)</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="num">0</span><span class="op">..&lt;</span><span class="num">5</span> {
+    <span class="fn">print</span>(i)            <span class="cmt">// 0, 1, 2, 3, 4</span>
+}
+
+<span class="cmt">// Loop over array</span>
+<span class="kw">let</span> courses <span class="op">=</span> [<span class="str">"MAC221"</span>, <span class="str">"MAC280"</span>, <span class="str">"MAT115"</span>]
+<span class="kw">for</span> course <span class="kw">in</span> courses {
+    <span class="fn">print</span>(<span class="str">"Enrolled: \(course)"</span>)
+}
+
+<span class="cmt">// With index</span>
+<span class="kw">for</span> (index, course) <span class="kw">in</span> courses.enumerated() {
+    <span class="fn">print</span>(<span class="str">"\(index + 1). \(course)"</span>)
+}
+
+<span class="cmt">// Ignore value with _</span>
+<span class="kw">for</span> _ <span class="kw">in</span> <span class="num">1</span><span class="op">...</span><span class="num">3</span> {
+    <span class="fn">print</span>(<span class="str">"Ping!"</span>)  <span class="cmt">// prints 3 times</span>
+}</pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-while">
+      <p class="body-text">Use <code>while</code> when you don't know in advance how many times to loop. Checks condition <em>before</em> each iteration.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">While.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// while loop — checks condition first</span>
+<span class="kw">var</span> lives <span class="op">=</span> <span class="num">3</span>
+<span class="kw">var</span> level <span class="op">=</span> <span class="num">1</span>
+
+<span class="kw">while</span> lives <span class="op">></span> <span class="num">0</span> {
+    <span class="fn">print</span>(<span class="str">"Playing level \(level), lives: \(lives)"</span>)
+    level <span class="op">+=</span> <span class="num">1</span>
+    lives <span class="op">-=</span> <span class="num">1</span>
+}
+<span class="fn">print</span>(<span class="str">"Game over!"</span>)
+
+<span class="cmt">// ⚠️ Make sure condition eventually becomes false!</span>
+<span class="cmt">// Infinite loop: while true { } — be careful</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-repeat">
+      <p class="body-text"><code>repeat-while</code> executes the body <em>at least once</em>, then checks the condition. Like <code>do-while</code> in other languages.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">RepeatWhile.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// repeat-while — runs body at least once</span>
+<span class="kw">var</span> attempts <span class="op">=</span> <span class="num">0</span>
+
+<span class="kw">repeat</span> {
+    attempts <span class="op">+=</span> <span class="num">1</span>
+    <span class="fn">print</span>(<span class="str">"Attempt \(attempts)"</span>)
+} <span class="kw">while</span> attempts <span class="op">&lt;</span> <span class="num">3</span>
+
+<span class="cmt">// Output: Attempt 1, Attempt 2, Attempt 3</span>
+
+<span class="cmt">// Great for: asking user for input until valid</span></pre></div></div>
+    </div>
+    <div class="tab-panel" id="tab-break">
+      <p class="body-text"><code>break</code> exits a loop immediately. <code>continue</code> skips the current iteration and moves to the next.</p>
+      <div class="code-wrap"><div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">BreakContinue.swift</span></div>
+      <div class="code-body"><pre><span class="cmt">// break — exits loop immediately</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span><span class="op">...</span><span class="num">10</span> {
+    <span class="kw">if</span> i <span class="op">==</span> <span class="num">5</span> {
+        <span class="kw">break</span>  <span class="cmt">// stops at 5</span>
+    }
+    <span class="fn">print</span>(i)  <span class="cmt">// prints 1, 2, 3, 4</span>
+}
+
+<span class="cmt">// continue — skips current iteration</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span><span class="op">...</span><span class="num">6</span> {
+    <span class="kw">if</span> i <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span> {
+        <span class="kw">continue</span>  <span class="cmt">// skip even numbers</span>
+    }
+    <span class="fn">print</span>(i)      <span class="cmt">// prints 1, 3, 5</span>
+}</pre></div></div>
+    </div>
+  </div>
+
+  <!-- Predict the output -->
+  <h2 class="sec-h"><span class="sh-bar"></span>🔮 Predict the Output</h2>
+  <div class="quiz-box">
+    <div class="quiz-tag">🔮 Challenge</div>
+    <div class="quiz-q">What does this code print?<br>
+    <div class="code-wrap" style="margin-top:10px;"><div class="code-body"><pre style="font-size:12.5px;"><span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span><span class="op">...</span><span class="num">5</span> {
+    <span class="kw">if</span> i <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span> { <span class="kw">continue</span> }
+    <span class="fn">print</span>(i)
+}</pre></div></div>
+    </div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'cf-q1','❌ Even numbers are skipped by continue, so 2 and 4 never print.')">1 2 3 4 5</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'cf-q1','✅ Correct! continue skips the even numbers (2,4) so only odd numbers 1, 3, 5 print.')">1 3 5</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'cf-q1','❌ Only even numbers would print if we checked i % 2 != 0. The condition here skips evens.')">2 4</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'cf-q1','❌ The loop runs through all 5, but continue skips the print for even values.')">Nothing</button>
+    </div>
+    <div class="quiz-feedback" id="cf-q1"></div>
+  </div>
+
+  <div class="quiz-box">
+    <div class="quiz-tag">💡 Choose the Right Structure</div>
+    <div class="quiz-q">You need to display a different greeting based on 5 specific days of the week. Which is better?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'cf-q2','❌ If/else chains would work, but for matching specific values, switch is cleaner and more readable.')">A long chain of if/else if</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'cf-q2','✅ Correct! switch is perfect for matching against specific values — cleaner, exhaustive, and fast.')">A switch statement</button>
+    </div>
+    <div class="quiz-feedback" id="cf-q2"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 4: FUNCTIONS
+     ================================================================ -->
+<div class="section" id="sec-4">
+  <div class="section-hero">
+    <div class="hero-tag">Section 5 · Functions</div>
+    <h1>Functions &amp; Closures 🔧</h1>
+    <p>Functions are reusable blocks of code. Swift has expressive function syntax with argument labels, default parameters, and powerful closures that are used everywhere in iOS.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Declare and call functions with parameters and return values</li>
+      <li>Understand external argument labels and internal parameter names</li>
+      <li>Use default parameter values</li>
+      <li>Write functions that return multiple values with tuples</li>
+      <li>Understand closures as a concept</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Basic Functions</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Functions.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// No parameters, no return</span>
+<span class="kw">func</span> <span class="fn">sayHello</span>() {
+    <span class="fn">print</span>(<span class="str">"Hello, Swift!"</span>)
+}
+<span class="fn">sayHello</span>()   <span class="cmt">// Call the function</span>
+
+<span class="cmt">// With parameter</span>
+<span class="kw">func</span> <span class="fn">greet</span>(name<span class="op">:</span> <span class="tp">String</span>) {
+    <span class="fn">print</span>(<span class="str">"Hello, \(name)!"</span>)
+}
+<span class="fn">greet</span>(name<span class="op">:</span> <span class="str">"Aisha"</span>)  <span class="cmt">// Hello, Aisha!</span>
+
+<span class="cmt">// With return value</span>
+<span class="kw">func</span> <span class="fn">add</span>(a<span class="op">:</span> <span class="tp">Int</span>, b<span class="op">:</span> <span class="tp">Int</span>) <span class="op">-></span> <span class="tp">Int</span> {
+    <span class="kw">return</span> a <span class="op">+</span> b
+}
+<span class="kw">let</span> result <span class="op">=</span> <span class="fn">add</span>(a<span class="op">:</span> <span class="num">5</span>, b<span class="op">:</span> <span class="num">3</span>)
+<span class="fn">print</span>(result)  <span class="cmt">// 8</span>
+
+<span class="cmt">// Single-expression: implicit return</span>
+<span class="kw">func</span> <span class="fn">square</span>(n<span class="op">:</span> <span class="tp">Int</span>) <span class="op">-></span> <span class="tp">Int</span> { n <span class="op">*</span> n }
+<span class="fn">print</span>(<span class="fn">square</span>(n<span class="op">:</span> <span class="num">4</span>))  <span class="cmt">// 16</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Argument Labels</h2>
+  <p class="body-text">Swift functions use <strong>external labels</strong> (for callers) and <strong>internal names</strong> (inside the function). This makes call sites read like English sentences.</p>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">ArgumentLabels.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// External label 'from', internal name 'city'</span>
+<span class="kw">func</span> <span class="fn">travel</span>(from departure<span class="op">:</span> <span class="tp">String</span>, to destination<span class="op">:</span> <span class="tp">String</span>) {
+    <span class="fn">print</span>(<span class="str">"Flying from \(departure) to \(destination)"</span>)
+}
+<span class="cmt">// Reads like English! 🎉</span>
+<span class="fn">travel</span>(from<span class="op">:</span> <span class="str">"New York"</span>, to<span class="op">:</span> <span class="str">"Casablanca"</span>)
+
+<span class="cmt">// Suppress external label with _</span>
+<span class="kw">func</span> <span class="fn">double</span>(_ number<span class="op">:</span> <span class="tp">Int</span>) <span class="op">-></span> <span class="tp">Int</span> {
+    <span class="kw">return</span> number <span class="op">*</span> <span class="num">2</span>
+}
+<span class="fn">print</span>(<span class="fn">double</span>(<span class="num">7</span>))  <span class="cmt">// No label needed: double(7)</span>
+
+<span class="cmt">// iOS APIs use this pattern everywhere</span>
+<span class="cmt">// e.g., print("Hello") — no label</span>
+<span class="cmt">// e.g., array.insert("x", at: 0) — 'at' is the label</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Default Parameters &amp; Multiple Returns</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">DefaultParams.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// Default parameter values</span>
+<span class="kw">func</span> <span class="fn">createProfile</span>(name<span class="op">:</span> <span class="tp">String</span>, role<span class="op">:</span> <span class="tp">String</span> <span class="op">=</span> <span class="str">"Student"</span>, age<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">18</span>) {
+    <span class="fn">print</span>(<span class="str">"\(name) | \(role) | Age: \(age)"</span>)
+}
+
+<span class="fn">createProfile</span>(name<span class="op">:</span> <span class="str">"Kim"</span>)                        <span class="cmt">// Kim | Student | Age: 18</span>
+<span class="fn">createProfile</span>(name<span class="op">:</span> <span class="str">"Prof"</span>, role<span class="op">:</span> <span class="str">"Instructor"</span>)   <span class="cmt">// Prof | Instructor | Age: 18</span>
+<span class="fn">createProfile</span>(name<span class="op">:</span> <span class="str">"Alex"</span>, role<span class="op">:</span> <span class="str">"TA"</span>, age<span class="op">:</span> <span class="num">22</span>) <span class="cmt">// Alex | TA | Age: 22</span>
+
+<span class="cmt">// Return multiple values with tuple</span>
+<span class="kw">func</span> <span class="fn">minMax</span>(array<span class="op">:</span> [<span class="tp">Int</span>]) <span class="op">-></span> (min<span class="op">:</span> <span class="tp">Int</span>, max<span class="op">:</span> <span class="tp">Int</span>) {
+    <span class="kw">return</span> (array.min()<span class="op">!</span>, array.max()<span class="op">!</span>)
+}
+
+<span class="kw">let</span> scores <span class="op">=</span> [<span class="num">72</span>, <span class="num">88</span>, <span class="num">95</span>, <span class="num">60</span>, <span class="num">83</span>]
+<span class="kw">let</span> result <span class="op">=</span> <span class="fn">minMax</span>(array<span class="op">:</span> scores)
+<span class="fn">print</span>(<span class="str">"Min: \(result.min), Max: \(result.max)"</span>)
+<span class="cmt">// Min: 60, Max: 95</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Real iOS Examples</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">iOSExamples.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// Validate email format</span>
+<span class="kw">func</span> <span class="fn">isValidEmail</span>(_ email<span class="op">:</span> <span class="tp">String</span>) <span class="op">-></span> <span class="tp">Bool</span> {
+    <span class="kw">return</span> email.contains(<span class="str">"@"</span>) <span class="op">&&</span> email.contains(<span class="str">"."</span>)
+}
+<span class="fn">print</span>(<span class="fn">isValidEmail</span>(<span class="str">"user@email.com"</span>))  <span class="cmt">// true</span>
+<span class="fn">print</span>(<span class="fn">isValidEmail</span>(<span class="str">"notanemail"</span>))      <span class="cmt">// false</span>
+
+<span class="cmt">// Format currency</span>
+<span class="kw">func</span> <span class="fn">formatPrice</span>(_ amount<span class="op">:</span> <span class="tp">Double</span>, currency<span class="op">:</span> <span class="tp">String</span> <span class="op">=</span> <span class="str">"$"</span>) <span class="op">-></span> <span class="tp">String</span> {
+    <span class="kw">return</span> <span class="str">"\(currency)\(String(format: \"%.2f\", amount))"</span>
+}
+<span class="fn">print</span>(<span class="fn">formatPrice</span>(<span class="num">9.99</span>))          <span class="cmt">// $9.99</span>
+<span class="fn">print</span>(<span class="fn">formatPrice</span>(<span class="num">49.0</span>, currency<span class="op">:</span> <span class="str">"€"</span>))  <span class="cmt">// €49.00</span>
+
+<span class="cmt">// Calculate letter grade</span>
+<span class="kw">func</span> <span class="fn">letterGrade</span>(for score<span class="op">:</span> <span class="tp">Int</span>) <span class="op">-></span> <span class="tp">String</span> {
+    <span class="kw">switch</span> score {
+    <span class="kw">case</span> <span class="num">90</span><span class="op">...</span><span class="num">100</span>: <span class="kw">return</span> <span class="str">"A"</span>
+    <span class="kw">case</span> <span class="num">80</span><span class="op">..&lt;</span><span class="num">90</span>:  <span class="kw">return</span> <span class="str">"B"</span>
+    <span class="kw">case</span> <span class="num">70</span><span class="op">..&lt;</span><span class="num">80</span>:  <span class="kw">return</span> <span class="str">"C"</span>
+    <span class="kw">case</span> <span class="num">60</span><span class="op">..&lt;</span><span class="num">70</span>:  <span class="kw">return</span> <span class="str">"D"</span>
+    <span class="kw">default</span>:         <span class="kw">return</span> <span class="str">"F"</span>
+    }
+}
+<span class="fn">print</span>(<span class="fn">letterGrade</span>(for<span class="op">:</span> <span class="num">85</span>))  <span class="cmt">// B</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Closures — Functions as Values</h2>
+  <div class="callout tip">
+    <span class="icon">💡</span>
+    <span>Closures are self-contained blocks of code that can be passed around. They're used <em>constantly</em> in iOS for callbacks, animations, and async code.</span>
+  </div>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Closures.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// A closure stored in a variable</span>
+<span class="kw">let</span> greet <span class="op">=</span> { (name<span class="op">:</span> <span class="tp">String</span>) <span class="op">-></span> <span class="tp">String</span> <span class="kw">in</span>
+    <span class="kw">return</span> <span class="str">"Hello, \(name)!"</span>
+}
+<span class="fn">print</span>(<span class="fn">greet</span>(<span class="str">"Swift"</span>))  <span class="cmt">// Hello, Swift!</span>
+
+<span class="cmt">// Closures with array methods (VERY common in iOS)</span>
+<span class="kw">let</span> scores <span class="op">=</span> [<span class="num">72</span>, <span class="num">88</span>, <span class="num">45</span>, <span class="num">95</span>, <span class="num">60</span>]
+
+<span class="cmt">// filter — keep only passing scores</span>
+<span class="kw">let</span> passing <span class="op">=</span> scores.filter { score <span class="kw">in</span> score <span class="op">>=</span> <span class="num">60</span> }
+<span class="fn">print</span>(passing)   <span class="cmt">// [72, 88, 95, 60]</span>
+
+<span class="cmt">// map — transform each element</span>
+<span class="kw">let</span> doubled <span class="op">=</span> scores.map { <span class="num">$0</span> <span class="op">*</span> <span class="num">2</span> }
+<span class="fn">print</span>(doubled)   <span class="cmt">// [144, 176, 90, 190, 120]</span>
+
+<span class="cmt">// sorted — custom sort</span>
+<span class="kw">let</span> sorted <span class="op">=</span> scores.sorted { <span class="num">$0</span> <span class="op">></span> <span class="num">$1</span> }
+<span class="fn">print</span>(sorted)    <span class="cmt">// [95, 88, 72, 60, 45] (descending)</span></pre></div>
+  </div>
+
+  <!-- Challenge -->
+  <div class="quiz-box">
+    <div class="quiz-tag">✏️ Fill in the Blank</div>
+    <div class="quiz-q">Complete this function to return true if a password is valid (at least 8 characters):</div>
+    <div class="code-wrap"><div class="code-body"><pre><span class="kw">func</span> <span class="fn">isValidPassword</span>(_ password<span class="op">:</span> <span class="tp">String</span>) <span class="op">-></span> _____ {
+    <span class="kw">return</span> password.count _____ <span class="num">8</span>
+}</pre></div></div>
+    <button class="reveal-btn" onclick="toggleReveal('fn-reveal1')">👁 Reveal Answer</button>
+    <div class="reveal-content" id="fn-reveal1">
+      <div class="code-wrap"><div class="code-body"><pre><span class="kw">func</span> <span class="fn">isValidPassword</span>(_ password<span class="op">:</span> <span class="tp">String</span>) <span class="op">-></span> <span class="tp">Bool</span> {
+    <span class="kw">return</span> password.count <span class="op">>=</span> <span class="num">8</span>
+}
+<span class="fn">print</span>(<span class="fn">isValidPassword</span>(<span class="str">"swift123"</span>))   <span class="cmt">// true</span>
+<span class="fn">print</span>(<span class="fn">isValidPassword</span>(<span class="str">"hi"</span>))          <span class="cmt">// false</span></pre></div></div>
+    </div>
+  </div>
+
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Quick Check</div>
+    <div class="quiz-q">In Swift, what does the <code>_</code> before a parameter name mean?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'fn-q1','❌ _ doesn\'t make it private. Private is a separate access control modifier.')">The parameter is private</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'fn-q1','✅ Correct! _ suppresses the external argument label, so callers don\'t need to write the name when calling.')">The external argument label is omitted</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'fn-q1','❌ _ doesn\'t make it optional. Optional types use ? after the type name.')">The parameter is optional</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'fn-q1','❌ _ doesn\'t affect the return type. The return type follows the -> arrow.')">The function has no return value</button>
+    </div>
+    <div class="quiz-feedback" id="fn-q1"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 5: CLASSES & STRUCTURES
+     ================================================================ -->
+<div class="section" id="sec-5">
+  <div class="section-hero">
+    <div class="hero-tag">Section 6 · Classes &amp; Structures</div>
+    <h1>Classes &amp; Structures 🏗️</h1>
+    <p>Classes and structs are the building blocks of Swift apps. Both define types with properties and methods — but they differ fundamentally in how they pass data around.</p>
+  </div>
+
+  <div class="objectives">
+    <h3>🎯 Learning Objectives</h3>
+    <ul>
+      <li>Define classes and structs with properties, methods, and initializers</li>
+      <li>Understand value types (struct) vs reference types (class)</li>
+      <li>Use mutating methods with structs</li>
+      <li>Choose between class and struct for the right situations</li>
+      <li>Apply OOP concepts to realistic iOS examples</li>
+    </ul>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Structures</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Struct.swift</span></div>
+    <div class="code-body"><pre><span class="kw">struct</span> <span class="tp">Student</span> {
+    <span class="cmt">// Stored properties</span>
+    <span class="kw">var</span> name<span class="op">:</span> <span class="tp">String</span>
+    <span class="kw">var</span> gpa<span class="op">:</span> <span class="tp">Double</span>
+    <span class="kw">let</span> studentID<span class="op">:</span> <span class="tp">Int</span>   <span class="cmt">// constant property</span>
+    
+    <span class="cmt">// Method</span>
+    <span class="kw">func</span> <span class="fn">introduce</span>() {
+        <span class="fn">print</span>(<span class="str">"Hi, I'm \(name) | GPA: \(gpa)"</span>)
+    }
+    
+    <span class="cmt">// Mutating method (needed for structs!)</span>
+    <span class="kw">mutating</span> <span class="kw">func</span> <span class="fn">updateGPA</span>(_ newGPA<span class="op">:</span> <span class="tp">Double</span>) {
+        gpa <span class="op">=</span> newGPA
+    }
+}
+
+<span class="cmt">// Structs get a FREE memberwise initializer</span>
+<span class="kw">var</span> s1 <span class="op">=</span> <span class="fn">Student</span>(name<span class="op">:</span> <span class="str">"Aisha"</span>, gpa<span class="op">:</span> <span class="num">3.8</span>, studentID<span class="op">:</span> <span class="num">1001</span>)
+s1.<span class="fn">introduce</span>()         <span class="cmt">// Hi, I'm Aisha | GPA: 3.8</span>
+s1.<span class="fn">updateGPA</span>(<span class="num">3.9</span>)     <span class="cmt">// Must call with mutating</span>
+<span class="fn">print</span>(s1.gpa)           <span class="cmt">// 3.9</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Classes</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">Class.swift</span></div>
+    <div class="code-body"><pre><span class="kw">class</span> <span class="tp">AppUser</span> {
+    <span class="cmt">// Stored properties</span>
+    <span class="kw">var</span> username<span class="op">:</span> <span class="tp">String</span>
+    <span class="kw">var</span> loginCount<span class="op">:</span> <span class="tp">Int</span>
+    
+    <span class="cmt">// Initializer (classes need it — no free memberwise!)</span>
+    <span class="kw">init</span>(username<span class="op">:</span> <span class="tp">String</span>) {
+        self.username <span class="op">=</span> username
+        self.loginCount <span class="op">=</span> <span class="num">0</span>
+    }
+    
+    <span class="cmt">// Method</span>
+    <span class="kw">func</span> <span class="fn">login</span>() {
+        loginCount <span class="op">+=</span> <span class="num">1</span>
+        <span class="fn">print</span>(<span class="str">"\(username) logged in. Total: \(loginCount)"</span>)
+    }
+}
+
+<span class="kw">let</span> user <span class="op">=</span> <span class="tp">AppUser</span>(username<span class="op">:</span> <span class="str">"aisha99"</span>)
+user.<span class="fn">login</span>()   <span class="cmt">// aisha99 logged in. Total: 1</span>
+user.<span class="fn">login</span>()   <span class="cmt">// aisha99 logged in. Total: 2</span>
+
+<span class="cmt">// Inheritance (classes only!)</span>
+<span class="kw">class</span> <span class="tp">AdminUser</span><span class="op">:</span> <span class="tp">AppUser</span> {
+    <span class="kw">func</span> <span class="fn">deleteAccount</span>(of target<span class="op">:</span> <span class="tp">String</span>) {
+        <span class="fn">print</span>(<span class="str">"\(username) deleted \(target)'s account"</span>)
+    }
+}</pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Value Types vs Reference Types</h2>
+  <div class="callout warn">
+    <span class="icon">⚠️</span>
+    <span>This is the most important difference between structs and classes. <strong>Structs are copied. Classes are shared.</strong></span>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">ValueVsReference.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// STRUCT = Value Type (COPY)</span>
+<span class="kw">struct</span> <span class="tp">Point</span> { <span class="kw">var</span> x<span class="op">:</span> <span class="tp">Int</span>; <span class="kw">var</span> y<span class="op">:</span> <span class="tp">Int</span> }
+
+<span class="kw">var</span> p1 <span class="op">=</span> <span class="tp">Point</span>(x<span class="op">:</span> <span class="num">1</span>, y<span class="op">:</span> <span class="num">2</span>)
+<span class="kw">var</span> p2 <span class="op">=</span> p1       <span class="cmt">// COPY — p2 is independent</span>
+p2.x <span class="op">=</span> <span class="num">99</span>
+<span class="fn">print</span>(p1.x)       <span class="cmt">// 1 — unchanged! ✅</span>
+<span class="fn">print</span>(p2.x)       <span class="cmt">// 99</span>
+
+<span class="cmt">// CLASS = Reference Type (SHARE)</span>
+<span class="kw">class</span> <span class="tp">Box</span> { <span class="kw">var</span> value<span class="op">:</span> <span class="tp">Int</span> <span class="op">=</span> <span class="num">0</span> }
+
+<span class="kw">var</span> box1 <span class="op">=</span> <span class="tp">Box</span>()
+<span class="kw">var</span> box2 <span class="op">=</span> box1    <span class="cmt">// SAME object! Not a copy</span>
+box2.value <span class="op">=</span> <span class="num">99</span>
+<span class="fn">print</span>(box1.value)  <span class="cmt">// 99 — also changed! ⚠️</span>
+<span class="fn">print</span>(box2.value)  <span class="cmt">// 99</span></pre></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>Class vs Struct — When to Use?</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="class-col">Class</th>
+        <th class="struct-col">Struct</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Type</td>
+        <td class="class-col">Reference (shared)</td>
+        <td class="struct-col">Value (copied)</td>
+      </tr>
+      <tr>
+        <td>Inheritance</td>
+        <td class="class-col">✅ Yes</td>
+        <td class="struct-col">❌ No</td>
+      </tr>
+      <tr>
+        <td>Deinitializer</td>
+        <td class="class-col">✅ deinit</td>
+        <td class="struct-col">❌ No</td>
+      </tr>
+      <tr>
+        <td>Mutating keyword</td>
+        <td class="class-col">❌ Not needed</td>
+        <td class="struct-col">✅ Required</td>
+      </tr>
+      <tr>
+        <td>Memberwise init</td>
+        <td class="class-col">❌ Must write init</td>
+        <td class="struct-col">✅ Auto-generated</td>
+      </tr>
+      <tr>
+        <td>Performance</td>
+        <td class="class-col">Heap (slower alloc)</td>
+        <td class="struct-col">Stack (faster)</td>
+      </tr>
+      <tr>
+        <td>SwiftUI Usage</td>
+        <td class="class-col">ObservableObject</td>
+        <td class="struct-col">Views, Models (preferred!)</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout success">
+    <span class="icon">✅</span>
+    <span><strong>Apple's recommendation:</strong> Start with a struct. Only switch to a class if you need inheritance, identity, or shared mutable state. In SwiftUI, nearly everything is a struct!</span>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>iOS App Example</h2>
+  <div class="code-wrap">
+    <div class="code-header"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="code-label">TaskApp.swift</span></div>
+    <div class="code-body"><pre><span class="cmt">// A realistic iOS task app model</span>
+<span class="kw">struct</span> <span class="tp">Task</span> {
+    <span class="kw">let</span> id<span class="op">:</span> <span class="tp">Int</span>
+    <span class="kw">var</span> title<span class="op">:</span> <span class="tp">String</span>
+    <span class="kw">var</span> isCompleted<span class="op">:</span> <span class="tp">Bool</span> <span class="op">=</span> <span class="kw2">false</span>
+    <span class="kw">var</span> priority<span class="op">:</span> <span class="tp">String</span> <span class="op">=</span> <span class="str">"Normal"</span>
+    
+    <span class="kw">mutating</span> <span class="kw">func</span> <span class="fn">complete</span>() {
+        isCompleted <span class="op">=</span> <span class="kw2">true</span>
+        <span class="fn">print</span>(<span class="str">"✅ '\(title)' completed!"</span>)
+    }
+    
+    <span class="kw">func</span> <span class="fn">summary</span>() <span class="op">-></span> <span class="tp">String</span> {
+        <span class="kw">let</span> status <span class="op">=</span> isCompleted <span class="op">?</span> <span class="str">"✅"</span> <span class="op">:</span> <span class="str">"⏳"</span>
+        <span class="kw">return</span> <span class="str">"\(status) [\(priority)] \(title)"</span>
+    }
+}
+
+<span class="kw">class</span> <span class="tp">TaskManager</span> {
+    <span class="kw">var</span> tasks<span class="op">:</span> [<span class="tp">Task</span>] <span class="op">=</span> []
+    
+    <span class="kw">func</span> <span class="fn">add</span>(_ task<span class="op">:</span> <span class="tp">Task</span>) {
+        tasks.append(task)
+    }
+    
+    <span class="kw">func</span> <span class="fn">showAll</span>() {
+        tasks.forEach { <span class="fn">print</span>($0.<span class="fn">summary</span>()) }
+    }
+}
+
+<span class="cmt">// Usage</span>
+<span class="kw">let</span> manager <span class="op">=</span> <span class="tp">TaskManager</span>()
+manager.<span class="fn">add</span>(<span class="tp">Task</span>(id<span class="op">:</span> <span class="num">1</span>, title<span class="op">:</span> <span class="str">"Build login screen"</span>, priority<span class="op">:</span> <span class="str">"High"</span>))
+manager.<span class="fn">add</span>(<span class="tp">Task</span>(id<span class="op">:</span> <span class="num">2</span>, title<span class="op">:</span> <span class="str">"Write unit tests"</span>))
+manager.<span class="fn">showAll</span>()</pre></div>
+  </div>
+
+  <!-- Interactive: click to reveal -->
+  <h2 class="sec-h"><span class="sh-bar"></span>🔍 Spot the Error</h2>
+  <div class="quiz-box">
+    <div class="quiz-tag">🐛 Debug Challenge</div>
+    <div class="quiz-q">What's wrong with this code?</div>
+    <div class="code-wrap"><div class="code-body"><pre><span class="kw">struct</span> <span class="tp">Counter</span> {
+    <span class="kw">var</span> count <span class="op">=</span> <span class="num">0</span>
+    <span class="kw">func</span> <span class="fn">increment</span>() {
+        count <span class="op">+=</span> <span class="num">1</span>
+    }
+}</pre></div></div>
+    <button class="reveal-btn" onclick="toggleReveal('cs-reveal1')">🔍 Reveal the Bug</button>
+    <div class="reveal-content" id="cs-reveal1">
+      <div class="callout danger"><span class="icon">🐛</span><span>The <code>increment()</code> method modifies <code>count</code>, but it's missing the <code>mutating</code> keyword. Structs require <code>mutating</code> on any method that changes a property.</span></div>
+      <div class="code-wrap"><div class="code-body"><pre><span class="kw">struct</span> <span class="tp">Counter</span> {
+    <span class="kw">var</span> count <span class="op">=</span> <span class="num">0</span>
+    <span class="kw">mutating</span> <span class="kw">func</span> <span class="fn">increment</span>() {  <span class="cmt">// ← Add mutating!</span>
+        count <span class="op">+=</span> <span class="num">1</span>
+    }
+}</pre></div></div>
+    </div>
+  </div>
+
+  <div class="quiz-box">
+    <div class="quiz-tag">🧠 Quick Check</div>
+    <div class="quiz-q">You're modeling a bank account in Swift. Multiple parts of your app need to share and modify the same account balance. Should you use a <code>class</code> or <code>struct</code>?</div>
+    <div class="quiz-options">
+      <button class="quiz-opt" onclick="checkQuiz(this,true,'cs-q1','✅ Correct! When you need shared, mutable state across your app, use a class (reference type). Structs would create independent copies.')">class — shared reference needed</button>
+      <button class="quiz-opt" onclick="checkQuiz(this,false,'cs-q1','❌ A struct would create copies, meaning each part of the app would have its own balance — changes wouldn\'t be shared!')">struct — faster on stack</button>
+    </div>
+    <div class="quiz-feedback" id="cs-q1"></div>
+  </div>
+</div>
+
+<!-- ================================================================
+     SECTION 6: REVIEW & CHEAT SHEET
+     ================================================================ -->
+<div class="section" id="sec-6">
+  <div class="section-hero">
+    <div class="hero-tag">★ Final Review</div>
+    <h1>Swift Cheat Sheet &amp; Review 📋</h1>
+    <p>You've covered all the Swift fundamentals! Let's consolidate everything with a cheat sheet, common mistakes, a final quiz, and a look at what comes next in MAC221.</p>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>📋 Swift Cheat Sheet</h2>
+  <div class="cheat-grid">
+    <div class="cheat-item"><div class="ci-label">Variable</div><code>var name = "Alex"</code></div>
+    <div class="cheat-item"><div class="ci-label">Constant</div><code>let pi = 3.14</code></div>
+    <div class="cheat-item"><div class="ci-label">Type annotation</div><code>var age: Int = 20</code></div>
+    <div class="cheat-item"><div class="ci-label">Optional</div><code>var email: String? = nil</code></div>
+    <div class="cheat-item"><div class="ci-label">Nil coalescing</div><code>let val = opt ?? "default"</code></div>
+    <div class="cheat-item"><div class="ci-label">if let unwrap</div><code>if let x = optional { }</code></div>
+    <div class="cheat-item"><div class="ci-label">String interpolation</div><code>"Hello, \(name)!"</code></div>
+    <div class="cheat-item"><div class="ci-label">Array</div><code>var arr: [Int] = [1, 2, 3]</code></div>
+    <div class="cheat-item"><div class="ci-label">Dictionary</div><code>var d = ["key": "val"]</code></div>
+    <div class="cheat-item"><div class="ci-label">Set</div><code>var s: Set&lt;String&gt; = []</code></div>
+    <div class="cheat-item"><div class="ci-label">for-in loop</div><code>for item in array { }</code></div>
+    <div class="cheat-item"><div class="ci-label">while loop</div><code>while condition { }</code></div>
+    <div class="cheat-item"><div class="ci-label">Function</div><code>func add(a: Int) -> Int { }</code></div>
+    <div class="cheat-item"><div class="ci-label">No label</div><code>func fn(_ x: Int) { }</code></div>
+    <div class="cheat-item"><div class="ci-label">Closure</div><code>let f = { (x: Int) in x * 2 }</code></div>
+    <div class="cheat-item"><div class="ci-label">Struct</div><code>struct Name { var x: Int }</code></div>
+    <div class="cheat-item"><div class="ci-label">Class</div><code>class Name { init() { } }</code></div>
+    <div class="cheat-item"><div class="ci-label">Mutating</div><code>mutating func update() { }</code></div>
+    <div class="cheat-item"><div class="ci-label">Type conversion</div><code>Double(myInt)</code></div>
+    <div class="cheat-item"><div class="ci-label">Switch range</div><code>case 80...89: print("B")</code></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>⚠️ Common Beginner Mistakes</h2>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">1. Forgetting to unwrap optionals <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p>Always unwrap optionals with <code>if let</code>, <code>guard let</code>, or <code>??</code> before using them. Force unwrapping with <code>!</code> crashes if the value is <code>nil</code>.</p></div>
+  </div>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">2. Missing <code>mutating</code> on struct methods <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p>Any struct method that modifies a property needs the <code>mutating</code> keyword. Classes don't need it.</p></div>
+  </div>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">3. Integer division truncation <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p><code>7 / 2</code> in Swift equals <code>3</code>, not <code>3.5</code>! Use <code>Double</code> values if you need decimal results: <code>7.0 / 2.0 = 3.5</code></p></div>
+  </div>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">4. Modifying a let constant <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p>Constants declared with <code>let</code> cannot be changed. If you get "Cannot assign to value" — switch to <code>var</code>.</p></div>
+  </div>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">5. Switch without default <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p>Switch must be exhaustive. If you can't cover every case, add <code>default: break</code> at the end.</p></div>
+  </div>
+  <div class="accordion"><div class="accordion-header" onclick="toggleAccordion(this)">6. Confusing class and struct copying behavior <span class="acc-arrow">▼</span></div>
+    <div class="accordion-body"><p>Structs are <strong>copied</strong>. Classes are <strong>shared</strong>. Assigning a class instance to a new variable gives you the <em>same</em> object, not a copy.</p></div>
+  </div>
+
+  <h2 class="sec-h"><span class="sh-bar"></span>🎓 Final Quiz</h2>
+  <p class="body-text" style="margin-bottom:20px;">Test your Swift knowledge! Answer all questions, then see your score.</p>
+
+  <div class="final-q">
+    <div class="fq-num">Question 1 / 6</div>
+    <div class="fq-q">Which keyword declares a value that cannot change?</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">var</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">let</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">const</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">static</button>
+    </div>
+  </div>
+
+  <div class="final-q">
+    <div class="fq-num">Question 2 / 6</div>
+    <div class="fq-q">What does <code>var score: Double?</code> mean?</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">score is a Double that equals zero</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">score is an Optional Double — it might be nil</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">score is a question mark</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">score is a Float</button>
+    </div>
+  </div>
+
+  <div class="final-q">
+    <div class="fq-num">Question 3 / 6</div>
+    <div class="fq-q">What does <code>??</code> do in Swift?</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">Compares two optionals</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">Checks if a value is nil</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">Provides a default value if the optional is nil</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">Force unwraps an optional</button>
+    </div>
+  </div>
+
+  <div class="final-q">
+    <div class="fq-num">Question 4 / 6</div>
+    <div class="fq-q">A struct method that modifies a property needs which keyword?</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">override</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">static</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">mutating</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">mutable</button>
+    </div>
+  </div>
+
+  <div class="final-q">
+    <div class="fq-num">Question 5 / 6</div>
+    <div class="fq-q">Which collection type only holds unique values?</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">Array</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">Dictionary</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">Set</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">Tuple</button>
+    </div>
+  </div>
+
+  <div class="final-q">
+    <div class="fq-num">Question 6 / 6</div>
+    <div class="fq-q">In Swift, classes are _______ types and structs are _______ types.</div>
+    <div class="fq-opts">
+      <button class="fq-opt" onclick="answerFQ(this,false)">value / reference</button>
+      <button class="fq-opt" onclick="answerFQ(this,true)">reference / value</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">mutable / immutable</button>
+      <button class="fq-opt" onclick="answerFQ(this,false)">heap / queue</button>
+    </div>
+  </div>
+
+  <button class="nav-btn primary" onclick="showScore()" style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-top:8px;">🎯 See My Score</button>
+  <div id="score-box">
+    <h2>You scored <span id="score-val"></span> / 6</h2>
+    <p id="score-msg" style="margin-top:8px;"></p>
+  </div>
+
+  <h2 class="sec-h" style="margin-top:36px;"><span class="sh-bar"></span>🚀 What Comes Next in MAC221</h2>
+  <div class="grid-2">
+    <div class="card" style="border-color:rgba(167,139,250,0.4)">
+      <h3 style="color:var(--purple)">🎨 SwiftUI Views</h3>
+      <p>Build UI with Swift structs. Every SwiftUI component — Text, Button, Image, VStack — is a struct. You'll create views and see them live in Xcode's Canvas preview.</p>
+    </div>
+    <div class="card" style="border-color:rgba(56,189,248,0.4)">
+      <h3 style="color:var(--blue)">⚡ State &amp; @State</h3>
+      <p>Use <code>@State</code> to make your views reactive. When a @State property changes, SwiftUI automatically redraws the view. This is how apps feel alive.</p>
+    </div>
+    <div class="card" style="border-color:rgba(74,222,128,0.4)">
+      <h3 style="color:var(--green)">📱 Navigation</h3>
+      <p>Navigate between screens with NavigationStack and NavigationLink. Build multi-screen apps with deep linking and back-button support built in.</p>
+    </div>
+    <div class="card" style="border-color:rgba(250,204,21,0.4)">
+      <h3 style="color:var(--yellow)">🔄 Modifiers</h3>
+      <p>Chain modifiers like <code>.padding()</code>, <code>.background()</code>, and <code>.cornerRadius()</code> to style your views. Every modifier returns a new view.</p>
+    </div>
+  </div>
+
+  <div class="callout success" style="margin-top:8px;">
+    <span class="icon">🎉</span>
+    <span><strong>Congratulations!</strong> You've completed the Swift Language Overview for MAC221. You're now ready to start building real iOS apps with SwiftUI. Keep practicing — the best way to learn Swift is to write it every day!</span>
+  </div>
+</div>
+
+    </div><!-- end content-area -->
+  </div><!-- end main -->
+</div><!-- end app -->
+
+<script>
+// ============================================================
+//  JAVASCRIPT — Clean, organized, commented
+// ============================================================
+
+// --- STATE ---
+let currentSection = 0;
+const totalSections = 7; // 0-6
+const completed = new Set();
+let finalScore = 0;
+let finalAnswered = 0;
+
+// Section metadata
+const sections = [
+  { title: "Introduction to Swift",         sub: "Section 1 of 6" },
+  { title: "Variables & Constants",          sub: "Section 2 of 6" },
+  { title: "Data Types",                     sub: "Section 3 of 6" },
+  { title: "Control Flow",                   sub: "Section 4 of 6" },
+  { title: "Functions & Closures",           sub: "Section 5 of 6" },
+  { title: "Classes & Structures",           sub: "Section 6 of 6" },
+  { title: "Review, Cheat Sheet & Quiz",     sub: "Final Review ★" },
+];
+
+// --- NAVIGATION ---
+function goToSection(index) {
+  // Mark old as completed
+  completed.add(currentSection);
+  
+  // Update DOM sections
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.classList.toggle('active', i === index);
+  });
+
+  // Update nav
+  document.querySelectorAll('#nav-list li').forEach((li, i) => {
+    li.classList.remove('active', 'completed');
+    if (i === index) li.classList.add('active');
+    if (completed.has(i) && i !== index) li.classList.add('completed');
+  });
+
+  // Update topbar
+  document.getElementById('top-title').textContent = sections[index].title;
+  document.getElementById('top-sub').textContent = sections[index].sub;
+
+  // Update buttons
+  document.getElementById('prevBtn').disabled = index === 0;
+  document.getElementById('nextBtn').disabled = index === totalSections - 1;
+
+  // Update progress
+  const pct = Math.round((completed.size / totalSections) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '% Complete';
+
+  currentSection = index;
+
+  // Scroll content to top
+  document.getElementById('content-area').scrollTop = 0;
+}
+
+function navigate(dir) {
+  const next = currentSection + dir;
+  if (next >= 0 && next < totalSections) goToSection(next);
+}
+
+// Attach nav list click events
+document.querySelectorAll('#nav-list li').forEach((li) => {
+  li.addEventListener('click', () => {
+    goToSection(parseInt(li.dataset.section));
+  });
+});
+
+// --- QUIZ ---
+function checkQuiz(btn, isCorrect, feedbackId, message) {
+  // Disable all options in parent
+  const opts = btn.closest('.quiz-options').querySelectorAll('.quiz-opt');
+  opts.forEach(opt => {
+    opt.disabled = true;
+    opt.style.cursor = 'default';
+  });
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  const fb = document.getElementById(feedbackId);
+  fb.textContent = message;
+  fb.className = 'quiz-feedback show ' + (isCorrect ? 'ok' : 'nope');
+}
+
+// --- FINAL QUIZ ---
+function answerFQ(btn, isCorrect) {
+  const parent = btn.closest('.final-q');
+  if (parent.dataset.answered) return; // prevent re-answering
+
+  parent.dataset.answered = 'true';
+  finalAnswered++;
+  if (isCorrect) finalScore++;
+
+  const opts = parent.querySelectorAll('.fq-opt');
+  opts.forEach(opt => { opt.disabled = true; opt.style.cursor = 'default'; });
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+}
+
+function showScore() {
+  const box = document.getElementById('score-box');
+  box.style.display = 'block';
+  document.getElementById('score-val').textContent = finalScore;
+  
+  let msg = '';
+  if (finalScore === 6) msg = '🏆 Perfect score! You\'re ready to build iOS apps!';
+  else if (finalScore >= 4) msg = '👏 Great job! Review the sections where you missed.';
+  else if (finalScore >= 2) msg = '📚 Good effort. Review the material and try again!';
+  else msg = '💪 Keep studying — Swift takes practice. You\'ve got this!';
+  
+  document.getElementById('score-msg').textContent = msg;
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+// --- ACCORDIONS ---
+function toggleAccordion(header) {
+  const body = header.nextElementSibling;
+  const isOpen = body.classList.contains('show');
+  body.classList.toggle('show', !isOpen);
+  header.classList.toggle('open', !isOpen);
+}
+
+// --- TABS ---
+function switchTab(btn, panelId) {
+  // Find parent tabs container
+  const tabsWrap = btn.closest('.tabs');
+  tabsWrap.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tabsWrap.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// --- REVEAL ---
+function toggleReveal(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+  const btn = el.previousElementSibling;
+  btn.textContent = el.classList.contains('show') ? '🙈 Hide Answer' : '👁 Reveal Answer';
+}
+
+// --- INIT ---
+// Initialize with section 0 active
+document.getElementById('prevBtn').disabled = true;
+</script>
+</body>
+</html>

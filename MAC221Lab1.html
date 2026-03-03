@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 · Swift Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   DESIGN: Dark Futuristic · Cyberpunk Academic
+   Inspired by: Mission Control + IDE + Holographic UI
+═══════════════════════════════════════════════════════════ */
+:root {
+  --void: #010409;
+  --deep: #0a0e1a;
+  --panel: #0d1220;
+  --glass: rgba(13,18,32,0.85);
+  --glass2: rgba(255,255,255,0.03);
+  --border: rgba(0,212,255,0.15);
+  --border2: rgba(0,212,255,0.08);
+  --cyan: #00d4ff;
+  --cyan2: #00a8cc;
+  --cyanG: rgba(0,212,255,0.12);
+  --orange: #ff6b2b;
+  --orangeG: rgba(255,107,43,0.12);
+  --green: #00ff88;
+  --greenG: rgba(0,255,136,0.08);
+  --purple: #b060ff;
+  --purpleG: rgba(176,96,255,0.1);
+  --gold: #ffd700;
+  --text: #e8f4f8;
+  --text2: #8ba8be;
+  --text3: #4a6680;
+  --code-bg: #020508;
+  --radius: 12px;
+  --radius2: 6px;
+  --glow-cyan: 0 0 20px rgba(0,212,255,0.3), 0 0 60px rgba(0,212,255,0.1);
+  --glow-orange: 0 0 20px rgba(255,107,43,0.3), 0 0 60px rgba(255,107,43,0.1);
+  --glow-green: 0 0 15px rgba(0,255,136,0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Rajdhani', sans-serif;
+  background: var(--void);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── ANIMATED BACKGROUND GRID ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridShift 20s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+@keyframes gridShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 60px 60px; }
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Glow orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.orb-1 { width:400px; height:400px; background:rgba(0,212,255,0.06); top:-100px; left:-100px; }
+.orb-2 { width:300px; height:300px; background:rgba(255,107,43,0.05); bottom:0; right:200px; animation-delay:-4s; }
+.orb-3 { width:250px; height:250px; background:rgba(176,96,255,0.04); top:50%; left:50%; animation-delay:-2s; }
+@keyframes orbFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+/* ── LAYOUT ── */
+#wrapper { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+/* ══════════════════════════════════════
+   SIDEBAR — Holographic Panel
+══════════════════════════════════════ */
+#sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 4px 0 40px rgba(0,212,255,0.08);
+}
+
+/* Sidebar top accent line */
+#sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--orange), transparent);
+  animation: lineFlow 3s linear infinite;
+}
+@keyframes lineFlow {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.sidebar-brand {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border2);
+}
+.brand-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.brand-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.5; transform:scale(0.8); }
+}
+.brand-code {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+.sidebar-brand h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  letter-spacing: 0.5px;
+}
+.lab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  background: var(--orangeG);
+  border: 1px solid rgba(255,107,43,0.3);
+  color: var(--orange);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.lab-badge::before { content: '▶'; font-size: 7px; }
+
+/* Sidebar meta */
+.sidebar-meta {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+.meta-row .ml { color: var(--text3); font-weight: 500; letter-spacing: 1px; }
+.meta-row .mr { color: var(--cyan); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+/* Progress */
+.sidebar-progress { padding: 14px 20px; border-bottom: 1px solid var(--border2); }
+.prog-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.prog-header span:first-child { color: var(--text3); }
+.prog-header span:last-child { color: var(--cyan); font-family: 'JetBrains Mono', monospace; }
+.prog-track {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  height: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--orange));
+  border-radius: 20px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 0 10px rgba(0,212,255,0.6);
+  position: relative;
+}
+.prog-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:1} }
+
+/* Nav list */
+#nav-list { list-style: none; padding: 8px 0; flex: 1; }
+#nav-list li button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 20px;
+  background: none;
+  border: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text3);
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: left;
+  position: relative;
+}
+#nav-list li button:hover {
+  color: var(--text);
+  background: var(--cyanG);
+}
+#nav-list li.active button {
+  color: var(--cyan);
+  background: var(--cyanG);
+  border-right: 2px solid var(--cyan);
+}
+#nav-list li.active button::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 25%; bottom: 25%;
+  width: 2px;
+  background: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+#nav-list li.done button .nav-dot { background: var(--green); box-shadow: var(--glow-green); }
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text3);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+#nav-list li.active .nav-dot { background: var(--cyan); box-shadow: var(--glow-cyan); }
+.nav-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  min-width: 16px;
+  font-weight: 700;
+}
+#nav-list li.active .nav-num { color: var(--cyan); }
+
+/* Sidebar footer */
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border2); }
+.submit-side {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--orange), #e55a20);
+  color: white;
+  border: none;
+  border-radius: var(--radius2);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  box-shadow: 0 4px 20px rgba(255,107,43,0.3);
+}
+.submit-side:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255,107,43,0.5);
+}
+
+/* ══════════════════════════════════════
+   MAIN AREA
+══════════════════════════════════════ */
+#main {
+  margin-left: 260px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOP BAR */
+#topbar {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+.top-left { display: flex; align-items: center; gap: 16px; }
+.top-status {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: var(--glow-green);
+  animation: pulse 2s ease-in-out infinite;
+}
+.top-title-main {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 1px;
+}
+.top-title-sub {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+}
+.top-nav { display: flex; gap: 10px; align-items: center; }
+.top-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius2);
+  border: 1px solid var(--border);
+  background: var(--glass2);
+  color: var(--text2);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+.top-btn:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: var(--glow-cyan); }
+.top-btn.primary {
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,168,204,0.1));
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: var(--glow-cyan);
+}
+.top-btn.primary:hover { background: rgba(0,212,255,0.3); box-shadow: 0 0 30px rgba(0,212,255,0.5); }
+.top-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.top-btn:disabled:hover { border-color: var(--border); color: var(--text2); box-shadow: none; }
+
+/* ── CONTENT AREA ── */
+#content-area { flex: 1; padding: 36px 40px 80px; max-width: 900px; }
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+.lab-section { display: none; }
+.lab-section.active {
+  display: block;
+  animation: sectionIn 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Section Header */
+.sec-header {
+  margin-bottom: 32px;
+  position: relative;
+}
+.sec-tag {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sec-tag::before {
+  content: '';
+  width: 20px; height: 1px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+.sec-header h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 30px rgba(0,212,255,0.2);
+}
+.sec-header p {
+  font-size: 15px;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 600px;
+  font-weight: 400;
+}
+/* Decorative line under header */
+.sec-header::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), transparent);
+  margin-top: 16px;
+  box-shadow: 0 0 10px var(--cyan);
+}
+
+/* Info bar */
+.info-bar {
+  background: var(--cyanG);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  padding: 12px 18px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.info-bar a {
+  color: var(--orange);
+  text-decoration: none;
+  margin-left: auto;
+  font-size: 12px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+.info-bar a:hover { color: var(--gold); text-shadow: 0 0 10px var(--gold); }
+
+/* ══════════════════════════════════════
+   QUESTION CARDS — Glassmorphic
+══════════════════════════════════════ */
+.q-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 26px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.q-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.q-card:hover {
+  border-color: var(--border);
+  box-shadow: 0 0 30px rgba(0,212,255,0.06), 0 8px 32px rgba(0,0,0,0.3);
+}
+.q-card:hover::before { opacity: 1; }
+
+/* Corner accent */
+.q-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 40px; height: 40px;
+  border-top: 2px solid rgba(0,212,255,0.2);
+  border-right: 2px solid rgba(0,212,255,0.2);
+  border-radius: 0 var(--radius) 0 0;
+}
+
+.q-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.q-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+.q-badge {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 20px;
+  border: 1px solid;
+}
+.badge-mc { color: var(--cyan); border-color: rgba(0,212,255,0.3); background: var(--cyanG); }
+.badge-tf { color: var(--orange); border-color: rgba(255,107,43,0.3); background: var(--orangeG); }
+.badge-predict { color: var(--purple); border-color: rgba(176,96,255,0.3); background: var(--purpleG); }
+.badge-error { color: #ff4466; border-color: rgba(255,68,102,0.3); background: rgba(255,68,102,0.08); }
+.badge-scenario { color: var(--gold); border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.06); }
+
+.q-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.7;
+  margin-bottom: 18px;
+  letter-spacing: 0.2px;
+}
+.q-text code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--cyan);
+  background: rgba(0,212,255,0.08);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,212,255,0.15);
+}
+
+/* CODE BLOCK — Terminal Style */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid rgba(0,212,255,0.1);
+  border-radius: var(--radius2);
+  margin: 14px 0;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(0,212,255,0.1);
+}
+.code-header-bar {
+  background: rgba(255,255,255,0.03);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid rgba(0,212,255,0.08);
+}
+.code-dot { width: 9px; height: 9px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.code-label-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  margin-left: 8px;
+  letter-spacing: 1px;
+}
+.code-body {
+  padding: 18px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.9;
+  overflow-x: auto;
+}
+.code-body pre { white-space: pre; }
+/* Syntax highlighting */
+.kw  { color: #ff7eb6; font-weight: 500; }
+.kw2 { color: #b060ff; font-weight: 500; }
+.str { color: #7ddb9c; }
+.num { color: #ffa861; }
+.cmt { color: #3a5068; font-style: italic; }
+.fn  { color: #79c0ff; }
+.tp  { color: #ffd89b; }
+.op  { color: #6e8ba4; }
+
+/* ── OPTIONS ── */
+.options { display: flex; flex-direction: column; gap: 9px; }
+.opt-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 13px 16px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  text-align: left;
+  line-height: 1.4;
+  position: relative;
+  overflow: hidden;
+}
+.opt-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,212,255,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.opt-btn:hover {
+  border-color: rgba(0,212,255,0.4);
+  color: var(--text);
+  transform: translateX(4px);
+}
+.opt-btn:hover::before { opacity: 1; }
+.opt-btn.selected {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--cyanG);
+  transform: translateX(4px);
+  box-shadow: 0 0 20px rgba(0,212,255,0.1), inset 0 0 20px rgba(0,212,255,0.03);
+}
+.opt-label {
+  width: 24px; height: 24px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text3);
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.opt-btn:hover .opt-label,
+.opt-btn.selected .opt-label {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  color: var(--void);
+  box-shadow: 0 0 10px rgba(0,212,255,0.5);
+}
+
+/* True/False */
+.tf-opts { display: flex; gap: 12px; }
+.tf-btn {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius2);
+  background: rgba(255,255,255,0.02);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+  color: var(--text2);
+  text-transform: uppercase;
+}
+.tf-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 20px rgba(0,212,255,0.15);
+  background: var(--cyanG);
+}
+.tf-btn.selected {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: var(--cyanG);
+  box-shadow: 0 0 20px rgba(0,212,255,0.2);
+}
+
+/* HINT */
+.hint-wrap { margin-top: 14px; }
+.hint-toggle {
+  background: none;
+  border: 1px dashed rgba(255,107,43,0.3);
+  border-radius: var(--radius2);
+  padding: 6px 14px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(255,107,43,0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+}
+.hint-toggle:hover { border-color: var(--orange); color: var(--orange); box-shadow: 0 0 15px rgba(255,107,43,0.2); }
+.hint-box {
+  display: none;
+  margin-top: 10px;
+  background: var(--orangeG);
+  border: 1px solid rgba(255,107,43,0.25);
+  border-radius: var(--radius2);
+  padding: 12px 16px;
+  font-size: 13px;
+  color: rgba(255,150,80,0.9);
+  line-height: 1.6;
+  font-weight: 400;
+  animation: fadeDown 0.25s ease;
+}
+.hint-box.show { display: block; }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+
+/* ══════════════════════════════════════
+   COVER PAGE
+══════════════════════════════════════ */
+#section-cover {
+  padding: 10px 0 40px;
+}
+.cover-top {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.cover-eyebrow {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.cover-eyebrow::before, .cover-eyebrow::after {
+  content: '';
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan));
+}
+.cover-eyebrow::after { background: linear-gradient(90deg, var(--cyan), transparent); }
+.cover-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 50%, var(--orange) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  letter-spacing: -1px;
+}
+.cover-sub {
+  font-size: 15px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-bottom: 40px;
+}
+
+/* Stats row */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+.stat-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 28px;
+  text-align: center;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--orange));
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.stat-card:hover::before { transform: scaleX(1); }
+.stat-card:hover { box-shadow: 0 0 30px rgba(0,212,255,0.1); transform: translateY(-4px); }
+.stat-num {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--cyan);
+  line-height: 1;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(0,212,255,0.5);
+}
+.stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+/* Name input */
+.name-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.name-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.name-input-wrap {
+  position: relative;
+  width: 340px;
+}
+.name-input-wrap::before {
+  content: '▶';
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: var(--cyan);
+  opacity: 0.6;
+}
+#student-name-input {
+  width: 100%;
+  padding: 13px 18px 13px 34px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: all 0.25s;
+  backdrop-filter: blur(10px);
+}
+#student-name-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.08), 0 0 20px rgba(0,212,255,0.15);
+}
+#student-name-input::placeholder { color: var(--text3); }
+
+/* Instructions panel */
+.instr-panel {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  max-width: 580px;
+  margin: 0 auto 36px;
+  text-align: left;
+  box-shadow: 0 0 40px rgba(0,212,255,0.04);
+}
+.instr-panel h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.instr-panel h3::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+}
+.instr-panel ol {
+  padding-left: 20px;
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 2;
+  font-weight: 400;
+}
+.instr-panel ol li::marker { color: var(--cyan); font-family: 'Orbitron', monospace; font-size: 10px; }
+
+/* Start button */
+.start-btn {
+  padding: 16px 48px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,168,204,0.1));
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  box-shadow: var(--glow-cyan);
+  position: relative;
+  overflow: hidden;
+}
+.start-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,212,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.3s;
+}
+.start-btn:hover::before { transform: translateX(0); }
+.start-btn:hover {
+  box-shadow: 0 0 40px rgba(0,212,255,0.4), 0 0 80px rgba(0,212,255,0.2);
+  transform: translateY(-3px);
+}
+
+/* ══════════════════════════════════════
+   SUBMIT PAGE
+══════════════════════════════════════ */
+.submit-hero {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 44px;
+  margin-bottom: 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.submit-hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+}
+.submit-hero h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+.submit-hero p { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+#answered-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  margin-bottom: 28px;
+}
+.big-submit-btn {
+  padding: 16px 52px;
+  background: linear-gradient(135deg, var(--orange), #e55a20);
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  box-shadow: var(--glow-orange);
+}
+.big-submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 40px rgba(255,107,43,0.5), 0 8px 30px rgba(255,107,43,0.3);
+}
+
+/* Confirmation */
+#confirmation-box {
+  display: none;
+  background: var(--glass);
+  border: 1px solid rgba(0,255,136,0.3);
+  border-radius: var(--radius);
+  padding: 36px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(0,255,136,0.08);
+  animation: sectionIn 0.5s ease;
+}
+.conf-icon {
+  font-size: 40px;
+  margin-bottom: 14px;
+  display: block;
+}
+#confirmation-box h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  color: var(--green);
+  margin-bottom: 10px;
+  text-shadow: var(--glow-green);
+  letter-spacing: 1px;
+}
+#confirmation-box p { color: var(--text2); font-size: 14px; line-height: 1.7; }
+
+/* Instructor Panel */
+#instructor-panel {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 30px;
+  border-top: 2px solid rgba(176,96,255,0.5);
+  box-shadow: 0 0 30px rgba(176,96,255,0.05);
+}
+.instr-access-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--purple);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.instr-access-label::before {
+  content: '🔒';
+  font-size: 12px;
+}
+#instructor-panel h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+#instructor-panel > p {
+  font-size: 13px;
+  color: var(--text3);
+  margin-bottom: 20px;
+}
+.pwd-row {
+  display: flex;
+  gap: 10px;
+  max-width: 440px;
+}
+.pwd-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: all 0.25s;
+  backdrop-filter: blur(10px);
+}
+.pwd-input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 20px rgba(176,96,255,0.15);
+}
+.unlock-btn {
+  padding: 12px 22px;
+  background: linear-gradient(135deg, rgba(176,96,255,0.2), rgba(140,70,220,0.1));
+  border: 1px solid rgba(176,96,255,0.4);
+  border-radius: var(--radius2);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--purple);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.unlock-btn:hover {
+  background: rgba(176,96,255,0.25);
+  box-shadow: 0 0 20px rgba(176,96,255,0.3);
+}
+.pwd-error {
+  display: none;
+  color: #ff4466;
+  font-size: 12px;
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Grade reveal */
+#grade-reveal { display: none; margin-top: 24px; animation: sectionIn 0.4s ease; }
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.grade-card {
+  background: rgba(176,96,255,0.06);
+  border: 1px solid rgba(176,96,255,0.2);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+}
+.gc-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--purple);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.gc-val {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(176,96,255,0.4);
+}
+.gc-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
+
+.section-breakdown {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.breakdown-header {
+  background: rgba(176,96,255,0.08);
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px;
+  gap: 8px;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.breakdown-row {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border2);
+  font-size: 13px;
+  font-weight: 600;
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px;
+  gap: 8px;
+  align-items: center;
+  transition: background 0.2s;
+}
+.breakdown-row:hover { background: var(--glass2); }
+.breakdown-row .sn { color: var(--text2); }
+.breakdown-row .sc { color: var(--green); text-align: center; font-family: 'JetBrains Mono', monospace; }
+.breakdown-row .st { color: var(--text3); text-align: center; font-family: 'JetBrains Mono', monospace; }
+.breakdown-row .sp { text-align: center; font-family: 'JetBrains Mono', monospace; color: var(--cyan); }
+
+/* ── Inline code ── */
+.ic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: rgba(0,212,255,0.08);
+  color: var(--cyan);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,212,255,0.15);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
+
+/* ================================================================
+   PDF / PRINT STYLES
+================================================================ */
+.pdf-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius2);
+  border: 1px solid rgba(0,255,136,0.4);
+  background: rgba(0,255,136,0.06);
+  color: var(--green);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.pdf-btn:hover {
+  background: rgba(0,255,136,0.12);
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(0,255,136,0.2);
+}
+.pdf-btn .pdf-icon { font-size: 14px; }
+
+@media print {
+  /* Reset everything for clean print */
+  *, *::before, *::after {
+    box-sizing: border-box !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #1a1a2e !important;
+    font-family: 'Segoe UI', Arial, sans-serif !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    cursor: default !important;
+  }
+
+  /* Hide everything not needed */
+  #sidebar, #topbar, #main > #topbar,
+  .orb, #bgCanvas,
+  body::before, body::after,
+  .hint-wrap, .hint-area,
+  .pdf-btn, .top-btn, .submit-btn-side, .submit-side,
+  .sidebar-footer, .sb-footer,
+  #instructor-panel,
+  #confirmation-box { display: none !important; }
+
+  /* Remove fixed positioning */
+  #wrapper { display: block !important; }
+  #main { margin-left: 0 !important; display: block !important; }
+  #content-area {
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Show ALL sections for print */
+  .lab-section {
+    display: block !important;
+    animation: none !important;
+    page-break-inside: avoid;
+  }
+  #sec-0 { display: none !important; } /* hide cover in print */
+  #sec-7 #submission-area { display: none !important; }
+
+  /* Print header on each section */
+  .lab-section:not(#sec-0) {
+    padding: 18pt 0 !important;
+    border-bottom: 1pt solid #dde !important;
+  }
+
+  /* Section header print style */
+  .sec-header, .sh {
+    margin-bottom: 16pt !important;
+    padding: 12pt 16pt !important;
+    background: #f0f4ff !important;
+    border: 1pt solid #c0c8e0 !important;
+    border-left: 4pt solid #3344aa !important;
+    border-radius: 0 !important;
+    page-break-after: avoid !important;
+  }
+  .sec-header::after, .sh::before, .sh::after { display: none !important; }
+
+  .section-tag, .sec-tag, .sh-eyebrow {
+    color: #3344aa !important;
+    font-size: 8pt !important;
+    letter-spacing: 2px !important;
+    font-weight: 700 !important;
+    margin-bottom: 4pt !important;
+  }
+  .section-header h2, .sh-title {
+    font-size: 18pt !important;
+    color: #1a1a2e !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+    background: none !important;
+    -webkit-text-fill-color: #1a1a2e !important;
+    text-shadow: none !important;
+    animation: none !important;
+  }
+  .sh-title::before, .sh-title::after { display: none !important; }
+  .section-header p, .sh-desc {
+    color: #444 !important;
+    font-size: 9.5pt !important;
+    margin-top: 4pt !important;
+  }
+
+  /* Info bar */
+  .info-bar, .info-strip {
+    background: #eef2ff !important;
+    border: 1pt solid #c0c8e0 !important;
+    border-radius: 0 !important;
+    color: #3344aa !important;
+    padding: 6pt 12pt !important;
+    font-size: 9pt !important;
+    margin-bottom: 14pt !important;
+  }
+  .info-bar a, .is-link { display: none !important; }
+  .is-seg { border: none !important; padding: 4pt 8pt !important; }
+  .is-seg.hi { color: #3344aa !important; background: none !important; }
+
+  /* Question cards */
+  .q-card {
+    background: #ffffff !important;
+    border: 1pt solid #d0d8f0 !important;
+    border-radius: 0 !important;
+    margin-bottom: 12pt !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+    overflow: visible !important;
+  }
+  .q-card::before, .q-card::after { display: none !important; }
+  .q-inner { padding: 14pt 16pt !important; }
+
+  /* Question meta */
+  .q-meta { margin-bottom: 8pt !important; }
+  .q-num, .q-id {
+    font-size: 8pt !important;
+    color: #666 !important;
+    font-family: 'Courier New', monospace !important;
+    letter-spacing: 1px !important;
+  }
+  .q-type-badge, .q-badge, .q-tag {
+    font-size: 7.5pt !important;
+    padding: 1pt 6pt !important;
+    border-radius: 2pt !important;
+    border: 1pt solid !important;
+  }
+  .badge-mc, .qt-mc   { background: #eef6ff !important; color: #1155cc !important; border-color: #99bbee !important; }
+  .badge-tf, .qt-tf   { background: #fff8ee !important; color: #cc6600 !important; border-color: #ddbb88 !important; }
+  .badge-predict, .qt-pred { background: #f5eeff !important; color: #6622aa !important; border-color: #cc99ee !important; }
+  .badge-error, .qt-err    { background: #ffeeee !important; color: #cc1133 !important; border-color: #ee9999 !important; }
+  .badge-scenario, .qt-scene { background: #eeffee !important; color: #115522 !important; border-color: #99cc99 !important; }
+
+  /* Question text */
+  .q-text {
+    font-size: 11pt !important;
+    color: #1a1a2e !important;
+    line-height: 1.6 !important;
+    margin-bottom: 10pt !important;
+  }
+  .q-text code, .q-text .ic, .ic {
+    background: #f0f0f0 !important;
+    color: #1a1a2e !important;
+    border: 1pt solid #ccc !important;
+    border-radius: 2pt !important;
+    padding: 0 4pt !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 9.5pt !important;
+  }
+
+  /* Code blocks */
+  .code-block, .codeblock {
+    background: #f8f8f8 !important;
+    border: 1pt solid #dde !important;
+    border-left: 3pt solid #3344aa !important;
+    border-radius: 0 !important;
+    margin: 8pt 0 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
+  .code-header-bar, .cb-header {
+    background: #eeeef8 !important;
+    border-bottom: 1pt solid #dde !important;
+    padding: 4pt 10pt !important;
+  }
+  .code-label-text, .cb-fname { color: #666 !important; font-size: 8pt !important; }
+  .code-body, .cb-body {
+    padding: 10pt 14pt !important;
+    font-family: 'Courier New', monospace !important;
+    font-size: 9.5pt !important;
+    line-height: 1.7 !important;
+  }
+  /* Syntax highlight in print (readable on white) */
+  .kw  { color: #aa1155 !important; }
+  .kw2 { color: #8822cc !important; }
+  .str { color: #116611 !important; }
+  .num { color: #aa5500 !important; }
+  .cmt { color: #888888 !important; font-style: italic !important; }
+  .fn  { color: #1144aa !important; }
+  .tp  { color: #885500 !important; }
+  .op  { color: #555555 !important; }
+
+  /* Answer options */
+  .options, .opts { gap: 5pt !important; }
+  .opt-btn, .opt {
+    border: 1pt solid #d0d8f0 !important;
+    background: #fafbff !important;
+    padding: 7pt 10pt !important;
+    color: #1a1a2e !important;
+    font-size: 10.5pt !important;
+    border-radius: 2pt !important;
+    transform: none !important;
+    box-shadow: none !important;
+    clip-path: none !important;
+  }
+  .opt-btn::before, .opt::before, .opt-btn::after, .opt::after { display: none !important; }
+  .opt-btn.selected, .opt.selected {
+    border-color: #3344aa !important;
+    background: #eef2ff !important;
+    color: #3344aa !important;
+  }
+  .opt-label, .opt-letter {
+    background: #eeeef8 !important;
+    border: 1pt solid #bbc !important;
+    color: #3344aa !important;
+    font-size: 8.5pt !important;
+    width: 20pt !important;
+    height: 20pt !important;
+    clip-path: none !important;
+    border-radius: 2pt !important;
+    box-shadow: none !important;
+  }
+  .opt-btn.selected .opt-label,
+  .opt.selected .opt-letter {
+    background: #3344aa !important;
+    color: white !important;
+  }
+
+  /* True/False buttons */
+  .tf-opts, .tf-row { gap: 8pt !important; }
+  .tf-btn {
+    border: 1pt solid #d0d8f0 !important;
+    background: #fafbff !important;
+    color: #1a1a2e !important;
+    font-size: 13pt !important;
+    padding: 8pt !important;
+    clip-path: none !important;
+    border-radius: 2pt !important;
+    box-shadow: none !important;
+  }
+  .tf-btn.selected {
+    border-color: #3344aa !important;
+    background: #eef2ff !important;
+    color: #3344aa !important;
+  }
+
+  /* Print-only document header */
+  #print-doc-header {
+    display: block !important;
+    padding: 16pt 0 12pt !important;
+    border-bottom: 2pt solid #3344aa !important;
+    margin-bottom: 20pt !important;
+  }
+  #print-doc-header .ph-course {
+    font-size: 9pt !important;
+    color: #3344aa !important;
+    letter-spacing: 3px !important;
+    text-transform: uppercase !important;
+    font-weight: 700 !important;
+    margin-bottom: 4pt !important;
+  }
+  #print-doc-header .ph-title {
+    font-size: 22pt !important;
+    font-weight: 900 !important;
+    color: #1a1a2e !important;
+    margin-bottom: 4pt !important;
+  }
+  #print-doc-header .ph-meta {
+    font-size: 9pt !important;
+    color: #666 !important;
+    display: flex !important;
+    gap: 24pt !important;
+    flex-wrap: wrap !important;
+    margin-top: 8pt !important;
+  }
+  #print-doc-header .ph-meta span {
+    display: flex !important;
+    gap: 6pt !important;
+  }
+  #print-doc-header .ph-meta strong { color: #1a1a2e !important; }
+  #print-doc-header .ph-score-box {
+    display: inline-block !important;
+    margin-top: 10pt !important;
+    padding: 6pt 16pt !important;
+    border: 1pt solid #3344aa !important;
+    font-size: 10pt !important;
+    color: #3344aa !important;
+    font-weight: 700 !important;
+    letter-spacing: 2px !important;
+  }
+
+  /* Page breaks */
+  #sec-1 { page-break-before: avoid !important; }
+  #sec-2, #sec-3, #sec-4, #sec-5, #sec-6 { page-break-before: always !important; }
+  #sec-7 { page-break-before: always !important; }
+
+  /* Page footer */
+  @page {
+    margin: 18mm 16mm 18mm 16mm;
+    size: A4;
+    @bottom-center {
+      content: "MAC221 · Swift Language Overview Lab · LaGuardia Community College";
+      font-size: 8pt;
+      color: #999;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 8pt;
+      color: #999;
+    }
+  }
+
+  /* Section: remove glow/shadow text effects */
+  * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+    backdrop-filter: none !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Atmospheric orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- Print-only document header (hidden on screen) -->
+<div id="print-doc-header" style="display:none;">
+  <div class="ph-course">MAC221 · LaGuardia Community College · Prof. Khalid Kassou</div>
+  <div class="ph-title">Swift Language Overview Lab</div>
+  <div class="ph-meta">
+    <span><strong>Student:</strong> <span id="print-student-name">____________________________</span></span>
+    <span><strong>Date:</strong> <span id="print-date"></span></span>
+    <span><strong>Semester:</strong> Spring 2026</span>
+    <span><strong>Max Score:</strong> 100 Points</span>
+  </div>
+  <div class="ph-score-box">SCORE: _______ / 100 &nbsp;&nbsp;&nbsp; GRADE: _______</div>
+</div>
+
+<div id="wrapper">
+
+<!-- ══════════════════════════════════════
+     SIDEBAR
+══════════════════════════════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-top">
+      <div class="brand-dot"></div>
+      <span class="brand-code">MAC221</span>
+    </div>
+    <h1>Swift Language<br>Overview Lab</h1>
+    <span class="lab-badge">Lab Assignment</span>
+  </div>
+
+  <div class="sidebar-meta">
+    <div class="meta-row"><span class="ml">STUDENT</span><span class="mr" id="meta-name">—</span></div>
+    <div class="meta-row"><span class="ml">SEMESTER</span><span class="mr">SPRING 2026</span></div>
+    <div class="meta-row"><span class="ml">POINTS</span><span class="mr">100 PT</span></div>
+  </div>
+
+  <div class="sidebar-progress">
+    <div class="prog-header">
+      <span>Progress</span><span id="prog-pct">0%</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+  </div>
+
+  <ul id="nav-list">
+    <li class="active" data-sec="0"><button><span class="nav-dot"></span><span class="nav-num">—</span>Cover &amp; Instructions</button></li>
+    <li data-sec="1"><button><span class="nav-dot"></span><span class="nav-num">01</span>Introduction to Swift</button></li>
+    <li data-sec="2"><button><span class="nav-dot"></span><span class="nav-num">02</span>Variables &amp; Constants</button></li>
+    <li data-sec="3"><button><span class="nav-dot"></span><span class="nav-num">03</span>Data Types</button></li>
+    <li data-sec="4"><button><span class="nav-dot"></span><span class="nav-num">04</span>Control Flow</button></li>
+    <li data-sec="5"><button><span class="nav-dot"></span><span class="nav-num">05</span>Functions</button></li>
+    <li data-sec="6"><button><span class="nav-dot"></span><span class="nav-num">06</span>Classes &amp; Structures</button></li>
+    <li data-sec="7"><button><span class="nav-dot"></span><span class="nav-num">★</span>Submit Lab</button></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <button class="submit-side" onclick="goToSection(7)">⬡ SUBMIT LAB</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MAIN
+══════════════════════════════════════ -->
+<div id="main">
+
+  <div id="topbar">
+    <div class="top-left">
+      <div class="top-status"></div>
+      <div>
+        <div class="top-title-main" id="top-title">COVER &amp; INSTRUCTIONS</div>
+        <div class="top-title-sub" id="top-sub">MAC221 · SWIFT LANGUAGE LAB</div>
+      </div>
+    </div>
+    <div class="top-nav">
+      <button class="top-btn" id="prevBtn" onclick="navigate(-1)" disabled>← PREV</button>
+      <button class="top-btn primary" id="nextBtn" onclick="navigate(1)">NEXT →</button>
+      <button class="pdf-btn" onclick="savePDF()" title="Save lab as PDF">
+        <span class="pdf-icon">⬇</span> SAVE PDF
+      </button>
+    </div>
+  </div>
+
+  <div id="content-area">
+
+<!-- ════════════════════════════════════════════
+     SEC 0: COVER
+════════════════════════════════════════════ -->
+<div class="lab-section active" id="sec-0">
+<div id="section-cover">
+
+  <div class="cover-top">
+    <div class="cover-eyebrow">LaGuardia Community College · MAC221</div>
+    <div class="cover-title">Swift Language<br>Overview Lab</div>
+    <div class="cover-sub">Application Development for iPhone / iPad · Prof. Khalid Kassou</div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">40</div><div class="stat-label">Questions</div></div>
+      <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">Sections</div></div>
+      <div class="stat-card"><div class="stat-num">100</div><div class="stat-label">Points</div></div>
+      <div class="stat-card"><div class="stat-num">1</div><div class="stat-label">Pt Each</div></div>
+    </div>
+
+    <div class="name-section">
+      <div class="name-label">Initialize Your Session</div>
+      <div class="name-input-wrap">
+        <input type="text" id="student-name-input" placeholder="enter full name...">
+      </div>
+    </div>
+  </div>
+
+  <div class="instr-panel">
+    <h3>Mission Briefing</h3>
+    <ol>
+      <li>Enter your full name above before beginning</li>
+      <li>Navigate using the sidebar or Prev / Next buttons</li>
+      <li>Answer <strong style="color:var(--cyan)">all 40 questions</strong> across 6 sections — each worth <strong style="color:var(--cyan)">2.5 points</strong></li>
+      <li>Each question is worth <strong style="color:var(--cyan)">1 point</strong> — no partial credit</li>
+      <li>Use 💡 hints freely — they don't deduct points</li>
+      <li>When done, go to Submit Lab and click Submit</li>
+      <li>You'll see a confirmation — grades are instructor-only</li>
+      <li>Material covered in the Swift Overview Presentation</li>
+    </ol>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="start-btn" onclick="goToSection(1)">INITIALIZE LAB ▶</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 1: INTRODUCTION
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-1">
+  <div class="sec-header">
+    <div class="sec-tag">Section 01 · Introduction</div>
+    <h2>Introduction to Swift</h2>
+    <p>Test your understanding of what Swift is, why it's used for iOS development, and foundational syntax concepts.</p>
+  </div>
+  <div class="info-bar">
+    <span>⬡</span> 6 Questions · 6 Points Total
+    <a href="https://kassou-mec.github.io/MAC221/SwiftIntroduction.html" target="_blank">📖 Review Presentation →</a>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-01</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Swift was introduced by Apple as a replacement for which programming language?</div>
+    <div class="options" id="q1">
+      <button class="opt-btn" onclick="selectOpt(this,'q1','A')"><span class="opt-label">A</span>Java</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q1','B')"><span class="opt-label">B</span>Objective-C</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q1','C')"><span class="opt-label">C</span>Python</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q1','D')"><span class="opt-label">D</span>Kotlin</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-02</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">Swift is an open-source programming language that can run on Linux in addition to Apple platforms.</div>
+    <div class="tf-opts" id="q2">
+      <button class="tf-btn" onclick="selectTF(this,'q2','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q2','false')">◇ FALSE</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-03</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which of the following correctly identifies the three core tools of the iOS development stack?</div>
+    <div class="options" id="q3">
+      <button class="opt-btn" onclick="selectOpt(this,'q3','A')"><span class="opt-label">A</span>Swift + Android Studio + Kotlin</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q3','B')"><span class="opt-label">B</span>Swift + Xcode + SwiftUI</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q3','C')"><span class="opt-label">C</span>Python + PyCharm + Django</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q3','D')"><span class="opt-label">D</span>Swift + Xcode + Objective-C</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-04</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this Swift code print to the console?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">main.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> course = <span class="str">"MAC221"</span>
+<span class="kw">let</span> year = <span class="num">2026</span>
+<span class="fn">print</span>(<span class="str">"Welcome to \(course) — \(year)!"</span>)</pre></div>
+    </div>
+    <div class="options" id="q4">
+      <button class="opt-btn" onclick="selectOpt(this,'q4','A')"><span class="opt-label">A</span>Welcome to \(course) — \(year)!</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q4','B')"><span class="opt-label">B</span>Welcome to MAC221 — 2026!</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q4','C')"><span class="opt-label">C</span>Error: cannot interpolate Int into String</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q4','D')"><span class="opt-label">D</span>Welcome to course — year!</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h4')">💡 HINT</button><div class="hint-box" id="h4">Swift string interpolation uses \( ) syntax to embed variable values directly inside string literals at runtime.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-05</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">In Swift, you must end every statement with a semicolon ( ; ).</div>
+    <div class="tf-opts" id="q5">
+      <button class="tf-btn" onclick="selectTF(this,'q5','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q5','false')">◇ FALSE</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h5')">💡 HINT</button><div class="hint-box" id="h5">Swift is designed to be clean and expressive. Think about what makes Swift syntax different from older C-based languages.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-06</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which symbol starts a single-line comment in Swift?</div>
+    <div class="options" id="q6">
+      <button class="opt-btn" onclick="selectOpt(this,'q6','A')"><span class="opt-label">A</span># (hash symbol)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q6','B')"><span class="opt-label">B</span>// (double slash)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q6','C')"><span class="opt-label">C</span>/* (slash-star)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q6','D')"><span class="opt-label">D</span>-- (double dash)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 2: VARIABLES & CONSTANTS
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-2">
+  <div class="sec-header">
+    <div class="sec-tag">Section 02 · Variables &amp; Constants</div>
+    <h2>Variables &amp; Constants</h2>
+    <p>Apply understanding of <span class="ic">var</span>, <span class="ic">let</span>, type inference, type annotations, and string interpolation.</p>
+  </div>
+  <div class="info-bar"><span>⬡</span> 7 Questions · 7 Points Total</div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-07</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">In Swift, which keyword declares a value that <strong>cannot be changed</strong> after it is first assigned?</div>
+    <div class="options" id="q7">
+      <button class="opt-btn" onclick="selectOpt(this,'q7','A')"><span class="opt-label">A</span><span class="ic">var</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q7','B')"><span class="opt-label">B</span><span class="ic">let</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q7','C')"><span class="opt-label">C</span><span class="ic">const</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q7','D')"><span class="opt-label">D</span><span class="ic">final</span></button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-08</span><span class="q-badge badge-error">Spot the Error</span></div>
+    <div class="q-text">The following code produces a compile-time error. What is the problem?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">error.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> score = <span class="num">100</span>
+score = <span class="num">95</span>  <span class="cmt">// ← Error on this line</span></pre></div>
+    </div>
+    <div class="options" id="q8">
+      <button class="opt-btn" onclick="selectOpt(this,'q8','A')"><span class="opt-label">A</span>Variable name "score" is a reserved keyword</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q8','B')"><span class="opt-label">B</span>Cannot reassign a value declared with <span class="ic">let</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q8','C')"><span class="opt-label">C</span>100 and 95 are not valid Int literals</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q8','D')"><span class="opt-label">D</span>Missing semicolons at the end of each line</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-09</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What is "type inference" in Swift?</div>
+    <div class="options" id="q9">
+      <button class="opt-btn" onclick="selectOpt(this,'q9','A')"><span class="opt-label">A</span>Requiring the programmer to always write the type explicitly</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q9','B')"><span class="opt-label">B</span>Swift automatically determining a variable's type from its assigned value</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q9','C')"><span class="opt-label">C</span>Automatically converting one type to another at runtime</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q9','D')"><span class="opt-label">D</span>A special type that can hold any kind of data</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-10</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What is printed by this code?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">interpolation.swift</span></div>
+      <div class="code-body"><pre><span class="kw">var</span> name = <span class="str">"Jordan"</span>
+<span class="kw">var</span> gpa = <span class="num">3.8</span>
+<span class="fn">print</span>(<span class="str">"\(name) has a GPA of \(gpa)"</span>)</pre></div>
+    </div>
+    <div class="options" id="q10">
+      <button class="opt-btn" onclick="selectOpt(this,'q10','A')"><span class="opt-label">A</span>name has a GPA of gpa</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q10','B')"><span class="opt-label">B</span>\(name) has a GPA of \(gpa)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q10','C')"><span class="opt-label">C</span>Jordan has a GPA of 3.8</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q10','D')"><span class="opt-label">D</span>Error: cannot mix String and Double in print</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-11</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which of the following is a correctly written <strong>explicit type annotation</strong> in Swift?</div>
+    <div class="options" id="q11">
+      <button class="opt-btn" onclick="selectOpt(this,'q11','A')"><span class="opt-label">A</span><span class="ic">var age = Int(20)</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q11','B')"><span class="opt-label">B</span><span class="ic">var age: Int = 20</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q11','C')"><span class="opt-label">C</span><span class="ic">var Int age = 20</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q11','D')"><span class="opt-label">D</span><span class="ic">int age = 20</span></button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-12</span><span class="q-badge badge-scenario">Scenario</span></div>
+    <div class="q-text">You're building a fitness app. A user's <strong>step count</strong> updates every minute throughout the day. Which declaration is most appropriate?</div>
+    <div class="options" id="q12">
+      <button class="opt-btn" onclick="selectOpt(this,'q12','A')"><span class="opt-label">A</span><span class="ic">let stepCount = 0</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q12','B')"><span class="opt-label">B</span><span class="ic">var stepCount = 0</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q12','C')"><span class="opt-label">C</span><span class="ic">const stepCount = 0</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q12','D')"><span class="opt-label">D</span><span class="ic">static stepCount = 0</span></button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h12')">💡 HINT</button><div class="hint-box" id="h12">Ask yourself: will this value ever change? Use <span class="ic">var</span> for values that change, <span class="ic">let</span> for values that remain constant.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-13</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">In Swift, the expression <span class="ic">7 / 2</span> evaluates to <span class="ic">3</span> (not 3.5) when both values are integers.</div>
+    <div class="tf-opts" id="q13">
+      <button class="tf-btn" onclick="selectTF(this,'q13','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q13','false')">◇ FALSE</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h13')">💡 HINT</button><div class="hint-box" id="h13">Integer division truncates the decimal. To get 3.5, both numbers must be Double: <span class="ic">7.0 / 2.0</span></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 3: DATA TYPES
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-3">
+  <div class="sec-header">
+    <div class="sec-tag">Section 03 · Data Types</div>
+    <h2>Data Types</h2>
+    <p>Identify and work with Int, Double, Bool, String, Optionals, Arrays, Dictionaries, Sets, and Tuples.</p>
+  </div>
+  <div class="info-bar"><span>⬡</span> 7 Questions · 7 Points Total</div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-14</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What type does Swift <strong>infer</strong> for this declaration?&nbsp; <span class="ic">var temperature = 98.6</span></div>
+    <div class="options" id="q14">
+      <button class="opt-btn" onclick="selectOpt(this,'q14','A')"><span class="opt-label">A</span>Float</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q14','B')"><span class="opt-label">B</span>Int</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q14','C')"><span class="opt-label">C</span>Double</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q14','D')"><span class="opt-label">D</span>Number</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-15</span><span class="q-badge badge-scenario">Scenario</span></div>
+    <div class="q-text">A user profile stores whether dark mode is enabled. What is the <strong>most appropriate</strong> Swift type for this property?</div>
+    <div class="options" id="q15">
+      <button class="opt-btn" onclick="selectOpt(this,'q15','A')"><span class="opt-label">A</span>Int</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q15','B')"><span class="opt-label">B</span>String</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q15','C')"><span class="opt-label">C</span>Bool</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q15','D')"><span class="opt-label">D</span>Double</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-16</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What does the <span class="ic">??</span> operator (nil coalescing) do in this code?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">optional.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> nickname: <span class="tp">String</span>? = <span class="kw2">nil</span>
+<span class="kw">let</span> display = nickname ?? <span class="str">"Guest"</span></pre></div>
+    </div>
+    <div class="options" id="q16">
+      <button class="opt-btn" onclick="selectOpt(this,'q16','A')"><span class="opt-label">A</span>Force-unwraps the optional, crashing if nil</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q16','B')"><span class="opt-label">B</span>Provides a default value when the optional is nil</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q16','C')"><span class="opt-label">C</span>Checks if nickname and "Guest" are equal</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q16','D')"><span class="opt-label">D</span>Converts the String to an Optional</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h16')">💡 HINT</button><div class="hint-box" id="h16">Read it as: "use the left side if it has a value; otherwise fall back to the right side." This is the nil coalescing operator.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-17</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this code print?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">arrays.swift</span></div>
+      <div class="code-body"><pre><span class="kw">var</span> fruits = [<span class="str">"apple"</span>, <span class="str">"banana"</span>, <span class="str">"cherry"</span>]
+fruits.append(<span class="str">"mango"</span>)
+<span class="fn">print</span>(fruits.count)</pre></div>
+    </div>
+    <div class="options" id="q17">
+      <button class="opt-btn" onclick="selectOpt(this,'q17','A')"><span class="opt-label">A</span>3</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q17','B')"><span class="opt-label">B</span>4</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q17','C')"><span class="opt-label">C</span>["apple", "banana", "cherry", "mango"]</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q17','D')"><span class="opt-label">D</span>Error: array is immutable</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-18</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">When you access a value from a Swift Dictionary by key, the result is always an <strong>Optional</strong> because the key might not exist.</div>
+    <div class="tf-opts" id="q18">
+      <button class="tf-btn" onclick="selectTF(this,'q18','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q18','false')">◇ FALSE</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-19</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which Swift collection type <strong>automatically removes duplicate values</strong> and has no guaranteed order?</div>
+    <div class="options" id="q19">
+      <button class="opt-btn" onclick="selectOpt(this,'q19','A')"><span class="opt-label">A</span>Array</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q19','B')"><span class="opt-label">B</span>Dictionary</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q19','C')"><span class="opt-label">C</span>Set</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q19','D')"><span class="opt-label">D</span>Tuple</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-20</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this code print?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">tuple.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> student = (name: <span class="str">"Alex"</span>, grade: <span class="num">92</span>)
+<span class="fn">print</span>(student.name)</pre></div>
+    </div>
+    <div class="options" id="q20">
+      <button class="opt-btn" onclick="selectOpt(this,'q20','A')"><span class="opt-label">A</span>92</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q20','B')"><span class="opt-label">B</span>("Alex", 92)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q20','C')"><span class="opt-label">C</span>Alex</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q20','D')"><span class="opt-label">D</span>Error: tuples don't have named properties</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h20')">💡 HINT</button><div class="hint-box" id="h20">Named tuples let you access values using dot notation by their label — just like accessing a property on a struct.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 4: CONTROL FLOW
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-4">
+  <div class="sec-header">
+    <div class="sec-tag">Section 04 · Control Flow</div>
+    <h2>Control Flow</h2>
+    <p>Apply knowledge of conditionals, switch statements, loops, and the break / continue keywords.</p>
+  </div>
+  <div class="info-bar"><span>⬡</span> 7 Questions · 7 Points Total</div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-21</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What is the output of this code?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">grades.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> score = <span class="num">75</span>
+<span class="kw">if</span> score >= <span class="num">90</span> {
+    <span class="fn">print</span>(<span class="str">"A"</span>)
+} <span class="kw">else if</span> score >= <span class="num">80</span> {
+    <span class="fn">print</span>(<span class="str">"B"</span>)
+} <span class="kw">else if</span> score >= <span class="num">70</span> {
+    <span class="fn">print</span>(<span class="str">"C"</span>)
+} <span class="kw">else</span> {
+    <span class="fn">print</span>(<span class="str">"F"</span>)
+}</pre></div>
+    </div>
+    <div class="options" id="q21">
+      <button class="opt-btn" onclick="selectOpt(this,'q21','A')"><span class="opt-label">A</span>A</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q21','B')"><span class="opt-label">B</span>B</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q21','C')"><span class="opt-label">C</span>C</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q21','D')"><span class="opt-label">D</span>F</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-22</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">In Swift, a <span class="ic">switch</span> statement requires a <span class="ic">break</span> statement at the end of each case to prevent fall-through to the next case.</div>
+    <div class="tf-opts" id="q22">
+      <button class="tf-btn" onclick="selectTF(this,'q22','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q22','false')">◇ FALSE</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h22')">💡 HINT</button><div class="hint-box" id="h22">Swift's switch is different from C and Java. Each case automatically ends — there is no fall-through unless you explicitly use <span class="ic">fallthrough</span>.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-23</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this loop print? (List all values, one per line)</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">range.swift</span></div>
+      <div class="code-body"><pre><span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span>..<<span class="num">4</span> {
+    <span class="fn">print</span>(i)
+}</pre></div>
+    </div>
+    <div class="options" id="q23">
+      <button class="opt-btn" onclick="selectOpt(this,'q23','A')"><span class="opt-label">A</span>1, 2, 3, 4</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q23','B')"><span class="opt-label">B</span>1, 2, 3</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q23','C')"><span class="opt-label">C</span>0, 1, 2, 3</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q23','D')"><span class="opt-label">D</span>2, 3</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h23')">💡 HINT</button><div class="hint-box" id="h23">The half-open range <span class="ic">1..&lt;4</span> goes from 1 up to but NOT including 4. The closed range <span class="ic">1...4</span> would include 4.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-24</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What does the <span class="ic">continue</span> keyword do inside a loop?</div>
+    <div class="options" id="q24">
+      <button class="opt-btn" onclick="selectOpt(this,'q24','A')"><span class="opt-label">A</span>Immediately exits the entire loop</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q24','B')"><span class="opt-label">B</span>Skips the current iteration and moves to the next one</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q24','C')"><span class="opt-label">C</span>Restarts the loop from the beginning</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q24','D')"><span class="opt-label">D</span>Pauses execution for one iteration</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-25</span><span class="q-badge badge-error">Spot the Error</span></div>
+    <div class="q-text">This switch statement will cause a compile error. Why?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">switch_bug.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> day = <span class="str">"Monday"</span>
+<span class="kw">switch</span> day {
+<span class="kw">case</span> <span class="str">"Saturday"</span>, <span class="str">"Sunday"</span>:
+    <span class="fn">print</span>(<span class="str">"Weekend"</span>)
+<span class="kw">case</span> <span class="str">"Monday"</span>:
+    <span class="fn">print</span>(<span class="str">"Start of week"</span>)
+}</pre></div>
+    </div>
+    <div class="options" id="q25">
+      <button class="opt-btn" onclick="selectOpt(this,'q25','A')"><span class="opt-label">A</span>You cannot use Strings in a switch statement</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q25','B')"><span class="opt-label">B</span>Missing <span class="ic">break</span> at the end of each case</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q25','C')"><span class="opt-label">C</span>Switch is not exhaustive — missing <span class="ic">default</span> case</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q25','D')"><span class="opt-label">D</span>Commas are not allowed between case values</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-26</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which loop type is guaranteed to execute its body <strong>at least once</strong>, even if the condition is already false?</div>
+    <div class="options" id="q26">
+      <button class="opt-btn" onclick="selectOpt(this,'q26','A')"><span class="opt-label">A</span>for-in</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q26','B')"><span class="opt-label">B</span>while</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q26','C')"><span class="opt-label">C</span>repeat-while</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q26','D')"><span class="opt-label">D</span>conditional-loop</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-27</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What is printed by this code?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">break.swift</span></div>
+      <div class="code-body"><pre><span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span>...<span class="num">5</span> {
+    <span class="kw">if</span> i == <span class="num">3</span> { <span class="kw">break</span> }
+    <span class="fn">print</span>(i)
+}</pre></div>
+    </div>
+    <div class="options" id="q27">
+      <button class="opt-btn" onclick="selectOpt(this,'q27','A')"><span class="opt-label">A</span>1, 2, 3, 4, 5</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q27','B')"><span class="opt-label">B</span>1, 2</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q27','C')"><span class="opt-label">C</span>1, 2, 3</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q27','D')"><span class="opt-label">D</span>3, 4, 5</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h27')">💡 HINT</button><div class="hint-box" id="h27"><span class="ic">break</span> exits the loop before executing any remaining code in that iteration. When i == 3, break fires before <span class="ic">print(i)</span>.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 5: FUNCTIONS
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-5">
+  <div class="sec-header">
+    <div class="sec-tag">Section 05 · Functions</div>
+    <h2>Functions</h2>
+    <p>Demonstrate understanding of function syntax, parameters, argument labels, return values, default parameters, and basic closures.</p>
+  </div>
+  <div class="info-bar"><span>⬡</span> 7 Questions · 7 Points Total</div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-28</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What is the correct Swift syntax for a function that takes a <span class="ic">String</span> parameter and returns a <span class="ic">String</span>?</div>
+    <div class="options" id="q28">
+      <button class="opt-btn" onclick="selectOpt(this,'q28','A')"><span class="opt-label">A</span><span class="ic">function greet(name: String) -> String { }</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q28','B')"><span class="opt-label">B</span><span class="ic">func greet(name: String) -> String { }</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q28','C')"><span class="opt-label">C</span><span class="ic">def greet(name: String) -> String { }</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q28','D')"><span class="opt-label">D</span><span class="ic">void greet(String name) { }</span></button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-29</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this code print?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">add.swift</span></div>
+      <div class="code-body"><pre><span class="kw">func</span> <span class="fn">add</span>(a: <span class="tp">Int</span>, b: <span class="tp">Int</span>) -> <span class="tp">Int</span> {
+    <span class="kw">return</span> a + b
+}
+<span class="fn">print</span>(add(a: <span class="num">4</span>, b: <span class="num">6</span>))</pre></div>
+    </div>
+    <div class="options" id="q29">
+      <button class="opt-btn" onclick="selectOpt(this,'q29','A')"><span class="opt-label">A</span>a + b</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q29','B')"><span class="opt-label">B</span>46</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q29','C')"><span class="opt-label">C</span>10</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q29','D')"><span class="opt-label">D</span>Error: missing return type</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-30</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What does the underscore <span class="ic">_</span> do when placed before a parameter name in a Swift function?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">underscore.swift</span></div>
+      <div class="code-body"><pre><span class="kw">func</span> <span class="fn">square</span>(_ number: <span class="tp">Int</span>) -> <span class="tp">Int</span> {
+    <span class="kw">return</span> number * number
+}
+<span class="fn">square</span>(<span class="num">5</span>)  <span class="cmt">// Call without label</span></pre></div>
+    </div>
+    <div class="options" id="q30">
+      <button class="opt-btn" onclick="selectOpt(this,'q30','A')"><span class="opt-label">A</span>Makes the parameter optional</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q30','B')"><span class="opt-label">B</span>Suppresses the external argument label at the call site</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q30','C')"><span class="opt-label">C</span>Makes the parameter private</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q30','D')"><span class="opt-label">D</span>Indicates the function returns Void</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-31</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this code print?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">default_param.swift</span></div>
+      <div class="code-body"><pre><span class="kw">func</span> <span class="fn">greet</span>(name: <span class="tp">String</span>, role: <span class="tp">String</span> = <span class="str">"Student"</span>) {
+    <span class="fn">print</span>(<span class="str">"\(name) is a \(role)"</span>)
+}
+<span class="fn">greet</span>(name: <span class="str">"Maria"</span>)</pre></div>
+    </div>
+    <div class="options" id="q31">
+      <button class="opt-btn" onclick="selectOpt(this,'q31','A')"><span class="opt-label">A</span>Maria is a</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q31','B')"><span class="opt-label">B</span>Error: missing argument for 'role'</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q31','C')"><span class="opt-label">C</span>Maria is a Student</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q31','D')"><span class="opt-label">D</span>Maria is a role</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h31')">💡 HINT</button><div class="hint-box" id="h31">Default parameters are used automatically when you omit that argument in the function call. No need to pass "Student" — it's already the default.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-32</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What does this closure code accomplish?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">closure.swift</span></div>
+      <div class="code-body"><pre><span class="kw">let</span> scores = [<span class="num">85</span>, <span class="num">42</span>, <span class="num">93</span>, <span class="num">61</span>]
+<span class="kw">let</span> passing = scores.filter { $<span class="num">0</span> >= <span class="num">60</span> }</pre></div>
+    </div>
+    <div class="options" id="q32">
+      <button class="opt-btn" onclick="selectOpt(this,'q32','A')"><span class="opt-label">A</span>Sorts the array from lowest to highest</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q32','B')"><span class="opt-label">B</span>Creates a new array containing only scores ≥ 60</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q32','C')"><span class="opt-label">C</span>Removes all elements from the original array</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q32','D')"><span class="opt-label">D</span>Returns a count of how many scores are ≥ 60</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-33</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">A Swift function that does not explicitly return a value has an implicit return type of <span class="ic">Void</span>.</div>
+    <div class="tf-opts" id="q33">
+      <button class="tf-btn" onclick="selectTF(this,'q33','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q33','false')">◇ FALSE</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-34</span><span class="q-badge badge-error">Spot the Error</span></div>
+    <div class="q-text">What is wrong with this function call?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">label_bug.swift</span></div>
+      <div class="code-body"><pre><span class="kw">func</span> <span class="fn">travel</span>(from: <span class="tp">String</span>, to: <span class="tp">String</span>) {
+    <span class="fn">print</span>(<span class="str">"Going from \(from) to \(to)"</span>)
+}
+<span class="fn">travel</span>(<span class="str">"NYC"</span>, <span class="str">"Boston"</span>)  <span class="cmt">// ← Error</span></pre></div>
+    </div>
+    <div class="options" id="q34">
+      <button class="opt-btn" onclick="selectOpt(this,'q34','A')"><span class="opt-label">A</span>The function name "travel" is a reserved keyword</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q34','B')"><span class="opt-label">B</span>Missing argument labels: must be <span class="ic">travel(from: "NYC", to: "Boston")</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q34','C')"><span class="opt-label">C</span>You cannot pass String values as function arguments</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q34','D')"><span class="opt-label">D</span>The function has too many parameters</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h34')">💡 HINT</button><div class="hint-box" id="h34">In Swift, you must include external argument labels when calling a function — unless suppressed with <span class="ic">_</span>.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 6: CLASSES & STRUCTURES
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-6">
+  <div class="sec-header">
+    <div class="sec-tag">Section 06 · Classes &amp; Structures</div>
+    <h2>Classes &amp; Structures</h2>
+    <p>Apply knowledge of structs, classes, properties, methods, initializers, value vs reference types, and OOP fundamentals.</p>
+  </div>
+  <div class="info-bar"><span>⬡</span> 6 Questions · 6 Points Total</div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-35</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">What is the fundamental difference between a Swift <span class="ic">struct</span> and a <span class="ic">class</span> regarding memory behavior?</div>
+    <div class="options" id="q35">
+      <button class="opt-btn" onclick="selectOpt(this,'q35','A')"><span class="opt-label">A</span>Structs support inheritance; classes do not</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q35','B')"><span class="opt-label">B</span>Structs are value types (copied on assignment); classes are reference types (shared)</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q35','C')"><span class="opt-label">C</span>Classes are faster than structs in all situations</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q35','D')"><span class="opt-label">D</span>Structs can only store integer values</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-36</span><span class="q-badge badge-error">Spot the Error</span></div>
+    <div class="q-text">Why will this code not compile?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">struct_bug.swift</span></div>
+      <div class="code-body"><pre><span class="kw">struct</span> <span class="tp">Counter</span> {
+    <span class="kw">var</span> count = <span class="num">0</span>
+    <span class="kw">func</span> <span class="fn">increment</span>() {
+        count += <span class="num">1</span>  <span class="cmt">// ← Error</span>
+    }
+}</pre></div>
+    </div>
+    <div class="options" id="q36">
+      <button class="opt-btn" onclick="selectOpt(this,'q36','A')"><span class="opt-label">A</span>Structs cannot have methods</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q36','B')"><span class="opt-label">B</span>The method needs the <span class="ic">mutating</span> keyword to modify a stored property</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q36','C')"><span class="opt-label">C</span>count should be declared with <span class="ic">let</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q36','D')"><span class="opt-label">D</span>Missing <span class="ic">init()</span> initializer</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h36')">💡 HINT</button><div class="hint-box" id="h36">Struct methods that modify stored properties need the <span class="ic">mutating</span> keyword: <span class="ic">mutating func increment() { }</span></div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-37</span><span class="q-badge badge-predict">Predict Output</span></div>
+    <div class="q-text">What does this code print?</div>
+    <div class="code-block">
+      <div class="code-header-bar"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div><span class="code-label-text">reference.swift</span></div>
+      <div class="code-body"><pre><span class="kw">class</span> <span class="tp">Box</span> { <span class="kw">var</span> value = <span class="num">10</span> }
+<span class="kw">let</span> box1 = <span class="tp">Box</span>()
+<span class="kw">let</span> box2 = box1
+box2.value = <span class="num">99</span>
+<span class="fn">print</span>(box1.value)</pre></div>
+    </div>
+    <div class="options" id="q37">
+      <button class="opt-btn" onclick="selectOpt(this,'q37','A')"><span class="opt-label">A</span>10</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q37','B')"><span class="opt-label">B</span>99</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q37','C')"><span class="opt-label">C</span>Error: cannot modify a let constant</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q37','D')"><span class="opt-label">D</span>nil</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h37')">💡 HINT</button><div class="hint-box" id="h37">Classes are reference types. box1 and box2 point to the <em>same object in memory</em> — changes through box2 affect box1 too.</div></div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-38</span><span class="q-badge badge-mc">Multiple Choice</span></div>
+    <div class="q-text">Which statement is true about initializers in Swift?</div>
+    <div class="options" id="q38">
+      <button class="opt-btn" onclick="selectOpt(this,'q38','A')"><span class="opt-label">A</span>Classes get a free memberwise initializer; structs must write their own</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q38','B')"><span class="opt-label">B</span>Structs get a free memberwise initializer; classes must define their own <span class="ic">init</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q38','C')"><span class="opt-label">C</span>Both require you to write an explicit <span class="ic">init</span></button>
+      <button class="opt-btn" onclick="selectOpt(this,'q38','D')"><span class="opt-label">D</span>Neither structs nor classes use initializers in Swift</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-39</span><span class="q-badge badge-scenario">Scenario</span></div>
+    <div class="q-text">You're building an iOS banking app. The <span class="ic">BankAccount</span> model needs to be <strong>shared and modified</strong> by multiple parts of the app simultaneously. Should you use <span class="ic">struct</span> or <span class="ic">class</span>?</div>
+    <div class="options" id="q39">
+      <button class="opt-btn" onclick="selectOpt(this,'q39','A')"><span class="opt-label">A</span><span class="ic">struct</span> — because structs are faster</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q39','B')"><span class="opt-label">B</span><span class="ic">class</span> — multiple parts need to share and mutate the same instance</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q39','C')"><span class="opt-label">C</span><span class="ic">struct</span> — Apple recommends structs for all models</button>
+      <button class="opt-btn" onclick="selectOpt(this,'q39','D')"><span class="opt-label">D</span>Either — they are identical in Swift</button>
+    </div>
+  </div>
+
+  <div class="q-card">
+    <div class="q-meta"><span class="q-num">Q-40</span><span class="q-badge badge-tf">True / False</span></div>
+    <div class="q-text">In Swift, a <span class="ic">struct</span> can inherit from another <span class="ic">struct</span>, just like classes can inherit from each other.</div>
+    <div class="tf-opts" id="q40">
+      <button class="tf-btn" onclick="selectTF(this,'q40','true')">◈ TRUE</button>
+      <button class="tf-btn" onclick="selectTF(this,'q40','false')">◇ FALSE</button>
+    </div>
+    <div class="hint-wrap"><button class="hint-toggle" onclick="toggleHint('h40')">💡 HINT</button><div class="hint-box" id="h40">Inheritance is a feature exclusive to classes. Value types (structs, enums) cannot inherit. They use protocol conformance instead.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     SEC 7: SUBMIT
+════════════════════════════════════════════ -->
+<div class="lab-section" id="sec-7">
+  <div class="sec-header">
+    <div class="sec-tag">★ Final Step</div>
+    <h2>Submit Your Lab</h2>
+    <p>Review your work and submit. Grades are secured behind instructor access only.</p>
+  </div>
+
+  <div id="submission-area">
+    <div class="submit-hero">
+      <h2>READY TO TRANSMIT?</h2>
+      <p>Ensure all questions are answered before submitting your session.</p>
+      <div id="answered-count"></div>
+      <button class="big-submit-btn" onclick="submitLab()">⬡ SUBMIT LAB SESSION</button>
+    </div>
+  </div>
+
+  <div id="confirmation-box">
+    <span class="conf-icon">✦</span>
+    <h3>SESSION TRANSMITTED</h3>
+    <p>Lab submitted successfully, <strong id="conf-name" style="color:var(--cyan)"></strong>.<br>
+    Your responses have been recorded. Your instructor will review your submission.</p>
+    <p style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);">TIMESTAMP: <span id="conf-time"></span></p>
+  </div>
+
+  <div id="instructor-panel">
+    <div class="instr-access-label">Instructor Access Only</div>
+    <h3>Grade Verification Panel</h3>
+    <p>Enter the instructor password to decrypt and view this student's grade report.</p>
+    <div class="pwd-row">
+      <input type="password" class="pwd-input" id="pwd-input" placeholder="enter access code..." onkeydown="if(event.key==='Enter')checkPassword()">
+      <button class="unlock-btn" onclick="checkPassword()">⬡ UNLOCK</button>
+    </div>
+    <div class="pwd-error" id="pwd-error">// ERROR: ACCESS DENIED — invalid credentials</div>
+
+    <div id="grade-reveal">
+      <div class="grade-grid">
+        <div class="grade-card"><div class="gc-label">Score</div><div class="gc-val" id="gv-score">—</div><div class="gc-sub">out of 100</div></div>
+        <div class="grade-card"><div class="gc-label">Percentage</div><div class="gc-val" id="gv-pct">—</div><div class="gc-sub">percent</div></div>
+        <div class="grade-card"><div class="gc-label">Letter</div><div class="gc-val" id="gv-letter">—</div><div class="gc-sub">estimated</div></div>
+      </div>
+      <div class="section-breakdown" id="section-breakdown">
+        <div class="breakdown-header"><span>Section</span><span>Correct</span><span>Total</span><span>Score</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content-area -->
+</div><!-- /main -->
+</div><!-- /wrapper -->
+
+<script>
+/* ================================================================
+   CONFIGURATION — Edit these values as needed
+   ================================================================ */
+const instructorPassword = "MAC221Secure"; // ← Change this password
+
+const sectionMeta = [
+  { name: "Cover",                   qs: [] },
+  { name: "Introduction to Swift",   qs: [1,2,3,4,5,6] },
+  { name: "Variables & Constants",   qs: [7,8,9,10,11,12,13] },
+  { name: "Data Types",              qs: [14,15,16,17,18,19,20] },
+  { name: "Control Flow",            qs: [21,22,23,24,25,26,27] },
+  { name: "Functions",               qs: [28,29,30,31,32,33,34] },
+  { name: "Classes & Structures",    qs: [35,36,37,38,39,40] },
+  { name: "Submit",                  qs: [] },
+];
+
+const titles = [
+  "COVER & INSTRUCTIONS", "INTRODUCTION TO SWIFT", "VARIABLES & CONSTANTS",
+  "DATA TYPES", "CONTROL FLOW", "FUNCTIONS", "CLASSES & STRUCTURES", "SUBMIT LAB"
+];
+
+/* ================================================================
+   ANSWER KEY — Edit correct answers here (A/B/C/D or true/false)
+   ================================================================ */
+const answerKey = {
+   1:'B', 2:'true',  3:'B', 4:'B',  5:'false', 6:'B',
+   7:'B', 8:'B',     9:'B', 10:'C', 11:'B',    12:'B', 13:'true',
+  14:'C', 15:'C',   16:'B', 17:'B', 18:'true', 19:'C', 20:'C',
+  21:'C', 22:'false',23:'B', 24:'B', 25:'C',   26:'C', 27:'B',
+  28:'B', 29:'C',   30:'B', 31:'C', 32:'B',   33:'true', 34:'B',
+  35:'B', 36:'B',   37:'B', 38:'B', 39:'B',   40:'false',
+};
+
+/* ================================================================
+   STATE
+   ================================================================ */
+let currentSection = 0;
+const answers = {};
+let submitted = false;
+
+/* ================================================================
+   NAVIGATION
+   ================================================================ */
+function goToSection(idx) {
+  document.querySelectorAll('.lab-section').forEach((s,i) => s.classList.toggle('active', i === idx));
+  document.querySelectorAll('#nav-list li').forEach((li, i) => {
+    li.classList.toggle('active', i === idx);
+    const sec = sectionMeta[i];
+    if (sec.qs.length > 0 && i !== idx) {
+      const done = sec.qs.filter(q => answers[q] !== undefined).length;
+      li.classList.toggle('done', done === sec.qs.length);
+    }
+  });
+  document.getElementById('top-title').textContent = titles[idx];
+  document.getElementById('top-sub').textContent = idx === 0 ? 'MAC221 · SWIFT LANGUAGE LAB' : `SECTION ${String(idx).padStart(2,'0')} OF 06`;
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = idx === 7;
+  if (idx === 7) updateSubmitInfo();
+  currentSection = idx;
+  document.getElementById('content-area').scrollTop = 0;
+  updateProgress();
+}
+
+function navigate(dir) {
+  const next = currentSection + dir;
+  if (next >= 0 && next <= 7) goToSection(next);
+}
+
+document.querySelectorAll('#nav-list li').forEach(li => {
+  li.addEventListener('click', () => goToSection(parseInt(li.dataset.sec)));
+});
+
+/* ================================================================
+   ANSWERS
+   ================================================================ */
+function selectOpt(btn, qid, val) {
+  btn.closest('.options').querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers[parseInt(qid.replace('q',''))] = val;
+  updateProgress();
+}
+
+function selectTF(btn, qid, val) {
+  btn.closest('.tf-opts').querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  answers[parseInt(qid.replace('q',''))] = val;
+  updateProgress();
+}
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('show');
+}
+
+/* ================================================================
+   PROGRESS
+   ================================================================ */
+function updateProgress() {
+  const total = 40; // 40 questions × 2.5 pts = 100 points
+  const done = Object.keys(answers).length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('prog-bar').style.width = pct + '%';
+  document.getElementById('prog-pct').textContent = pct + '%';
+  const nameVal = document.getElementById('student-name-input').value.trim();
+  if (nameVal) document.getElementById('meta-name').textContent = nameVal;
+}
+
+function updateSubmitInfo() {
+  const done = Object.keys(answers).length;
+  const rem = 40 - done;
+  const el = document.getElementById('answered-count');
+  if (!el) return;
+  el.textContent = rem === 0
+    ? `// STATUS: ALL 40 QUESTIONS ANSWERED — READY TO SUBMIT`
+    : `// WARNING: ${done}/40 ANSWERED · ${rem} REMAINING — MAX SCORE: 100 PT`;
+  el.style.color = rem === 0 ? 'var(--green)' : 'var(--orange)';
+}
+
+/* ================================================================
+   SUBMIT
+   ================================================================ */
+function submitLab() {
+  if (submitted) return;
+  const studentName = document.getElementById('student-name-input').value.trim() || 'Student';
+  let correct = 0;
+  const sectionResults = sectionMeta.slice(1,7).map(sec => {
+    let sc = 0;
+    sec.qs.forEach(q => { if (answers[q] !== undefined && answers[q] === answerKey[q]) { correct++; sc++; } });
+    return { name: sec.name, correct: sc, total: sec.qs.length };
+  });
+  submitted = true;
+  window._labResults = { correct, total: 100, sectionResults, studentName };
+  document.getElementById('submission-area').style.display = 'none';
+  const conf = document.getElementById('confirmation-box');
+  conf.style.display = 'block';
+  document.getElementById('conf-name').textContent = studentName;
+  document.getElementById('conf-time').textContent = new Date().toLocaleString();
+  document.querySelectorAll('#nav-list li').forEach((li,i) => { if (i>0&&i<7) li.classList.add('done'); });
+  updateProgress();
+}
+
+/* ================================================================
+   INSTRUCTOR PANEL
+   ================================================================ */
+function checkPassword() {
+  const val = document.getElementById('pwd-input').value;
+  const err = document.getElementById('pwd-error');
+  if (val === instructorPassword) {
+    err.style.display = 'none';
+    showGrade();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+  }
+}
+
+function showGrade() {
+  if (!window._labResults) { alert('No submission found. Submit the lab first.'); return; }
+  const { correct, sectionResults } = window._labResults;
+  // Each of 40 questions is worth 2.5 points → max score = 100
+  const scoreOutOf100 = Math.round(correct * 2.5);
+  const pct = scoreOutOf100; // percentage equals score when max is 100
+  let letter = pct>=90?'A':pct>=80?'B':pct>=70?'C':pct>=60?'D':'F';
+  document.getElementById('gv-score').textContent = scoreOutOf100;
+  document.getElementById('gv-pct').textContent = pct + '%';
+  document.getElementById('gv-letter').textContent = letter;
+  const bd = document.getElementById('section-breakdown');
+  sectionResults.forEach(sec => {
+    const secScore = Math.round((sec.correct / sec.total) * 100);
+    const r = document.createElement('div');
+    r.className = 'breakdown-row';
+    r.innerHTML = `<span class="sn">${sec.name}</span><span class="sc">${sec.correct}/${sec.total}</span><span class="st">${Math.round(sec.correct*2.5*sec.total/10)/10} pt</span><span class="sp">${secScore}%</span>`;
+    bd.appendChild(r);
+  });
+  const tr = document.createElement('div');
+  tr.className = 'breakdown-row';
+  tr.style.cssText = 'background:rgba(176,96,255,0.1);font-weight:700;border-top:1px solid rgba(176,96,255,0.3)';
+  tr.innerHTML = `<span class="sn" style="color:var(--purple)">TOTAL</span><span class="sc" style="color:var(--purple)">${correct}/40</span><span class="st" style="color:var(--purple)">${scoreOutOf100} pt</span><span class="sp" style="color:var(--purple)">${pct}%</span>`;
+  bd.appendChild(tr);
+  document.getElementById('grade-reveal').style.display = 'block';
+  document.querySelector('.pwd-row').style.display = 'none';
+}
+
+/* ================================================================
+   SAVE AS PDF — Print-to-PDF via browser
+================================================================ */
+function savePDF() {
+  // Update print header with student name and date
+  const nameVal = (document.getElementById('student-name-input').value.trim()) || '____________________________';
+  document.getElementById('print-student-name').textContent = nameVal;
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // Show ALL sections before printing
+  document.querySelectorAll('.lab-section').forEach(s => s.style.display = 'block');
+
+  // Restore after print dialog closes (works in all browsers)
+  function restoreAfterPrint() {
+    document.querySelectorAll('.lab-section').forEach(s => s.style.display = '');
+    goToSection(currentSection);
+    window.removeEventListener('afterprint', restoreAfterPrint);
+  }
+  window.addEventListener('afterprint', restoreAfterPrint);
+
+  // Call print synchronously — must NOT be inside setTimeout/Promise
+  window.print();
+}
+
+/* ================================================================
+   INIT
+================================================================ */
+document.getElementById('student-name-input').addEventListener('input', updateProgress);
+updateProgress();
+</script>
+</body>
+</html>

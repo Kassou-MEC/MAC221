@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAC221 · SwiftUI Stacks Practice Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f;--surface:#0f1220;--surface2:#161929;--surface3:#1c2035;
+  --border:#1f2440;--border2:#262d4a;
+  --accent:#6272f5;--accent2:#a78bfa;--accent3:#38bdf8;
+  --green:#34d399;--red:#f87171;--yellow:#fbbf24;--orange:#fb923c;
+  --text:#dde3f8;--muted:#606a94;--muted2:#4a5278;
+  --phone-bg:#111318;--phone-border:#2a2d3a;
+  --sw-purple:#cc99ff;--sw-orange:#fd8c5a;--sw-blue:#79c0ff;
+  --sw-green:#7ee787;--sw-string:#a5d6ff;--sw-comment:#656e8a;
+  --r:16px;--r2:10px;--r3:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+body::before{
+  content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(99,114,245,.12),transparent),
+             radial-gradient(ellipse 60% 40% at 80% 60%,rgba(167,139,250,.06),transparent);
+  pointer-events:none;z-index:0;
+}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(7,9,15,.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:12px 28px;
+  display:flex;align-items:center;gap:14px;
+}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.pill{font-size:.65rem;font-weight:700;letter-spacing:.1em;background:rgba(98,114,245,.15);color:var(--accent);border:1px solid rgba(98,114,245,.28);padding:3px 10px;border-radius:99px}
+.pill-hard{background:rgba(248,113,113,.12);color:var(--red);border-color:rgba(248,113,113,.25)}
+.pb-wrap{flex:1;height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.pb-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent3));border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1);width:0%}
+.score-badge{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--accent2);background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2);padding:4px 12px;border-radius:8px;white-space:nowrap}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:64px 32px 48px;position:relative;z-index:1}
+.hero-eyebrow{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.hero-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.8rem,4.5vw,3rem);line-height:1.1;margin-bottom:14px}
+.hero-title em{font-style:normal;background:linear-gradient(130deg,var(--accent),var(--accent2) 55%,var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{color:var(--muted);font-size:.92rem;max-width:540px;margin:0 auto 28px;line-height:1.65}
+.tag-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;padding:5px 14px;border-radius:99px;border:1px solid}
+.tag-h{color:#7b8ff7;border-color:rgba(98,114,245,.3);background:rgba(98,114,245,.09)}
+.tag-v{color:var(--green);border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.07)}
+.tag-z{color:var(--accent2);border-color:rgba(167,139,250,.28);background:rgba(167,139,250,.08)}
+.tag-n{color:var(--yellow);border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.07)}
+
+/* ── SECTION LABEL ── */
+.slabel{
+  text-align:center;padding:14px 32px 6px;
+  font-family:'Syne',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2);
+  position:relative;z-index:1;
+}
+.slabel::after{content:'';display:block;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:8px auto 0;max-width:160px}
+
+/* ── MAIN ── */
+main{max-width:1340px;margin:0 auto;padding:0 20px 80px;display:flex;flex-direction:column;gap:24px;position:relative;z-index:1}
+
+/* ── REF STRIP ── */
+.ref-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:4px}
+@media(max-width:700px){.ref-strip{grid-template-columns:1fr 1fr}}
+.ref-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px}
+.ref-card h4{font-family:'JetBrains Mono',monospace;font-size:.75rem;font-weight:700;margin-bottom:6px}
+.ref-h h4{color:#7b8ff7}.ref-v h4{color:var(--green)}.ref-z h4{color:var(--accent2)}.ref-n h4{color:var(--yellow)}
+.ref-card ul{list-style:none;display:flex;flex-direction:column;gap:3px}
+.ref-card ul li{font-size:.67rem;color:var(--muted);display:flex;gap:5px;align-items:baseline}
+.ref-card ul li::before{content:'›';color:var(--border2)}
+
+/* ── CALLOUT ── */
+.callout{background:rgba(98,114,245,.06);border:1px solid rgba(98,114,245,.18);border-radius:var(--r2);padding:14px 18px;font-size:.8rem;line-height:1.6;color:#9aa3cc}
+.callout strong{color:var(--text)}
+
+/* ── CHALLENGE CARD ── */
+.challenge{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+}
+.challenge.state-correct{border-color:rgba(52,211,153,.45);box-shadow:0 0 0 1px rgba(52,211,153,.12)}
+.challenge.state-wrong{border-color:rgba(248,113,113,.35)}
+
+/* card header */
+.c-head{display:flex;align-items:center;gap:10px;padding:14px 18px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.c-num{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:700;color:var(--accent);background:rgba(98,114,245,.12);border:1px solid rgba(98,114,245,.22);padding:2px 7px;border-radius:5px}
+.c-badge{font-size:.62rem;font-weight:700;letter-spacing:.07em;padding:2px 8px;border-radius:99px;border:1px solid}
+.cb-h{color:#7b8ff7;border-color:rgba(98,114,245,.28);background:rgba(98,114,245,.09)}
+.cb-v{color:var(--green);border-color:rgba(52,211,153,.22);background:rgba(52,211,153,.07)}
+.cb-z{color:var(--accent2);border-color:rgba(167,139,250,.25);background:rgba(167,139,250,.08)}
+.cb-n{color:var(--yellow);border-color:rgba(251,191,36,.22);background:rgba(251,191,36,.07)}
+.cb-x{color:var(--orange);border-color:rgba(251,146,60,.22);background:rgba(251,146,60,.07)}
+.c-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;flex:1}
+.diff{font-size:.6rem;font-weight:700;letter-spacing:.06em;padding:2px 7px;border-radius:99px}
+.d-med{background:rgba(251,191,36,.1);color:var(--yellow)}
+.d-hard{background:rgba(248,113,113,.1);color:var(--red)}
+.d-expert{background:rgba(251,146,60,.1);color:var(--orange)}
+
+/* two-column body */
+.c-body{display:grid;grid-template-columns:300px 1fr;gap:0}
+@media(max-width:860px){.c-body{grid-template-columns:1fr}}
+
+/* preview pane */
+.pane-pre{
+  padding:22px 20px;display:flex;flex-direction:column;align-items:center;
+  border-right:1px solid var(--border);
+  background:linear-gradient(180deg,var(--surface2) 0%,var(--surface) 100%);
+}
+.pane-lbl{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px;align-self:flex-start}
+.phone{
+  background:var(--phone-bg);border:2px solid var(--phone-border);border-radius:32px;
+  width:210px;min-height:220px;
+  display:flex;align-items:center;justify-content:center;
+  padding:22px 14px;
+  box-shadow:0 24px 64px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);
+  position:relative;
+}
+.phone::before{content:'';position:absolute;top:9px;left:50%;transform:translateX(-50%);width:44px;height:4px;background:rgba(255,255,255,.1);border-radius:99px}
+.pre-note{margin-top:14px;font-size:.68rem;color:var(--muted);text-align:center;line-height:1.5;max-width:200px}
+
+/* structural hint box */
+.struct-hint{
+  margin-top:12px;width:100%;
+  background:rgba(98,114,245,.07);border:1px solid rgba(98,114,245,.15);
+  border-radius:var(--r3);padding:10px 12px;
+}
+.struct-hint h5{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:700;color:var(--accent);margin-bottom:6px;letter-spacing:.06em}
+.struct-hint pre{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);line-height:1.6;white-space:pre-wrap}
+
+/* code pane */
+.pane-code{padding:22px 20px;display:flex;flex-direction:column}
+.editor{background:#090b12;border:1px solid var(--border);border-radius:var(--r2);flex:1;display:flex;flex-direction:column;min-height:240px}
+.ed-bar{display:flex;align-items:center;gap:5px;padding:8px 12px;background:#090b12;border-bottom:1px solid var(--border)}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#27c93f}
+.ed-file{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--muted);margin-left:5px}
+textarea.code-in{
+  flex:1;resize:none;background:transparent;border:none;outline:none;
+  font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.75;
+  color:#c9d4f0;padding:12px 14px;tab-size:4;caret-color:var(--accent);
+}
+textarea.code-in::placeholder{color:#2a304e}
+
+/* hint row */
+.hint-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn-hint{font-size:.68rem;font-weight:600;background:rgba(98,114,245,.1);color:var(--accent);border:1px solid rgba(98,114,245,.22);padding:4px 11px;border-radius:6px;cursor:pointer;transition:background .2s}
+.btn-hint:hover{background:rgba(98,114,245,.2)}
+.hint-txt{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--muted);display:none;line-height:1.5}
+.hint-txt.on{display:block}
+
+/* feedback */
+.fb{font-size:.78rem;font-weight:500;padding:10px 14px;border-radius:8px;display:none;margin-top:10px;line-height:1.55}
+.fb.on{display:block}
+.fb.ok{background:rgba(52,211,153,.1);color:var(--green);border:1px solid rgba(52,211,153,.18)}
+.fb.err{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.16)}
+
+/* solution reveal */
+.sol{display:none;margin-top:10px;background:#090b12;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.sol.on{display:block}
+.sol-bar{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:700;letter-spacing:.1em;color:var(--muted2);padding:7px 12px;border-bottom:1px solid var(--border);background:#0b0d17}
+.sol pre{padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.72;color:#c9d4f0;overflow-x:auto;max-height:380px}
+
+/* swift syntax */
+.kw{color:var(--sw-purple)}.ty{color:var(--sw-orange)}.st{color:var(--sw-string)}
+.nm{color:var(--sw-blue)}.cm{color:var(--sw-comment);font-style:italic}
+.mo{color:var(--sw-green)}.op{color:#79c0ff}
+
+/* footer bar */
+.c-foot{display:flex;align-items:center;gap:8px;padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+.btn-check{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;padding:8px 20px;border-radius:8px;cursor:pointer;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:opacity .2s,transform .1s}
+.btn-check:hover{opacity:.88}.btn-check:active{transform:scale(.97)}
+.btn-rst{font-size:.72rem;font-weight:600;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;transition:background .2s}
+.btn-rst:hover{background:rgba(255,255,255,.08);color:var(--text)}
+.btn-sol{font-size:.72rem;font-weight:600;background:rgba(167,139,250,.08);color:var(--accent2);border:1px solid rgba(167,139,250,.2);padding:7px 14px;border-radius:8px;cursor:pointer;margin-left:auto;transition:background .2s}
+.btn-sol:hover{background:rgba(167,139,250,.16)}
+
+/* scoreboard */
+.scoreboard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.s-stat{text-align:center;flex:1;min-width:70px}
+.s-stat .val{font-family:'JetBrains Mono',monospace;font-size:1.9rem;font-weight:700;display:block;line-height:1;margin-bottom:3px}
+.s-stat .lbl{font-size:.65rem;color:var(--muted);font-weight:500;letter-spacing:.05em}
+.s-done .val{color:var(--accent2)}.s-ok .val{color:var(--green)}.s-wr .val{color:var(--red)}.s-tot .val{color:var(--muted2)}
+
+/* animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.challenge{animation:fadeUp .45s ease both}
+.challenge:nth-child(2){animation-delay:.06s}.challenge:nth-child(3){animation-delay:.12s}
+.challenge:nth-child(4){animation-delay:.18s}.challenge:nth-child(5){animation-delay:.24s}
+.challenge:nth-child(6){animation-delay:.30s}.challenge:nth-child(7){animation-delay:.36s}
+.challenge:nth-child(8){animation-delay:.42s}.challenge:nth-child(9){animation-delay:.48s}
+@keyframes glow-green{0%{box-shadow:0 0 0 0 rgba(52,211,153,.35)}70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:none}}
+.state-correct{animation:glow-green .7s ease}
+
+/* ── SwiftUI Mockup primitives ── */
+.ui{display:flex}.ui-col{flex-direction:column}.ui-row{flex-direction:row}.ui-center{align-items:center;justify-content:center}
+.ui-spacer{flex:1}
+.ui-text{font-size:12px;color:var(--text);line-height:1.3}
+.ui-title{font-size:14px;font-weight:700;color:var(--text)}
+.ui-largetitle{font-size:20px;font-weight:800;color:var(--text);line-height:1.1}
+.ui-headline{font-size:13px;font-weight:600;color:var(--text)}
+.ui-sub{font-size:11px;color:var(--muted)}
+.ui-caption{font-size:10px;color:var(--muted)}
+.ui-secondary{color:var(--muted)}
+.ui-icon{font-size:16px;line-height:1}
+.ui-icon-lg{font-size:28px;line-height:1}
+.ui-icon-xl{font-size:42px;line-height:1}
+.ui-sep{height:1px;background:rgba(255,255,255,.07);width:100%}
+.ui-layer{position:relative;display:flex}
+.ui-abs{position:absolute}
+.ui-btn{border-radius:8px;padding:6px 14px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;border:none}
+.ui-card{background:#1a1f33;border-radius:12px;overflow:hidden}
+.ui-pill{border-radius:99px;padding:3px 10px;font-size:10px;font-weight:700}
+.ui-circle{border-radius:50%}
+.ui-star{color:#fbbf24;font-size:10px}
+
+footer{text-align:center;padding:24px;font-size:.68rem;color:var(--muted2);border-top:1px solid var(--border);position:relative;z-index:1}
+
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">MAC221</div>
+  <div class="pill">Stacks Practice Lab</div>
+  <div class="pill pill-hard">Advanced</div>
+  <div class="pb-wrap"><div class="pb-fill" id="pbFill"></div></div>
+  <div class="score-badge" id="scoreDisp">0 / 9 solved</div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">MAC221 · iOS Dev · Practice Lab</div>
+  <h1 class="hero-title">Real iOS UIs.<br><em>You write the stacks.</em></h1>
+  <p class="hero-sub">Each challenge shows a fully rendered phone UI built from nested HStack, VStack, and ZStack. Reverse-engineer the SwiftUI code that produces it — no hints until you try.</p>
+  <div class="tag-row">
+    <span class="tag tag-h">⟷ HStack</span>
+    <span class="tag tag-v">↕ VStack</span>
+    <span class="tag tag-z">⧉ ZStack</span>
+    <span class="tag tag-n">🔀 All Nested</span>
+  </div>
+</div>
+
+<div class="slabel">Reference</div>
+<main>
+
+<div class="ref-strip">
+  <div class="ref-card ref-h">
+    <h4>⟷ HStack</h4>
+    <ul>
+      <li>Left → right arrangement</li>
+      <li>alignment = vertical axis</li>
+      <li>Spacer() pushes items apart</li>
+      <li>Use for: rows, toolbars, icon+text</li>
+    </ul>
+  </div>
+  <div class="ref-card ref-v">
+    <h4>↕ VStack</h4>
+    <ul>
+      <li>Top → bottom arrangement</li>
+      <li>alignment = horizontal axis</li>
+      <li>Default outer screen container</li>
+      <li>Use for: columns, cards, forms</li>
+    </ul>
+  </div>
+  <div class="ref-card ref-z">
+    <h4>⧉ ZStack</h4>
+    <ul>
+      <li>Layers views back → front</li>
+      <li>First = back, last = front</li>
+      <li>alignment sets anchor point</li>
+      <li>Use for: overlays, badges, bg</li>
+    </ul>
+  </div>
+  <div class="ref-card ref-n">
+    <h4>🔀 Nesting Rule</h4>
+    <ul>
+      <li>Any stack can hold any stack</li>
+      <li>VStack(HStack(ZStack)) is normal</li>
+      <li>Sketch direction before coding</li>
+      <li>Extract to sub-views when > 4 deep</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout"><strong>Strategy:</strong> For each challenge, identify the <strong>dominant direction</strong> (outer stack), then work inward. Every row inside a column = HStack inside VStack. Every overlay = ZStack. Build outside-in, not inside-out.</div>
+
+<div class="slabel">Challenges</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C1 — Notification Settings Row (med)           ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c1">
+  <div class="c-head">
+    <span class="c-num">01</span>
+    <span class="c-badge cb-n">HStack + VStack</span>
+    <span class="c-title">Notification badge on bell + label stack</span>
+    <span class="diff d-med">Medium</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <!-- HStack: ZStack(bell+badge), VStack(title+sub), Spacer, toggle-ish pill -->
+        <div class="ui ui-row ui-center" style="gap:12px;width:175px;padding:10px 12px;background:#181d2e;border-radius:12px">
+          <!-- ZStack: bell + red badge top-right -->
+          <div style="position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+            <div style="width:36px;height:36px;background:rgba(251,191,36,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px">🔔</div>
+            <div style="position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:99px;font-size:8px;font-weight:800;width:15px;height:15px;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--phone-bg)">3</div>
+          </div>
+          <!-- VStack: title + sub -->
+          <div class="ui ui-col" style="gap:2px;align-items:flex-start;flex:1">
+            <span class="ui-headline">Notifications</span>
+            <span class="ui-caption">3 unread alerts</span>
+          </div>
+          <!-- toggle pill -->
+          <div style="width:36px;height:20px;background:#34d399;border-radius:99px;display:flex;align-items:center;justify-content:flex-end;padding-right:2px">
+            <div style="width:16px;height:16px;background:#fff;border-radius:50%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">HStack wraps a ZStack (icon + badge), a VStack (title + subtitle), a Spacer, and a toggle pill.</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>HStack {
+  ZStack(alignment: .topTrailing) {
+    // icon background
+    // bell icon
+    // red badge (front)
+  }
+  VStack(alignment: .leading) {
+    Text("Notifications")
+    Text("3 unread alerts")
+  }
+  Spacer()
+  // toggle view
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">NotificationRow.swift</span></div>
+        <textarea class="code-in" id="in-1" placeholder="// Write the full nested HStack here&#10;// Outer: HStack { ... }&#10;// Inside: ZStack(alignment: .topTrailing) for the badge&#10;// Inside: VStack(alignment: .leading) for the text block&#10;// Don't forget Spacer() before the toggle"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h1')">💡 Hint</button>
+        <span class="hint-txt" id="h1">ZStack(alignment: .topTrailing) — first child is the yellow rounded-rect background + bell icon, last child is the red badge Text with .clipShape(Circle()). Wrap that ZStack in the outer HStack.</span>
+      </div>
+      <div class="fb" id="fb-1"></div>
+      <div class="sol" id="sol-1">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">HStack</span>(spacing: <span class="nm">12</span>) {
+    <span class="cm">// ZStack: icon background + bell + badge</span>
+    <span class="kw">ZStack</span>(alignment: .topTrailing) {
+        <span class="ty">RoundedRectangle</span>(cornerRadius: <span class="nm">10</span>)
+            .fill(<span class="ty">Color</span>.yellow.opacity(<span class="nm">0.15</span>))
+            .frame(width: <span class="nm">36</span>, height: <span class="nm">36</span>)
+        <span class="ty">Image</span>(systemName: <span class="st">"bell.fill"</span>)
+            .foregroundColor(.yellow)
+        <span class="ty">Text</span>(<span class="st">"3"</span>)
+            .font(.caption2).bold()
+            .foregroundColor(.white)
+            .frame(width: <span class="nm">15</span>, height: <span class="nm">15</span>)
+            .background(<span class="ty">Color</span>.red)
+            .clipShape(<span class="ty">Circle</span>())
+            .offset(x: <span class="nm">6</span>, y: <span class="op">-</span><span class="nm">6</span>)
+    }
+
+    <span class="cm">// VStack: title + subtitle</span>
+    <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+        <span class="ty">Text</span>(<span class="st">"Notifications"</span>).font(.headline)
+        <span class="ty">Text</span>(<span class="st">"3 unread alerts"</span>).font(.caption).foregroundColor(.secondary)
+    }
+
+    <span class="ty">Spacer</span>()
+
+    <span class="cm">// Toggle indicator</span>
+    <span class="ty">Capsule</span>()
+        .fill(<span class="ty">Color</span>.green)
+        .frame(width: <span class="nm">36</span>, height: <span class="nm">20</span>)
+}
+.padding()
+.background(<span class="ty">Color</span>(.secondarySystemBackground))
+.cornerRadius(<span class="nm">12</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(1)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(1)">Reset</button>
+    <button class="btn-sol" onclick="showSol(1)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C2 — Profile Card with Stats Row (hard)        ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c2">
+  <div class="c-head">
+    <span class="c-num">02</span>
+    <span class="c-badge cb-n">VStack + ZStack + HStack</span>
+    <span class="c-title">Profile card — avatar badge, name/role, stats row</span>
+    <span class="diff d-hard">Hard</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui-card" style="width:180px;overflow:visible">
+          <!-- ZStack: gradient header bg + content -->
+          <div style="position:relative;height:90px;background:linear-gradient(135deg,#1e3a8a,#7c3aed);display:flex;align-items:flex-end;justify-content:center;padding-bottom:0">
+            <!-- avatar ZStack pinned to bottom-center -->
+            <div style="position:absolute;bottom:-28px;left:50%;transform:translateX(-50%)">
+              <div style="position:relative;width:56px;height:56px">
+                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid var(--phone-bg)">👤</div>
+                <div style="position:absolute;bottom:2px;right:2px;width:13px;height:13px;background:#34d399;border-radius:50%;border:2px solid var(--phone-bg)"></div>
+              </div>
+            </div>
+          </div>
+          <!-- VStack: name, role, divider, stats -->
+          <div class="ui ui-col" style="align-items:center;gap:0;padding:36px 12px 12px">
+            <span class="ui-title" style="font-size:13px">Maria Chen</span>
+            <span class="ui-caption" style="margin-top:2px;color:#6272f5">SwiftUI Developer</span>
+            <div class="ui-sep" style="margin:10px 0"></div>
+            <!-- HStack: 3 stat columns -->
+            <div class="ui ui-row" style="gap:0;width:100%">
+              <div class="ui ui-col ui-center" style="flex:1;gap:1px">
+                <span style="font-size:12px;font-weight:700;color:var(--text)">48</span>
+                <span class="ui-caption">Projects</span>
+              </div>
+              <div style="width:1px;background:rgba(255,255,255,.08);height:28px"></div>
+              <div class="ui ui-col ui-center" style="flex:1;gap:1px">
+                <span style="font-size:12px;font-weight:700;color:var(--text)">312</span>
+                <span class="ui-caption">Followers</span>
+              </div>
+              <div style="width:1px;background:rgba(255,255,255,.08);height:28px"></div>
+              <div class="ui ui-col ui-center" style="flex:1;gap:1px">
+                <span style="font-size:12px;font-weight:700;color:var(--text)">⭐ 4.9</span>
+                <span class="ui-caption">Rating</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">Outer VStack → ZStack header (gradient + avatar with online dot) → inner VStack (name, role, divider) → HStack of 3 stat VStacks.</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(spacing: 0) {
+  ZStack(alignment: .bottom) {
+    // gradient background
+    ZStack(alignment: .bottomTrailing) {
+      // avatar circle
+      // green online dot
+    }
+  }
+  VStack {
+    Text("Maria Chen")
+    Text("SwiftUI Developer")
+    Divider()
+    HStack {
+      VStack { Text("48"); Text("Projects") }
+      Divider()
+      VStack { Text("312"); Text("Followers") }
+      Divider()
+      VStack { Text("⭐ 4.9"); Text("Rating") }
+    }
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">ProfileCard.swift</span></div>
+        <textarea class="code-in" id="in-2" placeholder="// Profile card — build from outside in&#10;// Outer: VStack(spacing:0)&#10;// Header: ZStack with gradient + avatar ZStack&#10;// Avatar: ZStack(alignment: .bottomTrailing) — avatar + online dot&#10;// Body: VStack with name, role, Divider(), HStack of stat VStacks"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h2')">💡 Hint</button>
+        <span class="hint-txt" id="h2">The avatar sits at the bottom of the header using ZStack(alignment: .bottom). The online dot uses another nested ZStack(alignment: .bottomTrailing). The stats row is an HStack of three VStacks separated by Divider().</span>
+      </div>
+      <div class="fb" id="fb-2"></div>
+      <div class="sol" id="sol-2">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(spacing: <span class="nm">0</span>) {
+
+    <span class="cm">// ── Header: gradient + avatar overlay</span>
+    <span class="kw">ZStack</span>(alignment: .bottom) {
+        <span class="ty">LinearGradient</span>(colors: [.blue, .purple],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+            .frame(height: <span class="nm">90</span>)
+
+        <span class="cm">// Avatar with online dot — offset to overlap the dividing line</span>
+        <span class="kw">ZStack</span>(alignment: .bottomTrailing) {
+            <span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>)
+                .font(.system(size: <span class="nm">56</span>))
+                .foregroundColor(.blue)
+                .background(<span class="ty">Circle</span>().fill(<span class="ty">Color</span>(.systemBackground)))
+            <span class="ty">Circle</span>()
+                .fill(<span class="ty">Color</span>.green)
+                .frame(width: <span class="nm">14</span>, height: <span class="nm">14</span>)
+                .overlay(<span class="ty">Circle</span>().stroke(<span class="ty">Color</span>(.systemBackground), lineWidth: <span class="nm">2</span>))
+        }
+        .offset(y: <span class="nm">28</span>)
+    }
+
+    <span class="cm">// ── Body</span>
+    <span class="kw">VStack</span>(spacing: <span class="nm">6</span>) {
+        <span class="ty">Text</span>(<span class="st">"Maria Chen"</span>).font(.headline)
+        <span class="ty">Text</span>(<span class="st">"SwiftUI Developer"</span>).font(.caption).foregroundColor(.accentColor)
+        <span class="ty">Divider</span>()
+
+        <span class="cm">// Stats row</span>
+        <span class="kw">HStack</span> {
+            <span class="kw">VStack</span>(spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"48"</span>).font(.headline)
+                <span class="ty">Text</span>(<span class="st">"Projects"</span>).font(.caption2).foregroundColor(.secondary)
+            }.frame(maxWidth: .infinity)
+
+            <span class="ty">Divider</span>().frame(height: <span class="nm">30</span>)
+
+            <span class="kw">VStack</span>(spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"312"</span>).font(.headline)
+                <span class="ty">Text</span>(<span class="st">"Followers"</span>).font(.caption2).foregroundColor(.secondary)
+            }.frame(maxWidth: .infinity)
+
+            <span class="ty">Divider</span>().frame(height: <span class="nm">30</span>)
+
+            <span class="kw">VStack</span>(spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"⭐ 4.9"</span>).font(.headline)
+                <span class="ty">Text</span>(<span class="st">"Rating"</span>).font(.caption2).foregroundColor(.secondary)
+            }.frame(maxWidth: .infinity)
+        }
+    }
+    .padding(.top, <span class="nm">36</span>)
+    .padding([.horizontal, .bottom])
+}
+.background(<span class="ty">Color</span>(.secondarySystemBackground))
+.cornerRadius(<span class="nm">16</span>)
+.shadow(radius: <span class="nm">10</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(2)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(2)">Reset</button>
+    <button class="btn-sol" onclick="showSol(2)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C3 — Now Playing Music Card (hard)             ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c3">
+  <div class="c-head">
+    <span class="c-num">03</span>
+    <span class="c-badge cb-n">VStack + ZStack + HStack</span>
+    <span class="c-title">Now Playing — album art with overlay, controls row</span>
+    <span class="diff d-hard">Hard</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui ui-col" style="gap:10px;align-items:center;width:180px">
+          <!-- ZStack: album art + gradient scrim + play button -->
+          <div style="position:relative;width:140px;height:140px;border-radius:16px;overflow:hidden">
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#0f172a,#1e1b4b,#4c1d95)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px">🎵</div>
+            <!-- gradient scrim bottom -->
+            <div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,rgba(0,0,0,.7))"></div>
+            <!-- play button centered -->
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+              <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:50%;backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-size:20px;border:1.5px solid rgba(255,255,255,.3)">▶</div>
+            </div>
+          </div>
+          <!-- VStack: song info -->
+          <div class="ui ui-col" style="align-items:center;gap:2px">
+            <span class="ui-title" style="font-size:13px">Midnight Vibes</span>
+            <span class="ui-caption">The Coder's Playlist</span>
+          </div>
+          <!-- HStack: heart, skip-back, play-small, skip-fwd, repeat -->
+          <div class="ui ui-row" style="gap:14px;align-items:center">
+            <span style="font-size:16px;color:var(--red)">♥</span>
+            <span style="font-size:16px;color:var(--muted)">⏮</span>
+            <div style="width:34px;height:34px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px">▶</div>
+            <span style="font-size:16px;color:var(--muted)">⏭</span>
+            <span style="font-size:14px;color:var(--muted)">↻</span>
+          </div>
+          <!-- Progress bar row -->
+          <div class="ui ui-row" style="gap:6px;align-items:center;width:100%">
+            <span style="font-size:9px;color:var(--muted)">1:23</span>
+            <div style="flex:1;height:3px;background:rgba(255,255,255,.12);border-radius:99px;position:relative">
+              <div style="position:absolute;left:0;top:0;height:100%;width:38%;background:var(--accent);border-radius:99px"></div>
+            </div>
+            <span style="font-size:9px;color:var(--muted)">3:47</span>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack (outer) → ZStack (album art + gradient scrim + play button) → VStack (song + artist) → HStack (controls) → HStack (progress bar with timestamps).</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(spacing: 12) {
+  ZStack {
+    // album art (back)
+    // gradient scrim overlay
+    // play button circle (front)
+  }
+  .frame(width:140, height:140)
+  .cornerRadius(16)
+
+  VStack(spacing: 2) {
+    Text("Midnight Vibes")
+    Text("The Coder's Playlist")
+  }
+
+  HStack(spacing: 20) {
+    // heart, skip-back, play, skip-fwd, repeat
+  }
+
+  HStack {
+    Text("1:23")
+    // progress bar (Rectangle or ZStack)
+    Text("3:47")
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">NowPlayingCard.swift</span></div>
+        <textarea class="code-in" id="in-3" placeholder="// Now Playing card — 4 stacked sections&#10;// 1. ZStack: album art gradient + scrim + play button&#10;// 2. VStack: song title + artist name (centered)&#10;// 3. HStack: media control buttons&#10;// 4. HStack: timestamp + progress bar + timestamp&#10;&#10;// Outer container: VStack(spacing: 12)"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h3')">💡 Hint</button>
+        <span class="hint-txt" id="h3">The album art is a ZStack: LinearGradient → LinearGradient scrim → Circle button. Progress bar is a ZStack or GeometryReader: gray background capsule, then a leading-aligned accent capsule on top.</span>
+      </div>
+      <div class="fb" id="fb-3"></div>
+      <div class="sol" id="sol-3">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(spacing: <span class="nm">12</span>) {
+
+    <span class="cm">// 1. Album art with play button overlay</span>
+    <span class="kw">ZStack</span> {
+        <span class="ty">LinearGradient</span>(colors: [.indigo, .purple],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+        <span class="ty">Text</span>(<span class="st">"🎵"</span>).font(.system(size: <span class="nm">48</span>))
+
+        <span class="cm">// gradient scrim at bottom</span>
+        <span class="kw">VStack</span> {
+            <span class="ty">Spacer</span>()
+            <span class="ty">LinearGradient</span>(colors: [.clear, .black.opacity(<span class="nm">0.7</span>)],
+                           startPoint: .top, endPoint: .bottom)
+                .frame(height: <span class="nm">60</span>)
+        }
+
+        <span class="cm">// centered play button circle</span>
+        <span class="ty">Circle</span>()
+            .fill(.ultraThinMaterial)
+            .frame(width: <span class="nm">44</span>, height: <span class="nm">44</span>)
+            .overlay(<span class="ty">Image</span>(systemName: <span class="st">"play.fill"</span>).foregroundColor(.white))
+    }
+    .frame(width: <span class="nm">140</span>, height: <span class="nm">140</span>)
+    .cornerRadius(<span class="nm">16</span>)
+    .clipped()
+
+    <span class="cm">// 2. Song info</span>
+    <span class="kw">VStack</span>(spacing: <span class="nm">2</span>) {
+        <span class="ty">Text</span>(<span class="st">"Midnight Vibes"</span>).font(.headline)
+        <span class="ty">Text</span>(<span class="st">"The Coder's Playlist"</span>).font(.caption).foregroundColor(.secondary)
+    }
+
+    <span class="cm">// 3. Controls</span>
+    <span class="kw">HStack</span>(spacing: <span class="nm">20</span>) {
+        <span class="ty">Image</span>(systemName: <span class="st">"heart.fill"</span>).foregroundColor(.red)
+        <span class="ty">Image</span>(systemName: <span class="st">"backward.fill"</span>).foregroundColor(.secondary)
+        <span class="ty">Image</span>(systemName: <span class="st">"play.circle.fill"</span>)
+            .font(.system(size: <span class="nm">34</span>))
+            .foregroundColor(.accentColor)
+        <span class="ty">Image</span>(systemName: <span class="st">"forward.fill"</span>).foregroundColor(.secondary)
+        <span class="ty">Image</span>(systemName: <span class="st">"repeat"</span>).foregroundColor(.secondary)
+    }
+    .font(.title3)
+
+    <span class="cm">// 4. Progress bar row</span>
+    <span class="kw">HStack</span>(spacing: <span class="nm">8</span>) {
+        <span class="ty">Text</span>(<span class="st">"1:23"</span>).font(.caption2).foregroundColor(.secondary)
+
+        <span class="kw">ZStack</span>(alignment: .leading) {
+            <span class="ty">Capsule</span>().fill(<span class="ty">Color</span>.gray.opacity(<span class="nm">0.25</span>)).frame(height: <span class="nm">3</span>)
+            <span class="ty">Capsule</span>().fill(<span class="ty">Color</span>.accentColor)
+                .frame(width: <span class="nm">60</span>, height: <span class="nm">3</span>) <span class="cm">// ~38% of full width</span>
+        }
+        .frame(maxWidth: .infinity)
+
+        <span class="ty">Text</span>(<span class="st">"3:47"</span>).font(.caption2).foregroundColor(.secondary)
+    }
+    .padding(.horizontal, <span class="nm">4</span>)
+}
+.padding()
+.frame(width: <span class="nm">220</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(3)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(3)">Reset</button>
+    <button class="btn-sol" onclick="showSol(3)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C4 — App Store Card (hard)                     ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c4">
+  <div class="c-head">
+    <span class="c-num">04</span>
+    <span class="c-badge cb-n">ZStack + VStack + HStack × 2</span>
+    <span class="c-title">App Store feature card — hero image + info row + action</span>
+    <span class="diff d-hard">Hard</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui-card" style="width:185px">
+          <!-- ZStack: hero gradient + top label + bottom text block -->
+          <div style="position:relative;height:110px;background:linear-gradient(160deg,#0f2027,#203a43,#2c5364)">
+            <!-- TOP-LEADING label -->
+            <div style="position:absolute;top:10px;left:10px;background:rgba(56,189,248,.2);border:1px solid rgba(56,189,248,.35);padding:2px 8px;border-radius:5px">
+              <span style="color:#38bdf8;font-size:9px;font-weight:700;letter-spacing:.08em">APP OF THE DAY</span>
+            </div>
+            <!-- BOTTOM-LEADING text -->
+            <div style="position:absolute;bottom:10px;left:10px">
+              <span style="color:#fff;font-size:15px;font-weight:800;display:block;line-height:1.1">SwiftUI Mastery</span>
+              <span style="color:rgba(255,255,255,.6);font-size:9px">Build any UI you can imagine</span>
+            </div>
+            <!-- decorative emoji -->
+            <div style="position:absolute;right:12px;bottom:8px;font-size:32px">📱</div>
+          </div>
+          <!-- HStack: icon + VStack(title+sub) + Spacer + GET button -->
+          <div class="ui ui-row" style="gap:10px;padding:10px 10px;align-items:center">
+            <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#6272f5,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🛠️</div>
+            <div class="ui ui-col" style="gap:1px;flex:1;align-items:flex-start">
+              <span class="ui-headline" style="font-size:11px">SwiftUI Mastery</span>
+              <span class="ui-caption">iOS Development</span>
+            </div>
+            <div style="background:rgba(98,114,245,.2);border:1px solid rgba(98,114,245,.35);padding:4px 12px;border-radius:99px;color:#6272f5;font-size:10px;font-weight:800">GET</div>
+          </div>
+          <!-- star rating row -->
+          <div class="ui ui-row" style="gap:3px;padding:0 10px 10px;align-items:center">
+            <span class="ui-star">★★★★★</span>
+            <span class="ui-caption" style="margin-left:3px">4.9 (8.2K Ratings)</span>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack (card) → ZStack (hero: gradient + topLeading label + bottomLeading text + trailing emoji) → HStack (icon, name/sub VStack, Spacer, GET) → HStack (stars + count).</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(spacing: 0) {
+  ZStack(alignment: .topLeading) {
+    // hero gradient
+    // "APP OF THE DAY" label (topLeading)
+    // ZStack(alignment:.bottomLeading){
+    //   title VStack
+    //   emoji (bottomTrailing)
+    // }
+  }.frame(height: 110)
+
+  HStack {
+    appIcon
+    VStack(alignment:.leading){ title; sub }
+    Spacer()
+    getButton
+  }.padding()
+
+  HStack { stars; ratingCount }
+    .padding([.horizontal,.bottom])
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">AppStoreCard.swift</span></div>
+        <textarea class="code-in" id="in-4" placeholder="// App Store feature card&#10;// Outer: VStack(spacing: 0)&#10;// Hero: ZStack with gradient background + overlaid labels&#10;// Info row: HStack { icon, VStack{title,sub}, Spacer(), GET }&#10;// Rating row: HStack { stars Text, count Text }"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h4')">💡 Hint</button>
+        <span class="hint-txt" id="h4">The hero ZStack needs multiple alignment anchors. Use ZStack(alignment: .topLeading) for the "App of the Day" badge. For the bottom text + emoji, embed a nested ZStack(alignment: .bottomLeading) and ZStack(alignment: .bottomTrailing) inside, or use .frame + VStack tricks.</span>
+      </div>
+      <div class="fb" id="fb-4"></div>
+      <div class="sol" id="sol-4">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(spacing: <span class="nm">0</span>) {
+
+    <span class="cm">// ── Hero section</span>
+    <span class="kw">ZStack</span>(alignment: .topLeading) {
+        <span class="ty">LinearGradient</span>(
+            colors: [<span class="ty">Color</span>(red:<span class="nm">0.06</span>,green:<span class="nm">0.13</span>,blue:<span class="nm">0.15</span>), .teal.opacity(<span class="nm">0.6</span>)],
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+        .frame(height: <span class="nm">110</span>)
+
+        <span class="cm">// "App of the Day" badge</span>
+        <span class="ty">Text</span>(<span class="st">"APP OF THE DAY"</span>)
+            .font(.caption2).bold()
+            .foregroundColor(.cyan)
+            .padding(.horizontal, <span class="nm">8</span>).padding(.vertical, <span class="nm">3</span>)
+            .background(<span class="ty">Color</span>.cyan.opacity(<span class="nm">0.15</span>))
+            .cornerRadius(<span class="nm">5</span>)
+            .padding([.top, .leading], <span class="nm">10</span>)
+
+        <span class="cm">// Bottom text + emoji row</span>
+        <span class="kw">HStack</span> {
+            <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"SwiftUI Mastery"</span>).font(.headline).foregroundColor(.white)
+                <span class="ty">Text</span>(<span class="st">"Build any UI you can imagine"</span>)
+                    .font(.caption2).foregroundColor(.white.opacity(<span class="nm">0.65</span>))
+            }
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"📱"</span>).font(.system(size: <span class="nm">32</span>))
+        }
+        .padding(<span class="nm">10</span>)
+        .frame(maxHeight: .infinity, alignment: .bottom)
+    }
+
+    <span class="cm">// ── Info + GET row</span>
+    <span class="kw">HStack</span>(spacing: <span class="nm">10</span>) {
+        <span class="ty">RoundedRectangle</span>(cornerRadius: <span class="nm">10</span>)
+            .fill(<span class="ty">LinearGradient</span>(colors:[.indigo, .purple],
+                  startPoint:.topLeading, endPoint:.bottomTrailing))
+            .frame(width: <span class="nm">38</span>, height: <span class="nm">38</span>)
+            .overlay(<span class="ty">Text</span>(<span class="st">"🛠️"</span>))
+
+        <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">1</span>) {
+            <span class="ty">Text</span>(<span class="st">"SwiftUI Mastery"</span>).font(.subheadline).bold()
+            <span class="ty">Text</span>(<span class="st">"iOS Development"</span>).font(.caption2).foregroundColor(.secondary)
+        }
+        <span class="ty">Spacer</span>()
+        <span class="ty">Text</span>(<span class="st">"GET"</span>)
+            .font(.caption).bold()
+            .padding(.horizontal, <span class="nm">12</span>).padding(.vertical, <span class="nm">4</span>)
+            .background(<span class="ty">Color</span>.accentColor.opacity(<span class="nm">0.15</span>))
+            .foregroundColor(.accentColor)
+            .clipShape(<span class="ty">Capsule</span>())
+    }
+    .padding([.horizontal, .top])
+
+    <span class="cm">// ── Rating row</span>
+    <span class="kw">HStack</span>(spacing: <span class="nm">4</span>) {
+        <span class="ty">Text</span>(<span class="st">"★★★★★"</span>).foregroundColor(.yellow).font(.caption)
+        <span class="ty">Text</span>(<span class="st">"4.9 (8.2K Ratings)"</span>).font(.caption2).foregroundColor(.secondary)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding([.horizontal, .bottom])
+    .padding(.top, <span class="nm">4</span>)
+}
+.background(<span class="ty">Color</span>(.secondarySystemBackground))
+.cornerRadius(<span class="nm">14</span>)
+.shadow(radius: <span class="nm">8</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(4)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(4)">Reset</button>
+    <button class="btn-sol" onclick="showSol(4)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C5 — Weather Card Full (hard)                  ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c5">
+  <div class="c-head">
+    <span class="c-num">05</span>
+    <span class="c-badge cb-n">VStack + ZStack + HStack + HStack×3</span>
+    <span class="c-title">Weather card — gradient header, city/temp, stats row</span>
+    <span class="diff d-hard">Hard</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui-card" style="width:185px">
+          <!-- ZStack: gradient + HStack(city info + cloud) -->
+          <div style="position:relative;height:110px;background:linear-gradient(160deg,#1e3a8a,#0e7490)">
+            <div class="ui ui-row" style="gap:0;height:100%;align-items:center;padding:14px">
+              <div class="ui ui-col" style="gap:2px;align-items:flex-start;flex:1">
+                <span style="color:rgba(255,255,255,.65);font-size:9px;font-weight:600">New York City</span>
+                <span style="color:#fff;font-size:30px;font-weight:800;line-height:1">72°</span>
+                <span style="color:rgba(255,255,255,.65);font-size:9px">Partly Cloudy</span>
+              </div>
+              <span style="font-size:38px">⛅</span>
+            </div>
+          </div>
+          <!-- VStack of 3 HStack stat rows -->
+          <div class="ui ui-col" style="gap:0">
+            <div class="ui ui-row" style="padding:7px 12px;align-items:center">
+              <span style="font-size:12px">💨</span>
+              <span class="ui-caption" style="margin-left:6px;flex:1">Wind</span>
+              <span class="ui-sub" style="font-size:10px;font-weight:600;color:var(--text)">12 km/h</span>
+            </div>
+            <div class="ui-sep" style="margin:0 12px"></div>
+            <div class="ui ui-row" style="padding:7px 12px;align-items:center">
+              <span style="font-size:12px">💧</span>
+              <span class="ui-caption" style="margin-left:6px;flex:1">Humidity</span>
+              <span class="ui-sub" style="font-size:10px;font-weight:600;color:var(--text)">65%</span>
+            </div>
+            <div class="ui-sep" style="margin:0 12px"></div>
+            <div class="ui ui-row" style="padding:7px 12px;align-items:center">
+              <span style="font-size:12px">🌡️</span>
+              <span class="ui-caption" style="margin-left:6px;flex:1">Feels like</span>
+              <span class="ui-sub" style="font-size:10px;font-weight:600;color:var(--text)">68°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack(spacing:0) → ZStack header (gradient + HStack of city VStack + cloud emoji) → VStack of three HStack stat rows, each with icon + label + Spacer + value.</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(spacing: 0) {
+  ZStack {
+    // gradient (back)
+    HStack {
+      VStack(alignment:.leading){
+        Text("New York City")
+        Text("72°")
+        Text("Partly Cloudy")
+      }
+      Spacer()
+      Text("⛅")
+    }.padding()
+  }.frame(height: 110)
+
+  // 3 stat rows
+  ForEach(stats) { stat in
+    HStack {
+      Text(stat.icon)
+      Text(stat.label)
+      Spacer()
+      Text(stat.value)
+    }.padding()
+    Divider()
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">WeatherCard.swift</span></div>
+        <textarea class="code-in" id="in-5" placeholder="// Weather card — VStack outer container&#10;// Header: ZStack { gradient; HStack { VStack(city,temp,desc); Spacer(); emoji } }&#10;// Stats: 3× HStack { icon Text; label Text; Spacer(); value Text } + Divider()&#10;// Wrap stats in a VStack(spacing:0)"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h5')">💡 Hint</button>
+        <span class="hint-txt" id="h5">The header ZStack has LinearGradient first (back), then an HStack overlay. The HStack holds a VStack(alignment:.leading) for city/temp/description text, then Spacer(), then the cloud emoji Text. Each stat row is HStack { Text(icon); Text(label); Spacer(); Text(value) }.</span>
+      </div>
+      <div class="fb" id="fb-5"></div>
+      <div class="sol" id="sol-5">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(spacing: <span class="nm">0</span>) {
+
+    <span class="cm">// ── Header</span>
+    <span class="kw">ZStack</span> {
+        <span class="ty">LinearGradient</span>(colors: [.blue, .cyan.opacity(<span class="nm">0.8</span>)],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+
+        <span class="kw">HStack</span> {
+            <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"New York City"</span>)
+                    .font(.caption).foregroundColor(.white.opacity(<span class="nm">0.7</span>))
+                <span class="ty">Text</span>(<span class="st">"72°"</span>)
+                    .font(.system(size: <span class="nm">48</span>, weight: .black))
+                    .foregroundColor(.white)
+                <span class="ty">Text</span>(<span class="st">"Partly Cloudy"</span>)
+                    .font(.caption).foregroundColor(.white.opacity(<span class="nm">0.7</span>))
+            }
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"⛅"</span>).font(.system(size: <span class="nm">48</span>))
+        }
+        .padding()
+    }
+    .frame(height: <span class="nm">120</span>)
+
+    <span class="cm">// ── Stat rows</span>
+    <span class="kw">VStack</span>(spacing: <span class="nm">0</span>) {
+        <span class="kw">HStack</span> {
+            <span class="ty">Text</span>(<span class="st">"💨"</span>)
+            <span class="ty">Text</span>(<span class="st">"Wind"</span>).foregroundColor(.secondary)
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"12 km/h"</span>).fontWeight(.semibold)
+        }.padding()
+
+        <span class="ty">Divider</span>().padding(.horizontal)
+
+        <span class="kw">HStack</span> {
+            <span class="ty">Text</span>(<span class="st">"💧"</span>)
+            <span class="ty">Text</span>(<span class="st">"Humidity"</span>).foregroundColor(.secondary)
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"65%"</span>).fontWeight(.semibold)
+        }.padding()
+
+        <span class="ty">Divider</span>().padding(.horizontal)
+
+        <span class="kw">HStack</span> {
+            <span class="ty">Text</span>(<span class="st">"🌡️"</span>)
+            <span class="ty">Text</span>(<span class="st">"Feels like"</span>).foregroundColor(.secondary)
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"68°"</span>).fontWeight(.semibold)
+        }.padding()
+    }
+}
+.background(<span class="ty">Color</span>(.secondarySystemBackground))
+.cornerRadius(<span class="nm">16</span>)
+.shadow(radius: <span class="nm">8</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(5)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(5)">Reset</button>
+    <button class="btn-sol" onclick="showSol(5)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C6 — Chat Message Bubble (expert)              ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c6">
+  <div class="c-head">
+    <span class="c-num">06</span>
+    <span class="c-badge cb-x">Expert · 4 nesting levels</span>
+    <span class="c-title">iMessage-style chat screen — two bubbles + avatars + timestamps</span>
+    <span class="diff d-expert">Expert</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui ui-col" style="gap:10px;width:182px;padding:4px">
+          <!-- Received message row: HStack(avatar + VStack(name+bubble+time)) -->
+          <div class="ui ui-row" style="gap:7px;align-items:flex-end">
+            <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px">👤</div>
+            <div class="ui ui-col" style="gap:2px;align-items:flex-start;flex:1">
+              <span style="font-size:9px;color:var(--muted);margin-left:2px">Maria Chen</span>
+              <div style="background:#1e2235;border-radius:12px 12px 12px 3px;padding:7px 10px;max-width:130px">
+                <span style="font-size:11px;line-height:1.4;color:var(--text)">Hey! Did you check the new SwiftUI docs? 🚀</span>
+              </div>
+              <span style="font-size:8px;color:var(--muted);margin-left:2px">2:41 PM</span>
+            </div>
+          </div>
+          <!-- Sent message row: HStack(Spacer + VStack(bubble+time)) -->
+          <div class="ui ui-row" style="gap:6px;align-items:flex-end;justify-content:flex-end">
+            <div class="ui ui-col" style="gap:2px;align-items:flex-end">
+              <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px 12px 3px 12px;padding:7px 10px;max-width:130px">
+                <span style="font-size:11px;line-height:1.4;color:#fff">Yes! The new ZStack alignment options are 🔥</span>
+              </div>
+              <div class="ui ui-row" style="gap:3px;align-items:center">
+                <span style="font-size:8px;color:var(--muted)">2:43 PM</span>
+                <span style="font-size:10px;color:#60a5fa">✓✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack (chat log) → two message rows, each an HStack. Received: avatar + VStack(name, bubble, time). Sent: Spacer() + VStack(bubble, HStack(time+ticks)) — right-aligned.</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(alignment: .leading, spacing: 12) {
+  // Received bubble
+  HStack(alignment: .bottom) {
+    avatar Circle
+    VStack(alignment: .leading) {
+      Text("Maria Chen") // sender name
+      Text("Hey! ...") // bubble
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(...)
+      Text("2:41 PM") // timestamp
+    }
+  }
+
+  // Sent bubble
+  HStack {
+    Spacer()
+    VStack(alignment: .trailing) {
+      Text("Yes! ...") // bubble
+        .background(Color.indigo)
+      HStack {
+        Text("2:43 PM")
+        Image(systemName:"checkmark.message")
+      }
+    }
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">ChatView.swift</span></div>
+        <textarea class="code-in" id="in-6" placeholder="// iMessage-style chat — 4 nesting levels&#10;// VStack (chat log, spacing: 12)&#10;// ├── HStack(alignment:.bottom) — RECEIVED row&#10;// │   ├── Circle avatar&#10;// │   └── VStack(alignment:.leading) { name, bubble, time }&#10;// └── HStack — SENT row&#10;//     ├── Spacer()&#10;//     └── VStack(alignment:.trailing) { bubble, HStack{time, checkmarks} }"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h6')">💡 Hint</button>
+        <span class="hint-txt" id="h6">For the received bubble use HStack(alignment: .bottom) so avatar aligns with the bottom of the message. The sent bubble's VStack(alignment: .trailing) keeps time + checkmarks right-aligned under the bubble. Use .cornerRadius with different values for send vs receive: (12,12,12,3) vs (12,12,3,12) via custom corners or just asymmetric border tricks.</span>
+      </div>
+      <div class="fb" id="fb-6"></div>
+      <div class="sol" id="sol-6">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">12</span>) {
+
+    <span class="cm">// ── Received message</span>
+    <span class="kw">HStack</span>(alignment: .bottom, spacing: <span class="nm">8</span>) {
+        <span class="ty">Circle</span>()
+            .fill(<span class="ty">LinearGradient</span>(colors:[.blue,.purple],
+                  startPoint:.top, endPoint:.bottom))
+            .frame(width: <span class="nm">30</span>, height: <span class="nm">30</span>)
+            .overlay(<span class="ty">Text</span>(<span class="st">"👤"</span>).font(.caption))
+
+        <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+            <span class="ty">Text</span>(<span class="st">"Maria Chen"</span>)
+                .font(.caption2).foregroundColor(.secondary)
+            <span class="ty">Text</span>(<span class="st">"Hey! Did you check the new SwiftUI docs? 🚀"</span>)
+                .font(.callout)
+                .padding(.horizontal, <span class="nm">10</span>).padding(.vertical, <span class="nm">7</span>)
+                .background(<span class="ty">Color</span>(.systemGray6))
+                .cornerRadius(<span class="nm">14</span>)
+            <span class="ty">Text</span>(<span class="st">"2:41 PM"</span>)
+                .font(.caption2).foregroundColor(.secondary)
+        }
+    }
+
+    <span class="cm">// ── Sent message (right-aligned)</span>
+    <span class="kw">HStack</span> {
+        <span class="ty">Spacer</span>()
+        <span class="kw">VStack</span>(alignment: .trailing, spacing: <span class="nm">2</span>) {
+            <span class="ty">Text</span>(<span class="st">"Yes! The new ZStack alignment options are 🔥"</span>)
+                .font(.callout)
+                .foregroundColor(.white)
+                .padding(.horizontal, <span class="nm">10</span>).padding(.vertical, <span class="nm">7</span>)
+                .background(
+                    <span class="ty">LinearGradient</span>(colors:[.indigo,.purple],
+                        startPoint:.topLeading, endPoint:.bottomTrailing)
+                )
+                .cornerRadius(<span class="nm">14</span>)
+
+            <span class="kw">HStack</span>(spacing: <span class="nm">3</span>) {
+                <span class="ty">Text</span>(<span class="st">"2:43 PM"</span>).font(.caption2).foregroundColor(.secondary)
+                <span class="ty">Text</span>(<span class="st">"✓✓"</span>).font(.caption).foregroundColor(.blue)
+            }
+        }
+    }
+}
+.padding()</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(6)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(6)">Reset</button>
+    <button class="btn-sol" onclick="showSol(6)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C7 — Course Card (expert)                      ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c7">
+  <div class="c-head">
+    <span class="c-num">07</span>
+    <span class="c-badge cb-x">Expert · VStack + ZStack + HStack + HStack</span>
+    <span class="c-title">Course card — thumbnail overlay, instructor row, tag chips, rating</span>
+    <span class="diff d-expert">Expert</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <div class="ui-card" style="width:185px">
+          <!-- ZStack: thumbnail gradient + duration badge + category tag -->
+          <div style="position:relative;height:95px;background:linear-gradient(160deg,#064e3b,#065f46,#0f766e)">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;opacity:.7">💻</div>
+            <!-- duration badge bottomTrailing -->
+            <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);padding:2px 7px;border-radius:5px">
+              <span style="font-size:9px;color:#fff;font-weight:700">8h 30m</span>
+            </div>
+            <!-- category tag topLeading -->
+            <div style="position:absolute;top:8px;left:8px;background:rgba(16,185,129,.25);border:1px solid rgba(16,185,129,.4);padding:2px 7px;border-radius:5px">
+              <span style="font-size:9px;color:#6ee7b7;font-weight:700">iOS Dev</span>
+            </div>
+          </div>
+          <!-- VStack: title, HStack(avatar+name+spacer+price), tags row, rating row -->
+          <div class="ui ui-col" style="gap:6px;padding:10px">
+            <span class="ui-headline" style="font-size:12px;line-height:1.3">SwiftUI Layouts:<br>HStack, VStack & ZStack</span>
+            <!-- instructor row -->
+            <div class="ui ui-row" style="gap:6px;align-items:center">
+              <div style="width:18px;height:18px;border-radius:50%;background:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:9px">K</div>
+              <span class="ui-caption" style="flex:1">Prof. Kassou</span>
+              <span style="font-size:11px;font-weight:800;color:#34d399">FREE</span>
+            </div>
+            <!-- tag chips row -->
+            <div class="ui ui-row" style="gap:4px;flex-wrap:wrap">
+              <span style="background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.25);padding:1px 7px;border-radius:99px;font-size:8px;font-weight:700">SwiftUI</span>
+              <span style="background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);padding:1px 7px;border-radius:99px;font-size:8px;font-weight:700">Beginner</span>
+            </div>
+            <!-- rating row -->
+            <div class="ui ui-row" style="gap:4px;align-items:center">
+              <span style="color:#fbbf24;font-size:9px">★★★★★</span>
+              <span class="ui-caption">4.9</span>
+              <span class="ui-caption">(1.2K)</span>
+              <div style="flex:1"></div>
+              <span style="font-size:14px;cursor:pointer">🔖</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack (card) → ZStack (thumbnail: gradient + duration badge + category label) → VStack body (title → HStack instructor → HStack chips → HStack rating).</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(spacing: 0) {
+  // Thumbnail header
+  ZStack(alignment: .topLeading) {
+    gradient + emoji
+    categoryLabel (topLeading)
+    ZStack(alignment:.bottomTrailing){
+      Color.clear
+      durationBadge
+    }
+  }.frame(height:95)
+
+  // Card body
+  VStack(alignment:.leading, spacing:6) {
+    Text(title)
+    HStack { avatar; name; Spacer(); price }
+    HStack { chip1; chip2 }
+    HStack { stars; rating; count; Spacer(); bookmark }
+  }.padding(10)
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">CourseCard.swift</span></div>
+        <textarea class="code-in" id="in-7" placeholder="// Course card — full component&#10;// VStack(spacing:0) wraps everything&#10;// ZStack(alignment:.topLeading) for thumbnail with both badges&#10;// Inner body: VStack(alignment:.leading) with 4 sub-rows&#10;// Each sub-row is an HStack with appropriate children"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h7')">💡 Hint</button>
+        <span class="hint-txt" id="h7">For two badges at different corners in the ZStack, use a nested HStack { categoryLabel; Spacer() } and HStack { Spacer(); durationBadge } — or overlay them using .frame(maxWidth/.maxHeight + alignment). The simplest approach: put both overlays using .overlay(alignment:) on the ZStack after declaring it.</span>
+      </div>
+      <div class="fb" id="fb-7"></div>
+      <div class="sol" id="sol-7">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">VStack</span>(spacing: <span class="nm">0</span>) {
+
+    <span class="cm">// ── Thumbnail with badges</span>
+    <span class="kw">ZStack</span> {
+        <span class="ty">LinearGradient</span>(colors: [<span class="ty">Color</span>(red:<span class="nm">0.02</span>,green:<span class="nm">0.31</span>,blue:<span class="nm">0.23</span>), .teal],
+                       startPoint: .topLeading, endPoint: .bottomTrailing)
+        <span class="ty">Text</span>(<span class="st">"💻"</span>).font(.system(size: <span class="nm">36</span>)).opacity(<span class="nm">0.7</span>)
+
+        <span class="cm">// category badge — top left</span>
+        <span class="kw">VStack</span> {
+            <span class="kw">HStack</span> {
+                <span class="ty">Text</span>(<span class="st">"iOS Dev"</span>)
+                    .font(.caption2).bold().foregroundColor(.mint)
+                    .padding(.horizontal, <span class="nm">7</span>).padding(.vertical, <span class="nm">3</span>)
+                    .background(<span class="ty">Color</span>.green.opacity(<span class="nm">0.2</span>))
+                    .cornerRadius(<span class="nm">5</span>)
+                <span class="ty">Spacer</span>()
+            }
+            <span class="ty">Spacer</span>()
+        }.padding(<span class="nm">8</span>)
+
+        <span class="cm">// duration badge — bottom right</span>
+        <span class="kw">VStack</span> {
+            <span class="ty">Spacer</span>()
+            <span class="kw">HStack</span> {
+                <span class="ty">Spacer</span>()
+                <span class="ty">Text</span>(<span class="st">"8h 30m"</span>)
+                    .font(.caption2).bold().foregroundColor(.white)
+                    .padding(.horizontal, <span class="nm">7</span>).padding(.vertical, <span class="nm">3</span>)
+                    .background(<span class="ty">Color</span>.black.opacity(<span class="nm">0.55</span>))
+                    .cornerRadius(<span class="nm">5</span>)
+            }
+        }.padding(<span class="nm">8</span>)
+    }
+    .frame(height: <span class="nm">95</span>)
+    .clipped()
+
+    <span class="cm">// ── Card body</span>
+    <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">6</span>) {
+
+        <span class="ty">Text</span>(<span class="st">"SwiftUI Layouts: HStack, VStack & ZStack"</span>)
+            .font(.subheadline).bold().lineLimit(<span class="nm">2</span>)
+
+        <span class="cm">// Instructor row</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">6</span>) {
+            <span class="ty">Circle</span>().fill(<span class="ty">Color</span>.indigo).frame(width:<span class="nm">18</span>,height:<span class="nm">18</span>)
+                .overlay(<span class="ty">Text</span>(<span class="st">"K"</span>).font(.system(size:<span class="nm">9</span>)).foregroundColor(.white))
+            <span class="ty">Text</span>(<span class="st">"Prof. Kassou"</span>).font(.caption).foregroundColor(.secondary)
+            <span class="ty">Spacer</span>()
+            <span class="ty">Text</span>(<span class="st">"FREE"</span>).font(.caption).bold().foregroundColor(.green)
+        }
+
+        <span class="cm">// Tag chips</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">5</span>) {
+            <span class="kw">ForEach</span>([(<span class="st">"SwiftUI"</span>, <span class="ty">Color</span>.indigo), (<span class="st">"Beginner"</span>, <span class="ty">Color</span>.yellow)], id: \.0) { tag, color <span class="kw">in</span>
+                <span class="ty">Text</span>(tag)
+                    .font(.system(size: <span class="nm">9</span>, weight: .bold))
+                    .padding(.horizontal, <span class="nm">7</span>).padding(.vertical, <span class="nm">2</span>)
+                    .foregroundColor(color)
+                    .background(color.opacity(<span class="nm">0.12</span>))
+                    .cornerRadius(<span class="nm">99</span>)
+            }
+        }
+
+        <span class="cm">// Rating row</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">4</span>) {
+            <span class="ty">Text</span>(<span class="st">"★★★★★"</span>).font(.caption).foregroundColor(.yellow)
+            <span class="ty">Text</span>(<span class="st">"4.9"</span>).font(.caption).bold()
+            <span class="ty">Text</span>(<span class="st">"(1.2K)"</span>).font(.caption2).foregroundColor(.secondary)
+            <span class="ty">Spacer</span>()
+            <span class="ty">Image</span>(systemName: <span class="st">"bookmark"</span>).font(.subheadline)
+        }
+    }
+    .padding(<span class="nm">10</span>)
+}
+.background(<span class="ty">Color</span>(.secondarySystemBackground))
+.cornerRadius(<span class="nm">14</span>)
+.shadow(radius: <span class="nm">8</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(7)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(7)">Reset</button>
+    <button class="btn-sol" onclick="showSol(7)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C8 — Home Screen Widget (expert)               ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c8">
+  <div class="c-head">
+    <span class="c-num">08</span>
+    <span class="c-badge cb-x">Expert · ZStack + VStack + HStack × 3</span>
+    <span class="c-title">iOS home screen widget — background, content grid, bottom row</span>
+    <span class="diff d-expert">Expert</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone">
+        <!-- ZStack: gradient bg + VStack content -->
+        <div style="position:relative;width:170px;height:170px;border-radius:20px;overflow:hidden;background:linear-gradient(145deg,#0f172a,#1e1b4b)">
+          <!-- decorative circles -->
+          <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(99,102,241,.15);border-radius:50%"></div>
+          <div style="position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;background:rgba(167,139,250,.1);border-radius:50%"></div>
+          <!-- content VStack -->
+          <div class="ui ui-col" style="padding:14px;height:100%;gap:0">
+            <!-- HStack: icon + title + subtitle -->
+            <div class="ui ui-row" style="gap:8px;align-items:center">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:14px">📊</div>
+              <div class="ui ui-col" style="gap:1px;align-items:flex-start">
+                <span style="color:#fff;font-size:11px;font-weight:700">Study Tracker</span>
+                <span style="color:rgba(255,255,255,.45);font-size:8px">MAC221</span>
+              </div>
+            </div>
+            <!-- big number -->
+            <div class="ui ui-col" style="gap:0;flex:1;justify-content:center;align-items:flex-start">
+              <span style="color:#fff;font-size:36px;font-weight:800;line-height:1">8</span>
+              <span style="color:rgba(255,255,255,.5);font-size:9px">sessions this week</span>
+            </div>
+            <!-- bottom row: 3 mini stats -->
+            <div class="ui ui-row" style="gap:0;width:100%">
+              <div class="ui ui-col" style="flex:1;align-items:center;gap:1px">
+                <span style="color:#34d399;font-size:12px;font-weight:700">4.2h</span>
+                <span style="color:rgba(255,255,255,.35);font-size:7px">Avg/day</span>
+              </div>
+              <div style="width:1px;height:24px;background:rgba(255,255,255,.1)"></div>
+              <div class="ui ui-col" style="flex:1;align-items:center;gap:1px">
+                <span style="color:#a78bfa;font-size:12px;font-weight:700">92%</span>
+                <span style="color:rgba(255,255,255,.35);font-size:7px">Complete</span>
+              </div>
+              <div style="width:1px;height:24px;background:rgba(255,255,255,.1)"></div>
+              <div class="ui ui-col" style="flex:1;align-items:center;gap:1px">
+                <span style="color:#38bdf8;font-size:12px;font-weight:700">🔥 5</span>
+                <span style="color:rgba(255,255,255,.35);font-size:7px">Streak</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">ZStack (widget bg: gradient + decorative circles) → VStack (icon row + big number + bottom stats) → HStack with 3 VStack mini-stats separated by Dividers.</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>ZStack {
+  // gradient background (back)
+  LinearGradient(...)
+
+  // decorative circles (middle)
+  Circle().offset(...)
+  Circle().offset(...)
+
+  // widget content (front)
+  VStack(alignment: .leading) {
+    HStack { iconView; VStack{title;sub} }
+    VStack(alignment:.leading) {
+      Text("8")      // big number
+      Text("sessions this week")
+    }
+    Spacer()
+    HStack {
+      VStack{ Text("4.2h"); Text("Avg/day") }
+      Divider()
+      VStack{ Text("92%"); Text("Complete") }
+      Divider()
+      VStack{ Text("🔥 5"); Text("Streak") }
+    }
+  }.padding()
+}
+.frame(width:170, height:170)
+.cornerRadius(20)</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">StudyWidget.swift</span></div>
+        <textarea class="code-in" id="in-8" placeholder="// iOS home screen widget&#10;// ZStack: gradient + 2 decorative Circles + VStack content&#10;// VStack: HStack(icon+title/sub) + big number VStack + Spacer + stats HStack&#10;// Stats HStack: 3× VStack(value,label) with Dividers between them&#10;// Add .frame(width:170, height:170).cornerRadius(20)"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h8')">💡 Hint</button>
+        <span class="hint-txt" id="h8">ZStack layers: (1) LinearGradient fills full frame, (2) two Circle()s with .offset() to place decorative blobs, (3) a full-frame VStack(alignment:.leading) holding all content. The bottom stats HStack uses Divider().frame(height:24) to keep vertical separators short.</span>
+      </div>
+      <div class="fb" id="fb-8"></div>
+      <div class="sol" id="sol-8">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="kw">ZStack</span> {
+    <span class="cm">// Layer 1 — background gradient</span>
+    <span class="ty">LinearGradient</span>(colors: [<span class="ty">Color</span>(red:<span class="nm">0.06</span>,green:<span class="nm">0.09</span>,blue:<span class="nm">0.16</span>), .indigo.opacity(<span class="nm">0.6</span>)],
+                   startPoint: .topLeading, endPoint: .bottomTrailing)
+
+    <span class="cm">// Layer 2 — decorative circles</span>
+    <span class="ty">Circle</span>().fill(<span class="ty">Color</span>.indigo.opacity(<span class="nm">0.2</span>))
+        .frame(width: <span class="nm">100</span>, height: <span class="nm">100</span>)
+        .offset(x: <span class="nm">50</span>, y: <span class="op">-</span><span class="nm">50</span>)
+    <span class="ty">Circle</span>().fill(<span class="ty">Color</span>.purple.opacity(<span class="nm">0.15</span>))
+        .frame(width: <span class="nm">80</span>, height: <span class="nm">80</span>)
+        .offset(x: <span class="op">-</span><span class="nm">50</span>, y: <span class="nm">50</span>)
+
+    <span class="cm">// Layer 3 — widget content</span>
+    <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">0</span>) {
+
+        <span class="cm">// App icon + title row</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">8</span>) {
+            <span class="ty">RoundedRectangle</span>(cornerRadius: <span class="nm">8</span>)
+                .fill(<span class="ty">LinearGradient</span>(colors:[.indigo,.purple],
+                      startPoint:.top, endPoint:.bottom))
+                .frame(width: <span class="nm">28</span>, height: <span class="nm">28</span>)
+                .overlay(<span class="ty">Text</span>(<span class="st">"📊"</span>).font(.caption))
+            <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">1</span>) {
+                <span class="ty">Text</span>(<span class="st">"Study Tracker"</span>).font(.caption).bold().foregroundColor(.white)
+                <span class="ty">Text</span>(<span class="st">"MAC221"</span>).font(.system(size: <span class="nm">8</span>)).foregroundColor(.white.opacity(<span class="nm">0.45</span>))
+            }
+        }
+
+        <span class="cm">// Big number</span>
+        <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">0</span>) {
+            <span class="ty">Text</span>(<span class="st">"8"</span>)
+                .font(.system(size: <span class="nm">36</span>, weight: .black))
+                .foregroundColor(.white)
+            <span class="ty">Text</span>(<span class="st">"sessions this week"</span>)
+                .font(.system(size: <span class="nm">9</span>))
+                .foregroundColor(.white.opacity(<span class="nm">0.5</span>))
+        }
+        .padding(.top, <span class="nm">8</span>)
+
+        <span class="ty">Spacer</span>()
+
+        <span class="cm">// Bottom stats row</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">0</span>) {
+            <span class="kw">VStack</span>(spacing: <span class="nm">1</span>) {
+                <span class="ty">Text</span>(<span class="st">"4.2h"</span>).font(.caption).bold().foregroundColor(.green)
+                <span class="ty">Text</span>(<span class="st">"Avg/day"</span>).font(.system(size:<span class="nm">7</span>)).foregroundColor(.white.opacity(<span class="nm">0.35</span>))
+            }.frame(maxWidth:.infinity)
+
+            <span class="ty">Divider</span>().frame(height: <span class="nm">24</span>).background(<span class="ty">Color</span>.white.opacity(<span class="nm">0.15</span>))
+
+            <span class="kw">VStack</span>(spacing: <span class="nm">1</span>) {
+                <span class="ty">Text</span>(<span class="st">"92%"</span>).font(.caption).bold().foregroundColor(.purple)
+                <span class="ty">Text</span>(<span class="st">"Complete"</span>).font(.system(size:<span class="nm">7</span>)).foregroundColor(.white.opacity(<span class="nm">0.35</span>))
+            }.frame(maxWidth:.infinity)
+
+            <span class="ty">Divider</span>().frame(height: <span class="nm">24</span>).background(<span class="ty">Color</span>.white.opacity(<span class="nm">0.15</span>))
+
+            <span class="kw">VStack</span>(spacing: <span class="nm">1</span>) {
+                <span class="ty">Text</span>(<span class="st">"🔥 5"</span>).font(.caption).bold().foregroundColor(.cyan)
+                <span class="ty">Text</span>(<span class="st">"Streak"</span>).font(.system(size:<span class="nm">7</span>)).foregroundColor(.white.opacity(<span class="nm">0.35</span>))
+            }.frame(maxWidth:.infinity)
+        }
+    }
+    .padding(<span class="nm">14</span>)
+}
+.frame(width: <span class="nm">170</span>, height: <span class="nm">170</span>)
+.cornerRadius(<span class="nm">20</span>)
+.shadow(radius: <span class="nm">12</span>)</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(8)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(8)">Reset</button>
+    <button class="btn-sol" onclick="showSol(8)">Show Solution</button>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════╗
+     ║  C9 — Dashboard Screen (expert)                 ║
+     ╚══════════════════════════════════════════════════╝ -->
+<div class="challenge" id="c9">
+  <div class="c-head">
+    <span class="c-num">09</span>
+    <span class="c-badge cb-x">Expert · Full Screen Layout</span>
+    <span class="c-title">Dashboard screen — header with ZStack avatar, 2-col card grid, action row</span>
+    <span class="diff d-expert">Expert</span>
+  </div>
+  <div class="c-body">
+    <div class="pane-pre">
+      <div class="pane-lbl">📱 Target UI</div>
+      <div class="phone" style="align-items:flex-start;padding:14px 12px">
+        <div class="ui ui-col" style="gap:10px;width:180px">
+          <!-- Top HStack: VStack(greeting+name) + ZStack(avatar+dot) -->
+          <div class="ui ui-row" style="align-items:center">
+            <div class="ui ui-col" style="gap:1px;align-items:flex-start;flex:1">
+              <span style="font-size:9px;color:var(--muted)">Good morning 👋</span>
+              <span style="font-size:14px;font-weight:800;color:var(--text)">Prof. Kassou</span>
+            </div>
+            <div style="position:relative">
+              <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:17px">👤</div>
+              <div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#34d399;border-radius:50%;border:2px solid var(--phone-bg)"></div>
+            </div>
+          </div>
+          <!-- 2×2 grid using two HStacks -->
+          <div class="ui ui-col" style="gap:6px">
+            <div class="ui ui-row" style="gap:6px">
+              <!-- card 1 -->
+              <div class="ui ui-col" style="flex:1;gap:2px;background:#1a1f33;border-radius:10px;padding:9px">
+                <span style="font-size:14px">📚</span>
+                <span style="font-size:16px;font-weight:800;color:var(--text)">12</span>
+                <span style="font-size:8px;color:var(--muted)">Assignments</span>
+              </div>
+              <!-- card 2 -->
+              <div class="ui ui-col" style="flex:1;gap:2px;background:#1a1f33;border-radius:10px;padding:9px">
+                <span style="font-size:14px">✅</span>
+                <span style="font-size:16px;font-weight:800;color:#34d399">9</span>
+                <span style="font-size:8px;color:var(--muted)">Completed</span>
+              </div>
+            </div>
+            <div class="ui ui-row" style="gap:6px">
+              <!-- card 3 -->
+              <div class="ui ui-col" style="flex:1;gap:2px;background:#1a1f33;border-radius:10px;padding:9px">
+                <span style="font-size:14px">⏰</span>
+                <span style="font-size:16px;font-weight:800;color:#fbbf24">3</span>
+                <span style="font-size:8px;color:var(--muted)">Due Soon</span>
+              </div>
+              <!-- card 4 -->
+              <div class="ui ui-col" style="flex:1;gap:2px;background:#1a1f33;border-radius:10px;padding:9px">
+                <span style="font-size:14px">🔥</span>
+                <span style="font-size:16px;font-weight:800;color:#f87171">7</span>
+                <span style="font-size:8px;color:var(--muted)">Day Streak</span>
+              </div>
+            </div>
+          </div>
+          <!-- Bottom action row -->
+          <div class="ui ui-row" style="gap:6px">
+            <div style="flex:1;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:10px;padding:8px 0;display:flex;align-items:center;justify-content:center">
+              <span style="color:#fff;font-size:10px;font-weight:700">+ New Task</span>
+            </div>
+            <div style="width:36px;height:36px;background:#1a1f33;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px">🔔</div>
+          </div>
+        </div>
+      </div>
+      <div class="pre-note">VStack (screen) → HStack (greeting VStack + ZStack avatar+dot) → two HStacks of two stat VStack cards → HStack (primary button + icon button).</div>
+      <div class="struct-hint">
+        <h5>Stack Structure</h5>
+        <pre>VStack(alignment:.leading, spacing:12) {
+  // Header
+  HStack {
+    VStack(alignment:.leading){greeting;name}
+    Spacer()
+    ZStack(alignment:.bottomTrailing){
+      avatar; onlineDot
+    }
+  }
+
+  // 2×2 grid
+  VStack(spacing:8) {
+    HStack(spacing:8) { statCard; statCard }
+    HStack(spacing:8) { statCard; statCard }
+  }
+  // where statCard = VStack { icon; number; label }
+  //   .frame(maxWidth:.infinity)
+  //   .padding().background(...)
+
+  // Action row
+  HStack(spacing:8) {
+    Button("+ New Task"){}.frame(maxWidth:.infinity)
+    iconButton // notification bell
+  }
+}</pre>
+      </div>
+    </div>
+    <div class="pane-code">
+      <div class="pane-lbl">✏️ Your Code</div>
+      <div class="editor">
+        <div class="ed-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><span class="ed-file">DashboardView.swift</span></div>
+        <textarea class="code-in" id="in-9" placeholder="// Full dashboard screen — most complex challenge&#10;// VStack(alignment:.leading, spacing:12)&#10;// ├── HStack { VStack(greeting,name); Spacer(); ZStack(avatar+onlineDot) }&#10;// ├── VStack(spacing:8) {&#10;// │   HStack { statCard(.blue,📚,12,Assignments); statCard(.green,✅,9,Completed) }&#10;// │   HStack { statCard(.yellow,⏰,3,Due Soon);  statCard(.red,🔥,7,Day Streak) }&#10;// │ }&#10;// └── HStack { Button(+NewTask).frame(maxWidth:.infinity); notifButton }"></textarea>
+      </div>
+      <div class="hint-row">
+        <button class="btn-hint" onclick="toggleHint('h9')">💡 Hint</button>
+        <span class="hint-txt" id="h9">Extract a reusable statCard helper: func statCard(_ icon: String, _ value: String, _ label: String, _ color: Color) → VStack. Each card uses .frame(maxWidth:.infinity) so both cards in a row share equal width. The ZStack avatar uses alignment:.bottomTrailing with the green dot as the last (top) layer.</span>
+      </div>
+      <div class="fb" id="fb-9"></div>
+      <div class="sol" id="sol-9">
+        <div class="sol-bar">// SOLUTION</div>
+        <pre><span class="cm">// Helper function for stat cards</span>
+<span class="kw">func</span> statCard(_ icon: <span class="ty">String</span>, _ value: <span class="ty">String</span>,
+              _ label: <span class="ty">String</span>, _ color: <span class="ty">Color</span>) -> <span class="kw">some</span> <span class="ty">View</span> {
+    <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+        <span class="ty">Text</span>(icon).font(.title3)
+        <span class="ty">Text</span>(value).font(.title2).bold().foregroundColor(color)
+        <span class="ty">Text</span>(label).font(.caption2).foregroundColor(.secondary)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(<span class="nm">10</span>)
+    .background(<span class="ty">Color</span>(.secondarySystemBackground))
+    .cornerRadius(<span class="nm">12</span>)
+}
+
+<span class="cm">// Main view body</span>
+<span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+    <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">14</span>) {
+
+        <span class="cm">// ── Header row</span>
+        <span class="kw">HStack</span> {
+            <span class="kw">VStack</span>(alignment: .leading, spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(<span class="st">"Good morning 👋"</span>)
+                    .font(.caption).foregroundColor(.secondary)
+                <span class="ty">Text</span>(<span class="st">"Prof. Kassou"</span>)
+                    .font(.title3).bold()
+            }
+            <span class="ty">Spacer</span>()
+            <span class="kw">ZStack</span>(alignment: .bottomTrailing) {
+                <span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>)
+                    .font(.system(size: <span class="nm">34</span>))
+                    .foregroundStyle(
+                        <span class="ty">LinearGradient</span>(colors:[.indigo,.purple],
+                            startPoint:.top, endPoint:.bottom)
+                    )
+                <span class="ty">Circle</span>()
+                    .fill(<span class="ty">Color</span>.green)
+                    .frame(width: <span class="nm">10</span>, height: <span class="nm">10</span>)
+                    .overlay(<span class="ty">Circle</span>().stroke(<span class="ty">Color</span>(.systemBackground), lineWidth: <span class="nm">2</span>))
+            }
+        }
+
+        <span class="cm">// ── 2×2 stat grid</span>
+        <span class="kw">VStack</span>(spacing: <span class="nm">8</span>) {
+            <span class="kw">HStack</span>(spacing: <span class="nm">8</span>) {
+                statCard(<span class="st">"📚"</span>, <span class="st">"12"</span>, <span class="st">"Assignments"</span>, .primary)
+                statCard(<span class="st">"✅"</span>, <span class="st">"9"</span>, <span class="st">"Completed"</span>, .green)
+            }
+            <span class="kw">HStack</span>(spacing: <span class="nm">8</span>) {
+                statCard(<span class="st">"⏰"</span>, <span class="st">"3"</span>, <span class="st">"Due Soon"</span>, .yellow)
+                statCard(<span class="st">"🔥"</span>, <span class="st">"7"</span>, <span class="st">"Day Streak"</span>, .red)
+            }
+        }
+
+        <span class="cm">// ── Action row</span>
+        <span class="kw">HStack</span>(spacing: <span class="nm">8</span>) {
+            <span class="ty">Button</span>(<span class="st">"+ New Task"</span>) { }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, <span class="nm">10</span>)
+                .background(
+                    <span class="ty">LinearGradient</span>(colors:[.indigo,.purple],
+                        startPoint:.leading, endPoint:.trailing)
+                )
+                .foregroundColor(.white).bold()
+                .cornerRadius(<span class="nm">12</span>)
+
+            <span class="ty">Image</span>(systemName: <span class="st">"bell.fill"</span>)
+                .frame(width: <span class="nm">40</span>, height: <span class="nm">40</span>)
+                .background(<span class="ty">Color</span>(.secondarySystemBackground))
+                .cornerRadius(<span class="nm">12</span>)
+        }
+    }
+    .padding()
+}</pre>
+      </div>
+    </div>
+  </div>
+  <div class="c-foot">
+    <button class="btn-check" onclick="check(9)">Check Answer</button>
+    <button class="btn-rst" onclick="reset(9)">Reset</button>
+    <button class="btn-sol" onclick="showSol(9)">Show Solution</button>
+  </div>
+</div>
+
+<!-- SCOREBOARD -->
+<div class="slabel">Your Progress</div>
+<div class="scoreboard">
+  <div class="s-stat s-done"><span class="val" id="stAtt">0</span><span class="lbl">Attempted</span></div>
+  <div class="s-stat s-ok"><span class="val" id="stOk">0</span><span class="lbl">Correct</span></div>
+  <div class="s-stat s-wr"><span class="val" id="stWr">0</span><span class="lbl">Needed hint</span></div>
+  <div class="s-stat s-tot"><span class="val">9</span><span class="lbl">Total</span></div>
+</div>
+
+</main>
+<footer>MAC221 · iOS App Development with SwiftUI · Prof. Khalid Kassou · LaGuardia Community College · CUNY</footer>
+
+<script>
+// ── STATE
+const S = { att: new Set(), ok: new Set(), wr: new Set(), solSeen: new Set() };
+
+// ── VALIDATORS: check for key structural keywords
+const V = {
+  1:{ keys:['hstack','zstack','vstack','spacer'], ok:'✅ Correct! HStack wraps a ZStack (icon + badge), a VStack (text block), Spacer(), and a toggle view — the classic notification row pattern.', err:'❌ Not quite. You need an HStack (outer row), a ZStack for the badge overlay, and a VStack for the title + subtitle text block.' },
+  2:{ keys:['vstack','zstack','hstack','divider'], ok:'✅ Excellent! The nested ZStack avatar, VStack body, and HStack stats row together form one of the most reused card patterns in iOS apps.', err:'❌ Not quite. Look at the structure: VStack (outer) → ZStack (header gradient + nested avatar ZStack) → VStack (body) → HStack (stats with Dividers).' },
+  3:{ keys:['vstack','zstack','hstack','lineargradient'], ok:'✅ Correct! VStack holds the ZStack album art, info VStack, controls HStack, and progress HStack — all four sections stacked vertically.', err:'❌ Not quite. The outer container is a VStack. Inside: a ZStack for the album art overlay, then VStack (song info), HStack (controls), HStack (progress bar).' },
+  4:{ keys:['vstack','zstack','hstack','lineargradient'], ok:'✅ Great work! The App Store card uses a VStack with a ZStack hero, then two more HStacks for the info row and rating row — exactly how the real App Store is built.', err:'❌ Not quite. VStack (outer) → ZStack (hero: gradient + overlaid labels) → HStack (icon+name+GET) → HStack (stars+rating). Check your nesting.' },
+  5:{ keys:['vstack','zstack','hstack'], ok:'✅ Correct! The weather card\'s ZStack header (gradient + HStack content) over a VStack of three stat HStacks is a real-world layout used in dozens of iOS weather apps.', err:'❌ Not quite. Outer = VStack(spacing:0). Header = ZStack { gradient; HStack { VStack(city/temp/desc); Spacer(); emoji } }. Stats = VStack of HStacks.' },
+  6:{ keys:['vstack','hstack','spacer'], ok:'✅ Correct! This is the iMessage layout — HStack(alignment:.bottom) for received (avatar pins to bottom of bubble), and HStack+Spacer for sent (right-aligned). Professional pattern!', err:'❌ Not quite. VStack wraps both message rows. Received = HStack(alignment:.bottom){ avatar; VStack{name,bubble,time} }. Sent = HStack{ Spacer(); VStack{bubble, HStack{time,checks}} }.' },
+  7:{ keys:['vstack','zstack','hstack'], ok:'✅ Excellent! The course card uses all three stacks: ZStack for the thumbnail badges, HStack for the instructor row and rating row, VStack to tie everything together.', err:'❌ Not quite. VStack (card) → ZStack (thumbnail with two corner badges) → VStack body with title, HStack(instructor), HStack(chips), HStack(rating).' },
+  8:{ keys:['zstack','vstack','hstack','lineargradient'], ok:'✅ Correct! Home screen widgets are almost always ZStack (bg layer + decorative layers + content VStack). The stats HStack with three VStacks and Dividers is a staple pattern.', err:'❌ Not quite. ZStack: gradient background + decorative Circle()s + VStack content. VStack: header HStack + big number + Spacer + stats HStack (3× VStack with Dividers).' },
+  9:{ keys:['vstack','hstack','zstack','spacer'], ok:'✅ Excellent work — full dashboard complete! This combines every pattern: ZStack for the avatar badge, VStack+HStack grid for the stats, and a horizontal action row. This is how real iOS dashboards are built.', err:'❌ Not quite. VStack (screen): HStack header (greeting VStack + ZStack avatar), VStack grid (2 HStacks of 2 stat VStacks each), HStack action row. Check all three levels.' }
+};
+
+function norm(s){ return s.toLowerCase().replace(/\s+/g,'').replace(/['"]/g,'') }
+
+function check(n){
+  const code = document.getElementById('in-'+n).value.trim();
+  if(!code){ setFb(n,'⚠️ Write some code first!','err'); return; }
+  S.att.add(n);
+  const nc = norm(code);
+  const pass = V[n].keys.every(k => nc.includes(k.toLowerCase()));
+  if(pass){
+    S.ok.add(n); S.wr.delete(n);
+    setFb(n, V[n].ok, 'ok');
+    document.getElementById('c'+n).classList.add('state-correct');
+    document.getElementById('c'+n).classList.remove('state-wrong');
+  } else {
+    if(!S.ok.has(n)) S.wr.add(n);
+    setFb(n, V[n].err, 'err');
+    document.getElementById('c'+n).classList.add('state-wrong');
+    document.getElementById('c'+n).classList.remove('state-correct');
+  }
+  updateScore();
+}
+
+function setFb(n, msg, type){
+  const el = document.getElementById('fb-'+n);
+  el.textContent = msg;
+  el.className = 'fb on ' + type;
+}
+
+function reset(n){
+  document.getElementById('in-'+n).value='';
+  const fb=document.getElementById('fb-'+n);
+  fb.className='fb'; fb.textContent='';
+  document.getElementById('c'+n).classList.remove('state-correct','state-wrong');
+  document.getElementById('sol-'+n).classList.remove('on');
+  S.att.delete(n); S.ok.delete(n); S.wr.delete(n); S.solSeen.delete(n);
+  updateScore();
+}
+
+function showSol(n){
+  const s = document.getElementById('sol-'+n);
+  s.classList.toggle('on');
+  if(!S.solSeen.has(n)){
+    S.solSeen.add(n); S.att.add(n);
+    if(!S.ok.has(n)) S.wr.add(n);
+    updateScore();
+  }
+}
+
+function toggleHint(id){
+  document.getElementById(id).classList.toggle('on');
+}
+
+function updateScore(){
+  const att = S.att.size;
+  const ok  = S.ok.size;
+  const wr  = att - ok;
+  document.getElementById('stAtt').textContent = att;
+  document.getElementById('stOk').textContent  = ok;
+  document.getElementById('stWr').textContent  = Math.max(0,wr);
+  document.getElementById('pbFill').style.width = (att/9*100)+'%';
+  document.getElementById('scoreDisp').textContent = ok + ' / 9 solved';
+}
+
+// Tab key support in all textareas
+document.querySelectorAll('textarea').forEach(ta=>{
+  ta.addEventListener('keydown', e=>{
+    if(e.key==='Tab'){
+      e.preventDefault();
+      const s=ta.selectionStart, end=ta.selectionEnd;
+      ta.value=ta.value.substring(0,s)+'    '+ta.value.substring(end);
+      ta.selectionStart=ta.selectionEnd=s+4;
+    }
+  });
+});
+</script>
+</body>
+</html>

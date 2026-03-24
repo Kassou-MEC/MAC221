@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAC221 · Lab 4 — Subscription Pricing UI</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f2f8;
+  --white:#fff;
+  --surface:#e9ecf5;
+  --border:#d2d8ee;
+  --border2:#b8c1dc;
+  --accent:#3b5bdb;
+  --accent2:#7048e8;
+  --accent-lt:#eef2ff;
+  --green:#2f9e44;
+  --green-lt:#ebfbee;
+  --red:#c92a2a;
+  --amber:#e67700;
+  --amber-lt:#fff9db;
+  --text:#1a1d2e;
+  --text2:#464e72;
+  --muted:#8490b0;
+  --r:13px;--r2:9px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 3px 12px rgba(0,0,0,.05);
+  --sh2:0 2px 8px rgba(0,0,0,.08),0 8px 28px rgba(0,0,0,.07);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── PRINT ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .no-print{display:none!important}
+  body{background:#fff;font-size:10pt}
+  header{background:linear-gradient(135deg,#3b5bdb,#7048e8)!important}
+  .layout{grid-template-columns:1fr!important;display:block!important}
+  .left-panel{position:static!important;margin-bottom:24px}
+  textarea#codeInput{min-height:500px!important;border:1.5px solid #999!important;background:#fafafa!important;color:#000!important}
+  .editor-wrap{background:#f5f5f5!important;border:1px solid #ccc!important}
+  .phone-bg{background:#111!important}
+  .grade-block,.overlay{display:none!important}
+}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#fff;padding:0 44px;min-height:76px;
+  display:flex;align-items:center;gap:22px;
+  box-shadow:0 2px 20px rgba(59,91,219,.3);
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+header::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(55deg,rgba(255,255,255,.025) 0,rgba(255,255,255,.025) 1px,transparent 1px,transparent 14px);
+  pointer-events:none;
+}
+.h-course{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.11em;opacity:.72}
+.h-sep{width:1px;height:36px;background:rgba(255,255,255,.2);flex-shrink:0}
+.h-title{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;line-height:1.1}
+.h-sub{font-size:.74rem;opacity:.68;margin-top:2px}
+.h-gap{flex:1}
+.h-pts{text-align:right;line-height:1.55}
+.h-pts .lbl{font-size:.6rem;opacity:.58;text-transform:uppercase;letter-spacing:.09em}
+.h-pts .val{font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700}
+
+/* ── MAIN PAGE ── */
+.page{
+  flex:1;
+  max-width:1700px;width:100%;margin:0 auto;
+  padding:28px 38px 56px;
+  display:flex;flex-direction:column;gap:22px;
+}
+
+/* ── STUDENT BAR ── */
+.student-bar{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px 26px;box-shadow:var(--sh);
+  display:grid;grid-template-columns:2.5fr 1fr 1fr 1fr;gap:14px;
+}
+.fg label{display:block;font-size:.61rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.fg input{
+  width:100%;border:1.5px solid var(--border);border-radius:var(--r2);
+  padding:8px 12px;font-family:'Inter',sans-serif;font-size:.85rem;color:var(--text);
+  background:var(--surface);outline:none;transition:border-color .2s,box-shadow .2s;
+}
+.fg input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,91,219,.1)}
+
+/* ── TWO-COLUMN LAYOUT ── */
+.layout{
+  display:grid;
+  grid-template-columns:340px 1fr;
+  gap:22px;
+  align-items:start;
+  flex:1;
+}
+@media(max-width:1080px){.layout{grid-template-columns:1fr}}
+
+/* ── LEFT PANEL ── */
+.left-panel{
+  position:sticky;top:20px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  padding:20px 18px;box-shadow:var(--sh);
+}
+.lp-title{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
+  display:flex;align-items:center;gap:8px;margin-bottom:16px;
+}
+.lp-title .dot{width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* ── PHONE MOCKUP ── */
+.phone-bg{
+  background:linear-gradient(168deg,#1a1a1a 0%,#0c0c0c 100%);
+  border-radius:var(--r);padding:22px 18px 28px;
+  display:flex;justify-content:center;
+  margin-bottom:18px;
+}
+.phone{
+  background:#000;border:2.5px solid #2a2a2c;border-radius:40px;
+  width:238px;padding:34px 15px 26px;
+  position:relative;
+  box-shadow:0 0 0 6px #111,0 32px 72px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.phone::before{
+  content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:52px;height:5px;background:rgba(255,255,255,.13);border-radius:99px;
+}
+.phone::after{
+  content:'';position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  width:38px;height:4px;background:rgba(255,255,255,.09);border-radius:99px;
+}
+
+/* ── SwiftUI UI INSIDE PHONE ── */
+.ui-root{display:flex;flex-direction:column;align-items:stretch;gap:13px;padding:4px 4px 2px}
+.ui-title{color:#fff;font-size:16px;font-weight:800;text-align:center;font-family:'Syne',sans-serif;padding:3px 0 5px}
+.ui-hrow{display:flex;flex-direction:row;gap:10px}
+.ui-card{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:5px;border-radius:17px;padding:20px 8px;min-height:118px;
+}
+.uc-basic{background:#ffffff}
+.uc-gold{background:#f5c518}
+.uc-titan{
+  background:#8e8e93;border-radius:17px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;padding:22px 8px;
+}
+.uc-n{font-size:17px;font-weight:900;color:#111;font-family:'Syne',sans-serif}
+.uc-nw{font-size:19px;font-weight:900;color:#fff;font-family:'Syne',sans-serif}
+.uc-p{font-size:22px;font-weight:700;color:#111;line-height:1}
+.uc-pw{font-size:24px;font-weight:700;color:#fff;line-height:1}
+.uc-s{font-size:10px;color:#555;font-weight:500}
+.uc-sw{font-size:10px;color:rgba(255,255,255,.68);font-weight:500}
+.ui-btn-blue{
+  background:#3478f6;color:#fff;border-radius:99px;
+  padding:14px 0;text-align:center;font-size:15px;font-weight:600;
+  font-family:'Syne',sans-serif;margin-top:3px;
+}
+.ui-btn-red{
+  background:#e03131;color:#fff;border-radius:99px;
+  padding:14px 0;text-align:center;font-size:15px;font-weight:600;
+  font-family:'Syne',sans-serif;
+}
+
+/* ── RUBRIC ── */
+.rubric-head{font-size:.63rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.rubric-tbl{width:100%;border-collapse:collapse;font-size:.69rem}
+.rubric-tbl th{background:var(--surface);padding:6px 8px;text-align:left;border:1px solid var(--border);color:var(--muted);font-weight:600;letter-spacing:.04em}
+.rubric-tbl td{padding:6px 8px;border:1px solid var(--border);color:var(--text2);line-height:1.4;vertical-align:top}
+.rubric-tbl td:last-child{font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--accent);text-align:center;white-space:nowrap}
+.rubric-tbl tr.tot td{background:var(--accent-lt);font-weight:700;color:var(--accent)}
+
+/* ── RIGHT PANEL ── */
+.right-panel{display:flex;flex-direction:column;gap:0}
+
+/* Code submission card */
+.code-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);
+  display:flex;flex-direction:column;
+}
+.cc-head{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);
+}
+.cc-head .lbl{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;flex:1;color:var(--text)}
+.cc-head .pts{font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:var(--accent);background:var(--accent-lt);padding:3px 11px;border-radius:99px}
+
+/* editor */
+.editor-wrap{
+  background:#1a1d2c;
+  display:flex;flex-direction:column;
+  flex:1;
+}
+.ed-topbar{
+  display:flex;align-items:center;gap:5px;
+  padding:9px 14px;background:#141620;border-bottom:1px solid #1f2335;
+}
+.edot{width:10px;height:10px;border-radius:50%}
+.edot-r{background:#ff5f57}.edot-y{background:#febc2e}.edot-g{background:#27c93f}
+.ed-file{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:#464e6e;margin-left:5px}
+.ed-hint{margin-left:auto;font-size:.6rem;color:#2e3452;font-family:'JetBrains Mono',monospace}
+textarea#codeInput{
+  display:block;width:100%;
+  background:transparent;border:none;outline:none;
+  resize:none;
+  font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.88;
+  color:#c8d3f5;padding:20px 20px;
+  tab-size:4;caret-color:#7b93fd;
+  /* fill all remaining vertical space */
+  flex:1;
+  min-height:calc(100vh - 320px);
+}
+textarea#codeInput::placeholder{color:#252b45;font-style:italic;line-height:2.2}
+.ed-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 14px;background:#141620;border-top:1px solid #1f2335;
+}
+.ed-footer span{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#2e3452}
+
+/* ── ACTION BAR ── */
+.action-bar{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  box-shadow:var(--sh);margin-top:16px;
+}
+.action-bar .note{font-size:.78rem;color:var(--text2);flex:1}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Inter',sans-serif;font-size:.8rem;font-weight:700;
+  padding:9px 20px;border-radius:9px;cursor:pointer;border:none;transition:all .18s;
+}
+.btn-pdf{background:linear-gradient(135deg,#2f9e44,#099268);color:#fff;box-shadow:0 4px 12px rgba(47,158,68,.2)}
+.btn-pdf:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(47,158,68,.28)}
+.btn-grade{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 14px rgba(59,91,219,.28)}
+.btn-grade:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(59,91,219,.36)}
+.btn-clear{background:var(--white);color:var(--text2);border:1.5px solid var(--border2)}
+.btn-clear:hover{background:var(--surface);border-color:var(--red);color:var(--red)}
+
+/* ── GRADE BLOCK ── */
+.grade-block{
+  background:var(--white);border:2px solid var(--accent);border-radius:var(--r);
+  padding:26px 30px;box-shadow:var(--sh2);display:none;margin-top:16px;
+}
+.grade-block.show{display:block}
+.g-top{display:flex;align-items:center;gap:22px;margin-bottom:20px}
+.g-ring{
+  width:96px;height:96px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--accent) 0%,var(--surface) 0%);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;transition:background 1.2s ease;
+}
+.g-ring::before{content:'';position:absolute;inset:8px;background:#fff;border-radius:50%}
+.g-inner{position:relative;z-index:1;text-align:center}
+.g-inner .gn{font-family:'Syne',sans-serif;font-weight:800;font-size:1.5rem;color:var(--accent);line-height:1}
+.g-inner .gs{font-size:.6rem;color:var(--muted);display:block;margin-top:1px}
+.g-info .gname{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:3px}
+.g-info .gletter{font-size:1.8rem;font-weight:800;font-family:'Syne',sans-serif;line-height:1;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.g-info .gfb{font-size:.8rem;color:var(--text2);line-height:1.62}
+.g-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:700px){.g-grid{grid-template-columns:1fr 1fr}}
+.g-item{background:var(--surface);border-radius:var(--r2);padding:10px 8px;text-align:center;border:1px solid var(--border)}
+.g-item .gv{font-family:'JetBrains Mono',monospace;font-size:1.05rem;font-weight:700;display:block}
+.g-item .gl{font-size:.59rem;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-top:1px}
+.g-note{background:var(--accent-lt);border-left:3px solid var(--accent);border-radius:0 var(--r2) var(--r2) 0;padding:10px 13px;font-size:.75rem;color:var(--text2);line-height:1.6}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:999;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;width:420px;max-width:92vw;box-shadow:0 24px 80px rgba(0,0,0,.22);overflow:hidden;animation:mIn .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes mIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.m-head{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:18px 22px;display:flex;align-items:center;gap:11px}
+.m-head h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1rem}
+.m-body{padding:22px}
+.m-body label{display:block;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);margin-bottom:6px}
+.m-body input{width:100%;border:2px solid var(--border);border-radius:var(--r2);padding:10px 13px;font-size:1rem;font-family:'JetBrains Mono',monospace;letter-spacing:.18em;text-align:center;outline:none;color:var(--text);transition:border-color .2s}
+.m-body input:focus{border-color:var(--accent)}
+.pw-err{color:var(--red);font-size:.72rem;margin-top:6px;display:none}
+.pw-err.on{display:block}
+.m-foot{padding:0 22px 22px;display:flex;gap:8px}
+.btn-mok{flex:1;padding:10px;font-size:.88rem;font-family:'Syne',sans-serif;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:var(--r2);cursor:pointer}
+.btn-mok:hover{opacity:.88}
+.btn-mcancel{padding:10px 16px;font-size:.82rem;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r2);cursor:pointer;font-weight:600}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--white);border-top:1px solid var(--border);
+  padding:13px 44px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;flex-shrink:0;
+}
+footer span{font-size:.68rem;color:var(--muted);flex:1}
+footer span strong{color:var(--text2)}
+footer span:nth-child(2){text-align:center}
+footer span:last-child{text-align:right}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+@media(max-width:860px){
+  .page{padding:16px 14px 40px}
+  .student-bar{grid-template-columns:1fr 1fr}
+  header{padding:0 16px}
+  footer{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div>
+    <div class="h-course">MAC221 · iOS App Development with SwiftUI</div>
+    <div class="h-title">Lab 4 — Subscription Pricing UI</div>
+    <div class="h-sub">HStack · VStack · Nested Stacks · View Modifiers</div>
+  </div>
+  <div class="h-sep"></div>
+  <div style="font-size:.75rem;opacity:.78;line-height:1.7">
+    <div>Prof. Khalid Kassou</div>
+    <div>LaGuardia Community College · CUNY</div>
+  </div>
+  <div class="h-gap"></div>
+  <div class="h-pts no-print" style="margin-right:20px">
+    <div class="lbl">Due Date</div>
+    <div class="val" id="dueDate">—</div>
+  </div>
+  <div class="h-pts">
+    <div class="lbl">Total Points</div>
+    <div class="val">100 pts</div>
+  </div>
+</header>
+
+<!-- ═══ PAGE ═══ -->
+<div class="page">
+
+  <!-- STUDENT INFO -->
+  <div class="student-bar">
+    <div class="fg"><label>Student Full Name</label><input id="sName" type="text" placeholder="Enter your full name"/></div>
+    <div class="fg"><label>CUNY ID</label><input id="sId" type="text" placeholder="e.g. 23456789"/></div>
+    <div class="fg"><label>Section</label><input id="sSection" type="text" placeholder="e.g. D106"/></div>
+    <div class="fg"><label>Date Submitted</label><input id="sDate" type="date"/></div>
+  </div>
+
+  <!-- TWO-COLUMN LAYOUT -->
+  <div class="layout">
+
+    <!-- ══ LEFT: PHONE UI ══ -->
+    <div class="left-panel">
+      <div class="lp-title"><span class="dot"></span>Target UI — Reproduce This in Xcode</div>
+
+      <div class="phone-bg">
+        <div class="phone">
+          <div class="ui-root">
+
+            <!-- Title -->
+            <div class="ui-title">Choose your subscription</div>
+
+            <!-- HStack: Basic + Gold -->
+            <div class="ui-hrow">
+              <div class="ui-card uc-basic">
+                <span class="uc-n">Basic</span>
+                <span class="uc-p">$9</span>
+                <span class="uc-s">per month</span>
+              </div>
+              <div class="ui-card uc-gold">
+                <span class="uc-n">Gold</span>
+                <span class="uc-p">$49</span>
+                <span class="uc-s">per month</span>
+              </div>
+            </div>
+
+            <!-- Titanium full-width -->
+            <div class="uc-titan">
+              <span class="uc-nw">Titanium</span>
+              <span class="uc-pw">$99</span>
+              <span class="uc-sw">per month</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="ui-btn-blue">Subscribe</div>
+            <div class="ui-btn-red">Maybe next time</div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Rubric -->
+      <div class="rubric-head">Scoring Rubric</div>
+      <table class="rubric-tbl">
+        <tr><th>Component</th><th>Pts</th></tr>
+        <tr><td>Outer VStack — background, spacing, padding, full-screen</td><td>15</td></tr>
+        <tr><td>Title Text — font, weight, color</td><td>10</td></tr>
+        <tr><td>HStack + Basic &amp; Gold cards — colors, equal width, corner radius</td><td>25</td></tr>
+        <tr><td>Titanium card — full width, gray, white text, corner radius</td><td>15</td></tr>
+        <tr><td>Both buttons — blue/red, capsule shape, full width, white text</td><td>20</td></tr>
+        <tr><td>Code compiles &amp; preview matches target UI</td><td>15</td></tr>
+        <tr class="tot"><td><strong>Total</strong></td><td><strong>100</strong></td></tr>
+      </table>
+    </div>
+
+    <!-- ══ RIGHT: CODE SUBMISSION ══ -->
+    <div class="right-panel">
+
+      <div class="code-card">
+        <div class="cc-head">
+          <div class="lbl">Paste Your Complete ContentView.swift Code Here</div>
+          <div class="pts">100 pts</div>
+        </div>
+        <div class="editor-wrap">
+          <div class="ed-topbar">
+            <div class="edot edot-r"></div>
+            <div class="edot edot-y"></div>
+            <div class="edot edot-g"></div>
+            <span class="ed-file">ContentView.swift</span>
+            <span class="ed-hint" id="lineCount">0 lines</span>
+          </div>
+          <textarea id="codeInput" spellcheck="false"
+            placeholder="// ──────────────────────────────────────────────────────
+// MAC221 · Lab 4 — Subscription Pricing UI
+// ──────────────────────────────────────────────────────
+//
+//  Build the UI in Xcode, then:
+//    1. Select all  (⌘ A)
+//    2. Copy        (⌘ C)
+//    3. Click here and paste  (⌘ V)
+//
+// ──────────────────────────────────────────────────────"></textarea>
+          <div class="ed-footer">
+            <span>// Build in Xcode first — verify your canvas matches the target — then paste here</span>
+            <span id="charCount">0 chars</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BAR -->
+      <div class="action-bar no-print">
+        <div class="note">Complete your code in Xcode, paste it above, then save as PDF to submit on Blackboard.</div>
+        <button class="btn btn-clear" onclick="clearCode()">🗑 Clear</button>
+        <button class="btn btn-pdf" onclick="window.print()">📄 Save as PDF</button>
+        <button class="btn btn-grade" onclick="openModal()">🔒 View Grade</button>
+      </div>
+
+      <!-- GRADE RESULT -->
+      <div class="grade-block" id="gradeBlock">
+        <div class="g-top">
+          <div class="g-ring" id="gRing">
+            <div class="g-inner">
+              <span class="gn" id="gScore">—</span>
+              <span class="gs">/ 100</span>
+            </div>
+          </div>
+          <div class="g-info">
+            <div class="gname" id="gName">—</div>
+            <div class="gletter" id="gLetter">—</div>
+            <div class="gfb" id="gFeedback">—</div>
+          </div>
+        </div>
+        <div class="g-grid" id="gGrid"></div>
+        <div class="g-note" id="gNote"></div>
+      </div>
+
+    </div><!-- end right-panel -->
+  </div><!-- end layout -->
+</div><!-- end page -->
+
+<!-- FOOTER -->
+<footer>
+  <span><strong>MAC221</strong> · iOS App Development with SwiftUI · LaGuardia Community College (CUNY)</span>
+  <span>Lab 4 — Subscription Pricing UI</span>
+  <span>Prof. <strong>Khalid Kassou</strong> · Mathematics, Engineering &amp; CS Department</span>
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="modal">
+  <div class="modal">
+    <div class="m-head">
+      <span style="font-size:1.3rem">🔒</span>
+      <div>
+        <h3>Instructor Grade View</h3>
+        <div style="font-size:.7rem;opacity:.74;margin-top:1px">Enter instructor password to calculate grade</div>
+      </div>
+    </div>
+    <div class="m-body">
+      <label>Instructor Password</label>
+      <input type="password" id="pwIn" placeholder="••••••••" onkeydown="if(event.key==='Enter')doGrade()"/>
+      <div class="pw-err" id="pwErr">⚠ Incorrect password. Please try again.</div>
+    </div>
+    <div class="m-foot">
+      <button class="btn-mcancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-mok" onclick="doGrade()">Unlock &amp; Grade →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────
+const PW       = "MAC221prof";   // change this
+const DUE_DAYS = 7;
+// ──────────────────────────────────────────────
+
+// Init
+(function(){
+  const d = new Date();
+  d.setDate(d.getDate() + DUE_DAYS);
+  document.getElementById('dueDate').textContent =
+    d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  document.getElementById('sDate').value = new Date().toISOString().split('T')[0];
+
+  const ta = document.getElementById('codeInput');
+  const lc = document.getElementById('lineCount');
+  const cc = document.getElementById('charCount');
+  const update = () => {
+    const v = ta.value;
+    lc.textContent = (v === '' ? 0 : v.split('\n').length) + ' lines';
+    cc.textContent = v.length + ' chars';
+  };
+  ta.addEventListener('input', update);
+  update();
+})();
+
+// Tab key
+document.getElementById('codeInput').addEventListener('keydown', e => {
+  if(e.key === 'Tab'){
+    e.preventDefault();
+    const ta = e.target, s = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.substring(0,s) + '    ' + ta.value.substring(end);
+    ta.selectionStart = ta.selectionEnd = s + 4;
+  }
+});
+
+// Modal
+function openModal(){
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('pwIn').value = '';
+  document.getElementById('pwErr').classList.remove('on');
+  setTimeout(()=>document.getElementById('pwIn').focus(), 160);
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open') }
+document.getElementById('modal').addEventListener('click', e => { if(e.target.id==='modal') closeModal() });
+
+// Clear
+function clearCode(){
+  if(!confirm('Clear your code? This cannot be undone.')) return;
+  document.getElementById('codeInput').value = '';
+  document.getElementById('lineCount').textContent = '0 lines';
+  document.getElementById('charCount').textContent = '0 chars';
+  document.getElementById('gradeBlock').classList.remove('show');
+}
+
+// ─── GRADING ──────────────────────────────────
+function doGrade(){
+  if(document.getElementById('pwIn').value.trim() !== PW){
+    document.getElementById('pwErr').classList.add('on');
+    document.getElementById('pwIn').value = '';
+    document.getElementById('pwIn').focus();
+    return;
+  }
+  closeModal();
+  runGrade();
+}
+
+const N = s => s.toLowerCase().replace(/[\s'"().,;:!?\n]/g,'');
+const has = (code, kws) => kws.every(k => N(code).includes(N(k)));
+
+const RUBRIC = [
+  {
+    label:'Outer VStack', max:15,
+    checks:[
+      { k:['vstack'],                               pts:3 },
+      { k:['spacing'],                              pts:3 },
+      { k:['maxwidth','.infinity','maxheight'],      pts:3 },
+      { k:['background','color.black'],             pts:3 },
+      { k:['padding'],                              pts:3 },
+    ]
+  },
+  {
+    label:'Title Text', max:10,
+    checks:[
+      { k:['text','chooseyoursubscription'],         pts:4 },
+      { k:['font'],                                 pts:2 },
+      { k:['fontweight','bold'],                    pts:2 },
+      { k:['foregroundcolor','white'],              pts:2 },
+    ]
+  },
+  {
+    label:'HStack + Basic & Gold', max:25,
+    checks:[
+      { k:['hstack'],                               pts:5 },
+      { k:['vstack'],                               pts:3 },
+      { k:['basic'],                                pts:2 },
+      { k:['gold'],                                 pts:2 },
+      { k:['$9'],                                   pts:1 },
+      { k:['$49'],                                  pts:1 },
+      { k:['maxwidth','.infinity'],                 pts:4 },
+      { k:['color.white'],                          pts:3 },
+      { k:['color.yellow'],                         pts:2 },
+      { k:['cornerradius'],                         pts:2 },
+    ]
+  },
+  {
+    label:'Titanium Card', max:15,
+    checks:[
+      { k:['titanium'],                             pts:3 },
+      { k:['$99'],                                  pts:2 },
+      { k:['foregroundcolor','white'],              pts:3 },
+      { k:['maxwidth','.infinity'],                 pts:3 },
+      { k:['color.gray'],                           pts:2 },
+      { k:['cornerradius'],                         pts:2 },
+    ]
+  },
+  {
+    label:'Buttons', max:20,
+    checks:[
+      { k:['button','subscribe'],                   pts:4 },
+      { k:['button','maybe'],                       pts:4 },
+      { k:['color.blue'],                           pts:3 },
+      { k:['color.red'],                            pts:3 },
+      { k:['maxwidth','.infinity'],                 pts:3 },
+      { k:['cornerradius'],                         pts:3 },
+    ]
+  },
+  {
+    label:'Code Quality', max:15,
+    checks:[
+      { k:['struct','contentview','view'],           pts:5 },
+      { k:['var','body','some','view'],              pts:5 },
+      { k:['scrollview'],                           pts:5 },
+    ]
+  }
+];
+
+function runGrade(){
+  const code = document.getElementById('codeInput').value || '';
+  let total = 0;
+  const rows = [];
+
+  for(const sec of RUBRIC){
+    let earned = 0;
+    for(const c of sec.checks) if(has(code, c.k)) earned += c.pts;
+    earned = Math.min(earned, sec.max);
+    total += earned;
+    rows.push({ label:sec.label, earned, max:sec.max });
+  }
+  total = Math.min(total, 100);
+  showGrade(total, rows);
+}
+
+function showGrade(score, rows){
+  const gb = document.getElementById('gradeBlock');
+  gb.classList.add('show');
+  gb.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  document.getElementById('gScore').textContent = score;
+
+  const pct = score / 100;
+  const col = pct>=.9?'#2f9e44': pct>=.8?'#3b5bdb': pct>=.7?'#e67700': pct>=.6?'#f08c00':'#c92a2a';
+  document.getElementById('gRing').style.background =
+    `conic-gradient(${col} 0% ${pct*100}%, #e9ecf5 ${pct*100}% 100%)`;
+
+  const name = document.getElementById('sName').value || 'Student';
+  document.getElementById('gName').textContent = name;
+
+  let letter, color, fb;
+  if     (score>=93){letter='A';  color='#2f9e44'; fb='Excellent. Your code correctly reproduces all components of the subscription UI with proper nesting, modifiers, and visual fidelity.'}
+  else if(score>=90){letter='A−'; color='#2f9e44'; fb='Great work. Minor gaps in modifier details or structure. Review the sections below 100% and refine accordingly.'}
+  else if(score>=87){letter='B+'; color='#3b5bdb'; fb='Good work. Some modifier chains or card sizing need attention. Check equal-width handling and button corner radius.'}
+  else if(score>=83){letter='B';  color='#3b5bdb'; fb='Solid foundation. A few structural components are incomplete or missing modifiers. Revisit your card backgrounds and button setup.'}
+  else if(score>=80){letter='B−'; color:'#3b5bdb'; fb='Core structure is present. Focus on the modifier chain order and making sure both cards in the HStack expand equally.'}
+  else if(score>=77){letter='C+'; color:'#e67700'; fb='Partial implementation. Several components have missing colors, backgrounds, or corner radius values. Review the rubric line by line.'}
+  else if(score>=70){letter='C';  color:'#e67700'; fb='Basic structure present but incomplete. Practice building card layouts in Xcode step by step and verify your canvas matches the target.'}
+  else if(score>=60){letter='D';  color:'#f08c00'; fb='Significant components are missing. Please revisit the layout lecture, rebuild from the outer VStack inward, and resubmit.'}
+  else               {letter='F';  color:'#c92a2a'; fb='Submission is incomplete. Please attend office hours with Prof. Kassou and rebuild the UI from scratch in Xcode before resubmitting.'}
+
+  document.getElementById('gLetter').innerHTML =
+    `<span style="color:${color}">${letter}</span>` +
+    `<span style="font-size:.9rem;font-weight:600;color:var(--muted);font-family:Inter,sans-serif">&ensp;${score} / 100 pts</span>`;
+  document.getElementById('gFeedback').textContent = fb;
+
+  document.getElementById('gGrid').innerHTML = rows.map(r => `
+    <div class="g-item">
+      <span class="gv" style="color:${r.earned/r.max>=.8?'#2f9e44':r.earned/r.max>=.6?'#3b5bdb':'#c92a2a'}">${r.earned}/${r.max}</span>
+      <span class="gl">${r.label}</span>
+    </div>`).join('');
+
+  const weak = rows.filter(r=>r.earned/r.max<.7).map(r=>r.label);
+  document.getElementById('gNote').innerHTML = weak.length
+    ? `<strong>Below 70%:</strong> ${weak.join(', ')}. Focus your revision on these components.`
+    : `<strong>All components at 70% or above.</strong> Review any section not at full marks before final submission.`;
+}
+</script>
+</body>
+</html>

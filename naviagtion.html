@@ -1,0 +1,2413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftUI Navigation — Teaching Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0c0f18;
+  --surface:   #131724;
+  --surface2:  #1b2135;
+  --surface3:  #212840;
+  --accent:    #4f8ef7;
+  --accent2:   #7eb3ff;
+  --green:     #3dd68c;
+  --orange:    #f5a623;
+  --pink:      #f06fa4;
+  --purple:    #b07ef5;
+  --red:       #f07070;
+  --text:      #eef2ff;
+  --muted:     #8b99c0;
+  --dim:       #4a5578;
+  --border:    #1e2d4a;
+  --codebg:    #0a0d15;
+  --kw:  #f472b6;
+  --ty:  #67e8f9;
+  --st:  #fde68a;
+  --cm:  #4b5680;
+  --nm:  #c4b5fd;
+  --fn:  #6ee7b7;
+  --pp:  #fbbf24;
+  --radius: 12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:30px;
+  line-height:1.6;
+}
+
+/* ══ LAYOUT ══ */
+#wrap{ display:flex; padding-top:56px; min-height:100vh; }
+
+/* ══ TOPBAR ══ */
+#topbar{
+  position:fixed;top:0;left:0;right:0;height:56px;z-index:200;
+  background:rgba(12,15,24,.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.5rem;
+}
+.brand{
+  font-weight:800;font-size:1rem;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:.5rem;
+  background:linear-gradient(90deg,var(--accent2),var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.brand small{
+  font-weight:400;font-size:.8rem;
+  -webkit-text-fill-color:var(--muted);
+}
+.progress-wrap{
+  display:flex;align-items:center;gap:.75rem;
+}
+.pbar-track{
+  width:180px;height:3px;background:var(--surface3);
+  border-radius:2px;overflow:hidden;
+}
+.pbar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--green));
+  border-radius:2px;transition:width .3s;
+  width:0%;
+}
+.pbar-label{
+  font-family:'Fira Code',monospace;
+  font-size:.72rem;color:var(--muted);white-space:nowrap;
+}
+
+/* ══ SIDEBAR ══ */
+#sidebar{
+  width:270px;flex-shrink:0;
+  position:fixed;left:0;top:56px;bottom:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  padding:1.25rem 0 2rem;
+}
+#sidebar::-webkit-scrollbar{width:3px;}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+.sb-group{padding:.25rem 1.25rem .75rem;}
+.sb-group-label{
+  font-size:.65rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);
+  padding-left:.25rem;margin-bottom:.4rem;
+}
+.sb-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.5rem .75rem;border-radius:8px;
+  cursor:pointer;font-size:.88rem;color:var(--muted);
+  transition:all .18s;margin-bottom:1px;
+  line-height:1.3;
+}
+.sb-item:hover{background:var(--surface2);color:var(--text);}
+.sb-item.active{background:rgba(79,142,247,.14);color:var(--accent2);}
+.sb-item .sb-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--dim);flex-shrink:0;transition:.2s;
+}
+.sb-item.active .sb-dot{background:var(--accent);}
+.sb-badge{
+  margin-left:auto;
+  font-family:'Fira Code',monospace;
+  font-size:.65rem;padding:1px 6px;border-radius:4px;
+  background:var(--surface3);color:var(--dim);
+}
+.sb-badge.green{background:rgba(61,214,140,.1);color:var(--green);}
+
+/* ══ MAIN ══ */
+#main{ margin-left:270px; width:100%; }
+
+/* ══ HERO ══ */
+.hero{
+  padding:4rem 4rem 3.5rem;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 0%,rgba(79,142,247,.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 90% 100%,rgba(61,214,140,.07) 0%,transparent 60%);
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'SwiftUI';
+  position:absolute;right:-1rem;bottom:-1.5rem;
+  font-size:10rem;font-weight:800;letter-spacing:-.05em;
+  color:rgba(79,142,247,.04);pointer-events:none;
+  font-family:'Outfit',sans-serif;
+}
+.hero-pill{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:rgba(79,142,247,.1);
+  border:1px solid rgba(79,142,247,.25);
+  color:var(--accent2);padding:.3rem .85rem;
+  border-radius:100px;font-size:.78rem;font-weight:600;
+  letter-spacing:.04em;margin-bottom:1.25rem;
+}
+.hero h1{
+  font-size:3.2rem;font-weight:800;line-height:1.1;
+  letter-spacing:-.02em;margin-bottom:1rem;
+  background:linear-gradient(130deg,#eef2ff 40%,var(--accent2) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.hero p{
+  font-size:1.1rem;color:var(--muted);max-width:580px;
+  line-height:1.75;margin-bottom:2rem;
+}
+.hero-tags{display:flex;flex-wrap:wrap;gap:.6rem;}
+.tag{
+  padding:.35rem .9rem;border-radius:100px;
+  font-size:.78rem;font-family:'Fira Code',monospace;
+  font-weight:500;border:1px solid;
+}
+.tag-blue{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.3);color:var(--accent2);}
+.tag-green{background:rgba(61,214,140,.1);border-color:rgba(61,214,140,.3);color:var(--green);}
+.tag-orange{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.3);color:var(--orange);}
+.tag-purple{background:rgba(176,126,245,.1);border-color:rgba(176,126,245,.3);color:var(--purple);}
+.tag-pink{background:rgba(240,111,164,.1);border-color:rgba(240,111,164,.3);color:var(--pink);}
+
+/* ══ SECTION ══ */
+.section{
+  padding:3.5rem 4rem;
+  border-bottom:1px solid var(--border);
+}
+.sec-hdr{
+  display:flex;align-items:center;gap:1rem;
+  margin-bottom:.75rem;
+}
+.sec-num{
+  font-family:'Fira Code',monospace;font-size:.72rem;
+  background:var(--surface2);border:1px solid var(--border);
+  padding:.2rem .6rem;border-radius:6px;color:var(--dim);
+  flex-shrink:0;
+}
+.section h2{
+  font-size:2rem;font-weight:800;letter-spacing:-.02em;
+  line-height:1.2;
+}
+.section h2 em{color:var(--accent2);font-style:normal;}
+.sec-intro{
+  font-size:1.05rem;color:var(--muted);line-height:1.8;
+  max-width:700px;margin-bottom:2.5rem;
+}
+
+/* ══ LEVEL PROGRESSION ══ */
+.level-label{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:.3rem .85rem;
+  border-radius:100px;margin-bottom:1rem;border:1px solid;
+}
+.level-1{background:rgba(61,214,140,.1);border-color:rgba(61,214,140,.25);color:var(--green);}
+.level-2{background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.25);color:var(--accent2);}
+.level-3{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.25);color:var(--orange);}
+.level-4{background:rgba(240,111,164,.1);border-color:rgba(240,111,164,.25);color:var(--pink);}
+
+.level-desc{
+  font-size:.95rem;color:var(--muted);line-height:1.7;
+  margin-bottom:1rem;max-width:650px;
+}
+
+/* ══ CODE BLOCK ══ */
+.codeblock{
+  border-radius:var(--radius);overflow:hidden;
+  border:1px solid #1a2d4d;
+  box-shadow:0 6px 30px rgba(0,0,0,.5);
+  margin-bottom:1.5rem;
+}
+.codebar{
+  background:#111827;
+  padding:.7rem 1.25rem;
+  display:flex;align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #1a2d4d;
+}
+.codedots{display:flex;gap:.35rem;}
+.codedots span{width:11px;height:11px;border-radius:50%;}
+.codedots span:nth-child(1){background:#ff5f57;}
+.codedots span:nth-child(2){background:#febc2e;}
+.codedots span:nth-child(3){background:#28c840;}
+.codetitle{
+  font-family:'Fira Code',monospace;
+  font-size:.78rem;color:var(--muted);
+}
+.copybtn{
+  background:none;border:1px solid var(--border);
+  color:var(--muted);font-size:.72rem;
+  padding:.22rem .65rem;border-radius:5px;
+  cursor:pointer;transition:.18s;
+  font-family:'Outfit',sans-serif;
+}
+.copybtn:hover{background:var(--surface3);color:var(--text);}
+.copybtn.ok{color:var(--green);border-color:var(--green);}
+pre{
+  background:var(--codebg);
+  padding:1.4rem 1.75rem;
+  overflow-x:auto;margin:0;
+  font-family:'Fira Code',monospace;
+  font-size:.91rem;
+  line-height:1.8;
+  tab-size:4;
+}
+pre::-webkit-scrollbar{height:5px;}
+pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+/* syntax */
+.kw{color:#f472b6;}
+.ty{color:#67e8f9;}
+.st{color:#fde68a;}
+.cm{color:#4b5680;font-style:italic;}
+.nm{color:#c4b5fd;}
+.fn{color:#6ee7b7;}
+.pp{color:#fbbf24;}
+.at{color:#f472b6;}
+
+/* ══ CALLOUT ══ */
+.callout{
+  display:flex;gap:.9rem;
+  padding:1.1rem 1.4rem;border-radius:10px;
+  margin:1.25rem 0;font-size:.94rem;line-height:1.65;
+}
+.callout-blue{background:rgba(79,142,247,.07);border:1px solid rgba(79,142,247,.2);}
+.callout-green{background:rgba(61,214,140,.07);border:1px solid rgba(61,214,140,.2);}
+.callout-orange{background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.2);}
+.callout-red{background:rgba(240,112,112,.07);border:1px solid rgba(240,112,112,.2);}
+.callout-icon{font-size:1.1rem;flex-shrink:0;margin-top:.1rem;}
+.callout-body strong{display:block;margin-bottom:.25rem;font-size:.96rem;}
+.callout-blue  .callout-body strong{color:var(--accent2);}
+.callout-green .callout-body strong{color:var(--green);}
+.callout-orange .callout-body strong{color:var(--orange);}
+.callout-red .callout-body strong{color:var(--red);}
+
+/* ══ PRACTICE ══ */
+.practice{
+  background:linear-gradient(135deg,rgba(61,214,140,.05),rgba(79,142,247,.05));
+  border:1px solid rgba(61,214,140,.18);
+  border-radius:var(--radius);padding:1.5rem 1.75rem;
+  margin:1.5rem 0;
+}
+.practice h4{
+  font-size:.95rem;font-weight:700;
+  color:var(--green);margin-bottom:.9rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.plist{list-style:none;display:flex;flex-direction:column;gap:.55rem;}
+.plist li{
+  display:flex;align-items:flex-start;gap:.7rem;
+  font-size:.92rem;color:var(--muted);line-height:1.55;
+}
+.plist li::before{
+  content:'›';color:var(--accent);font-weight:700;
+  font-size:1.1rem;flex-shrink:0;margin-top:-1px;
+}
+
+/* ══ DIVIDER ══ */
+.divider{height:1px;background:var(--border);margin:2rem 0;}
+
+/* ══ SUMMARY TABLE ══ */
+.tbl{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.9rem;}
+.tbl th{
+  background:var(--surface2);padding:.8rem 1.1rem;
+  text-align:left;font-weight:700;font-size:.82rem;
+  border-bottom:2px solid var(--border);color:var(--muted);
+  font-family:'Outfit',sans-serif;
+}
+.tbl td{
+  padding:.8rem 1.1rem;border-bottom:1px solid var(--border);
+  color:var(--muted);line-height:1.5;vertical-align:top;
+}
+.tbl tr:hover td{background:rgba(255,255,255,.015);}
+.tbl td:first-child{font-family:'Fira Code',monospace;color:var(--accent2);font-size:.85rem;}
+.ck{color:var(--green);}
+.cx{color:var(--red);}
+
+/* ══ QUIZ ══ */
+.qcard{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.5rem;margin:1.25rem 0;
+}
+.qnum{
+  font-family:'Fira Code',monospace;font-size:.72rem;
+  color:var(--dim);margin-bottom:.6rem;
+}
+.qtext{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1.1rem;line-height:1.5;}
+.qopts{display:flex;flex-direction:column;gap:.5rem;}
+.qopt{
+  padding:.7rem 1rem;border-radius:8px;
+  border:1px solid var(--border);cursor:pointer;
+  font-size:.91rem;color:var(--muted);
+  transition:all .18s;display:flex;align-items:center;gap:.7rem;
+}
+.qopt:hover{background:var(--surface2);color:var(--text);}
+.qopt.right{background:rgba(61,214,140,.1);border-color:var(--green);color:var(--green);}
+.qopt.wrong{background:rgba(240,112,112,.1);border-color:var(--red);color:#fca5a5;}
+.qletter{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--surface3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fira Code',monospace;font-size:.72rem;flex-shrink:0;
+}
+.qfb{
+  display:none;margin-top:.9rem;padding:.7rem 1rem;
+  border-radius:8px;font-size:.9rem;line-height:1.55;
+}
+.qfb.show{display:block;}
+.qfb.rfb{background:rgba(61,214,140,.08);border:1px solid rgba(61,214,140,.2);color:#a7f3d0;}
+.qfb.wfb{background:rgba(240,112,112,.08);border:1px solid rgba(240,112,112,.2);color:#fca5a5;}
+
+/* ══ BACK TOP ══ */
+#backtop{
+  position:fixed;bottom:1.75rem;right:1.75rem;z-index:300;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--accent);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:#fff;
+  opacity:0;pointer-events:none;transition:.25s;
+  box-shadow:0 4px 18px rgba(79,142,247,.4);
+}
+#backtop.show{opacity:1;pointer-events:all;}
+#backtop:hover{transform:translateY(-2px);}
+
+code{
+  font-family:'Fira Code',monospace;
+  font-size:.85em;
+  background:var(--surface3);
+  padding:.1em .4em;border-radius:4px;
+  color:var(--accent2);
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav id="topbar">
+  <div class="brand">⬡ SwiftUI Navigation <small>/ MAC221 Teaching Guide</small></div>
+  <div class="progress-wrap">
+    <div class="pbar-track"><div class="pbar-fill" id="pbar"></div></div>
+    <div class="pbar-label" id="plabel">0%</div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+
+  <div class="sb-group">
+    <div class="sb-group-label">Start Here</div>
+    <div class="sb-item" data-to="hero"><span class="sb-dot"></span>Introduction</div>
+    <div class="sb-item" data-to="overview"><span class="sb-dot"></span>All Navigation Types</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">01 — NavigationStack</div>
+    <div class="sb-item" data-to="ns-basic"><span class="sb-dot"></span>Simple: First Stack</div>
+    <div class="sb-item" data-to="ns-multi"><span class="sb-dot"></span>Simple: Multiple Links</div>
+    <div class="sb-item" data-to="ns-toolbar"><span class="sb-dot"></span>Simple: Toolbar</div>
+    <div class="sb-item" data-to="ns-data"><span class="sb-dot"></span>Intermediate: With Data</div>
+    <div class="sb-item" data-to="ns-list"><span class="sb-dot"></span>Intermediate: List Nav</div>
+    <div class="sb-item" data-to="ns-complex"><span class="sb-dot"></span>Complex: Full App <span class="sb-badge green">★</span></div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">02 — NavigationLink</div>
+    <div class="sb-item" data-to="nl-text"><span class="sb-dot"></span>Simple: Text Link</div>
+    <div class="sb-item" data-to="nl-label"><span class="sb-dot"></span>Simple: Label Link</div>
+    <div class="sb-item" data-to="nl-button"><span class="sb-dot"></span>Simple: Button Style</div>
+    <div class="sb-item" data-to="nl-custom"><span class="sb-dot"></span>Intermediate: Custom Row</div>
+    <div class="sb-item" data-to="nl-value"><span class="sb-dot"></span>Advanced: Value-Based</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">03 — Programmatic Nav</div>
+    <div class="sb-item" data-to="pn-bool"><span class="sb-dot"></span>Simple: Bool Binding</div>
+    <div class="sb-item" data-to="pn-path"><span class="sb-dot"></span>Intermediate: Path</div>
+    <div class="sb-item" data-to="pn-router"><span class="sb-dot"></span>Complex: Router Pattern</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">04 — TabView</div>
+    <div class="sb-item" data-to="tv-basic"><span class="sb-dot"></span>Simple: 2 Tabs</div>
+    <div class="sb-item" data-to="tv-icons"><span class="sb-dot"></span>Simple: Icons & Selection</div>
+    <div class="sb-item" data-to="tv-badge"><span class="sb-dot"></span>Intermediate: Badges</div>
+    <div class="sb-item" data-to="tv-stack"><span class="sb-dot"></span>Complex: Tab + Stack</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">05 — Sheet & FullScreen</div>
+    <div class="sb-item" data-to="sh-basic"><span class="sb-dot"></span>Simple: Bool Sheet</div>
+    <div class="sb-item" data-to="sh-dismiss"><span class="sb-dot"></span>Simple: Dismiss</div>
+    <div class="sb-item" data-to="sh-detent"><span class="sb-dot"></span>Intermediate: Detents</div>
+    <div class="sb-item" data-to="sh-full"><span class="sb-dot"></span>Intermediate: FullScreen</div>
+    <div class="sb-item" data-to="sh-form"><span class="sb-dot"></span>Complex: Form in Sheet</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">06 — SplitView</div>
+    <div class="sb-item" data-to="sv-2col"><span class="sb-dot"></span>Simple: 2-Column</div>
+    <div class="sb-item" data-to="sv-3col"><span class="sb-dot"></span>Complex: 3-Column</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">07 — Alert & Dialog</div>
+    <div class="sb-item" data-to="al-basic"><span class="sb-dot"></span>Simple: Basic Alert</div>
+    <div class="sb-item" data-to="al-actions"><span class="sb-dot"></span>Intermediate: Actions</div>
+    <div class="sb-item" data-to="al-confirm"><span class="sb-dot"></span>Complex: Full Dialogs</div>
+  </div>
+
+  <div class="sb-group">
+    <div class="sb-group-label">Review</div>
+    <div class="sb-item" data-to="quiz"><span class="sb-dot"></span>Practice Quiz ✦</div>
+  </div>
+
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-pill">⬡ MAC221 · iOS Development · SwiftUI</div><br>
+    <div class="hero-pill">⬡ Prof. khalid Kassou</div>
+
+  <h1>SwiftUI Navigation<br>— Teaching Guide</h1>
+  <p>A step-by-step guide covering every SwiftUI navigation pattern. Each topic starts from the absolute simplest example and builds gradually to real-world complexity. Copy every example directly into Xcode and run it.</p>
+  <div class="hero-tags">
+    <span class="tag tag-green">Simple → Complex</span>
+    <span class="tag tag-blue">NavigationStack</span>
+    <span class="tag tag-orange">TabView</span>
+    <span class="tag tag-purple">Sheet / FullScreenCover</span>
+    <span class="tag tag-pink">Programmatic Nav</span>
+  </div>
+</section>
+
+<!-- ═══════════════ OVERVIEW ═══════════════ -->
+<section class="section" id="overview">
+  <div class="sec-hdr"><span class="sec-num">00</span><h2>All Navigation Types — <em>at a Glance</em></h2></div>
+  <p class="sec-intro">Before diving in, here is a map of every navigation API in SwiftUI and when to use each one.</p>
+  <table class="tbl">
+    <thead><tr><th>API</th><th>Pattern</th><th>Min iOS</th><th>Dismissible</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr><td>NavigationStack</td><td>Push → Pop</td><td>iOS 16</td><td class="ck">✓ Back button</td><td>Drilling into details (Settings, Lists)</td></tr>
+      <tr><td>NavigationLink</td><td>Tap → Push</td><td>iOS 16</td><td class="ck">✓ Back button</td><td>Any tappable row that opens a new screen</td></tr>
+      <tr><td>TabView</td><td>Switch tabs</td><td>iOS 13</td><td class="cx">—</td><td>Top-level app sections (2–5 tabs)</td></tr>
+      <tr><td>NavigationSplitView</td><td>Sidebar + Detail</td><td>iOS 16</td><td class="cx">—</td><td>iPad / Mac master-detail layouts</td></tr>
+      <tr><td>.sheet</td><td>Modal (partial)</td><td>iOS 13</td><td class="ck">✓ Swipe down</td><td>Forms, pickers, temporary tasks</td></tr>
+      <tr><td>.fullScreenCover</td><td>Modal (full)</td><td>iOS 14</td><td class="ck">✓ Code only</td><td>Onboarding, login, immersive content</td></tr>
+      <tr><td>.popover</td><td>Bubble overlay</td><td>iOS 13</td><td class="ck">✓ Tap outside</td><td>Contextual menus, filters</td></tr>
+      <tr><td>.alert</td><td>System dialog</td><td>iOS 13</td><td class="ck">✓ Button tap</td><td>Errors, warnings, confirmations</td></tr>
+      <tr><td>.confirmationDialog</td><td>Action sheet</td><td>iOS 15</td><td class="ck">✓ Cancel</td><td>Destructive actions (delete, sign out)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════ SECTION 1 — NavigationStack ═══════════════ -->
+<section class="section" id="ns-basic">
+  <div class="sec-hdr"><span class="sec-num">01-A</span><h2>NavigationStack — <em>Your First Stack</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Absolute Beginner</div>
+  <p class="level-desc">The simplest possible NavigationStack. One screen with a title. No links yet — just the container itself.</p>
+  <div class="callout callout-blue">
+    <span class="callout-icon">ℹ️</span>
+    <div class="callout-body">
+      <strong>What NavigationStack does</strong>
+      It wraps your view in a navigation container. This is required before any NavigationLink will work. The <code>.navigationTitle()</code> modifier sets the large title at the top.
+    </div>
+  </div>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">Text</span>(<span class="st">"Hello, Navigation!"</span>)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">navigationTitle</span>(<span class="st">"Home"</span>)
+        }
+    }
+}</pre>
+  </div>
+  <div class="callout callout-green">
+    <span class="callout-icon">✅</span>
+    <div class="callout-body">
+      <strong>What to observe in Xcode</strong>
+      You'll see a large "Home" title at the top of the screen. The title shrinks when you scroll. That's <code>.navigationBarTitleDisplayMode(.large)</code> — the default.
+    </div>
+  </div>
+  <div class="practice">
+    <h4>🧪 Try It</h4>
+    <ul class="plist">
+      <li>Change the title to your name. What happens?</li>
+      <li>Add <code>.navigationBarTitleDisplayMode(.inline)</code> — what changes?</li>
+      <li>Replace <code>Text</code> with a <code>Color.blue</code> — the title still shows. Why?</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="ns-multi">
+  <div class="sec-hdr"><span class="sec-num">01-B</span><h2>NavigationStack — <em>Multiple Links</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Simple Navigation Links</div>
+  <p class="level-desc">Now let's add links. Each <code>NavigationLink</code> is a tappable row that pushes a new view onto the stack.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span> {
+                <span class="ty">NavigationLink</span>(<span class="st">"Go to Screen A"</span>, destination: <span class="ty">ScreenA</span>())
+                <span class="ty">NavigationLink</span>(<span class="st">"Go to Screen B"</span>, destination: <span class="ty">ScreenB</span>())
+                <span class="ty">NavigationLink</span>(<span class="st">"Go to Screen C"</span>, destination: <span class="ty">ScreenC</span>())
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Main Menu"</span>)
+        }
+    }
+}
+
+<span class="cm">// ── Destination Views ──────────────────────</span>
+
+<span class="kw">struct</span> <span class="ty">ScreenA</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"You are on Screen A"</span>)
+            .<span class="fn">font</span>(.<span class="pp">title</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Screen A"</span>)
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">ScreenB</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"You are on Screen B"</span>)
+            .<span class="fn">font</span>(.<span class="pp">title</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Screen B"</span>)
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">ScreenC</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"You are on Screen C"</span>)
+            .<span class="fn">font</span>(.<span class="pp">title</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Screen C"</span>)
+    }
+}</pre>
+  </div>
+  <div class="practice">
+    <h4>🧪 Try It</h4>
+    <ul class="plist">
+      <li>Add a 4th link "Go to Screen D" with its own destination view.</li>
+      <li>Inside <code>ScreenA</code>, add another <code>NavigationLink</code> going deeper. Notice the back buttons stack up.</li>
+      <li>Try putting the links in a <code>VStack</code> instead of a <code>List</code>. What difference do you see visually?</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="ns-toolbar">
+  <div class="sec-hdr"><span class="sec-num">01-C</span><h2>NavigationStack — <em>Adding a Toolbar</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Toolbar Buttons</div>
+  <p class="level-desc">Toolbars let you add buttons to the navigation bar. This is how you add "Add", "Edit", or "Done" buttons in real apps.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">Text</span>(<span class="st">"My Screen"</span>)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">navigationTitle</span>(<span class="st">"Notes"</span>)
+                .<span class="fn">toolbar</span> {
+                    <span class="cm">// Button on the TOP RIGHT</span>
+                    <span class="ty">ToolbarItem</span>(placement: .<span class="pp">topBarTrailing</span>) {
+                        <span class="ty">Button</span>(<span class="st">"Add"</span>) {
+                            <span class="fn">print</span>(<span class="st">"Add tapped!"</span>)
+                        }
+                    }
+                    <span class="cm">// Button on the TOP LEFT</span>
+                    <span class="ty">ToolbarItem</span>(placement: .<span class="pp">topBarLeading</span>) {
+                        <span class="ty">Button</span>(<span class="st">"Edit"</span>) {
+                            <span class="fn">print</span>(<span class="st">"Edit tapped!"</span>)
+                        }
+                    }
+                }
+        }
+    }
+}
+<span class="cm">// Note: .toolbar belongs on the VIEW INSIDE NavigationStack, not on NavigationStack itself.</span></pre>
+  </div>
+  <div class="callout callout-orange">
+    <span class="callout-icon">⚠️</span>
+    <div class="callout-body">
+      <strong>Common Mistake</strong>
+      Do NOT put <code>.toolbar</code> on the <code>NavigationStack</code>. Put it on the view <em>inside</em> the stack (the <code>Text</code>, <code>List</code>, etc.). The stack just wraps everything.
+    </div>
+  </div>
+  <div class="practice">
+    <h4>🧪 Try It</h4>
+    <ul class="plist">
+      <li>Replace <code>Button("Add")</code> with a system icon button: <code>Button(action: {}) { Image(systemName: "plus") }</code></li>
+      <li>Add a <code>@State var count = 0</code> and make the "Add" button increment it. Display count in a <code>Text</code>.</li>
+      <li>Try <code>placement: .bottomBar</code> — where does the button appear?</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="ns-data">
+  <div class="sec-hdr"><span class="sec-num">01-D</span><h2>NavigationStack — <em>Passing Data to a View</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Real apps pass data when navigating. Here we create a simple model and pass it to the destination view via its initializer.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// Step 1: Define a simple model</span>
+<span class="kw">struct</span> <span class="ty">Fruit</span> {
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> emoji: <span class="ty">String</span>
+    <span class="kw">let</span> color: <span class="ty">Color</span>
+}
+
+<span class="cm">// Step 2: Root view with a list of fruits</span>
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> fruits = [
+        <span class="ty">Fruit</span>(name: <span class="st">"Apple"</span>,  emoji: <span class="st">"🍎"</span>, color: .<span class="pp">red</span>),
+        <span class="ty">Fruit</span>(name: <span class="st">"Banana"</span>, emoji: <span class="st">"🍌"</span>, color: .<span class="pp">yellow</span>),
+        <span class="ty">Fruit</span>(name: <span class="st">"Grape"</span>,  emoji: <span class="st">"🍇"</span>, color: .<span class="pp">purple</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span>(fruits, id: \.name) { fruit <span class="kw">in</span>
+                <span class="cm">// Pass the entire fruit object to the detail view</span>
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">FruitDetailView</span>(fruit: fruit)) {
+                    <span class="ty">Text</span>(<span class="st">"\(fruit.emoji) \(fruit.name)"</span>)
+                        .<span class="fn">font</span>(.<span class="pp">title3</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Fruits"</span>)
+        }
+    }
+}
+
+<span class="cm">// Step 3: Detail view that RECEIVES the data</span>
+<span class="kw">struct</span> <span class="ty">FruitDetailView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> fruit: <span class="ty">Fruit</span>   <span class="cm">// stored as a constant</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+            <span class="ty">Text</span>(fruit.emoji)
+                .<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">100</span>))
+            <span class="ty">Text</span>(fruit.name)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">bold</span>()
+                .<span class="fn">foregroundColor</span>(fruit.color)
+        }
+        .<span class="fn">navigationTitle</span>(fruit.name)
+        .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+    }
+}</pre>
+  </div>
+  <div class="practice">
+    <h4>🧪 Try It</h4>
+    <ul class="plist">
+      <li>Add a <code>calories: Int</code> field to <code>Fruit</code> and display it in <code>FruitDetailView</code>.</li>
+      <li>Add a 4th fruit of your choice.</li>
+      <li>Make the background of <code>FruitDetailView</code> use <code>fruit.color.opacity(0.1)</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="ns-list">
+  <div class="sec-hdr"><span class="sec-num">01-E</span><h2>NavigationStack — <em>Identifiable List</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Using <code>Identifiable</code> with a list is the standard approach for iterating data models in SwiftUI.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// Conform to Identifiable — gives each item a unique id</span>
+<span class="kw">struct</span> <span class="ty">Student</span>: <span class="ty">Identifiable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()   <span class="cm">// auto-generated unique ID</span>
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> grade: <span class="ty">String</span>
+    <span class="kw">let</span> gpa: <span class="ty">Double</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> students: [<span class="ty">Student</span>] = [
+        <span class="ty">Student</span>(name: <span class="st">"Amina"</span>,   grade: <span class="st">"A"</span>, gpa: <span class="nm">3.9</span>),
+        <span class="ty">Student</span>(name: <span class="st">"Carlos"</span>,  grade: <span class="st">"B"</span>, gpa: <span class="nm">3.2</span>),
+        <span class="ty">Student</span>(name: <span class="st">"Diana"</span>,   grade: <span class="st">"A"</span>, gpa: <span class="nm">3.7</span>),
+        <span class="ty">Student</span>(name: <span class="st">"Elias"</span>,   grade: <span class="st">"B+"</span>, gpa: <span class="nm">3.5</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span>(students) { student <span class="kw">in</span>
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">StudentDetailView</span>(student: student)) {
+                    <span class="ty">HStack</span> {
+                        <span class="ty">Text</span>(student.name)
+                            .<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        <span class="ty">Spacer</span>()
+                        <span class="ty">Text</span>(student.grade)
+                            .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    }
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Students"</span>)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">StudentDetailView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> student: <span class="ty">Student</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">16</span>) {
+            <span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>)
+                .<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">80</span>))
+                .<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+            <span class="ty">Text</span>(student.name)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            <span class="ty">Text</span>(<span class="st">"Grade: \(student.grade)"</span>)
+                .<span class="fn">font</span>(.<span class="pp">title2</span>)
+            <span class="ty">Text</span>(<span class="st">"GPA: \(student.gpa, specifier: "%.1f")"</span>)
+                .<span class="fn">font</span>(.<span class="pp">title3</span>)
+                .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+        }
+        .<span class="fn">navigationTitle</span>(student.name)
+        .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+    }
+}</pre>
+  </div>
+  <div class="practice">
+    <h4>🧪 Try It</h4>
+    <ul class="plist">
+      <li>Add a <code>major: String</code> field and display it in the detail view.</li>
+      <li>Color the grade text: green if "A", blue if "B", gray otherwise, using a computed property.</li>
+      <li>Add a <code>Section("Engineering")</code> group and put 2 students inside it.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="ns-complex">
+  <div class="sec-hdr"><span class="sec-num">01-F</span><h2>NavigationStack — <em>Complete App Structure</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex</div>
+  <p class="level-desc">A full multi-level navigation app: Categories → Items → Detail. Sections, custom rows, badges, and toolbar actions all working together.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// ── Models ─────────────────────────────────────────</span>
+<span class="kw">struct</span> <span class="ty">Course</span>: <span class="ty">Identifiable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> title: <span class="ty">String</span>
+    <span class="kw">let</span> code: <span class="ty">String</span>
+    <span class="kw">let</span> icon: <span class="ty">String</span>
+    <span class="kw">let</span> topics: [<span class="ty">Topic</span>]
+}
+
+<span class="kw">struct</span> <span class="ty">Topic</span>: <span class="ty">Identifiable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> title: <span class="ty">String</span>
+    <span class="kw">let</span> week: <span class="ty">Int</span>
+    <span class="kw">let</span> description: <span class="ty">String</span>
+    <span class="kw">var</span> isCompleted: <span class="ty">Bool</span>
+}
+
+<span class="cm">// ── Sample Data ─────────────────────────────────────</span>
+<span class="kw">let</span> sampleCourses: [<span class="ty">Course</span>] = [
+    <span class="ty">Course</span>(title: <span class="st">"iOS Development"</span>, code: <span class="st">"MAC221"</span>, icon: <span class="st">"iphone"</span>,
+           topics: [
+               <span class="ty">Topic</span>(title: <span class="st">"SwiftUI Basics"</span>, week: <span class="nm">1</span>,
+                     description: <span class="st">"Views, modifiers, layout system"</span>, isCompleted: <span class="nm">true</span>),
+               <span class="ty">Topic</span>(title: <span class="st">"Navigation"</span>, week: <span class="nm">2</span>,
+                     description: <span class="st">"Stack, tabs, sheets"</span>, isCompleted: <span class="nm">true</span>),
+               <span class="ty">Topic</span>(title: <span class="st">"State Management"</span>, week: <span class="nm">3</span>,
+                     description: <span class="st">"@State, @Binding, @Observable"</span>, isCompleted: <span class="nm">false</span>)
+           ]),
+    <span class="ty">Course</span>(title: <span class="st">"Data Structures"</span>, code: <span class="st">"MAC286"</span>, icon: <span class="st">"list.bullet.rectangle"</span>,
+           topics: [
+               <span class="ty">Topic</span>(title: <span class="st">"Arrays & Lists"</span>, week: <span class="nm">1</span>,
+                     description: <span class="st">"Linear data structures"</span>, isCompleted: <span class="nm">true</span>),
+               <span class="ty">Topic</span>(title: <span class="st">"Trees"</span>, week: <span class="nm">4</span>,
+                     description: <span class="st">"Binary trees and traversal"</span>, isCompleted: <span class="nm">false</span>)
+           ])
+]
+
+<span class="cm">// ── Level 1: Course List ─────────────────────────────</span>
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> courses = sampleCourses
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span>(courses) { course <span class="kw">in</span>
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">CourseView</span>(course: course)) {
+                    <span class="ty">HStack</span>(spacing: <span class="nm">14</span>) {
+                        <span class="ty">Image</span>(systemName: course.icon)
+                            .<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">28</span>))
+                            .<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+                            .<span class="fn">frame</span>(width: <span class="nm">38</span>)
+                        <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">3</span>) {
+                            <span class="ty">Text</span>(course.title).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                            <span class="ty">Text</span>(course.code)
+                                .<span class="fn">font</span>(.<span class="pp">caption</span>)
+                                .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                        }
+                        <span class="ty">Spacer</span>()
+                        <span class="ty">Text</span>(<span class="st">"\(course.topics.count)"</span>)
+                            .<span class="fn">font</span>(.<span class="pp">caption</span>.<span class="fn">bold</span>())
+                            .<span class="fn">padding</span>(.<span class="pp">horizontal</span>, <span class="nm">8</span>)
+                            .<span class="fn">padding</span>(.<span class="pp">vertical</span>, <span class="nm">4</span>)
+                            .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pp">blue</span>.<span class="fn">opacity</span>(<span class="nm">0.12</span>))
+                            .<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+                            .<span class="fn">clipShape</span>(<span class="ty">Capsule</span>())
+                    }
+                    .<span class="fn">padding</span>(.<span class="pp">vertical</span>, <span class="nm">4</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"My Courses"</span>)
+            .<span class="fn">toolbar</span> {
+                <span class="ty">ToolbarItem</span>(placement: .<span class="pp">topBarTrailing</span>) {
+                    <span class="ty">Button</span> {  } label: {
+                        <span class="ty">Image</span>(systemName: <span class="st">"plus.circle.fill"</span>)
+                    }
+                }
+            }
+        }
+    }
+}
+
+<span class="cm">// ── Level 2: Topics in a Course ──────────────────────</span>
+<span class="kw">struct</span> <span class="ty">CourseView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> course: <span class="ty">Course</span>
+
+    <span class="kw">var</span> completedCount: <span class="ty">Int</span> {
+        course.topics.<span class="fn">filter</span>{ $0.isCompleted }.<span class="pp">count</span>
+    }
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">List</span>(course.topics) { topic <span class="kw">in</span>
+            <span class="ty">NavigationLink</span>(destination: <span class="ty">TopicDetailView</span>(topic: topic)) {
+                <span class="ty">HStack</span> {
+                    <span class="ty">Image</span>(systemName: topic.isCompleted
+                        ? <span class="st">"checkmark.circle.fill"</span>
+                        : <span class="st">"circle"</span>)
+                        .<span class="fn">foregroundColor</span>(topic.isCompleted ? .<span class="pp">green</span> : .<span class="pp">secondary</span>)
+                    <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">2</span>) {
+                        <span class="ty">Text</span>(topic.title).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        <span class="ty">Text</span>(<span class="st">"Week \(topic.week)"</span>)
+                            .<span class="fn">font</span>(.<span class="pp">caption</span>)
+                            .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    }
+                }
+            }
+        }
+        .<span class="fn">navigationTitle</span>(course.title)
+        .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+        .<span class="fn">safeAreaInset</span>(edge: .<span class="pp">bottom</span>) {
+            <span class="ty">HStack</span> {
+                <span class="ty">Text</span>(<span class="st">"\(completedCount) of \(course.topics.count) completed"</span>)
+                    .<span class="fn">font</span>(.<span class="pp">subheadline</span>)
+                    .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            }
+            .<span class="fn">padding</span>()
+            .<span class="fn">frame</span>(maxWidth: .<span class="pp">infinity</span>)
+            .<span class="fn">background</span>(.<span class="fn">ultraThinMaterial</span>())
+        }
+    }
+}
+
+<span class="cm">// ── Level 3: Topic Detail ────────────────────────────</span>
+<span class="kw">struct</span> <span class="ty">TopicDetailView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> topic: <span class="ty">Topic</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">ScrollView</span> {
+            <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">20</span>) {
+                <span class="ty">HStack</span> {
+                    <span class="ty">Text</span>(<span class="st">"Week \(topic.week)"</span>)
+                        .<span class="fn">font</span>(.<span class="pp">caption</span>)
+                        .<span class="fn">padding</span>(.<span class="pp">horizontal</span>, <span class="nm">10</span>)
+                        .<span class="fn">padding</span>(.<span class="pp">vertical</span>, <span class="nm">5</span>)
+                        .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pp">blue</span>.<span class="fn">opacity</span>(<span class="nm">0.1</span>))
+                        .<span class="fn">cornerRadius</span>(<span class="nm">6</span>)
+                    <span class="ty">Spacer</span>()
+                    <span class="ty">Image</span>(systemName: topic.isCompleted
+                        ? <span class="st">"checkmark.seal.fill"</span>
+                        : <span class="st">"seal"</span>)
+                        .<span class="fn">foregroundColor</span>(topic.isCompleted ? .<span class="pp">green</span> : .<span class="pp">secondary</span>)
+                }
+                <span class="ty">Text</span>(topic.description)
+                    .<span class="fn">font</span>(.<span class="pp">body</span>)
+                    .<span class="fn">lineSpacing</span>(<span class="nm">6</span>)
+            }
+            .<span class="fn">padding</span>()
+        }
+        .<span class="fn">navigationTitle</span>(topic.title)
+        .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+    }
+}</pre>
+  </div>
+  <div class="practice">
+    <h4>🧪 Practice Challenges</h4>
+    <ul class="plist">
+      <li>Add a 3rd course with at least 4 topics.</li>
+      <li>Add a progress bar to <code>CourseView</code> using the completed count.</li>
+      <li>Make topics toggleable: tap a topic in the list to mark it complete (requires passing a binding).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════ SECTION 2 — NavigationLink ═══════════════ -->
+<section class="section" id="nl-text">
+  <div class="sec-hdr"><span class="sec-num">02-A</span><h2>NavigationLink — <em>Simplest Text Link</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — One Line</div>
+  <p class="level-desc">The most minimal NavigationLink — just a string label and a destination view.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="cm">// The simplest possible NavigationLink</span>
+            <span class="ty">NavigationLink</span>(<span class="st">"Tap me to go to next screen"</span>,
+                           destination: <span class="ty">NextScreen</span>())
+                .<span class="fn">navigationTitle</span>(<span class="st">"Start"</span>)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">NextScreen</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"You made it! 🎉"</span>)
+            .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Next Screen"</span>)
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="nl-label">
+  <div class="sec-hdr"><span class="sec-num">02-B</span><h2>NavigationLink — <em>Label with Icon</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Label Style</div>
+  <p class="level-desc">Use a <code>Label</code> inside a <code>NavigationLink</code> to show a system icon next to text — the standard iOS pattern.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span> {
+                <span class="cm">// Label adds icon + text together</span>
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">ProfileView</span>()) {
+                    <span class="ty">Label</span>(<span class="st">"My Profile"</span>, systemImage: <span class="st">"person.circle"</span>)
+                }
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">SettingsView</span>()) {
+                    <span class="ty">Label</span>(<span class="st">"Settings"</span>, systemImage: <span class="st">"gearshape"</span>)
+                }
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">HelpView</span>()) {
+                    <span class="ty">Label</span>(<span class="st">"Help"</span>, systemImage: <span class="st">"questionmark.circle"</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Account"</span>)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">ProfileView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"Profile Screen"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Profile"</span>)
+    }
+}
+<span class="kw">struct</span> <span class="ty">SettingsView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"Settings Screen"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Settings"</span>)
+    }
+}
+<span class="kw">struct</span> <span class="ty">HelpView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"Help Screen"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Help"</span>)
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="nl-button">
+  <div class="sec-hdr"><span class="sec-num">02-C</span><h2>NavigationLink — <em>Wrapping Any View</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Custom Label</div>
+  <p class="level-desc">A <code>NavigationLink</code> can wrap <em>any</em> view as its label — a button, an image, even a whole card.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+
+                <span class="cm">// A NavigationLink wrapped around a styled button</span>
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">RedView</span>()) {
+                    <span class="ty">Text</span>(<span class="st">"Go to Red Screen"</span>)
+                        .<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        .<span class="fn">frame</span>(maxWidth: .<span class="pp">infinity</span>)
+                        .<span class="fn">padding</span>()
+                        .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pp">red</span>)
+                        .<span class="fn">foregroundColor</span>(.<span class="pp">white</span>)
+                        .<span class="fn">cornerRadius</span>(<span class="nm">12</span>)
+                }
+
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">GreenView</span>()) {
+                    <span class="ty">Text</span>(<span class="st">"Go to Green Screen"</span>)
+                        .<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        .<span class="fn">frame</span>(maxWidth: .<span class="pp">infinity</span>)
+                        .<span class="fn">padding</span>()
+                        .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pp">green</span>)
+                        .<span class="fn">foregroundColor</span>(.<span class="pp">white</span>)
+                        .<span class="fn">cornerRadius</span>(<span class="nm">12</span>)
+                }
+            }
+            .<span class="fn">padding</span>()
+            .<span class="fn">buttonStyle</span>(.<span class="pp">plain</span>) <span class="cm">// removes default blue tint</span>
+            .<span class="fn">navigationTitle</span>(<span class="st">"Colors"</span>)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">RedView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Color</span>.<span class="pp">red</span>.<span class="fn">ignoresSafeArea</span>()
+            .<span class="fn">navigationTitle</span>(<span class="st">"Red"</span>)
+    }
+}
+<span class="kw">struct</span> <span class="ty">GreenView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Color</span>.<span class="pp">green</span>.<span class="fn">ignoresSafeArea</span>()
+            .<span class="fn">navigationTitle</span>(<span class="st">"Green"</span>)
+    }
+}</pre>
+  </div>
+  <div class="callout callout-blue">
+    <span class="callout-icon">💡</span>
+    <div class="callout-body"><strong>Why .buttonStyle(.plain)?</strong> By default, SwiftUI tints all NavigationLink labels blue. Adding <code>.buttonStyle(.plain)</code> lets your custom colors show through unchanged.</div>
+  </div>
+</section>
+
+<section class="section" id="nl-custom">
+  <div class="sec-hdr"><span class="sec-num">02-D</span><h2>NavigationLink — <em>Custom Row Component</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Extract the row into a reusable component. This is how production apps avoid code duplication.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// Reusable row component</span>
+<span class="kw">struct</span> <span class="ty">MenuRow</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> icon: <span class="ty">String</span>
+    <span class="kw">let</span> title: <span class="ty">String</span>
+    <span class="kw">let</span> subtitle: <span class="ty">String</span>
+    <span class="kw">let</span> color: <span class="ty">Color</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">HStack</span>(spacing: <span class="nm">14</span>) {
+            <span class="ty">Image</span>(systemName: icon)
+                .<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">22</span>))
+                .<span class="fn">foregroundColor</span>(.<span class="pp">white</span>)
+                .<span class="fn">frame</span>(width: <span class="nm">42</span>, height: <span class="nm">42</span>)
+                .<span class="fn">background</span>(color)
+                .<span class="fn">cornerRadius</span>(<span class="nm">10</span>)
+            <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">2</span>) {
+                <span class="ty">Text</span>(title).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                <span class="ty">Text</span>(subtitle)
+                    .<span class="fn">font</span>(.<span class="pp">caption</span>)
+                    .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            }
+        }
+        .<span class="fn">padding</span>(.<span class="pp">vertical</span>, <span class="nm">4</span>)
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span> {
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">WifiView</span>()) {
+                    <span class="ty">MenuRow</span>(icon: <span class="st">"wifi"</span>, title: <span class="st">"Wi-Fi"</span>,
+                            subtitle: <span class="st">"LaGuardia_Network"</span>, color: .<span class="pp">blue</span>)
+                }
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">BluetoothView</span>()) {
+                    <span class="ty">MenuRow</span>(icon: <span class="st">"bluetooth"</span>, title: <span class="st">"Bluetooth"</span>,
+                            subtitle: <span class="st">"On"</span>, color: .<span class="pp">blue</span>)
+                }
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">NotifView</span>()) {
+                    <span class="ty">MenuRow</span>(icon: <span class="st">"bell.badge"</span>, title: <span class="st">"Notifications"</span>,
+                            subtitle: <span class="st">"Banners, Sounds"</span>, color: .<span class="pp">red</span>)
+                }
+                <span class="ty">NavigationLink</span>(destination: <span class="ty">GeneralView</span>()) {
+                    <span class="ty">MenuRow</span>(icon: <span class="st">"gear"</span>, title: <span class="st">"General"</span>,
+                            subtitle: <span class="st">"Storage, Background App Refresh"</span>, color: .<span class="pp">gray</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Settings"</span>)
+        }
+    }
+}
+
+<span class="cm">// Destination views</span>
+<span class="kw">struct</span> <span class="ty">WifiView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> { <span class="ty">Text</span>(<span class="st">"Wi-Fi Settings"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">navigationTitle</span>(<span class="st">"Wi-Fi"</span>) }
+}
+<span class="kw">struct</span> <span class="ty">BluetoothView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> { <span class="ty">Text</span>(<span class="st">"Bluetooth Settings"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">navigationTitle</span>(<span class="st">"Bluetooth"</span>) }
+}
+<span class="kw">struct</span> <span class="ty">NotifView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> { <span class="ty">Text</span>(<span class="st">"Notification Settings"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">navigationTitle</span>(<span class="st">"Notifications"</span>) }
+}
+<span class="kw">struct</span> <span class="ty">GeneralView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> { <span class="ty">Text</span>(<span class="st">"General Settings"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">navigationTitle</span>(<span class="st">"General"</span>) }
+}</pre>
+  </div>
+  <div class="practice"><h4>🧪 Try It</h4><ul class="plist"><li>Add a <code>badge: Int?</code> parameter to <code>MenuRow</code> and show a red capsule badge when it's non-nil.</li><li>Group the rows using <code>Section("Network")</code> and <code>Section("System")</code>.</li></ul></div>
+</section>
+
+<section class="section" id="nl-value">
+  <div class="sec-hdr"><span class="sec-num">02-E</span><h2>NavigationLink — <em>Value-Based (iOS 16+)</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Advanced</div>
+  <p class="level-desc">Instead of embedding the destination inside each link, <code>NavigationLink(value:)</code> + <code>.navigationDestination(for:)</code> centralize all routing in one place. The model must be <code>Hashable</code>.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// Model must be Hashable for value-based navigation</span>
+<span class="kw">struct</span> <span class="ty">Animal</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> emoji: <span class="ty">String</span>
+    <span class="kw">let</span> habitat: <span class="ty">String</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> animals = [
+        <span class="ty">Animal</span>(name: <span class="st">"Lion"</span>,     emoji: <span class="st">"🦁"</span>, habitat: <span class="st">"Savanna"</span>),
+        <span class="ty">Animal</span>(name: <span class="st">"Penguin"</span>, emoji: <span class="st">"🐧"</span>, habitat: <span class="st">"Antarctica"</span>),
+        <span class="ty">Animal</span>(name: <span class="st">"Dolphin"</span>, emoji: <span class="st">"🐬"</span>, habitat: <span class="st">"Ocean"</span>),
+        <span class="ty">Animal</span>(name: <span class="st">"Eagle"</span>,   emoji: <span class="st">"🦅"</span>, habitat: <span class="st">"Mountains"</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span>(animals) { animal <span class="kw">in</span>
+                <span class="cm">// Pass the VALUE, not the view</span>
+                <span class="ty">NavigationLink</span>(value: animal) {
+                    <span class="ty">Text</span>(<span class="st">"\(animal.emoji) \(animal.name)"</span>)
+                        .<span class="fn">font</span>(.<span class="pp">title3</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Animals"</span>)
+            <span class="cm">// ONE place to handle ALL Animal navigations</span>
+            .<span class="fn">navigationDestination</span>(for: <span class="ty">Animal</span>.<span class="pp">self</span>) { animal <span class="kw">in</span>
+                <span class="ty">AnimalDetailView</span>(animal: animal)
+            }
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">AnimalDetailView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> animal: <span class="ty">Animal</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+            <span class="ty">Text</span>(animal.emoji).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">100</span>))
+            <span class="ty">Text</span>(animal.name).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            <span class="ty">Label</span>(<span class="st">"Habitat: \(animal.habitat)"</span>, systemImage: <span class="st">"mappin"</span>)
+                .<span class="fn">font</span>(.<span class="pp">title3</span>)
+                .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+        }
+        .<span class="fn">navigationTitle</span>(animal.name)
+        .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+    }
+}</pre>
+  </div>
+</section>
+
+<!-- ═══════════════ SECTION 3 — PROGRAMMATIC ═══════════════ -->
+<section class="section" id="pn-bool">
+  <div class="sec-hdr"><span class="sec-num">03-A</span><h2>Programmatic Nav — <em>Bool Binding</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Simple Bool</div>
+  <p class="level-desc">The simplest programmatic navigation: trigger navigation from a <code>Button</code> using a <code>@State Bool</code>. No user tapping a NavigationLink required.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> goToDetail = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">VStack</span>(spacing: <span class="nm">30</span>) {
+                <span class="ty">Text</span>(<span class="st">"Press the button to navigate"</span>)
+                    .<span class="fn">font</span>(.<span class="pp">title2</span>)
+
+                <span class="ty">Button</span>(<span class="st">"Go to Detail Screen"</span>) {
+                    goToDetail = <span class="nm">true</span>  <span class="cm">// triggers navigation</span>
+                }
+                .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+
+                <span class="cm">// Hidden NavigationLink that activates when goToDetail == true</span>
+                <span class="ty">NavigationLink</span>(
+                    destination: <span class="ty">DetailView</span>(),
+                    isActive: $goToDetail
+                ) {
+                    <span class="ty">EmptyView</span>()  <span class="cm">// invisible — triggered programmatically</span>
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Home"</span>)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">DetailView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(<span class="st">"Navigated here automatically!"</span>)
+            .<span class="fn">font</span>(.<span class="pp">title</span>)
+            .<span class="fn">navigationTitle</span>(<span class="st">"Detail"</span>)
+    }
+}
+<span class="cm">// Note: isActive: is a legacy API still supported for simple cases.</span>
+<span class="cm">// For iOS 16+ use NavigationPath (shown in the next example).</span></pre>
+  </div>
+</section>
+
+<section class="section" id="pn-path">
+  <div class="sec-hdr"><span class="sec-num">03-B</span><h2>Programmatic Nav — <em>NavigationPath</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">NavigationPath is the modern way to control the stack. <code>path.append()</code> pushes a view. <code>path.removeLast()</code> pops it.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">City</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> country: <span class="ty">String</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> path = <span class="ty">NavigationPath</span>()  <span class="cm">// controls the stack</span>
+
+    <span class="kw">let</span> cities = [
+        <span class="ty">City</span>(name: <span class="st">"New York"</span>,    country: <span class="st">"USA"</span>),
+        <span class="ty">City</span>(name: <span class="st">"Casablanca"</span>,  country: <span class="st">"Morocco"</span>),
+        <span class="ty">City</span>(name: <span class="st">"Tokyo"</span>,       country: <span class="st">"Japan"</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span>(path: $path) {
+            <span class="ty">VStack</span>(spacing: <span class="nm">16</span>) {
+                <span class="ty">Text</span>(<span class="st">"Stack depth: \(path.count)"</span>)
+                    .<span class="fn">font</span>(.<span class="pp">headline</span>)
+                    .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+
+                <span class="ty">ForEach</span>(cities) { city <span class="kw">in</span>
+                    <span class="ty">Button</span>(<span class="st">"Push → \(city.name)"</span>) {
+                        path.<span class="fn">append</span>(city)   <span class="cm">// push programmatically</span>
+                    }
+                    .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+                }
+
+                <span class="kw">if</span> path.<span class="pp">count</span> > <span class="nm">0</span> {
+                    <span class="ty">Button</span>(<span class="st">"↩ Pop Last"</span>, role: .<span class="pp">destructive</span>) {
+                        path.<span class="fn">removeLast</span>()   <span class="cm">// pop one level</span>
+                    }
+                    <span class="ty">Button</span>(<span class="st">"🏠 Pop to Root"</span>) {
+                        path.<span class="fn">removeLast</span>(path.<span class="pp">count</span>) <span class="cm">// pop ALL</span>
+                    }
+                }
+            }
+            .<span class="fn">padding</span>()
+            .<span class="fn">navigationTitle</span>(<span class="st">"Cities"</span>)
+            .<span class="fn">navigationDestination</span>(for: <span class="ty">City</span>.<span class="pp">self</span>) { city <span class="kw">in</span>
+                <span class="ty">CityView</span>(city: city, path: $path)
+            }
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">CityView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> city: <span class="ty">City</span>
+    <span class="at">@Binding</span> <span class="kw">var</span> path: <span class="ty">NavigationPath</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+            <span class="ty">Text</span>(city.name).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            <span class="ty">Text</span>(city.country).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            <span class="ty">Button</span>(<span class="st">"🏠 Go Back to Root"</span>) {
+                path.<span class="fn">removeLast</span>(path.<span class="pp">count</span>)
+            }
+            .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        }
+        .<span class="fn">navigationTitle</span>(city.name)
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="pn-router">
+  <div class="sec-hdr"><span class="sec-num">03-C</span><h2>Programmatic Nav — <em>AppRouter Pattern</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex</div>
+  <p class="level-desc">A shared <code>AppRouter</code> observable class owns the path, so any view in your app can navigate without passing bindings everywhere.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="cm">// ── Shared Router ──────────────────────────────────────</span>
+<span class="at">@Observable</span>
+<span class="kw">class</span> <span class="ty">AppRouter</span> {
+    <span class="kw">var</span> path = <span class="ty">NavigationPath</span>()
+
+    <span class="kw">func</span> <span class="fn">push</span>&lt;T: <span class="ty">Hashable</span>&gt;(<span class="kw">_</span> value: T) { path.<span class="fn">append</span>(value) }
+    <span class="kw">func</span> <span class="fn">pop</span>()           { <span class="kw">if</span> !path.<span class="pp">isEmpty</span> { path.<span class="fn">removeLast</span>() } }
+    <span class="kw">func</span> <span class="fn">popToRoot</span>()     { path = <span class="ty">NavigationPath</span>() }
+}
+
+<span class="cm">// ── Models ─────────────────────────────────────────────</span>
+<span class="kw">struct</span> <span class="ty">Department</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> icon: <span class="ty">String</span>
+}
+<span class="kw">struct</span> <span class="ty">Employee</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> role: <span class="ty">String</span>
+}
+
+<span class="cm">// ── Root View ───────────────────────────────────────────</span>
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> router = <span class="ty">AppRouter</span>()
+
+    <span class="kw">let</span> departments = [
+        <span class="ty">Department</span>(name: <span class="st">"Engineering"</span>, icon: <span class="st">"hammer"</span>),
+        <span class="ty">Department</span>(name: <span class="st">"Design"</span>,      icon: <span class="st">"paintbrush"</span>),
+        <span class="ty">Department</span>(name: <span class="st">"Marketing"</span>,   icon: <span class="st">"megaphone"</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span>(path: $router.path) {
+            <span class="ty">List</span>(departments) { dept <span class="kw">in</span>
+                <span class="ty">NavigationLink</span>(value: dept) {
+                    <span class="ty">Label</span>(dept.name, systemImage: dept.icon)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Company"</span>)
+            .<span class="fn">toolbar</span> {
+                <span class="ty">ToolbarItem</span>(placement: .<span class="pp">topBarTrailing</span>) {
+                    <span class="ty">Button</span>(<span class="st">"Deep Link"</span>) {
+                        <span class="cm">// Jump 2 levels deep with one button press</span>
+                        <span class="kw">let</span> eng = <span class="ty">Department</span>(name: <span class="st">"Engineering"</span>, icon: <span class="st">"hammer"</span>)
+                        <span class="kw">let</span> emp = <span class="ty">Employee</span>(name: <span class="st">"Khalid"</span>, role: <span class="st">"Lead Dev"</span>)
+                        router.<span class="fn">push</span>(eng)
+                        router.<span class="fn">push</span>(emp)
+                    }
+                }
+            }
+            .<span class="fn">navigationDestination</span>(for: <span class="ty">Department</span>.<span class="pp">self</span>) { dept <span class="kw">in</span>
+                <span class="ty">DeptView</span>(dept: dept, router: router)
+            }
+            .<span class="fn">navigationDestination</span>(for: <span class="ty">Employee</span>.<span class="pp">self</span>) { emp <span class="kw">in</span>
+                <span class="ty">EmpView</span>(emp: emp, router: router)
+            }
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">DeptView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> dept: <span class="ty">Department</span>
+    <span class="kw">var</span> router: <span class="ty">AppRouter</span>
+
+    <span class="kw">let</span> employees = [
+        <span class="ty">Employee</span>(name: <span class="st">"Khalid"</span>, role: <span class="st">"Lead Dev"</span>),
+        <span class="ty">Employee</span>(name: <span class="st">"Sara"</span>,   role: <span class="st">"iOS Dev"</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">List</span>(employees) { emp <span class="kw">in</span>
+            <span class="ty">NavigationLink</span>(value: emp) {
+                <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>) {
+                    <span class="ty">Text</span>(emp.name).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                    <span class="ty">Text</span>(emp.role).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                }
+            }
+        }
+        .<span class="fn">navigationTitle</span>(dept.name)
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">EmpView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> emp: <span class="ty">Employee</span>
+    <span class="kw">var</span> router: <span class="ty">AppRouter</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+            <span class="ty">Image</span>(systemName: <span class="st">"person.circle.fill"</span>).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">70</span>)).<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+            <span class="ty">Text</span>(emp.name).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            <span class="ty">Text</span>(emp.role).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            <span class="ty">Button</span>(<span class="st">"🏠 Back to Home"</span>) { router.<span class="fn">popToRoot</span>() }
+                .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        }
+        .<span class="fn">navigationTitle</span>(emp.name)
+    }
+}</pre>
+  </div>
+  <div class="practice"><h4>🧪 Practice Challenges</h4><ul class="plist"><li>Add a 3rd type <code>Project: Hashable</code> and a 3rd level of navigation.</li><li>Show the current <code>path.count</code> in the toolbar title of every screen.</li></ul></div>
+</section>
+
+<!-- ═══════════════ SECTION 4 — TABVIEW ═══════════════ -->
+<section class="section" id="tv-basic">
+  <div class="sec-hdr"><span class="sec-num">04-A</span><h2>TabView — <em>Two Tabs</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Simplest TabView</div>
+  <p class="level-desc">A TabView with just 2 tabs. No selection state needed yet — SwiftUI manages it automatically.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">TabView</span> {
+            <span class="ty">Text</span>(<span class="st">"Home Screen"</span>)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">tabItem</span> {
+                    <span class="ty">Label</span>(<span class="st">"Home"</span>, systemImage: <span class="st">"house"</span>)
+                }
+
+            <span class="ty">Text</span>(<span class="st">"Profile Screen"</span>)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">tabItem</span> {
+                    <span class="ty">Label</span>(<span class="st">"Profile"</span>, systemImage: <span class="st">"person"</span>)
+                }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="tv-icons">
+  <div class="sec-hdr"><span class="sec-num">04-B</span><h2>TabView — <em>Icons, Selection State</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Selection + Tint</div>
+  <p class="level-desc">Track which tab is selected using <code>@State</code>. Use <code>.tag()</code> to identify tabs and <code>.tint()</code> for accent color.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> selectedTab = <span class="nm">0</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">TabView</span>(selection: $selectedTab) {
+
+            <span class="ty">VStack</span> {
+                <span class="ty">Image</span>(systemName: <span class="st">"house.fill"</span>).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">60</span>)).<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+                <span class="ty">Text</span>(<span class="st">"Home"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Home"</span>, systemImage: <span class="st">"house.fill"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">0</span>)
+
+            <span class="ty">VStack</span> {
+                <span class="ty">Image</span>(systemName: <span class="st">"magnifyingglass"</span>).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">60</span>)).<span class="fn">foregroundColor</span>(.<span class="pp">orange</span>)
+                <span class="ty">Text</span>(<span class="st">"Search"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Search"</span>, systemImage: <span class="st">"magnifyingglass"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">1</span>)
+
+            <span class="ty">VStack</span> {
+                <span class="ty">Image</span>(systemName: <span class="st">"person.fill"</span>).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">60</span>)).<span class="fn">foregroundColor</span>(.<span class="pp">green</span>)
+                <span class="ty">Text</span>(<span class="st">"Profile"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Profile"</span>, systemImage: <span class="st">"person.fill"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">2</span>)
+        }
+        .<span class="fn">tint</span>(.<span class="pp">blue</span>)
+    }
+}</pre>
+  </div>
+  <div class="practice"><h4>🧪 Try It</h4><ul class="plist"><li>Add a 4th "Settings" tab.</li><li>Add a <code>Button("Switch to Search")</code> on Home that sets <code>selectedTab = 1</code>.</li><li>Try <code>.tint(.red)</code> — what changes?</li></ul></div>
+</section>
+
+<section class="section" id="tv-badge">
+  <div class="sec-hdr"><span class="sec-num">04-C</span><h2>TabView — <em>Badges</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Show notification badges on tab icons using the <code>.badge()</code> modifier.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> selectedTab = <span class="nm">0</span>
+    <span class="at">@State</span> <span class="kw">private var</span> messageCount = <span class="nm">5</span>
+    <span class="at">@State</span> <span class="kw">private var</span> cartCount = <span class="nm">3</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">TabView</span>(selection: $selectedTab) {
+
+            <span class="ty">Text</span>(<span class="st">"Home"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Home"</span>, systemImage: <span class="st">"house"</span>) }
+                .<span class="fn">tag</span>(<span class="nm">0</span>)
+
+            <span class="cm">// Integer badge — shows number</span>
+            <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+                <span class="ty">Text</span>(<span class="st">"\(messageCount) messages"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                <span class="ty">Button</span>(<span class="st">"Read All"</span>) { messageCount = <span class="nm">0</span> }
+                    .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Messages"</span>, systemImage: <span class="st">"message"</span>) }
+            .<span class="fn">badge</span>(messageCount)    <span class="cm">// shows red bubble with number</span>
+            .<span class="fn">tag</span>(<span class="nm">1</span>)
+
+            <span class="cm">// String badge — shows text</span>
+            <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+                <span class="ty">Text</span>(<span class="st">"\(cartCount) items"</span>).<span class="fn">font</span>(.<span class="pp">largeTitle</span>)
+                <span class="ty">Button</span>(<span class="st">"Clear Cart"</span>) { cartCount = <span class="nm">0</span> }
+                    .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>()).<span class="fn">tint</span>(.<span class="pp">red</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Cart"</span>, systemImage: <span class="st">"cart"</span>) }
+            .<span class="fn">badge</span>(cartCount > <span class="nm">0</span> ? <span class="st">"\(cartCount)"</span> : <span class="nm">nil</span>)
+            .<span class="fn">tag</span>(<span class="nm">2</span>)
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="tv-stack">
+  <div class="sec-hdr"><span class="sec-num">04-D</span><h2>TabView — <em>Tab + NavigationStack Combined</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex (Real-World Pattern)</div>
+  <p class="level-desc">Every tab gets its own independent <code>NavigationStack</code>. This is how every real app is built — navigating inside a tab doesn't affect the other tabs.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> selectedTab = <span class="nm">0</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">TabView</span>(selection: $selectedTab) {
+
+            <span class="cm">// ── Tab 1: Home with its own stack</span>
+            <span class="ty">NavigationStack</span> {
+                <span class="ty">List</span> {
+                    <span class="ty">NavigationLink</span>(<span class="st">"Today's Deals"</span>, destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Deals"</span>))
+                    <span class="ty">NavigationLink</span>(<span class="st">"Featured"</span>,      destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Featured"</span>))
+                    <span class="ty">NavigationLink</span>(<span class="st">"New Arrivals"</span>,  destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"New Arrivals"</span>))
+                }
+                .<span class="fn">navigationTitle</span>(<span class="st">"Home"</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Home"</span>, systemImage: <span class="st">"house"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">0</span>)
+
+            <span class="cm">// ── Tab 2: Search with its own stack</span>
+            <span class="ty">NavigationStack</span> {
+                <span class="ty">List</span> {
+                    <span class="ty">NavigationLink</span>(<span class="st">"Trending"</span>,   destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Trending"</span>))
+                    <span class="ty">NavigationLink</span>(<span class="st">"Categories"</span>, destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Categories"</span>))
+                }
+                .<span class="fn">navigationTitle</span>(<span class="st">"Search"</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Search"</span>, systemImage: <span class="st">"magnifyingglass"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">1</span>)
+
+            <span class="cm">// ── Tab 3: Profile with its own stack</span>
+            <span class="ty">NavigationStack</span> {
+                <span class="ty">List</span> {
+                    <span class="ty">NavigationLink</span>(<span class="st">"Edit Profile"</span>, destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Edit Profile"</span>))
+                    <span class="ty">NavigationLink</span>(<span class="st">"Settings"</span>,     destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Settings"</span>))
+                    <span class="ty">NavigationLink</span>(<span class="st">"Sign Out"</span>,      destination: <span class="ty">SimpleDetailView</span>(title: <span class="st">"Sign Out"</span>))
+                }
+                .<span class="fn">navigationTitle</span>(<span class="st">"Profile"</span>)
+            }
+            .<span class="fn">tabItem</span> { <span class="ty">Label</span>(<span class="st">"Profile"</span>, systemImage: <span class="st">"person"</span>) }
+            .<span class="fn">tag</span>(<span class="nm">2</span>)
+        }
+    }
+}
+
+<span class="cm">// Reusable destination view</span>
+<span class="kw">struct</span> <span class="ty">SimpleDetailView</span>: <span class="ty">View</span> {
+    <span class="kw">let</span> title: <span class="ty">String</span>
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Text</span>(title).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            .<span class="fn">navigationTitle</span>(title)
+            .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+    }
+}</pre>
+  </div>
+  <div class="callout callout-blue"><span class="callout-icon">💡</span><div class="callout-body"><strong>Key Rule</strong> Each tab's <code>NavigationStack</code> is completely independent. Navigating deep in Tab 1 and then switching to Tab 2 does NOT affect Tab 2's stack — they each maintain their own history.</div></div>
+  <div class="practice"><h4>🧪 Practice Challenges</h4><ul class="plist"><li>Add a 4th "Notifications" tab with a badge that starts at 4.</li><li>Add a button inside the Home tab's detail view that uses <code>selectedTab = 2</code> to switch to Profile.</li></ul></div>
+</section>
+
+<!-- ═══════════════ SECTION 5 — SHEET ═══════════════ -->
+<section class="section" id="sh-basic">
+  <div class="sec-hdr"><span class="sec-num">05-A</span><h2>Sheet — <em>Simplest Bool Sheet</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — One Bool</div>
+  <p class="level-desc">The absolute simplest sheet: a <code>@State Bool</code> controls whether it's shown. Swipe down to dismiss.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showSheet = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Button</span>(<span class="st">"Open Sheet"</span>) {
+            showSheet = <span class="nm">true</span>
+        }
+        .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        .<span class="fn">sheet</span>(isPresented: $showSheet) {
+            <span class="ty">Text</span>(<span class="st">"This is a sheet! Swipe down to close."</span>)
+                .<span class="fn">font</span>(.<span class="pp">title2</span>)
+                .<span class="fn">padding</span>()
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="sh-dismiss">
+  <div class="sec-hdr"><span class="sec-num">05-B</span><h2>Sheet — <em>Dismiss with Button</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — Environment Dismiss</div>
+  <p class="level-desc">Use <code>@Environment(\.dismiss)</code> inside the sheet view to add a "Close" button. This is the standard pattern for sheets that need a dismiss button.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showSheet = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">Button</span>(<span class="st">"Show Info Sheet"</span>) { showSheet = <span class="nm">true</span> }
+                .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+                .<span class="fn">navigationTitle</span>(<span class="st">"Main App"</span>)
+                .<span class="fn">sheet</span>(isPresented: $showSheet) {
+                    <span class="ty">InfoSheet</span>()      <span class="cm">// the sheet content is its OWN struct</span>
+                }
+        }
+    }
+}
+
+<span class="cm">// The sheet is its own view struct</span>
+<span class="kw">struct</span> <span class="ty">InfoSheet</span>: <span class="ty">View</span> {
+    <span class="at">@Environment</span>(\.<span class="pp">dismiss</span>) <span class="kw">private var</span> dismiss  <span class="cm">// read from environment</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">24</span>) {
+            <span class="ty">Text</span>(<span class="st">"ℹ️ About This App"</span>)
+                .<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+            <span class="ty">Text</span>(<span class="st">"Version 1.0 — Built with SwiftUI"</span>)
+                .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            <span class="ty">Button</span>(<span class="st">"Close"</span>) {
+                dismiss()   <span class="cm">// closes the sheet</span>
+            }
+            .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        }
+        .<span class="fn">padding</span>(<span class="nm">40</span>)
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="sh-detent">
+  <div class="sec-hdr"><span class="sec-num">05-C</span><h2>Sheet — <em>Custom Height (Detents)</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Control sheet height with <code>.presentationDetents()</code>. Use <code>.medium</code> for a half-screen sheet or <code>.fraction()</code> for a custom size.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showSmall  = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> showMedium = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> showAny    = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">16</span>) {
+            <span class="ty">Button</span>(<span class="st">"Small Sheet (30%)"</span>)    { showSmall = <span class="nm">true</span> }
+            <span class="ty">Button</span>(<span class="st">"Medium Sheet (50%)"</span>)   { showMedium = <span class="nm">true</span> }
+            <span class="ty">Button</span>(<span class="st">"Resizable Sheet"</span>)      { showAny = <span class="nm">true</span> }
+        }
+        .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+
+        <span class="cm">// 30% of screen height</span>
+        .<span class="fn">sheet</span>(isPresented: $showSmall) {
+            <span class="ty">Text</span>(<span class="st">"Small sheet (fraction 0.3)"</span>).<span class="fn">font</span>(.<span class="pp">title2</span>)
+                .<span class="fn">presentationDetents</span>([.<span class="fn">fraction</span>(<span class="nm">0.3</span>)])
+                .<span class="fn">presentationDragIndicator</span>(.<span class="pp">visible</span>)
+        }
+
+        <span class="cm">// Medium = 50% of screen</span>
+        .<span class="fn">sheet</span>(isPresented: $showMedium) {
+            <span class="ty">Text</span>(<span class="st">"Medium sheet"</span>).<span class="fn">font</span>(.<span class="pp">title2</span>)
+                .<span class="fn">presentationDetents</span>([.<span class="pp">medium</span>])
+                .<span class="fn">presentationDragIndicator</span>(.<span class="pp">visible</span>)
+        }
+
+        <span class="cm">// User can drag between medium and large</span>
+        .<span class="fn">sheet</span>(isPresented: $showAny) {
+            <span class="ty">VStack</span> {
+                <span class="ty">Text</span>(<span class="st">"Drag me!"</span>).<span class="fn">font</span>(.<span class="pp">title</span>)
+                <span class="ty">Text</span>(<span class="st">"Drag the indicator to resize"</span>)
+                    .<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+            }
+            .<span class="fn">presentationDetents</span>([.<span class="pp">medium</span>, .<span class="pp">large</span>])  <span class="cm">// two snap points</span>
+            .<span class="fn">presentationDragIndicator</span>(.<span class="pp">visible</span>)
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="sh-full">
+  <div class="sec-hdr"><span class="sec-num">05-D</span><h2>FullScreenCover — <em>Full Modal</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc"><code>.fullScreenCover</code> covers the entire screen. Unlike <code>.sheet</code>, swiping down does NOT dismiss it — you must dismiss it with code.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showOnboarding = <span class="nm">true</span>  <span class="cm">// shows on first launch</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">VStack</span> {
+                <span class="ty">Text</span>(<span class="st">"Main App Content"</span>).<span class="fn">font</span>(.<span class="pp">title</span>)
+                <span class="ty">Button</span>(<span class="st">"Show Onboarding Again"</span>) {
+                    showOnboarding = <span class="nm">true</span>
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"App"</span>)
+        }
+        .<span class="fn">fullScreenCover</span>(isPresented: $showOnboarding) {
+            <span class="ty">OnboardingScreen</span>(isShowing: $showOnboarding)
+        }
+    }
+}
+
+<span class="kw">struct</span> <span class="ty">OnboardingScreen</span>: <span class="ty">View</span> {
+    <span class="at">@Binding</span> <span class="kw">var</span> isShowing: <span class="ty">Bool</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">ZStack</span> {
+            <span class="ty">Color</span>.<span class="pp">blue</span>.<span class="fn">ignoresSafeArea</span>()
+            <span class="ty">VStack</span>(spacing: <span class="nm">30</span>) {
+                <span class="ty">Text</span>(<span class="st">"👋 Welcome!"</span>)
+                    .<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">60</span>))
+                <span class="ty">Text</span>(<span class="st">"This is a full screen cover.\nIt can only be dismissed by code."</span>)
+                    .<span class="fn">font</span>(.<span class="pp">title3</span>)
+                    .<span class="fn">multilineTextAlignment</span>(.<span class="pp">center</span>)
+                    .<span class="fn">foregroundColor</span>(.<span class="pp">white</span>)
+                <span class="ty">Button</span>(<span class="st">"Get Started →"</span>) {
+                    isShowing = <span class="nm">false</span>   <span class="cm">// must be dismissed in code</span>
+                }
+                .<span class="fn">font</span>(.<span class="pp">title2</span>.<span class="fn">bold</span>())
+                .<span class="fn">foregroundColor</span>(.<span class="pp">blue</span>)
+                .<span class="fn">padding</span>()
+                .<span class="fn">background</span>(<span class="ty">Color</span>.<span class="pp">white</span>)
+                .<span class="fn">cornerRadius</span>(<span class="nm">14</span>)
+            }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="sh-form">
+  <div class="sec-hdr"><span class="sec-num">05-E</span><h2>Sheet — <em>Form with Toolbar Buttons</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex</div>
+  <p class="level-desc">A real-world add/edit form inside a sheet. Includes a NavigationStack for the toolbar, Save/Cancel buttons, and data passing back to the parent.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">TaskItem</span>: <span class="ty">Identifiable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">var</span> title: <span class="ty">String</span>
+    <span class="kw">var</span> priority: <span class="ty">String</span>
+    <span class="kw">var</span> isDone: <span class="ty">Bool</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> tasks: [<span class="ty">TaskItem</span>] = [
+        <span class="ty">TaskItem</span>(title: <span class="st">"Read SwiftUI docs"</span>, priority: <span class="st">"High"</span>, isDone: <span class="nm">false</span>),
+        <span class="ty">TaskItem</span>(title: <span class="st">"Build lab project"</span>,  priority: <span class="st">"Medium"</span>, isDone: <span class="nm">true</span>)
+    ]
+    <span class="at">@State</span> <span class="kw">private var</span> showAddSheet = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span>(tasks) { task <span class="kw">in</span>
+                <span class="ty">HStack</span> {
+                    <span class="ty">Image</span>(systemName: task.isDone ? <span class="st">"checkmark.circle.fill"</span> : <span class="st">"circle"</span>)
+                        .<span class="fn">foregroundColor</span>(task.isDone ? .<span class="pp">green</span> : .<span class="pp">secondary</span>)
+                    <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>) {
+                        <span class="ty">Text</span>(task.title).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        <span class="ty">Text</span>(task.priority).<span class="fn">font</span>(.<span class="pp">caption</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    }
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Tasks"</span>)
+            .<span class="fn">toolbar</span> {
+                <span class="ty">ToolbarItem</span>(placement: .<span class="pp">topBarTrailing</span>) {
+                    <span class="ty">Button</span> { showAddSheet = <span class="nm">true</span> } label: {
+                        <span class="ty">Image</span>(systemName: <span class="st">"plus"</span>)
+                    }
+                }
+            }
+            .<span class="fn">sheet</span>(isPresented: $showAddSheet) {
+                <span class="ty">AddTaskSheet</span> { newTask <span class="kw">in</span>
+                    tasks.<span class="fn">append</span>(newTask)   <span class="cm">// add returned task to array</span>
+                }
+            }
+        }
+    }
+}
+
+<span class="cm">// The sheet passes the new task BACK via a closure</span>
+<span class="kw">struct</span> <span class="ty">AddTaskSheet</span>: <span class="ty">View</span> {
+    <span class="at">@Environment</span>(\.<span class="pp">dismiss</span>) <span class="kw">private var</span> dismiss
+    <span class="at">@State</span> <span class="kw">private var</span> title = <span class="st">""</span>
+    <span class="at">@State</span> <span class="kw">private var</span> priority = <span class="st">"Medium"</span>
+    <span class="kw">let</span> priorities = [<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>]
+
+    <span class="kw">var</span> onSave: (<span class="ty">TaskItem</span>) -> <span class="ty">Void</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">Form</span> {
+                <span class="ty">Section</span>(<span class="st">"Task"</span>) {
+                    <span class="ty">TextField</span>(<span class="st">"Task title"</span>, text: $title)
+                }
+                <span class="ty">Section</span>(<span class="st">"Priority"</span>) {
+                    <span class="ty">Picker</span>(<span class="st">"Priority"</span>, selection: $priority) {
+                        <span class="ty">ForEach</span>(priorities, id: \.<span class="pp">self</span>) { p <span class="kw">in</span>
+                            <span class="ty">Text</span>(p).<span class="fn">tag</span>(p)
+                        }
+                    }
+                    .<span class="fn">pickerStyle</span>(.<span class="pp">segmented</span>)
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"New Task"</span>)
+            .<span class="fn">navigationBarTitleDisplayMode</span>(.<span class="pp">inline</span>)
+            .<span class="fn">toolbar</span> {
+                <span class="ty">ToolbarItem</span>(placement: .<span class="pp">cancellationAction</span>) {
+                    <span class="ty">Button</span>(<span class="st">"Cancel"</span>) { dismiss() }
+                }
+                <span class="ty">ToolbarItem</span>(placement: .<span class="pp">confirmationAction</span>) {
+                    <span class="ty">Button</span>(<span class="st">"Save"</span>) {
+                        <span class="kw">let</span> newTask = <span class="ty">TaskItem</span>(title: title, priority: priority, isDone: <span class="nm">false</span>)
+                        <span class="fn">onSave</span>(newTask)   <span class="cm">// pass data BACK to parent</span>
+                        dismiss()
+                    }
+                    .<span class="fn">disabled</span>(title.<span class="fn">isEmpty</span>)
+                }
+            }
+        }
+        .<span class="fn">presentationDetents</span>([.<span class="pp">medium</span>])
+    }
+}</pre>
+  </div>
+  <div class="practice"><h4>🧪 Practice Challenges</h4><ul class="plist"><li>Add a "due date" <code>DatePicker</code> field to the form.</li><li>Show a confirmation alert if the user taps Cancel with unsaved changes.</li><li>Add swipe-to-delete on the task list using <code>.onDelete</code>.</li></ul></div>
+</section>
+
+<!-- ═══════════════ SECTION 6 — SPLITVIEW ═══════════════ -->
+<section class="section" id="sv-2col">
+  <div class="sec-hdr"><span class="sec-num">06-A</span><h2>NavigationSplitView — <em>2-Column</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">A two-column sidebar/detail layout. On iPad you see both columns. On iPhone it collapses into a NavigationStack automatically.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">Recipe</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">let</span> emoji: <span class="ty">String</span>
+    <span class="kw">let</span> time: <span class="ty">String</span>
+    <span class="kw">let</span> description: <span class="ty">String</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> selectedRecipe: <span class="ty">Recipe</span>?
+
+    <span class="kw">let</span> recipes = [
+        <span class="ty">Recipe</span>(name: <span class="st">"Pasta"</span>,  emoji: <span class="st">"🍝"</span>, time: <span class="st">"20 min"</span>, description: <span class="st">"Classic spaghetti with marinara sauce."</span>),
+        <span class="ty">Recipe</span>(name: <span class="st">"Tacos"</span>,  emoji: <span class="st">"🌮"</span>, time: <span class="st">"15 min"</span>, description: <span class="st">"Crispy tacos with seasoned beef."</span>),
+        <span class="ty">Recipe</span>(name: <span class="st">"Sushi"</span>,  emoji: <span class="st">"🍣"</span>, time: <span class="st">"40 min"</span>, description: <span class="st">"Fresh salmon nigiri rolls."</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationSplitView</span> {
+            <span class="cm">// LEFT COLUMN — Sidebar</span>
+            <span class="ty">List</span>(recipes, selection: $selectedRecipe) { recipe <span class="kw">in</span>
+                <span class="ty">HStack</span> {
+                    <span class="ty">Text</span>(recipe.emoji).<span class="fn">font</span>(.<span class="fn">title</span>)
+                    <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>) {
+                        <span class="ty">Text</span>(recipe.name).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                        <span class="ty">Text</span>(recipe.time).<span class="fn">font</span>(.<span class="pp">caption</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    }
+                }
+                .<span class="fn">tag</span>(recipe)
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Recipes"</span>)
+        } detail: {
+            <span class="cm">// RIGHT COLUMN — Detail</span>
+            <span class="kw">if let</span> recipe = selectedRecipe {
+                <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+                    <span class="ty">Text</span>(recipe.emoji).<span class="fn">font</span>(.<span class="fn">system</span>(size: <span class="nm">80</span>))
+                    <span class="ty">Text</span>(recipe.name).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+                    <span class="ty">Label</span>(recipe.time, systemImage: <span class="st">"clock"</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    <span class="ty">Text</span>(recipe.description).<span class="fn">font</span>(.<span class="pp">body</span>).<span class="fn">padding</span>()
+                }
+                .<span class="fn">navigationTitle</span>(recipe.name)
+            } <span class="kw">else</span> {
+                <span class="ty">ContentUnavailableView</span>(
+                    <span class="st">"Select a Recipe"</span>,
+                    systemImage: <span class="st">"fork.knife"</span>,
+                    description: <span class="ty">Text</span>(<span class="st">"Choose a recipe to see its details"</span>)
+                )
+            }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="sv-3col">
+  <div class="sec-hdr"><span class="sec-num">06-B</span><h2>NavigationSplitView — <em>3-Column (Mail Style)</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex</div>
+  <p class="level-desc">Three-column layout: Sidebar (categories) → Content (items) → Detail. Used in Mail, Notes, and productivity apps.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">enum</span> <span class="ty">Folder</span>: <span class="ty">String</span>, <span class="ty">CaseIterable</span>, <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">case</span> inbox = <span class="st">"Inbox"</span>, sent = <span class="st">"Sent"</span>, drafts = <span class="st">"Drafts"</span>
+    <span class="kw">var</span> id: <span class="ty">String</span> { rawValue }
+    <span class="kw">var</span> icon: <span class="ty">String</span> {
+        <span class="kw">switch</span> <span class="kw">self</span> {
+        <span class="kw">case</span> .<span class="pp">inbox</span>:  <span class="kw">return</span> <span class="st">"tray"</span>
+        <span class="kw">case</span> .<span class="pp">sent</span>:   <span class="kw">return</span> <span class="st">"paperplane"</span>
+        <span class="kw">case</span> .<span class="pp">drafts</span>: <span class="kw">return</span> <span class="st">"doc"</span>
+        }
+    }
+}
+<span class="kw">struct</span> <span class="ty">Message</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {
+    <span class="kw">let</span> id = <span class="ty">UUID</span>()
+    <span class="kw">let</span> from: <span class="ty">String</span>
+    <span class="kw">let</span> subject: <span class="ty">String</span>
+    <span class="kw">let</span> body: <span class="ty">String</span>
+}
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> selectedFolder: <span class="ty">Folder</span>? = .<span class="pp">inbox</span>
+    <span class="at">@State</span> <span class="kw">private var</span> selectedMessage: <span class="ty">Message</span>?
+
+    <span class="kw">let</span> messages = [
+        <span class="ty">Message</span>(from: <span class="st">"Apple"</span>,  subject: <span class="st">"Your receipt"</span>,    body: <span class="st">"Thanks for your purchase of $0.99."</span>),
+        <span class="ty">Message</span>(from: <span class="st">"GitHub"</span>, subject: <span class="st">"New PR opened"</span>,   body: <span class="st">"A pull request was submitted to main."</span>),
+        <span class="ty">Message</span>(from: <span class="st">"Khalid"</span>, subject: <span class="st">"Meeting tomorrow"</span>, body: <span class="st">"Don't forget our 10am standup."</span>)
+    ]
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationSplitView</span> {
+            <span class="cm">// Column 1: Folders</span>
+            <span class="ty">List</span>(<span class="ty">Folder</span>.<span class="pp">allCases</span>, selection: $selectedFolder) { folder <span class="kw">in</span>
+                <span class="ty">Label</span>(folder.rawValue, systemImage: folder.icon).<span class="fn">tag</span>(folder)
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Mail"</span>)
+        } content: {
+            <span class="cm">// Column 2: Message list</span>
+            <span class="ty">List</span>(messages, selection: $selectedMessage) { msg <span class="kw">in</span>
+                <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">4</span>) {
+                    <span class="ty">Text</span>(msg.from).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                    <span class="ty">Text</span>(msg.subject).<span class="fn">font</span>(.<span class="pp">subheadline</span>)
+                    <span class="ty">Text</span>(msg.body).<span class="fn">font</span>(.<span class="pp">caption</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>).<span class="fn">lineLimit</span>(<span class="nm">1</span>)
+                }
+                .<span class="fn">tag</span>(msg)
+            }
+            .<span class="fn">navigationTitle</span>(selectedFolder?.rawValue ?? <span class="st">"Messages"</span>)
+        } detail: {
+            <span class="cm">// Column 3: Message body</span>
+            <span class="kw">if let</span> msg = selectedMessage {
+                <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">16</span>) {
+                    <span class="ty">Text</span>(msg.subject).<span class="fn">font</span>(.<span class="pp">largeTitle</span>).<span class="fn">bold</span>()
+                    <span class="ty">Text</span>(<span class="st">"From: \(msg.from)"</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    <span class="ty">Divider</span>()
+                    <span class="ty">Text</span>(msg.body).<span class="fn">font</span>(.<span class="pp">body</span>).<span class="fn">lineSpacing</span>(<span class="nm">6</span>)
+                    <span class="ty">Spacer</span>()
+                }
+                .<span class="fn">padding</span>()
+                .<span class="fn">navigationTitle</span>(msg.subject)
+            } <span class="kw">else</span> {
+                <span class="ty">ContentUnavailableView</span>(<span class="st">"Select a message"</span>, systemImage: <span class="st">"envelope"</span>)
+            }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<!-- ═══════════════ SECTION 7 — ALERT ═══════════════ -->
+<section class="section" id="al-basic">
+  <div class="sec-hdr"><span class="sec-num">07-A</span><h2>Alert — <em>Simplest Alert</em></h2></div>
+  <div class="level-label level-1">🟢 Level 1 — One Button</div>
+  <p class="level-desc">The minimal alert: one message, one OK button. Triggered by a <code>@State Bool</code>.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showAlert = <span class="nm">false</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">Button</span>(<span class="st">"Show Alert"</span>) {
+            showAlert = <span class="nm">true</span>
+        }
+        .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        .<span class="fn">alert</span>(<span class="st">"Hello!"</span>, isPresented: $showAlert) {
+            <span class="cm">// Automatically gets an OK button if you don't add one</span>
+            <span class="ty">Button</span>(<span class="st">"OK"</span>, role: .<span class="pp">cancel</span>) { }
+        } message: {
+            <span class="ty">Text</span>(<span class="st">"This is your first alert."</span>)
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="al-actions">
+  <div class="sec-hdr"><span class="sec-num">07-B</span><h2>Alert — <em>Multiple Actions</em></h2></div>
+  <div class="level-label level-2">🔵 Level 2 — Intermediate</div>
+  <p class="level-desc">Alerts can have multiple buttons with different roles: <code>.destructive</code> renders red, <code>.cancel</code> renders bold.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showDeleteAlert = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> showSaveAlert   = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> status = <span class="st">"No action yet"</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">VStack</span>(spacing: <span class="nm">20</span>) {
+            <span class="ty">Text</span>(status).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+
+            <span class="ty">Button</span>(<span class="st">"Delete Item"</span>, role: .<span class="pp">destructive</span>) {
+                showDeleteAlert = <span class="nm">true</span>
+            }
+            .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>()).<span class="fn">tint</span>(.<span class="pp">red</span>)
+
+            <span class="ty">Button</span>(<span class="st">"Save Changes"</span>) {
+                showSaveAlert = <span class="nm">true</span>
+            }
+            .<span class="fn">buttonStyle</span>(.<span class="fn">borderedProminent</span>())
+        }
+
+        <span class="cm">// Alert with destructive + cancel</span>
+        .<span class="fn">alert</span>(<span class="st">"Delete Item?"</span>, isPresented: $showDeleteAlert) {
+            <span class="ty">Button</span>(<span class="st">"Delete"</span>, role: .<span class="pp">destructive</span>) {
+                status = <span class="st">"Item deleted!"</span>
+            }
+            <span class="ty">Button</span>(<span class="st">"Cancel"</span>, role: .<span class="pp">cancel</span>) {
+                status = <span class="st">"Cancelled."</span>
+            }
+        } message: {
+            <span class="ty">Text</span>(<span class="st">"This cannot be undone."</span>)
+        }
+
+        <span class="cm">// Alert with two positive options</span>
+        .<span class="fn">alert</span>(<span class="st">"Save changes?"</span>, isPresented: $showSaveAlert) {
+            <span class="ty">Button</span>(<span class="st">"Save & Exit"</span>) { status = <span class="st">"Saved and exited."</span> }
+            <span class="ty">Button</span>(<span class="st">"Save Draft"</span>)  { status = <span class="st">"Saved as draft."</span> }
+            <span class="ty">Button</span>(<span class="st">"Cancel"</span>, role: .<span class="pp">cancel</span>) { }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section class="section" id="al-confirm">
+  <div class="sec-hdr"><span class="sec-num">07-C</span><h2>Alert, Popover &amp; ConfirmationDialog — <em>All Together</em></h2></div>
+  <div class="level-label level-3">🟠 Level 3 — Complex</div>
+  <p class="level-desc">A real-world example combining alerts, confirmation dialogs (action sheets), and a popover in one view.</p>
+  <div class="codeblock">
+    <div class="codebar"><div class="codedots"><span></span><span></span><span></span></div><div class="codetitle">ContentView.swift</div><button class="copybtn" onclick="cp(this)">Copy</button></div>
+    <pre><span class="kw">import</span> SwiftUI
+
+<span class="kw">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {
+    <span class="at">@State</span> <span class="kw">private var</span> showAlert        = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> showConfirmDialog = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> showPopover       = <span class="nm">false</span>
+    <span class="at">@State</span> <span class="kw">private var</span> statusLog: [<span class="ty">String</span>] = []
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="ty">View</span> {
+        <span class="ty">NavigationStack</span> {
+            <span class="ty">List</span> {
+                <span class="ty">Section</span>(<span class="st">"Actions"</span>) {
+
+                    <span class="ty">Button</span>(<span class="st">"⚠️ Simple Alert"</span>) { showAlert = <span class="nm">true</span> }
+
+                    <span class="cm">// confirmationDialog = iOS action sheet</span>
+                    <span class="ty">Button</span>(<span class="st">"🗑 Delete Account"</span>, role: .<span class="pp">destructive</span>) {
+                        showConfirmDialog = <span class="nm">true</span>
+                    }
+
+                    <span class="ty">Button</span>(<span class="st">"ℹ️ Show Popover"</span>) { showPopover = <span class="nm">true</span> }
+                        .<span class="fn">popover</span>(isPresented: $showPopover) {
+                            <span class="ty">VStack</span>(alignment: .<span class="pp">leading</span>, spacing: <span class="nm">12</span>) {
+                                <span class="ty">Text</span>(<span class="st">"Sort Options"</span>).<span class="fn">font</span>(.<span class="pp">headline</span>)
+                                <span class="ty">Divider</span>()
+                                <span class="ty">ForEach</span>([<span class="st">"A → Z"</span>, <span class="st">"Newest"</span>, <span class="st">"Price ↑"</span>], id: \.<span class="pp">self</span>) { opt <span class="kw">in</span>
+                                    <span class="ty">Button</span>(opt) {
+                                        statusLog.<span class="fn">append</span>(<span class="st">"Sorted: \(opt)"</span>)
+                                        showPopover = <span class="nm">false</span>
+                                    }
+                                    .<span class="fn">frame</span>(maxWidth: .<span class="pp">infinity</span>, alignment: .<span class="pp">leading</span>)
+                                }
+                            }
+                            .<span class="fn">padding</span>()
+                            .<span class="fn">frame</span>(minWidth: <span class="nm">200</span>)
+                        }
+                }
+
+                <span class="ty">Section</span>(<span class="st">"Log"</span>) {
+                    <span class="kw">if</span> statusLog.<span class="fn">isEmpty</span> {
+                        <span class="ty">Text</span>(<span class="st">"No actions yet"</span>).<span class="fn">foregroundColor</span>(.<span class="pp">secondary</span>)
+                    }
+                    <span class="ty">ForEach</span>(statusLog.<span class="pp">reversed</span>(), id: \.<span class="pp">self</span>) { entry <span class="kw">in</span>
+                        <span class="ty">Text</span>(entry).<span class="fn">font</span>(.<span class="pp">caption</span>)
+                    }
+                }
+            }
+            .<span class="fn">navigationTitle</span>(<span class="st">"Dialogs"</span>)
+        }
+
+        <span class="cm">// Alert</span>
+        .<span class="fn">alert</span>(<span class="st">"Are you sure?"</span>, isPresented: $showAlert) {
+            <span class="ty">Button</span>(<span class="st">"Yes"</span>)    { statusLog.<span class="fn">append</span>(<span class="st">"Confirmed"</span>) }
+            <span class="ty">Button</span>(<span class="st">"No"</span>, role: .<span class="pp">cancel</span>) { statusLog.<span class="fn">append</span>(<span class="st">"Cancelled"</span>) }
+        } message: {
+            <span class="ty">Text</span>(<span class="st">"This will affect your data."</span>)
+        }
+
+        <span class="cm">// ConfirmationDialog (appears as action sheet on iPhone)</span>
+        .<span class="fn">confirmationDialog</span>(
+            <span class="st">"Delete your account permanently?"</span>,
+            isPresented: $showConfirmDialog,
+            titleVisibility: .<span class="pp">visible</span>
+        ) {
+            <span class="ty">Button</span>(<span class="st">"Delete Account"</span>, role: .<span class="pp">destructive</span>) {
+                statusLog.<span class="fn">append</span>(<span class="st">"Account deleted"</span>)
+            }
+            <span class="ty">Button</span>(<span class="st">"Deactivate Instead"</span>) {
+                statusLog.<span class="fn">append</span>(<span class="st">"Account deactivated"</span>)
+            }
+            <span class="ty">Button</span>(<span class="st">"Cancel"</span>, role: .<span class="pp">cancel</span>) {
+                statusLog.<span class="fn">append</span>(<span class="st">"Cancelled"</span>)
+            }
+        } message: {
+            <span class="ty">Text</span>(<span class="st">"You cannot undo this action."</span>)
+        }
+    }
+}</pre>
+  </div>
+  <div class="practice"><h4>🧪 Practice Challenges</h4><ul class="plist"><li>Add a "Sign Out" button with a <code>confirmationDialog</code> that has "Sign Out" + "Cancel".</li><li>Show a success alert after the delete confirmation is confirmed.</li><li>Add a "?" toolbar button that shows a popover with help text.</li></ul></div>
+</section>
+
+<!-- ═══════════════ QUIZ ═══════════════ -->
+<section class="section" id="quiz">
+  <div class="sec-hdr"><span class="sec-num">✦</span><h2>Practice Quiz — <em>Check Your Knowledge</em></h2></div>
+  <p class="sec-intro">Answer these questions to verify your understanding of every topic in this guide.</p>
+
+  <div class="qcard">
+    <div class="qnum">Question 1 of 8</div>
+    <div class="qtext">Where must <code>.navigationTitle()</code> and <code>.toolbar()</code> be placed?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q1')"><span class="qletter">A</span> On the <code>NavigationStack</code> itself</div>
+      <div class="qopt" onclick="qa(this,true,'q1')"><span class="qletter">B</span> On the view <em>inside</em> the <code>NavigationStack</code></div>
+      <div class="qopt" onclick="qa(this,false,'q1')"><span class="qletter">C</span> On the <code>@main App</code> struct</div>
+      <div class="qopt" onclick="qa(this,false,'q1')"><span class="qletter">D</span> Anywhere — it doesn't matter</div>
+    </div>
+    <div class="qfb" id="q1-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 2 of 8</div>
+    <div class="qtext">What protocol must a model conform to in order to be used with <code>NavigationLink(value:)</code>?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q2')"><span class="qletter">A</span> Identifiable</div>
+      <div class="qopt" onclick="qa(this,false,'q2')"><span class="qletter">B</span> Codable</div>
+      <div class="qopt" onclick="qa(this,true,'q2')"><span class="qletter">C</span> Hashable</div>
+      <div class="qopt" onclick="qa(this,false,'q2')"><span class="qletter">D</span> Equatable</div>
+    </div>
+    <div class="qfb" id="q2-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 3 of 8</div>
+    <div class="qtext">You want a TabView where tapping a row in Tab 1 does NOT affect the navigation state of Tab 2. How do you set this up?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q3')"><span class="qletter">A</span> Use one shared <code>NavigationStack</code> wrapping the entire <code>TabView</code></div>
+      <div class="qopt" onclick="qa(this,true,'q3')"><span class="qletter">B</span> Put a separate <code>NavigationStack</code> inside each tab</div>
+      <div class="qopt" onclick="qa(this,false,'q3')"><span class="qletter">C</span> Use <code>NavigationSplitView</code> instead</div>
+      <div class="qopt" onclick="qa(this,false,'q3')"><span class="qletter">D</span> Use <code>@State</code> to synchronize the stacks</div>
+    </div>
+    <div class="qfb" id="q3-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 4 of 8</div>
+    <div class="qtext">What is the difference between <code>.sheet</code> and <code>.fullScreenCover</code>?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q4')"><span class="qletter">A</span> No difference — they are identical</div>
+      <div class="qopt" onclick="qa(this,false,'q4')"><span class="qletter">B</span> <code>.sheet</code> is iOS 16+ only; <code>.fullScreenCover</code> works from iOS 13</div>
+      <div class="qopt" onclick="qa(this,true,'q4')"><span class="qletter">C</span> <code>.sheet</code> slides up partially and can be swiped away; <code>.fullScreenCover</code> covers the whole screen and must be dismissed in code</div>
+      <div class="qopt" onclick="qa(this,false,'q4')"><span class="qletter">D</span> <code>.fullScreenCover</code> can be swiped away; <code>.sheet</code> cannot</div>
+    </div>
+    <div class="qfb" id="q4-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 5 of 8</div>
+    <div class="qtext">How do you programmatically pop ALL views back to the root using <code>NavigationPath</code>?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q5')"><span class="qletter">A</span> <code>path.clear()</code></div>
+      <div class="qopt" onclick="qa(this,false,'q5')"><span class="qletter">B</span> <code>path.removeAll()</code></div>
+      <div class="qopt" onclick="qa(this,true,'q5')"><span class="qletter">C</span> <code>path.removeLast(path.count)</code> or <code>path = NavigationPath()</code></div>
+      <div class="qopt" onclick="qa(this,false,'q5')"><span class="qletter">D</span> <code>path.popAll()</code></div>
+    </div>
+    <div class="qfb" id="q5-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 6 of 8</div>
+    <div class="qtext">Which modifier controls sheet height (e.g., half-screen, one-third)? (iOS 16+)</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q6')"><span class="qletter">A</span> <code>.frame(height:)</code></div>
+      <div class="qopt" onclick="qa(this,true,'q6')"><span class="qletter">B</span> <code>.presentationDetents([.medium, .large])</code></div>
+      <div class="qopt" onclick="qa(this,false,'q6')"><span class="qletter">C</span> <code>.sheetSize(.medium)</code></div>
+      <div class="qopt" onclick="qa(this,false,'q6')"><span class="qletter">D</span> <code>.fixedSize(horizontal:vertical:)</code></div>
+    </div>
+    <div class="qfb" id="q6-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 7 of 8</div>
+    <div class="qtext">How does <code>NavigationSplitView</code> behave on iPhone?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q7')"><span class="qletter">A</span> It shows all 3 columns side by side (same as iPad)</div>
+      <div class="qopt" onclick="qa(this,true,'q7')"><span class="qletter">B</span> It automatically collapses into a single-column <code>NavigationStack</code></div>
+      <div class="qopt" onclick="qa(this,false,'q7')"><span class="qletter">C</span> It crashes — it's only supported on iPad</div>
+      <div class="qopt" onclick="qa(this,false,'q7')"><span class="qletter">D</span> It shows only the detail column</div>
+    </div>
+    <div class="qfb" id="q7-fb"></div>
+  </div>
+
+  <div class="qcard">
+    <div class="qnum">Question 8 of 8</div>
+    <div class="qtext">What is the purpose of <code>.buttonStyle(.plain)</code> on a <code>NavigationLink</code>?</div>
+    <div class="qopts">
+      <div class="qopt" onclick="qa(this,false,'q8')"><span class="qletter">A</span> It removes the chevron arrow from list rows</div>
+      <div class="qopt" onclick="qa(this,false,'q8')"><span class="qletter">B</span> It disables the NavigationLink</div>
+      <div class="qopt" onclick="qa(this,true,'q8')"><span class="qletter">C</span> It removes the default blue tint so your custom label colors show as designed</div>
+      <div class="qopt" onclick="qa(this,false,'q8')"><span class="qletter">D</span> It makes the link trigger on long press instead of tap</div>
+    </div>
+    <div class="qfb" id="q8-fb"></div>
+  </div>
+
+</section>
+
+</main>
+
+<button id="backtop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── SIDEBAR LINKS ──
+document.querySelectorAll('.sb-item').forEach(link => {
+  link.addEventListener('click', () => {
+    const id = link.dataset.to;
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// ── SCROLL ──
+const allIds = ['hero','overview',
+  'ns-basic','ns-multi','ns-toolbar','ns-data','ns-list','ns-complex',
+  'nl-text','nl-label','nl-button','nl-custom','nl-value',
+  'pn-bool','pn-path','pn-router',
+  'tv-basic','tv-icons','tv-badge','tv-stack',
+  'sh-basic','sh-dismiss','sh-detent','sh-full','sh-form',
+  'sv-2col','sv-3col',
+  'al-basic','al-actions','al-confirm',
+  'quiz'
+];
+const total = allIds.length;
+
+function onScroll() {
+  const sy = window.scrollY;
+  const docH = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docH > 0 ? Math.round(sy / docH * 100) : 0;
+  document.getElementById('pbar').style.width = pct + '%';
+  document.getElementById('plabel').textContent = pct + '%';
+
+  let cur = 0;
+  allIds.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && sy >= el.offsetTop - 100) cur = i;
+  });
+  const activeId = allIds[cur];
+  document.querySelectorAll('.sb-item').forEach(l => {
+    l.classList.toggle('active', l.dataset.to === activeId);
+  });
+
+  document.getElementById('backtop').classList.toggle('show', sy > 400);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// ── COPY ──
+function cp(btn) {
+  const txt = btn.closest('.codeblock').querySelector('pre').innerText;
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+// ── QUIZ ──
+const qfb = {
+  q1: { y: "✓ Correct! .navigationTitle(), .toolbar(), .navigationBarTitleDisplayMode() — all go on the view INSIDE the stack, not on NavigationStack itself.", n: "✗ Not quite. The modifiers must go on the view inside the NavigationStack (the List, Text, VStack, etc.)." },
+  q2: { y: "✓ Correct! The value must be Hashable so SwiftUI can uniquely identify it and route it to the correct .navigationDestination(for:).", n: "✗ The required protocol is Hashable. Identifiable is useful but not required for value-based navigation. Codable is for persistence." },
+  q3: { y: "✓ Correct! Each tab must have its OWN NavigationStack so that navigation inside one tab doesn't affect another.", n: "✗ If you wrap TabView in one NavigationStack, all tabs share the same stack. Each tab needs its own independent stack." },
+  q4: { y: "✓ Correct! .sheet slides from the bottom and users can swipe it down to dismiss. .fullScreenCover covers everything and CANNOT be swiped away.", n: "✗ Both are available from iOS 13+. The difference is: .sheet is partial and swipeable; .fullScreenCover is full-screen and requires code to dismiss." },
+  q5: { y: "✓ Correct! Both path.removeLast(path.count) and reassigning path = NavigationPath() clear the entire stack and return to root.", n: "✗ NavigationPath has no .clear() or .removeAll() method. Use path.removeLast(path.count) or simply reassign path = NavigationPath()." },
+  q6: { y: "✓ Correct! .presentationDetents([.medium, .large]) or .presentationDetents([.fraction(0.3)]) controls sheet size. Available iOS 16+.", n: "✗ The correct modifier is .presentationDetents(). It accepts .medium, .large, .fraction(0.4), or .height(300)." },
+  q7: { y: "✓ Correct! NavigationSplitView is adaptive — it shows multi-column on iPad/Mac and automatically becomes a NavigationStack on iPhone.", n: "✗ NavigationSplitView automatically adapts: multi-column on iPad/Mac, single stack on iPhone. No extra code needed." },
+  q8: { y: "✓ Correct! By default, NavigationLink tints its label blue. .buttonStyle(.plain) removes that tint so custom-styled labels (colored buttons, cards, etc.) render as designed.", n: "✗ .buttonStyle(.plain) doesn't remove the chevron or disable the link. It removes the automatic blue tint so your custom colors appear correctly." }
+};
+function qa(opt, correct, qId) {
+  opt.closest('.qopts').querySelectorAll('.qopt').forEach(o => o.style.pointerEvents = 'none');
+  opt.classList.add(correct ? 'right' : 'wrong');
+  const fb = document.getElementById(qId + '-fb');
+  fb.textContent = correct ? qfb[qId].y : qfb[qId].n;
+  fb.className = 'qfb show ' + (correct ? 'rfb' : 'wfb');
+}
+</script>
+</body>
+</html>

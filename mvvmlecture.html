@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 — MVVM Architecture in SwiftUI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10; --surface: #111318; --surface2: #181c24; --border: #1e2433;
+    --accent: #f97316; --accent2: #38bdf8; --accent3: #a78bfa;
+    --green: #34d399; --red: #f87171; --yellow: #fcd34d;
+    --text: #e8eaf0; --muted: #8b95a8; --tag-bg: #1a1f2e; --code-bg: #0d1117;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 18px; line-height: 1.65; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9999; opacity: 0.4; }
+
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3)); z-index: 1000; transition: width 0.3s ease; width: 0%; }
+
+  header { position: fixed; top: 0; left: 0; right: 0; height: 58px; background: rgba(10,12,16,0.93); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; z-index: 100; }
+  .logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.9rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); display: flex; align-items: center; gap: 0.6rem; }
+  .logo-badge { background: var(--accent); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 800; }
+  .slide-counter { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--muted); }
+  .slide-counter span { color: var(--accent2); font-weight: 600; }
+
+  #nav-dots { position: fixed; right: 1.5rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+  .nav-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: all 0.3s ease; position: relative; }
+  .nav-dot.active { background: var(--accent); transform: scale(1.4); }
+  .nav-dot:hover { background: var(--accent2); transform: scale(1.2); }
+  .nav-dot::after { content: attr(data-label); position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .nav-dot:hover::after { opacity: 1; }
+
+  #slides-wrapper { margin-top: 58px; }
+  .slide { min-height: calc(100vh - 58px); padding: 4.5rem 5.5rem 4.5rem 5rem; display: flex; flex-direction: column; justify-content: center; border-bottom: 1px solid var(--border); position: relative; opacity: 0; transform: translateY(28px); transition: opacity 0.55s ease, transform 0.55s ease; }
+  .slide.visible { opacity: 1; transform: translateY(0); }
+
+  .slide-label { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .slide-label::before { content: ''; width: 24px; height: 1px; background: var(--accent); display: inline-block; }
+
+  h1 { font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 5vw, 4.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
+  h2 { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 3.5vw, 3.2rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; }
+  h3 { font-family: 'Syne', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--text); }
+  .highlight { color: var(--accent); }
+  .highlight-blue { color: var(--accent2); }
+  .highlight-purple { color: var(--accent3); }
+  .highlight-green { color: var(--green); }
+  .lead { color: var(--muted); max-width: 700px; margin: 0.9rem 0 1.8rem; font-size: 1rem; }
+
+  #slide-0 { background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(249,115,22,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 10% 80%, rgba(56,189,248,0.05) 0%, transparent 70%), var(--bg); }
+  .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1100px; }
+  .intro-meta { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 2rem; }
+  .meta-item { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--muted); }
+  .meta-item strong { color: var(--text); }
+
+  .mvvm-visual { display: flex; flex-direction: column; gap: 0; }
+  .arch-layer { border: 1px solid var(--border); border-radius: 12px; padding: 1.3rem 1.6rem; transition: all 0.3s ease; cursor: default; }
+  .arch-layer:hover { transform: translateX(-4px); }
+  .arch-layer.view-layer  { border-color: rgba(56,189,248,0.35); }
+  .arch-layer.vm-layer    { border-color: rgba(249,115,22,0.35); }
+  .arch-layer.model-layer { border-color: rgba(167,139,250,0.35); }
+  .arch-layer.view-layer:hover  { background: rgba(56,189,248,0.04); }
+  .arch-layer.vm-layer:hover    { background: rgba(249,115,22,0.04); }
+  .arch-layer.model-layer:hover { background: rgba(167,139,250,0.04); }
+  .arch-layer-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; }
+  .arch-layer-desc { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; font-family: 'JetBrains Mono', monospace; }
+  .arch-arrow { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 0.35rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); }
+  .arch-arrow .line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+  .diff-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 4px 12px; border-radius: 100px; border: 1px solid; margin-bottom: 1rem; }
+  .diff-badge.beginner { color: var(--green);  border-color: rgba(52,211,153,0.4);  background: rgba(52,211,153,0.07); }
+  .diff-badge.inter    { color: var(--yellow); border-color: rgba(252,211,77,0.4);  background: rgba(252,211,77,0.07); }
+  .diff-badge.advanced { color: var(--red);    border-color: rgba(248,113,113,0.4); background: rgba(248,113,113,0.07); }
+
+  .code-block { background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; line-height: 1.75; }
+  .code-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.65rem 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dots span { width: 11px; height: 11px; border-radius: 50%; }
+  .code-dots span:nth-child(1) { background: #ff5f57; }
+  .code-dots span:nth-child(2) { background: #ffbd2e; }
+  .code-dots span:nth-child(3) { background: #28c840; }
+  .code-filename { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
+  .code-filename::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .code-body { padding: 1.3rem 1.6rem; overflow-x: auto; }
+  .code-body pre { white-space: pre; }
+
+  .kw   { color: #ff79c6; } .type { color: #8be9fd; } .str  { color: #f1fa8c; }
+  .num  { color: #bd93f9; } .cmt  { color: #6272a4; font-style: italic; }
+  .prop { color: #50fa7b; } .fn   { color: #ffb86c; } .deco { color: #f97316; }
+
+  .cards-grid { display: grid; gap: 1.2rem; }
+  .cards-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .cards-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: all 0.3s ease; position: relative; overflow: hidden; }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); opacity: 0; transition: opacity 0.3s ease; }
+  .card:hover { border-color: rgba(249,115,22,0.3); transform: translateY(-3px); }
+  .card:hover::before { opacity: 1; }
+  .card.blue::before   { background: var(--accent2); } .card.blue:hover   { border-color: rgba(56,189,248,0.3); }
+  .card.purple::before { background: var(--accent3); } .card.purple:hover { border-color: rgba(167,139,250,0.3); }
+  .card.green::before  { background: var(--green);   } .card.green:hover  { border-color: rgba(52,211,153,0.3); }
+  .card-icon  { font-size: 1.6rem; margin-bottom: 0.8rem; }
+  .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .card-text  { font-size: 0.95rem; color: var(--muted); line-height: 1.6; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  .split.w55-45 { grid-template-columns: 55fr 45fr; }
+  .split.w45-55 { grid-template-columns: 45fr 55fr; }
+
+  .annot-list { display: flex; flex-direction: column; gap: 1.1rem; margin-top: 1.5rem; }
+  .annot-item { display: flex; gap: 0.9rem; align-items: flex-start; }
+  .annot-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; white-space: nowrap; color: var(--accent); margin-top: 3px; flex-shrink: 0; }
+  .annot-badge.blue   { color: var(--accent2); } .annot-badge.purple { color: var(--accent3); } .annot-badge.green  { color: var(--green); }
+  .annot-text { font-size: 0.96rem; color: var(--muted); line-height: 1.6; }
+  .annot-text strong { color: var(--text); }
+
+  .callout { border-left: 3px solid var(--accent); background: rgba(249,115,22,0.06); border-radius: 0 8px 8px 0; padding: 1rem 1.3rem; margin: 1.2rem 0; font-size: 0.96rem; color: var(--muted); }
+  .callout.blue   { border-left-color: var(--accent2); background: rgba(56,189,248,0.06); }
+  .callout.purple { border-left-color: var(--accent3); background: rgba(167,139,250,0.06); }
+  .callout.green  { border-left-color: var(--green);   background: rgba(52,211,153,0.06); }
+  .callout strong { color: var(--text); }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .tag { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; padding: 4px 11px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); background: var(--tag-bg); }
+  .tag.orange { color: var(--accent);  border-color: rgba(249,115,22,0.35); }
+  .tag.blue   { color: var(--accent2); border-color: rgba(56,189,248,0.35); }
+  .tag.purple { color: var(--accent3); border-color: rgba(167,139,250,0.35); }
+  .tag.green  { color: var(--green);   border-color: rgba(52,211,153,0.35); }
+
+  .tabs-container { margin-top: 1.5rem; }
+  .tabs-header { display: flex; border-bottom: 1px solid var(--border); }
+  .tab-btn { background: none; border: none; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; padding: 0.65rem 1.3rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s ease; position: relative; bottom: -1px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .flow-container { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; margin-top: 1.5rem; }
+  .flow-row { display: flex; align-items: center; justify-content: center; }
+  .flow-box { background: var(--code-bg); border-radius: 10px; padding: 1rem 1.4rem; text-align: center; min-width: 140px; border: 1px solid var(--border); transition: all 0.3s ease; }
+  .flow-box:hover { transform: scale(1.05); }
+  .flow-box.view  { border-color: rgba(56,189,248,0.4); } .flow-box.vm    { border-color: rgba(249,115,22,0.4); } .flow-box.model { border-color: rgba(167,139,250,0.4); }
+  .flow-box-label { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+  .flow-box.view .flow-box-label  { color: var(--accent2); }
+  .flow-box.vm .flow-box-label    { color: var(--accent); }
+  .flow-box.model .flow-box-label { color: var(--accent3); }
+  .flow-box-name { font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; color: var(--text); }
+  .flow-arrow { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 0.6rem; }
+  .flow-arrow .arr { color: var(--muted); font-size: 1.1rem; }
+  .flow-arrow .arr-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+
+  .divider { display: flex; align-items: center; gap: 1rem; margin: 2rem 0 1.5rem; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .divider span { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .practice-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+  .step-number { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.5rem; line-height: 1; color: var(--accent); opacity: 0.25; flex-shrink: 0; }
+  .step-info h3 { margin-bottom: 0.25rem; }
+  .step-info p { font-size: 0.95rem; color: var(--muted); }
+
+  .checklist { display: flex; flex-direction: column; gap: 0.85rem; margin-top: 1rem; }
+  .check-item { display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.96rem; color: var(--muted); }
+  .check-icon { flex-shrink: 0; margin-top: 2px; }
+  .check-icon.ok   { color: var(--green); }
+  .check-icon.warn { color: var(--red); }
+
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; margin-top: 1.2rem; }
+  .comp-table th { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 0.75rem 1rem; text-align: left; background: var(--surface); border-bottom: 1px solid var(--border); color: var(--muted); }
+  .comp-table td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .comp-table tr:hover td { background: rgba(255,255,255,0.015); }
+  .comp-table .mono { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 0.85rem; }
+
+  .quiz-container { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 740px; }
+  .quiz-question { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 600; margin-bottom: 1.5rem; line-height: 1.4; }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+  .quiz-option { background: var(--code-bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem 1.3rem; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.9rem; }
+  .quiz-option:hover { border-color: var(--accent2); }
+  .quiz-option .opt-letter { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--muted); }
+  .quiz-option.correct { border-color: var(--green); background: rgba(52,211,153,0.06); }
+  .quiz-option.wrong   { border-color: var(--red);   background: rgba(248,113,113,0.06); }
+  .quiz-option.correct .opt-letter { background: var(--green); color: #000; border-color: var(--green); }
+  .quiz-option.wrong   .opt-letter { background: var(--red);   color: #fff; border-color: var(--red); }
+  .quiz-feedback { margin-top: 1rem; padding: 0.9rem 1.1rem; border-radius: 8px; font-size: 0.93rem; display: none; }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct-fb { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.3); color: var(--green); }
+  .quiz-feedback.wrong-fb   { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--red); }
+  .quiz-next { margin-top: 1.3rem; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.75rem 1.6rem; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: none; transition: all 0.2s ease; }
+  .quiz-next:hover { background: #ea6e10; transform: translateY(-1px); }
+  .quiz-next.show { display: inline-block; }
+
+  .slide-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+  .nav-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; font-family: 'Syne', sans-serif; font-weight: 600; font-size: 0.88rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem; }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .nav-btn.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+  .nav-btn.primary:hover { background: #ea6e10; }
+
+  .demo-phone { width: 210px; height: 390px; background: var(--code-bg); border: 2px solid var(--border); border-radius: 34px; overflow: hidden; position: relative; margin: 0 auto; flex-shrink: 0; }
+  .demo-phone::before { content: ''; width: 64px; height: 6px; background: var(--border); border-radius: 100px; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); }
+  .phone-content { position: absolute; top: 32px; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; padding: 1.2rem 1rem; gap: 0.9rem; }
+  .phone-title { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); }
+  .phone-counter { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800; color: var(--accent); transition: all 0.3s ease; }
+  .phone-status  { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+  .phone-btn-row { display: flex; gap: 0.5rem; }
+  .phone-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.9rem; font-size: 0.82rem; font-family: 'Syne', sans-serif; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.2s ease; }
+  .phone-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .phone-btn.primary { background: var(--accent); border-color: var(--accent); color: #000; }
+  .data-event { background: var(--code-bg); border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 8px; padding: 0.5rem 0.85rem; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .demo-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+
+  footer { background: var(--surface); border-top: 1px solid var(--border); padding: 2rem 5rem; display: flex; align-items: center; justify-content: space-between; }
+  .footer-left { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--muted); line-height: 1.7; }
+  .footer-left strong { color: var(--text); }
+  .footer-right { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--muted); text-align: right; line-height: 1.7; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 100px; }
+
+  @media (max-width: 900px) {
+    .slide { padding: 3rem 1.5rem; }
+    .split, .intro-grid, .cards-grid.cols-3, .cards-grid.cols-2 { grid-template-columns: 1fr; }
+    #nav-dots { display: none; }
+    footer { flex-direction: column; gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div id="progress-bar"></div>
+<header>
+  <div class="logo"><span class="logo-badge">MAC221</span> MVVM in SwiftUI</div>
+  <div class="slide-counter">Slide <span id="current-slide">1</span> / <span id="total-slides">10</span></div>
+</header>
+<div id="nav-dots"></div>
+<div id="slides-wrapper">
+
+<!-- ══ SLIDE 0: TITLE ══ -->
+<section class="slide" id="slide-0">
+  <div class="intro-grid">
+    <div>
+      <div class="slide-label">MAC221 — iOS Development with SwiftUI</div>
+      <div class="slide-label">Prof. Khalid Kassou</div>
+      <h1>Model · View ·<br><span class="highlight">ViewModel</span></h1>
+      <div class="intro-meta">
+        <div class="meta-item"><strong>Course:</strong> MAC221 — SwiftUI Development</div>
+        <div class="meta-item"><strong>Topic:</strong> Architectural Design Patterns</div>
+        <div class="meta-item"><strong>Dept:</strong> Mathematics, Engineering &amp; Computer Science</div>
+        <div class="meta-item"><strong>College:</strong> LaGuardia Community College · CUNY</div>
+      </div>
+      <div class="tags" style="margin-top:1.5rem">
+        <span class="tag orange">SwiftUI</span>
+        <span class="tag blue">@ObservableObject</span>
+        <span class="tag purple">@Published</span>
+        <span class="tag green">Data Binding</span>
+      </div>
+    </div>
+    <div class="mvvm-visual">
+      <div class="arch-layer view-layer">
+        <div class="arch-layer-name" style="color:var(--accent2)">📱 View</div>
+        <div class="arch-layer-desc">What the user sees · SwiftUI layout</div>
+      </div>
+      <div class="arch-arrow"><div class="line"></div><span>binds / observes</span><div class="line"></div></div>
+      <div class="arch-layer vm-layer">
+        <div class="arch-layer-name" style="color:var(--accent)">⚙️ ViewModel</div>
+        <div class="arch-layer-desc">Logic · State · Commands</div>
+      </div>
+      <div class="arch-arrow"><div class="line"></div><span>reads / writes</span><div class="line"></div></div>
+      <div class="arch-layer model-layer">
+        <div class="arch-layer-name" style="color:var(--accent3)">🗄️ Model</div>
+        <div class="arch-layer-desc">Plain data · No UI knowledge</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" disabled>← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(1)">Start Learning →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 1: WHAT IS MVVM ══ -->
+<section class="slide" id="slide-1">
+  <div class="slide-label">Slide 01 — Foundations</div>
+  <h2>What is <span class="highlight">MVVM</span>?</h2>
+  <p class="lead">MVVM stands for <strong>Model – View – ViewModel</strong>. It's a pattern that separates your app into three clear layers so your code stays organized, readable, and easy to change.</p>
+  <div class="cards-grid cols-3">
+    <div class="card blue">
+      <div class="card-icon">📱</div>
+      <div class="card-title" style="color:var(--accent2)">View</div>
+      <div class="card-text">The screen the user sees. Built with SwiftUI, it only knows how to <em>display</em> data. It never stores or calculates anything.</div>
+      <div class="tags"><span class="tag blue">SwiftUI struct</span><span class="tag blue">body property</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title" style="color:var(--accent)">ViewModel</div>
+      <div class="card-text">The brain. It holds the app's <em>state</em> and <em>logic</em>. When the user taps a button, the View tells the ViewModel, which does the work.</div>
+      <div class="tags"><span class="tag orange">ObservableObject</span><span class="tag orange">@Published</span></div>
+    </div>
+    <div class="card purple">
+      <div class="card-icon">🗄️</div>
+      <div class="card-title" style="color:var(--accent3)">Model</div>
+      <div class="card-text">Plain Swift data — just a <code>struct</code>. No UI, no logic. It only describes what a piece of data looks like.</div>
+      <div class="tags"><span class="tag purple">struct</span><span class="tag purple">properties</span></div>
+    </div>
+  </div>
+  <div class="callout blue" style="margin-top:1.8rem">
+    <strong>🍎 Why does SwiftUI love MVVM?</strong> SwiftUI's <code>@Published</code> and <code>@ObservableObject</code> are built exactly for this pattern. When data changes in the ViewModel, SwiftUI automatically refreshes the View — no manual UI update code needed.
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(0)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(2)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 2: THE MODEL ══ -->
+<section class="slide" id="slide-2">
+  <div class="slide-label">Slide 02 — The Model Layer</div>
+  <div class="diff-badge beginner">🟢 Beginner</div>
+  <h2>The <span class="highlight-purple">Model</span></h2>
+  <p class="lead">The Model is the simplest layer. It's a Swift <code>struct</code> that holds your data. In our Counter app, the Model stores the count value — nothing else. No UI, no logic.</p>
+  <div class="split w55-45">
+    <div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">Counter.swift — Model</div></div>
+        <div class="code-body"><pre><span class="cmt">// ✅ The Model — just a plain Swift struct.</span>
+<span class="cmt">// No SwiftUI. No logic. Only data.</span>
+
+<span class="kw">struct</span> <span class="type">Counter</span> {
+    <span class="kw">var</span> <span class="prop">count</span>: <span class="type">Int</span> = <span class="num">0</span>
+}</pre></div>
+      </div>
+      <div class="code-block" style="margin-top:1rem">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">How the three layers connect</div></div>
+        <div class="code-body"><pre><span class="cmt">// The Model just holds the value</span>
+<span class="kw">var</span> <span class="prop">counter</span> = <span class="type">Counter</span>()
+<span class="fn">print</span>(counter.<span class="prop">count</span>) <span class="cmt">// 0</span>
+
+<span class="cmt">// The ViewModel owns the Model and
+// updates it when the user acts</span>
+counter.<span class="prop">count</span> += <span class="num">1</span>
+<span class="fn">print</span>(counter.<span class="prop">count</span>) <span class="cmt">// 1</span>
+
+<span class="cmt">// The View reads from the ViewModel,
+// which reads from the Model</span>
+<span class="type">Text</span>(<span class="str">"Count: \(vm.counter.count)"</span>)</pre></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:1.2rem">Three rules for Models</h3>
+      <div class="annot-list">
+        <div class="annot-item"><div class="annot-badge purple">struct</div><div class="annot-text"><strong>Always use a struct.</strong> Structs are safe and simple value types — perfect for holding data like a counter.</div></div>
+        <div class="annot-item"><div class="annot-badge purple">No SwiftUI</div><div class="annot-text"><strong>Never import SwiftUI here.</strong> The <code>Counter</code> struct has no idea it will appear on a phone screen.</div></div>
+        <div class="annot-item"><div class="annot-badge purple">No logic</div><div class="annot-text"><strong>Just properties.</strong> The Model stores <code>count</code>. Incrementing and decrementing happens in the ViewModel — not here.</div></div>
+      </div>
+      <div class="callout purple" style="margin-top:1.5rem">
+        <strong>Think of it this way:</strong> <code>Counter</code> is like a scoreboard card. It just shows a number. The ViewModel is the scorekeeper who changes it.
+      </div>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(1)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(3)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 3: THE VIEWMODEL ══ -->
+<section class="slide" id="slide-3">
+  <div class="slide-label">Slide 03 — The ViewModel Layer</div>
+  <div class="diff-badge beginner">🟢 Beginner</div>
+  <h2>The <span class="highlight">ViewModel</span></h2>
+  <p class="lead">The ViewModel owns the <code>Counter</code> Model and exposes its data to the View. It also provides functions the View calls when the user taps a button. When <code>@Published</code> changes, SwiftUI refreshes the screen.</p>
+  <div class="split w55-45">
+    <div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">CounterViewModel.swift</div></div>
+        <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="cmt">// Step 1 — Adopt ObservableObject</span>
+<span class="kw">class</span> <span class="type">CounterViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="cmt">// Step 2 — Own the Model, mark it @Published</span>
+    <span class="cmt">// Any change to counter tells the View to refresh</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">counter</span> = <span class="type">Counter</span>()
+
+    <span class="cmt">// Step 3 — Write functions for user actions</span>
+    <span class="cmt">// These are the only way to change the data</span>
+    <span class="kw">func</span> <span class="fn">increment</span>() {
+        <span class="prop">counter</span>.<span class="prop">count</span> += <span class="num">1</span>
+    }
+
+    <span class="kw">func</span> <span class="fn">decrement</span>() {
+        <span class="prop">counter</span>.<span class="prop">count</span> -= <span class="num">1</span>
+    }
+
+    <span class="kw">func</span> <span class="fn">reset</span>() {
+        <span class="prop">counter</span>.<span class="prop">count</span> = <span class="num">0</span>
+    }
+}</pre></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:1.2rem">How the layers connect</h3>
+      <div class="annot-list">
+        <div class="annot-item"><div class="annot-badge">ObservableObject</div><div class="annot-text"><strong>This protocol</strong> lets SwiftUI know this class can be "watched." The View subscribes to it automatically.</div></div>
+        <div class="annot-item"><div class="annot-badge">@Published var counter</div><div class="annot-text"><strong>The ViewModel owns the Model.</strong> When <code>counter.count</code> changes, <code>@Published</code> fires and SwiftUI re-renders the View.</div></div>
+        <div class="annot-item"><div class="annot-badge">Functions</div><div class="annot-text"><strong>User actions are functions.</strong> The View calls <code>vm.increment()</code>. The ViewModel updates <code>counter.count</code>. The View never touches the Model directly.</div></div>
+      </div>
+      <div class="callout" style="margin-top:1.5rem">
+        <strong>The chain:</strong> <code>Counter</code> (Model) stores the number → <code>CounterViewModel</code> owns and changes it → <code>CounterView</code> displays it.
+      </div>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(2)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(4)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 4: THE VIEW ══ -->
+<section class="slide" id="slide-4">
+  <div class="slide-label">Slide 04 — The View Layer</div>
+  <div class="diff-badge beginner">🟢 Beginner</div>
+  <h2>The <span class="highlight-blue">View</span></h2>
+  <p class="lead">The View displays data from the ViewModel — which itself comes from the Model. When the user taps a button, the View calls a ViewModel function. The View never touches the <code>Counter</code> struct directly.</p>
+  <div class="split w55-45">
+    <div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">CounterView.swift</div></div>
+        <div class="code-body"><pre><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">CounterView</span>: <span class="type">View</span> {
+
+    <span class="cmt">// ① Connect to the ViewModel</span>
+    <span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span> = <span class="type">CounterViewModel</span>()
+
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="prop">spacing</span>: <span class="num">20</span>) {
+
+            <span class="cmt">// ② Read from ViewModel → Model</span>
+            <span class="type">Text</span>(<span class="str">"Count: \(vm.counter.count)"</span>)
+                .<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+
+            <span class="type">HStack</span> {
+                <span class="cmt">// ③ Call ViewModel functions on tap</span>
+                <span class="type">Button</span>(<span class="str">"−"</span>) { <span class="prop">vm</span>.<span class="fn">decrement</span>() }
+                <span class="type">Button</span>(<span class="str">"Reset"</span>) { <span class="prop">vm</span>.<span class="fn">reset</span>() }
+                <span class="type">Button</span>(<span class="str">"+"</span>) { <span class="prop">vm</span>.<span class="fn">increment</span>() }
+            }
+        }
+    }
+}</pre></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:1.2rem">The full picture</h3>
+      <div class="annot-list">
+        <div class="annot-item"><div class="annot-badge blue">① @StateObject</div><div class="annot-text"><strong>Creates the ViewModel.</strong> The ViewModel already owns a <code>Counter</code> model inside it.</div></div>
+        <div class="annot-item"><div class="annot-badge blue">② vm.counter.count</div><div class="annot-text"><strong>View → ViewModel → Model.</strong> The View reads <code>counter.count</code> through the ViewModel. It never holds the data itself.</div></div>
+        <div class="annot-item"><div class="annot-badge blue">③ vm.increment()</div><div class="annot-text"><strong>View → ViewModel → Model.</strong> Tapping "+" calls <code>vm.increment()</code>, which updates <code>counter.count</code> in the Model. <code>@Published</code> fires. View re-renders.</div></div>
+      </div>
+      <div class="callout green" style="margin-top:1.5rem">
+        <strong>Notice the pattern:</strong> <code>Counter</code> struct → owned by <code>CounterViewModel</code> → displayed by <code>CounterView</code>. Each layer only talks to the one next to it.
+      </div>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(3)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(5)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 5: DATA FLOW + DEMO ══ -->
+<section class="slide" id="slide-5">
+  <div class="slide-label">Slide 05 — Putting It Together</div>
+  <h2>How the <span class="highlight">3 Layers</span> Talk</h2>
+  <p class="lead">Data always flows one direction: the user triggers an action → View calls ViewModel → ViewModel updates state → SwiftUI refreshes the View automatically.</p>
+
+  <div class="flow-container">
+    <div class="flow-row">
+      <div class="flow-box view"><div class="flow-box-label">View</div><div class="flow-box-name">CounterView</div></div>
+      <div class="flow-arrow"><div class="arr">→</div><div class="arr-label">user taps "+"</div><div class="arr-label">vm.increment()</div></div>
+      <div class="flow-box vm"><div class="flow-box-label">ViewModel</div><div class="flow-box-name">CounterViewModel</div></div>
+      <div class="flow-arrow"><div class="arr">→</div><div class="arr-label">counter.count += 1</div><div class="arr-label">updates Model</div></div>
+      <div class="flow-box model"><div class="flow-box-label">Model</div><div class="flow-box-name">Counter struct</div></div>
+    </div>
+    <div style="text-align:center;padding:0.6rem 0;font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted)">↑ SwiftUI receives the change and calls body again → View re-renders with new value</div>
+    <div class="flow-row">
+      <div class="flow-box view" style="opacity:0.6"><div class="flow-box-label">View</div><div class="flow-box-name">Shows "Count: 1" ✓</div></div>
+      <div class="flow-arrow"><div class="arr">←</div><div class="arr-label">auto re-render</div></div>
+      <div class="flow-box vm" style="opacity:0.6"><div class="flow-box-label">ViewModel</div><div class="flow-box-name">@Published fires</div></div>
+      <div class="flow-arrow"><div class="arr">←</div><div class="arr-label">counter.count = 1</div></div>
+      <div class="flow-box model" style="opacity:0.6"><div class="flow-box-label">Model</div><div class="flow-box-name">Counter updated ✓</div></div>
+    </div>
+  </div>
+
+  <div class="divider"><span>Try It Live</span></div>
+
+  <div class="split w45-55">
+    <div>
+      <div class="demo-phone">
+        <div class="phone-content">
+          <div class="phone-title">Counter App</div>
+          <div class="phone-counter" id="phone-count">0</div>
+          <div class="phone-status" id="phone-status">Tap a button below</div>
+          <div class="phone-btn-row">
+            <button class="phone-btn" onclick="demoDecrement()">−</button>
+            <button class="phone-btn" onclick="demoReset()" id="reset-btn" disabled style="opacity:0.4">Reset</button>
+            <button class="phone-btn primary" onclick="demoIncrement()">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:0.6rem;display:flex;align-items:center;gap:0.5rem"><div class="demo-status"></div> MVVM Event Log</div>
+      <div id="event-log" style="display:flex;flex-direction:column;gap:0.45rem;max-height:230px;overflow-y:auto">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);text-align:center;padding:1.2rem">No events yet — tap the buttons on the phone</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(4)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(6)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 6: PROPERTY WRAPPERS ══ -->
+<section class="slide" id="slide-6">
+  <div class="slide-label">Slide 06 — Property Wrappers</div>
+  <h2>The <span class="highlight">Magic Words</span></h2>
+  <p class="lead">SwiftUI uses special annotations called <strong>property wrappers</strong>. These four are the most important for MVVM. You'll use them in every project.</p>
+  <div class="cards-grid cols-2">
+    <div class="card">
+      <div class="card-title"><span style="color:var(--accent)">@StateObject</span></div>
+      <div class="card-text">Creates and <em>owns</em> a ViewModel. Use this in the View that first creates it. SwiftUI keeps it alive even if the View redraws.</div>
+      <div class="code-block" style="margin-top:1rem">
+        <div class="code-body" style="padding:0.9rem 1rem"><pre><span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span> = <span class="type">CounterViewModel</span>()</pre></div>
+      </div>
+      <div class="tags"><span class="tag orange">Use in the parent view</span></div>
+    </div>
+    <div class="card blue">
+      <div class="card-title"><span style="color:var(--accent2)">@ObservedObject</span></div>
+      <div class="card-text">Watches a ViewModel created <em>elsewhere</em>. Use this in child views that receive the ViewModel from a parent.</div>
+      <div class="code-block" style="margin-top:1rem">
+        <div class="code-body" style="padding:0.9rem 1rem"><pre><span class="deco">@ObservedObject</span> <span class="kw">var</span> <span class="prop">vm</span>: <span class="type">CounterViewModel</span></pre></div>
+      </div>
+      <div class="tags"><span class="tag blue">Use in child views</span></div>
+    </div>
+    <div class="card purple">
+      <div class="card-title"><span style="color:var(--accent3)">@Published</span></div>
+      <div class="card-text">Put this on a ViewModel property. When the value changes, SwiftUI automatically refreshes any View that reads it.</div>
+      <div class="code-block" style="margin-top:1rem">
+        <div class="code-body" style="padding:0.9rem 1rem"><pre><span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">count</span>: <span class="type">Int</span> = <span class="num">0</span></pre></div>
+      </div>
+      <div class="tags"><span class="tag purple">Inside the ViewModel class</span></div>
+    </div>
+    <div class="card green">
+      <div class="card-title"><span style="color:var(--green)">@State</span></div>
+      <div class="card-text">For simple, local state only one View cares about — like whether a sheet is open. Don't share it across views.</div>
+      <div class="code-block" style="margin-top:1rem">
+        <div class="code-body" style="padding:0.9rem 1rem"><pre><span class="deco">@State</span> <span class="kw">private var</span> <span class="prop">showSheet</span> = <span class="kw">false</span></pre></div>
+      </div>
+      <div class="tags"><span class="tag green">Local view state only</span></div>
+    </div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(5)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(7)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 7: DO'S AND DON'TS ══ -->
+<section class="slide" id="slide-7">
+  <div class="slide-label">Slide 07 — Common Mistakes</div>
+  <h2>Do's &amp; <span class="highlight">Don'ts</span></h2>
+  <p class="lead">These are the most common MVVM mistakes beginners make. Knowing them now saves hours of debugging later.</p>
+  <div class="split">
+    <div>
+      <h3 style="color:var(--green);margin-bottom:1rem">✅ Do This</h3>
+      <div class="checklist">
+        <div class="check-item"><div class="check-icon ok">✓</div><div>Use <code>@StateObject</code> to create your ViewModel in the root View.</div></div>
+        <div class="check-item"><div class="check-icon ok">✓</div><div>Mark every property the View needs to watch with <code>@Published</code>.</div></div>
+        <div class="check-item"><div class="check-icon ok">✓</div><div>Call ViewModel functions from buttons: <code>Button("Add") { vm.addItem() }</code></div></div>
+        <div class="check-item"><div class="check-icon ok">✓</div><div>Keep Models as plain <code>struct</code> with only data properties.</div></div>
+        <div class="check-item"><div class="check-icon ok">✓</div><div>Put all calculations and conditions in the ViewModel, not in <code>body</code>.</div></div>
+      </div>
+    </div>
+    <div>
+      <h3 style="color:var(--red);margin-bottom:1rem">❌ Don't Do This</h3>
+      <div class="checklist">
+        <div class="check-item"><div class="check-icon warn">✗</div><div><strong>Don't use @ObservedObject to create a ViewModel</strong> — it can reset unexpectedly, losing all your state.</div></div>
+        <div class="check-item"><div class="check-icon warn">✗</div><div><strong>Don't put logic in the View</strong> — writing <code>if count > 5</code> in <code>body</code> breaks the pattern.</div></div>
+        <div class="check-item"><div class="check-icon warn">✗</div><div><strong>Don't import SwiftUI in the ViewModel</strong> — it only needs <code>Foundation</code>.</div></div>
+        <div class="check-item"><div class="check-icon warn">✗</div><div><strong>Don't set data directly from the View</strong> — avoid <code>vm.count = 5</code>; call <code>vm.setCount(5)</code> instead.</div></div>
+        <div class="check-item"><div class="check-icon warn">✗</div><div><strong>Don't create the ViewModel inside <code>body</code></strong> — it resets on every render.</div></div>
+      </div>
+    </div>
+  </div>
+  <table class="comp-table" style="margin-top:1.8rem">
+    <thead><tr><th>Question</th><th>Answer</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Where does logic go?</td><td class="mono">ViewModel</td><td>Keeps View clean and testable</td></tr>
+      <tr><td>Where does data shape go?</td><td class="mono">Model</td><td>Single source of truth for data structure</td></tr>
+      <tr><td>Where does layout go?</td><td class="mono">View</td><td>SwiftUI views are for display only</td></tr>
+      <tr><td>Who creates the ViewModel?</td><td class="mono">@StateObject</td><td>Stable lifetime — won't be recreated</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(6)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(8)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 8: XCODE SETUP ══ -->
+<section class="slide" id="slide-8">
+  <div class="slide-label">Slide 08 — Setting Up in Xcode</div>
+  <h2>Organizing Your Project <span class="highlight">in Xcode</span></h2>
+  <p class="lead">Professional iOS projects keep each MVVM layer in its own <strong>folder</strong>. You'll create three groups — <code>Models</code>, <code>ViewModels</code>, and <code>Views</code> — and place one file inside each.</p>
+
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab(this,'xc-project')">① New Project</button>
+      <button class="tab-btn" onclick="switchTab(this,'xc-folders')">② Create Folders</button>
+      <button class="tab-btn" onclick="switchTab(this,'xc-model')">③ Models/Counter.swift</button>
+      <button class="tab-btn" onclick="switchTab(this,'xc-vm')">④ ViewModels/CounterViewModel.swift</button>
+      <button class="tab-btn" onclick="switchTab(this,'xc-view')">⑤ Views/CounterView.swift</button>
+      <button class="tab-btn" onclick="switchTab(this,'xc-final')">⑥ Final Structure</button>
+    </div>
+
+    <!-- ① NEW PROJECT -->
+    <div class="tab-panel active" id="xc-project">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <h3 style="margin-bottom:0.8rem">Step 1 — Create a new SwiftUI project</h3>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge green">1</div><div class="annot-text">Open Xcode. Click <strong>Create New Project</strong> or go to <strong>File → New → Project</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge green">2</div><div class="annot-text">Choose <strong>iOS → App</strong> template and click <strong>Next</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge green">3</div><div class="annot-text">Set <strong>Product Name</strong> = <code>CounterApp</code>, <strong>Interface</strong> = <code>SwiftUI</code>, <strong>Language</strong> = <code>Swift</code>. Click <strong>Next</strong> then <strong>Create</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge green">4</div><div class="annot-text">Xcode opens with <code>ContentView.swift</code> already in the navigator. Next you will create three organized folders.</div></div>
+            </div>
+            <div class="callout blue" style="margin-top:1.2rem">
+              <strong>Coming up:</strong> Instead of dumping all files in one place, you will organize them into <code>Models/</code>, <code>ViewModels/</code>, and <code>Views/</code> folders — just like real apps.
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="400" height="270" fill="#1c1c1e" rx="10"/>
+              <rect width="400" height="32" fill="#2c2c2e" rx="10"/><rect y="22" width="400" height="10" fill="#2c2c2e"/>
+              <circle cx="14" cy="16" r="6" fill="#ff5f57"/><circle cx="30" cy="16" r="6" fill="#ffbd2e"/><circle cx="46" cy="16" r="6" fill="#28c840"/>
+              <text x="200" y="21" fill="#9a9a9a" font-size="11" text-anchor="middle" font-family="system-ui">Welcome to Xcode</text>
+              <rect x="0" y="32" width="148" height="238" fill="#232323"/>
+              <text x="74" y="62" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle" font-family="system-ui">Xcode</text>
+              <text x="74" y="78" fill="#9a9a9a" font-size="9" text-anchor="middle" font-family="system-ui">Version 15.4</text>
+              <rect x="12" y="94" width="124" height="28" fill="#0a84ff" rx="6"/>
+              <text x="74" y="112" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle" font-family="system-ui">Create New Project…</text>
+              <rect x="12" y="130" width="124" height="26" fill="#3a3a3c" rx="6"/>
+              <text x="74" y="147" fill="#ebebeb" font-size="10" text-anchor="middle" font-family="system-ui">Clone Git Repository…</text>
+              <rect x="12" y="164" width="124" height="26" fill="#3a3a3c" rx="6"/>
+              <text x="74" y="181" fill="#ebebeb" font-size="10" text-anchor="middle" font-family="system-ui">Open Existing Project…</text>
+              <rect x="148" y="32" width="252" height="238" fill="#1c1c1e"/>
+              <text x="162" y="56" fill="#9a9a9a" font-size="9.5" font-weight="bold" font-family="system-ui">RECENT PROJECTS</text>
+              <rect x="152" y="62" width="240" height="1" fill="#3a3a3c"/>
+              <rect x="152" y="70" width="32" height="32" fill="#3a3a3c" rx="5"/>
+              <text x="168" y="90" fill="#0a84ff" font-size="15" text-anchor="middle" font-family="system-ui">★</text>
+              <text x="192" y="81" fill="#ebebeb" font-size="10" font-family="system-ui">MyPreviousApp</text>
+              <text x="192" y="94" fill="#9a9a9a" font-size="8.5" font-family="system-ui">~/Desktop/MyPreviousApp</text>
+              <polygon points="88,108 108,100 108,116" fill="#f97316"/>
+              <text x="110" y="109" fill="#f97316" font-size="9" font-weight="bold" font-family="system-ui">← Click here</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Xcode Welcome Screen → Create New Project</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ② CREATE FOLDERS -->
+    <div class="tab-panel" id="xc-folders">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <h3 style="margin-bottom:1rem;color:var(--yellow)">Step 2 — Create the three MVVM folders</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <p style="font-size:0.95rem;color:var(--muted);margin-bottom:1.2rem">Create three <strong>groups</strong> (Xcode folders) — one per MVVM layer. Repeat these steps <strong>three times</strong>.</p>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge" style="color:var(--yellow);border-color:rgba(252,211,77,0.4)">A</div><div class="annot-text">Right-click the <strong>CounterApp inner folder</strong> (the one containing <code>ContentView.swift</code>) in the Navigator.</div></div>
+              <div class="annot-item"><div class="annot-badge" style="color:var(--yellow);border-color:rgba(252,211,77,0.4)">B</div><div class="annot-text">Click <strong>"New Group"</strong> from the context menu.</div></div>
+              <div class="annot-item"><div class="annot-badge" style="color:var(--yellow);border-color:rgba(252,211,77,0.4)">C</div><div class="annot-text">Xcode creates an untitled folder. Type the name immediately and press <strong>Return</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge" style="color:var(--yellow);border-color:rgba(252,211,77,0.4)">D</div><div class="annot-text">Repeat for all three — name them exactly: <code>Models</code>, <code>ViewModels</code>, <code>Views</code>.</div></div>
+            </div>
+            <div class="callout" style="margin-top:1.2rem;border-left-color:var(--yellow);background:rgba(252,211,77,0.06)">
+              <strong>⚠️ Right-click the inner folder, not the project root.</strong> The inner folder (same name as your app) is where source files live.
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 340 290" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="340" height="290" fill="#1c1c1e" rx="10"/>
+              <rect width="340" height="26" fill="#2c2c2e" rx="10"/><rect y="16" width="340" height="10" fill="#2c2c2e"/>
+              <circle cx="12" cy="13" r="5" fill="#ff5f57"/><circle cx="26" cy="13" r="5" fill="#ffbd2e"/><circle cx="40" cy="13" r="5" fill="#28c840"/>
+              <text x="170" y="18" fill="#9a9a9a" font-size="9.5" text-anchor="middle" font-family="system-ui">Right-click inner folder → New Group</text>
+              <rect x="0" y="26" width="148" height="264" fill="#232323"/>
+              <text x="12" y="46" fill="#9a9a9a" font-size="9.5" font-family="system-ui">▾ CounterApp</text>
+              <rect x="6" y="51" width="136" height="17" fill="#0a84ff33" rx="3" stroke="#0a84ff55" stroke-width="1"/>
+              <text x="22" y="63" fill="#ebebeb" font-size="9" font-weight="bold" font-family="system-ui">▾ CounterApp ← right-click</text>
+              <text x="34" y="78" fill="#9a9a9a" font-size="9" font-family="system-ui">ContentView.swift</text>
+              <text x="34" y="92" fill="#9a9a9a" font-size="9" font-family="system-ui">CounterApp.swift</text>
+              <text x="34" y="106" fill="#9a9a9a" font-size="9" font-family="system-ui">Assets.xcassets</text>
+              <rect x="68" y="52" width="198" height="200" fill="#2c2c2e" rx="8" stroke="#555" stroke-width="1"/>
+              <text x="84" y="70" fill="#9a9a9a" font-size="9" font-family="system-ui">New File…   ⌘N</text>
+              <rect x="70" y="76" width="194" height="1" fill="#444"/>
+              <rect x="70" y="78" width="194" height="22" fill="#0a84ff" rx="0"/>
+              <text x="84" y="93" fill="#fff" font-size="10.5" font-weight="bold" font-family="system-ui">New Group</text>
+              <text x="84" y="116" fill="#ebebeb" font-size="9.5" font-family="system-ui">New Group with Selection</text>
+              <rect x="70" y="124" width="194" height="1" fill="#444"/>
+              <text x="84" y="140" fill="#9a9a9a" font-size="9" font-family="system-ui">Add Files to "CounterApp"…</text>
+              <rect x="70" y="148" width="194" height="1" fill="#444"/>
+              <text x="84" y="164" fill="#9a9a9a" font-size="9" font-family="system-ui">Show in Finder</text>
+              <text x="84" y="180" fill="#9a9a9a" font-size="9" font-family="system-ui">Open with External Editor</text>
+              <rect x="70" y="188" width="194" height="1" fill="#444"/>
+              <text x="84" y="204" fill="#9a9a9a" font-size="9" font-family="system-ui">Source Control</text>
+              <text x="84" y="222" fill="#9a9a9a" font-size="9" font-family="system-ui">Delete</text>
+              <polygon points="60,89 68,83 68,95" fill="#f97316"/>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Right-click → "New Group" × 3</p>
+
+            <svg viewBox="0 0 340 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433;margin-top:0.8rem">
+              <rect width="340" height="180" fill="#232323" rx="10"/>
+              <rect width="340" height="24" fill="#2c2c2e" rx="10"/><rect y="14" width="340" height="10" fill="#2c2c2e"/>
+              <text x="170" y="17" fill="#9a9a9a" font-size="9" text-anchor="middle" font-family="system-ui">Navigator after creating all 3 folders</text>
+              <text x="12" y="40" fill="#ebebeb" font-size="10" font-family="system-ui">▾ CounterApp</text>
+              <text x="24" y="56" fill="#ebebeb" font-size="10" font-family="system-ui">▾ CounterApp</text>
+              <rect x="28" y="61" width="300" height="17" fill="#a78bfa18" rx="3"/>
+              <text x="38" y="73" fill="#a78bfa" font-size="10" font-weight="bold" font-family="system-ui">📁 Models</text>
+              <text x="130" y="73" fill="#6272a4" font-size="8.5" font-family="system-ui">← Counter.swift will go here</text>
+              <rect x="28" y="79" width="300" height="17" fill="#f9731618" rx="3"/>
+              <text x="38" y="91" fill="#f97316" font-size="10" font-weight="bold" font-family="system-ui">📁 ViewModels</text>
+              <text x="148" y="91" fill="#6272a4" font-size="8.5" font-family="system-ui">← CounterViewModel.swift will go here</text>
+              <rect x="28" y="97" width="300" height="17" fill="#38bdf818" rx="3"/>
+              <text x="38" y="109" fill="#38bdf8" font-size="10" font-weight="bold" font-family="system-ui">📁 Views</text>
+              <text x="108" y="109" fill="#6272a4" font-size="8.5" font-family="system-ui">← CounterView.swift will go here</text>
+              <text x="38" y="126" fill="#9a9a9a" font-size="10" font-family="system-ui">ContentView.swift</text>
+              <text x="38" y="142" fill="#9a9a9a" font-size="10" font-family="system-ui">CounterApp.swift</text>
+              <text x="24" y="160" fill="#9a9a9a" font-size="10" font-family="system-ui">▾ Products</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Three empty folders ready</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ MODEL FILE -->
+    <div class="tab-panel" id="xc-model">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <h3 style="margin-bottom:1rem;color:var(--accent3)">Step 3 — Add Counter.swift inside Models</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge purple">A</div><div class="annot-text">Right-click the <strong>Models folder</strong> in the Navigator.</div></div>
+              <div class="annot-item"><div class="annot-badge purple">B</div><div class="annot-text">Click <strong>"New File…"</strong>. Choose <strong>Swift File</strong> (not SwiftUI View). Click <strong>Next</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge purple">C</div><div class="annot-text">Name it <code>Counter</code>. Confirm <strong>Group = Models</strong>. Click <strong>Create</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge purple">D</div><div class="annot-text">Delete the default contents and write the <code>Counter</code> struct below.</div></div>
+            </div>
+            <div class="callout purple" style="margin-top:1.2rem">
+              <strong>Why Swift File?</strong> The Model is just data — no UI needed. A plain Swift File is perfect for a struct.
+            </div>
+            <div class="code-block" style="margin-top:1rem">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">Models/Counter.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="cmt">// No SwiftUI — just plain data</span>
+<span class="kw">struct</span> <span class="type">Counter</span> {
+    <span class="kw">var</span> <span class="prop">count</span>: <span class="type">Int</span> = <span class="num">0</span>
+}</pre></div>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 340 210" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="340" height="210" fill="#1c1c1e" rx="10"/>
+              <rect width="340" height="24" fill="#2c2c2e" rx="10"/><rect y="14" width="340" height="10" fill="#2c2c2e"/>
+              <text x="170" y="17" fill="#9a9a9a" font-size="9" text-anchor="middle" font-family="system-ui">Right-click Models → New File…</text>
+              <rect x="0" y="24" width="148" height="186" fill="#232323"/>
+              <text x="12" y="44" fill="#9a9a9a" font-size="9" font-family="system-ui">▾ CounterApp</text>
+              <text x="22" y="58" fill="#9a9a9a" font-size="9" font-family="system-ui">▾ CounterApp</text>
+              <rect x="26" y="62" width="116" height="16" fill="#a78bfa33" rx="3" stroke="#a78bfa" stroke-width="1"/>
+              <text x="34" y="74" fill="#a78bfa" font-size="9" font-weight="bold" font-family="system-ui">📁 Models ← right-click</text>
+              <text x="34" y="89" fill="#f97316" font-size="9" font-family="system-ui">📁 ViewModels</text>
+              <text x="34" y="103" fill="#38bdf8" font-size="9" font-family="system-ui">📁 Views</text>
+              <text x="34" y="117" fill="#9a9a9a" font-size="9" font-family="system-ui">ContentView.swift</text>
+              <rect x="88" y="56" width="200" height="110" fill="#2c2c2e" rx="8" stroke="#555" stroke-width="1"/>
+              <rect x="90" y="58" width="196" height="22" fill="#0a84ff" rx="5 5 0 0"/>
+              <text x="104" y="73" fill="#fff" font-size="10.5" font-weight="bold" font-family="system-ui">New File…   ⌘N</text>
+              <rect x="90" y="80" width="196" height="1" fill="#444"/>
+              <text x="104" y="96" fill="#ebebeb" font-size="9.5" font-family="system-ui">New Group</text>
+              <text x="104" y="113" fill="#9a9a9a" font-size="9" font-family="system-ui">Add Files to "Models"…</text>
+              <rect x="90" y="120" width="196" height="1" fill="#444"/>
+              <text x="104" y="136" fill="#9a9a9a" font-size="9" font-family="system-ui">Show in Finder</text>
+              <text x="104" y="153" fill="#9a9a9a" font-size="9" font-family="system-ui">Delete</text>
+              <polygon points="80,69 88,63 88,75" fill="#f97316"/>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Right-click Models folder → New File…</p>
+            <svg viewBox="0 0 340 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433;margin-top:0.8rem">
+              <rect width="340" height="110" fill="#1c1c1e" rx="10"/>
+              <rect width="340" height="24" fill="#2c2c2e" rx="10"/><rect y="14" width="340" height="10" fill="#2c2c2e"/>
+              <text x="170" y="17" fill="#9a9a9a" font-size="9.5" text-anchor="middle" font-family="system-ui">Confirm Group = Models before clicking Create</text>
+              <text x="16" y="46" fill="#9a9a9a" font-size="9.5" font-family="system-ui">Save As:</text>
+              <rect x="76" y="34" width="200" height="22" fill="#2c2c2e" rx="5" stroke="#0a84ff" stroke-width="2"/>
+              <text x="84" y="49" fill="#ebebeb" font-size="10" font-family="monospace">Counter</text>
+              <text x="16" y="74" fill="#9a9a9a" font-size="9.5" font-family="system-ui">Group:</text>
+              <rect x="76" y="62" width="200" height="22" fill="#a78bfa22" rx="5" stroke="#a78bfa" stroke-width="1.5"/>
+              <text x="84" y="77" fill="#a78bfa" font-size="10" font-weight="bold" font-family="system-ui">📁 Models  ✓</text>
+              <text x="274" y="77" fill="#a78bfa" font-size="8.5" font-family="system-ui">← correct!</text>
+              <rect x="226" y="86" width="50" height="16" fill="#3a3a3c" rx="5"/>
+              <text x="251" y="97" fill="#ebebeb" font-size="9" text-anchor="middle" font-family="system-ui">Cancel</text>
+              <rect x="282" y="86" width="46" height="16" fill="#0a84ff" rx="5"/>
+              <text x="305" y="97" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle" font-family="system-ui">Create</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Group must show "Models" — then Create</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ VIEWMODEL FILE -->
+    <div class="tab-panel" id="xc-vm">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <h3 style="margin-bottom:1rem;color:var(--accent)">Step 4 — Add CounterViewModel.swift inside ViewModels</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge">A</div><div class="annot-text">Right-click the <strong>ViewModels folder</strong> in the Navigator.</div></div>
+              <div class="annot-item"><div class="annot-badge">B</div><div class="annot-text">Click <strong>"New File…"</strong>. Choose <strong>Swift File</strong>. Click <strong>Next</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge">C</div><div class="annot-text">Name it <code>CounterViewModel</code>. Confirm <strong>Group = ViewModels</strong>. Click <strong>Create</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge">D</div><div class="annot-text">Write the ViewModel class — <code>import Foundation</code>, adopt <code>ObservableObject</code>, add <code>@Published</code> and the three functions.</div></div>
+            </div>
+            <div class="callout" style="margin-top:1.2rem">
+              <strong>Swift File again.</strong> The ViewModel only needs Foundation — no SwiftUI in the logic layer.
+            </div>
+            <div class="code-block" style="margin-top:1rem">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">ViewModels/CounterViewModel.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">class</span> <span class="type">CounterViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">counter</span> = <span class="type">Counter</span>()
+
+    <span class="kw">func</span> <span class="fn">increment</span>() { <span class="prop">counter</span>.<span class="prop">count</span> += <span class="num">1</span> }
+    <span class="kw">func</span> <span class="fn">decrement</span>() { <span class="prop">counter</span>.<span class="prop">count</span> -= <span class="num">1</span> }
+    <span class="kw">func</span> <span class="fn">reset</span>()     { <span class="prop">counter</span>.<span class="prop">count</span>  = <span class="num">0</span> }
+}</pre></div>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 340 185" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="340" height="185" fill="#232323" rx="10"/>
+              <rect width="340" height="24" fill="#2c2c2e" rx="10"/><rect y="14" width="340" height="10" fill="#2c2c2e"/>
+              <text x="170" y="17" fill="#9a9a9a" font-size="9" text-anchor="middle" font-family="system-ui">Navigator — right-click ViewModels</text>
+              <text x="12" y="42" fill="#9a9a9a" font-size="9.5" font-family="system-ui">▾ CounterApp</text>
+              <text x="22" y="56" fill="#9a9a9a" font-size="9.5" font-family="system-ui">▾ CounterApp</text>
+              <text x="34" y="71" fill="#a78bfa" font-size="9.5" font-family="system-ui">▾ 📁 Models</text>
+              <text x="48" y="85" fill="#a78bfa" font-size="9" font-family="system-ui">🐦 Counter.swift  ✓</text>
+              <rect x="26" y="89" width="306" height="16" fill="#f9731633" rx="3" stroke="#f97316" stroke-width="1"/>
+              <text x="34" y="101" fill="#f97316" font-size="9.5" font-weight="bold" font-family="system-ui">📁 ViewModels  ← right-click this</text>
+              <text x="34" y="116" fill="#38bdf8" font-size="9.5" font-family="system-ui">📁 Views</text>
+              <text x="34" y="131" fill="#9a9a9a" font-size="9.5" font-family="system-ui">ContentView.swift</text>
+              <text x="34" y="146" fill="#9a9a9a" font-size="9.5" font-family="system-ui">CounterApp.swift</text>
+              <text x="34" y="161" fill="#9a9a9a" font-size="9.5" font-family="system-ui">Assets.xcassets</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Models done ✓ — now right-click ViewModels</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑤ VIEW FILE -->
+    <div class="tab-panel" id="xc-view">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <h3 style="margin-bottom:1rem;color:var(--accent2)">Step 5 — Add CounterView.swift inside Views</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge blue">A</div><div class="annot-text">Right-click the <strong>Views folder</strong> in the Navigator.</div></div>
+              <div class="annot-item"><div class="annot-badge blue">B</div><div class="annot-text">Click <strong>"New File…"</strong> — this time choose <strong>SwiftUI View</strong>. Click <strong>Next</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge blue">C</div><div class="annot-text">Name it <code>CounterView</code>. Confirm <strong>Group = Views</strong>. Click <strong>Create</strong>.</div></div>
+              <div class="annot-item"><div class="annot-badge blue">D</div><div class="annot-text">Xcode generates a starter struct. Add <code>@StateObject</code> and replace the placeholder Text with the counter UI.</div></div>
+            </div>
+            <div class="callout blue" style="margin-top:1.2rem">
+              <strong>SwiftUI View this time.</strong> The View layer needs SwiftUI. This template auto-generates the struct, body, and Preview block.
+            </div>
+            <div class="code-block" style="margin-top:1rem">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">Views/CounterView.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">CounterView</span>: <span class="type">View</span> {
+    <span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span> = <span class="type">CounterViewModel</span>()
+
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="prop">spacing</span>: <span class="num">20</span>) {
+            <span class="type">Text</span>(<span class="str">"Count: \(vm.counter.count)"</span>)
+                .<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+            <span class="type">HStack</span> {
+                <span class="type">Button</span>(<span class="str">"−"</span>) { <span class="prop">vm</span>.<span class="fn">decrement</span>() }
+                <span class="type">Button</span>(<span class="str">"Reset"</span>) { <span class="prop">vm</span>.<span class="fn">reset</span>() }
+                <span class="type">Button</span>(<span class="str">"+"</span>) { <span class="prop">vm</span>.<span class="fn">increment</span>() }
+            }
+        }
+    }
+}</pre></div>
+            </div>
+          </div>
+          <div>
+            <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="340" height="200" fill="#232323" rx="10"/>
+              <rect width="340" height="24" fill="#2c2c2e" rx="10"/><rect y="14" width="340" height="10" fill="#2c2c2e"/>
+              <text x="170" y="17" fill="#9a9a9a" font-size="9" text-anchor="middle" font-family="system-ui">Navigator — right-click Views</text>
+              <text x="12" y="42" fill="#9a9a9a" font-size="9.5" font-family="system-ui">▾ CounterApp</text>
+              <text x="22" y="56" fill="#9a9a9a" font-size="9.5" font-family="system-ui">▾ CounterApp</text>
+              <text x="34" y="71" fill="#a78bfa" font-size="9.5" font-family="system-ui">▾ 📁 Models</text>
+              <text x="48" y="85" fill="#a78bfa" font-size="9" font-family="system-ui">🐦 Counter.swift  ✓</text>
+              <text x="34" y="100" fill="#f97316" font-size="9.5" font-family="system-ui">▾ 📁 ViewModels</text>
+              <text x="48" y="114" fill="#f97316" font-size="9" font-family="system-ui">🐦 CounterViewModel.swift  ✓</text>
+              <rect x="26" y="118" width="306" height="16" fill="#38bdf833" rx="3" stroke="#38bdf8" stroke-width="1"/>
+              <text x="34" y="130" fill="#38bdf8" font-size="9.5" font-weight="bold" font-family="system-ui">📁 Views  ← right-click this</text>
+              <text x="34" y="146" fill="#9a9a9a" font-size="9.5" font-family="system-ui">ContentView.swift</text>
+              <text x="34" y="161" fill="#9a9a9a" font-size="9.5" font-family="system-ui">CounterApp.swift</text>
+              <text x="34" y="176" fill="#9a9a9a" font-size="9.5" font-family="system-ui">Assets.xcassets</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Two done ✓ — right-click Views to add the last file</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑥ FINAL STRUCTURE -->
+    <div class="tab-panel" id="xc-final">
+      <div style="padding:1.5rem;background:var(--code-bg);border:1px solid var(--border);border-radius:0 12px 12px 12px">
+        <h3 style="margin-bottom:1rem;color:var(--green)">Step 6 — Final Project Structure</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+          <div>
+            <svg viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;border:1px solid #1e2433">
+              <rect width="320" height="280" fill="#232323" rx="10"/>
+              <rect width="320" height="26" fill="#2c2c2e" rx="10"/><rect y="16" width="320" height="10" fill="#2c2c2e"/>
+              <circle cx="12" cy="13" r="5" fill="#ff5f57"/><circle cx="26" cy="13" r="5" fill="#ffbd2e"/><circle cx="40" cy="13" r="5" fill="#28c840"/>
+              <text x="160" y="18" fill="#9a9a9a" font-size="9.5" text-anchor="middle" font-family="system-ui">Project Navigator — Final Structure ✓</text>
+              <text x="10" y="44" fill="#0a84ff" font-size="13" font-family="system-ui">📁</text>
+              <text x="10" y="64" fill="#ebebeb" font-size="10.5" font-weight="bold" font-family="system-ui">▾ CounterApp</text>
+              <text x="22" y="80" fill="#ebebeb" font-size="10" font-family="system-ui">▾ CounterApp</text>
+              <rect x="26" y="86" width="282" height="32" fill="#a78bfa12" rx="4"/>
+              <text x="34" y="100" fill="#a78bfa" font-size="10" font-weight="bold" font-family="system-ui">▾ 📁 Models</text>
+              <text x="50" y="114" fill="#a78bfa" font-size="9.5" font-family="system-ui">🗄️ Counter.swift</text>
+              <text x="180" y="114" fill="#6272a4" font-size="8" font-family="system-ui">struct Counter</text>
+              <rect x="26" y="122" width="282" height="32" fill="#f9731612" rx="4"/>
+              <text x="34" y="136" fill="#f97316" font-size="10" font-weight="bold" font-family="system-ui">▾ 📁 ViewModels</text>
+              <text x="50" y="150" fill="#f97316" font-size="9.5" font-family="system-ui">⚙️ CounterViewModel.swift</text>
+              <text x="222" y="150" fill="#6272a4" font-size="8" font-family="system-ui">class CounterViewModel</text>
+              <rect x="26" y="158" width="282" height="32" fill="#38bdf812" rx="4"/>
+              <text x="34" y="172" fill="#38bdf8" font-size="10" font-weight="bold" font-family="system-ui">▾ 📁 Views</text>
+              <text x="50" y="186" fill="#38bdf8" font-size="9.5" font-family="system-ui">📱 CounterView.swift</text>
+              <text x="182" y="186" fill="#6272a4" font-size="8" font-family="system-ui">struct CounterView</text>
+              <text x="34" y="204" fill="#9a9a9a" font-size="9.5" font-family="system-ui">CounterApp.swift</text>
+              <text x="34" y="219" fill="#9a9a9a" font-size="9.5" font-family="system-ui">Assets.xcassets</text>
+              <text x="22" y="235" fill="#9a9a9a" font-size="10" font-family="system-ui">▾ Products</text>
+              <rect x="10" y="248" width="300" height="24" fill="#1c1c1e" rx="4"/>
+              <circle cx="24" cy="260" r="5" fill="#a78bfa"/>
+              <text x="33" y="264" fill="#a78bfa" font-size="8.5" font-family="system-ui">Models/</text>
+              <circle cx="92" cy="260" r="5" fill="#f97316"/>
+              <text x="101" y="264" fill="#f97316" font-size="8.5" font-family="system-ui">ViewModels/</text>
+              <circle cx="178" cy="260" r="5" fill="#38bdf8"/>
+              <text x="187" y="264" fill="#38bdf8" font-size="8.5" font-family="system-ui">Views/</text>
+            </svg>
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:0.5rem;text-align:center;font-family:'JetBrains Mono',monospace">Clean, professional MVVM folder structure</p>
+          </div>
+          <div>
+            <h3 style="margin-bottom:1rem">Summary of all 6 steps</h3>
+            <div class="annot-list" style="margin-top:0">
+              <div class="annot-item"><div class="annot-badge green">①</div><div class="annot-text">Create a new <strong>iOS App</strong> project named <code>CounterApp</code>.</div></div>
+              <div class="annot-item"><div class="annot-badge" style="color:var(--yellow);border-color:rgba(252,211,77,0.4)">②</div><div class="annot-text">Right-click inner folder → <strong>New Group</strong> × 3: name them <code>Models</code>, <code>ViewModels</code>, <code>Views</code>.</div></div>
+              <div class="annot-item"><div class="annot-badge purple">③</div><div class="annot-text">Right-click <strong>Models</strong> → New File → <strong>Swift File</strong> → name <code>Counter</code>.</div></div>
+              <div class="annot-item"><div class="annot-badge">④</div><div class="annot-text">Right-click <strong>ViewModels</strong> → New File → <strong>Swift File</strong> → name <code>CounterViewModel</code>.</div></div>
+              <div class="annot-item"><div class="annot-badge blue">⑤</div><div class="annot-text">Right-click <strong>Views</strong> → New File → <strong>SwiftUI View</strong> → name <code>CounterView</code>.</div></div>
+              <div class="annot-item"><div class="annot-badge green">⑥</div><div class="annot-text">Open <code>CounterApp.swift</code> and change <code>ContentView()</code> → <code>CounterView()</code>.</div></div>
+            </div>
+            <div class="code-block" style="margin-top:1.2rem">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">CounterApp.swift — final edit</div></div>
+              <div class="code-body"><pre><span class="deco">@main</span>
+<span class="kw">struct</span> <span class="type">CounterApp</span>: <span class="type">App</span> {
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">CounterView</span>() <span class="cmt">// was ContentView()</span>
+        }
+    }
+}</pre></div>
+            </div>
+            <div class="callout green" style="margin-top:1rem">
+              <strong>Press ▶ Run.</strong> The simulator launches your Counter App — MVVM pattern with a clean, professional folder structure.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tabs -->
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(7)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(9)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 9: PRACTICE ══ -->
+<section class="slide" id="slide-9">
+  <div class="slide-label">Slide 09 — Practice Exercises</div>
+  <h2>Practice <span class="highlight">Exercises</span></h2>
+  <p class="lead">Three exercises, three difficulty levels. Work through them in order — each one builds on the skills from the last.</p>
+
+  <div class="tabs-container">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab(this,'ex-begin')">🟢 Beginner</button>
+      <button class="tab-btn" onclick="switchTab(this,'ex-inter')">🟡 Intermediate</button>
+      <button class="tab-btn" onclick="switchTab(this,'ex-adv')">🔴 Advanced</button>
+    </div>
+
+    <!-- ── BEGINNER ── -->
+    <div class="tab-panel active" id="ex-begin">
+      <div style="padding:1.8rem;background:var(--code-bg);border:1px solid rgba(52,211,153,0.2);border-radius:0 12px 12px 12px">
+        <div class="practice-header">
+          <div class="step-number">01</div>
+          <div class="step-info">
+            <h3>Name Badge App</h3>
+            <p>The user types their name and a live greeting updates on screen. Simple two-way binding with one ViewModel property.</p>
+          </div>
+        </div>
+        <div class="split w55-45">
+          <div>
+            <div class="code-block">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">BadgeViewModel.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">class</span> <span class="type">BadgeViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">name</span>: <span class="type">String</span> = <span class="str">""</span>
+
+    <span class="cmt">// Computed — no @Published needed</span>
+    <span class="kw">var</span> <span class="prop">greeting</span>: <span class="type">String</span> {
+        <span class="prop">name</span>.<span class="prop">isEmpty</span>
+            ? <span class="str">"Hello, stranger!"</span>
+            : <span class="str">"Hello, \(name)!"</span>
+    }
+}</pre></div>
+            </div>
+            <div class="code-block" style="margin-top:1rem">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">BadgeView.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">BadgeView</span>: <span class="type">View</span> {
+    <span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span> = <span class="type">BadgeViewModel</span>()
+
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">VStack</span>(<span class="prop">spacing</span>: <span class="num">16</span>) {
+            <span class="cmt">// $ = two-way binding</span>
+            <span class="type">TextField</span>(<span class="str">"Enter your name"</span>,
+                       <span class="prop">text</span>: $<span class="prop">vm</span>.<span class="prop">name</span>)
+                .<span class="fn">textFieldStyle</span>(.<span class="prop">roundedBorder</span>)
+
+            <span class="type">Text</span>(<span class="prop">vm</span>.<span class="prop">greeting</span>)
+                .<span class="fn">font</span>(.<span class="prop">title</span>)
+        }
+        .<span class="fn">padding</span>()
+    }
+}</pre></div>
+            </div>
+          </div>
+          <div>
+            <h3 style="margin-bottom:1rem">What you'll learn</h3>
+            <div class="annot-list">
+              <div class="annot-item"><div class="annot-badge green">$vm.name</div><div class="annot-text">The <code>$</code> prefix creates a <strong>two-way binding</strong>. Typing in the field updates <code>vm.name</code> automatically.</div></div>
+              <div class="annot-item"><div class="annot-badge green">computed var</div><div class="annot-text"><code>greeting</code> is calculated from <code>name</code>. It doesn't need <code>@Published</code> because it's derived.</div></div>
+            </div>
+            <div class="callout green" style="margin-top:1.2rem">
+              <strong>🎯 Your task:</strong> Add a "Clear" button that calls <code>vm.clearName()</code>. Write that function in the ViewModel. It should set <code>name = ""</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTERMEDIATE ── -->
+    <div class="tab-panel" id="ex-inter">
+      <div style="padding:1.8rem;background:var(--code-bg);border:1px solid rgba(252,211,77,0.2);border-radius:0 12px 12px 12px">
+        <div class="practice-header">
+          <div class="step-number">02</div>
+          <div class="step-info">
+            <h3>Simple To-Do List</h3>
+            <p>Add &amp; delete items in a list. Introduces the Model layer, <code>Identifiable</code>, <code>ForEach</code>, and working with arrays in a ViewModel.</p>
+          </div>
+        </div>
+        <div class="tabs-container" style="margin-top:0">
+          <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab(this,'todo-model')">Model</button>
+            <button class="tab-btn" onclick="switchTab(this,'todo-vm')">ViewModel</button>
+            <button class="tab-btn" onclick="switchTab(this,'todo-view')">View</button>
+          </div>
+          <div class="tab-panel active" id="todo-model">
+            <div class="code-block" style="border-radius:0 12px 12px 12px">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">TodoItem.swift — Model</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="cmt">// A plain Model struct — just data</span>
+<span class="kw">struct</span> <span class="type">TodoItem</span>: <span class="type">Identifiable</span> {
+
+    <span class="kw">let</span>  <span class="prop">id</span>:     <span class="type">UUID</span>   = <span class="type">UUID</span>()
+    <span class="kw">var</span>  <span class="prop">title</span>:  <span class="type">String</span>
+    <span class="kw">var</span>  <span class="prop">isDone</span>: <span class="type">Bool</span>   = <span class="kw">false</span>
+}
+
+<span class="cmt">// Identifiable lets ForEach track each row</span>
+<span class="cmt">// UUID gives each item a unique identity</span></pre></div>
+            </div>
+          </div>
+          <div class="tab-panel" id="todo-vm">
+            <div class="code-block" style="border-radius:0 12px 12px 12px">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">TodoViewModel.swift — ViewModel</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">class</span> <span class="type">TodoViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="cmt">// Array of Model items — published</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">items</span>: [<span class="type">TodoItem</span>] = []
+
+    <span class="kw">func</span> <span class="fn">addItem</span>(<span class="prop">title</span>: <span class="type">String</span>) {
+        <span class="prop">items</span>.<span class="fn">append</span>(<span class="type">TodoItem</span>(<span class="prop">title</span>: title))
+    }
+
+    <span class="kw">func</span> <span class="fn">deleteItem</span>(<span class="prop">at offsets</span>: <span class="type">IndexSet</span>) {
+        <span class="prop">items</span>.<span class="fn">remove</span>(<span class="prop">atOffsets</span>: offsets)
+    }
+
+    <span class="kw">func</span> <span class="fn">toggleDone</span>(<span class="prop">item</span>: <span class="type">TodoItem</span>) {
+        <span class="kw">if let</span> <span class="prop">i</span> = <span class="prop">items</span>.<span class="fn">firstIndex</span>(
+                        <span class="prop">where</span>: { $0.<span class="prop">id</span> == item.<span class="prop">id</span> }) {
+            <span class="prop">items</span>[i].<span class="prop">isDone</span>.<span class="fn">toggle</span>()
+        }
+    }
+
+    <span class="cmt">// Computed — counts remaining items</span>
+    <span class="kw">var</span> <span class="prop">remainingCount</span>: <span class="type">Int</span> {
+        <span class="prop">items</span>.<span class="fn">filter</span> { !$0.<span class="prop">isDone</span> }.<span class="prop">count</span>
+    }
+}</pre></div>
+            </div>
+          </div>
+          <div class="tab-panel" id="todo-view">
+            <div class="code-block" style="border-radius:0 12px 12px 12px">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">TodoView.swift — View</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">TodoView</span>: <span class="type">View</span> {
+    <span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span>       = <span class="type">TodoViewModel</span>()
+    <span class="deco">@State</span> <span class="kw">private var</span> <span class="prop">newTitle</span> = <span class="str">""</span>
+
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">NavigationStack</span> {
+            <span class="type">List</span> {
+                <span class="cmt">// Input row</span>
+                <span class="type">HStack</span> {
+                    <span class="type">TextField</span>(<span class="str">"New item..."</span>, <span class="prop">text</span>: $<span class="prop">newTitle</span>)
+                    <span class="type">Button</span>(<span class="str">"Add"</span>) {
+                        <span class="prop">vm</span>.<span class="fn">addItem</span>(<span class="prop">title</span>: <span class="prop">newTitle</span>)
+                        <span class="prop">newTitle</span> = <span class="str">""</span>
+                    }
+                }
+                <span class="cmt">// Item rows</span>
+                <span class="type">ForEach</span>(<span class="prop">vm</span>.<span class="prop">items</span>) { <span class="prop">item</span> <span class="kw">in</span>
+                    <span class="type">HStack</span> {
+                        <span class="type">Text</span>(<span class="prop">item</span>.<span class="prop">title</span>)
+                            .<span class="fn">strikethrough</span>(<span class="prop">item</span>.<span class="prop">isDone</span>)
+                        <span class="type">Spacer</span>()
+                        <span class="type">Button</span>(<span class="str">"Done"</span>) {
+                            <span class="prop">vm</span>.<span class="fn">toggleDone</span>(<span class="prop">item</span>: item)
+                        }
+                    }
+                }
+                .<span class="fn">onDelete</span>(<span class="prop">perform</span>: <span class="prop">vm</span>.<span class="fn">deleteItem</span>)
+            }
+            .<span class="fn">navigationTitle</span>(<span class="str">"\(vm.remainingCount) left"</span>)
+        }
+    }
+}</pre></div>
+            </div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:1.2rem">
+          <strong>🎯 Your task:</strong> Add a "Clear All" button that removes every item from the list. Write <code>func clearAll()</code> in the ViewModel.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ADVANCED ── -->
+    <div class="tab-panel" id="ex-adv">
+      <div style="padding:1.8rem;background:var(--code-bg);border:1px solid rgba(248,113,113,0.2);border-radius:0 12px 12px 12px">
+        <div class="practice-header">
+          <div class="step-number">03</div>
+          <div class="step-info">
+            <h3>Profile Form with Input Validation</h3>
+            <p>Multiple @Published properties, computed validation logic, a disabled Save button, and an alert on success. Real-world ViewModel design.</p>
+          </div>
+        </div>
+        <div class="split w55-45">
+          <div>
+            <div class="code-block">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">ProfileViewModel.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">class</span> <span class="type">ProfileViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="cmt">// Multiple published fields</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">firstName</span>: <span class="type">String</span> = <span class="str">""</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">lastName</span>:  <span class="type">String</span> = <span class="str">""</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">email</span>:     <span class="type">String</span> = <span class="str">""</span>
+    <span class="deco">@Published</span> <span class="kw">var</span> <span class="prop">isSaved</span>:   <span class="type">Bool</span>   = <span class="kw">false</span>
+
+    <span class="cmt">// Computed display name</span>
+    <span class="kw">var</span> <span class="prop">fullName</span>: <span class="type">String</span> {
+        <span class="str">"\(firstName) \(lastName)"</span>
+            .<span class="fn">trimmingCharacters</span>(<span class="prop">in</span>: .<span class="prop">whitespaces</span>)
+    }
+
+    <span class="cmt">// Validation: email must have @ and .</span>
+    <span class="kw">var</span> <span class="prop">isEmailValid</span>: <span class="type">Bool</span> {
+        <span class="prop">email</span>.<span class="fn">contains</span>(<span class="str">"@"</span>) &amp;&amp;
+        <span class="prop">email</span>.<span class="fn">contains</span>(<span class="str">"."</span>)
+    }
+
+    <span class="cmt">// All fields required to save</span>
+    <span class="kw">var</span> <span class="prop">canSave</span>: <span class="type">Bool</span> {
+        !<span class="prop">firstName</span>.<span class="prop">isEmpty</span> &amp;&amp;
+        !<span class="prop">lastName</span>.<span class="prop">isEmpty</span>  &amp;&amp;
+        <span class="prop">isEmailValid</span>
+    }
+
+    <span class="kw">func</span> <span class="fn">saveProfile</span>() {
+        <span class="kw">guard</span> <span class="prop">canSave</span> <span class="kw">else</span> { <span class="kw">return</span> }
+        <span class="prop">isSaved</span> = <span class="kw">true</span>   <span class="cmt">// triggers the alert</span>
+    }
+
+    <span class="kw">func</span> <span class="fn">clearAll</span>() {
+        <span class="prop">firstName</span> = <span class="str">""</span>
+        <span class="prop">lastName</span>  = <span class="str">""</span>
+        <span class="prop">email</span>     = <span class="str">""</span>
+        <span class="prop">isSaved</span>   = <span class="kw">false</span>
+    }
+}</pre></div>
+            </div>
+          </div>
+          <div>
+            <div class="code-block">
+              <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-filename">ProfileView.swift</div></div>
+              <div class="code-body"><pre><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">ProfileView</span>: <span class="type">View</span> {
+    <span class="deco">@StateObject</span> <span class="kw">var</span> <span class="prop">vm</span> = <span class="type">ProfileViewModel</span>()
+
+    <span class="kw">var</span> <span class="prop">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Section</span>(<span class="str">"Your Info"</span>) {
+                <span class="type">TextField</span>(<span class="str">"First Name"</span>,
+                          <span class="prop">text</span>: $<span class="prop">vm</span>.<span class="prop">firstName</span>)
+                <span class="type">TextField</span>(<span class="str">"Last Name"</span>,
+                          <span class="prop">text</span>: $<span class="prop">vm</span>.<span class="prop">lastName</span>)
+                <span class="type">TextField</span>(<span class="str">"Email"</span>,
+                          <span class="prop">text</span>: $<span class="prop">vm</span>.<span class="prop">email</span>)
+            }
+            <span class="type">Section</span>(<span class="str">"Preview"</span>) {
+                <span class="type">Text</span>(<span class="prop">vm</span>.<span class="prop">fullName</span>)
+                <span class="type">Text</span>(<span class="prop">vm</span>.<span class="prop">email</span>)
+                    .<span class="fn">foregroundStyle</span>(
+                        <span class="prop">vm</span>.<span class="prop">isEmailValid</span>
+                            ? .<span class="prop">green</span> : .<span class="prop">red</span>
+                    )
+            }
+            <span class="type">Button</span>(<span class="str">"Save Profile"</span>) {
+                <span class="prop">vm</span>.<span class="fn">saveProfile</span>()
+            }
+            .<span class="fn">disabled</span>(!<span class="prop">vm</span>.<span class="prop">canSave</span>)
+        }
+        .<span class="fn">alert</span>(<span class="str">"Profile Saved!"</span>,
+               <span class="prop">isPresented</span>: $<span class="prop">vm</span>.<span class="prop">isSaved</span>) {
+            <span class="type">Button</span>(<span class="str">"OK"</span>) { <span class="prop">vm</span>.<span class="fn">clearAll</span>() }
+        }
+    }
+}</pre></div>
+            </div>
+            <div class="callout" style="margin-top:1rem">
+              <strong>🎯 Your task:</strong> Add an <code>age</code> text field. Validate that age is a number between 18 and 100. Add <code>var isAgeValid: Bool</code> to the ViewModel and include it in <code>canSave</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(8)">← Previous</button>
+    <button class="nav-btn primary" onclick="scrollToSlide(10)">Next →</button>
+  </div>
+</section>
+
+<!-- ══ SLIDE 10: QUIZ ══ -->
+<section class="slide" id="slide-10">
+  <div class="slide-label">Slide 10 — Knowledge Check</div>
+  <h2>🧠 Knowledge <span class="highlight">Check</span></h2>
+  <p class="lead">Four quick questions to confirm your understanding before the next class.</p>
+  <div class="quiz-container" id="quiz-container"></div>
+  <div id="quiz-complete" style="display:none;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.3);border-radius:16px;padding:2rem;max-width:740px;text-align:center;margin-top:1rem">
+    <div style="font-size:2.2rem;margin-bottom:0.5rem">🎉</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:700;color:var(--green);margin-bottom:0.5rem">Module Complete!</div>
+    <div style="font-size:0.95rem;color:var(--muted)">Score: <span id="quiz-score" style="color:var(--green);font-weight:700;font-size:1.1rem"></span></div>
+    <div style="font-size:0.9rem;color:var(--muted);margin-top:0.6rem">You've completed the MVVM module. Next step: open Xcode and build the Counter App following today's Xcode setup steps.</div>
+  </div>
+  <div class="slide-nav">
+    <button class="nav-btn" onclick="scrollToSlide(9)">← Previous</button>
+    <button class="nav-btn" onclick="scrollToSlide(0)">↑ Back to Top</button>
+  </div>
+</section>
+
+</div><!-- /slides-wrapper -->
+
+<footer>
+  <div class="footer-left">
+    <strong>MAC221 — iOS Development with SwiftUI</strong><br>
+    Mathematics, Engineering &amp; Computer Science Department<br>
+    LaGuardia Community College · CUNY
+  </div>
+  <div class="footer-right">
+    Topic: MVVM Architecture Pattern<br>
+    SwiftUI · ObservableObject · @Published<br>
+    <span style="color:var(--accent)">© 2025 · All Rights Reserved</span>
+  </div>
+</footer>
+
+<script>
+// ── SLIDES CONFIG ──
+const slideLabels = ['Intro','What is MVVM','Model','ViewModel','View','Data Flow','Wrappers','Do\'s & Don\'ts','Xcode Setup','Practice','Quiz'];
+document.getElementById('total-slides').textContent = slideLabels.length;
+
+const dotsEl = document.getElementById('nav-dots');
+slideLabels.forEach((label, i) => {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  d.setAttribute('data-label', label);
+  d.onclick = () => scrollToSlide(i);
+  dotsEl.appendChild(d);
+});
+
+function updateDot(idx) {
+  document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+  document.getElementById('current-slide').textContent = idx + 1;
+}
+function scrollToSlide(idx) {
+  document.getElementById('slide-' + idx)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      const idx = parseInt(e.target.id.split('-')[1]);
+      if (!isNaN(idx)) updateDot(idx);
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.slide').forEach(s => obs.observe(s));
+
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+});
+
+// ── TABS ──
+function switchTab(btn, panelId) {
+  const c = btn.closest('.tabs-container');
+  c.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  c.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ── DEMO ──
+let count = 0;
+function demoIncrement() { const p = count; count++; logEvent('increment()', p, count); updatePhone(); }
+function demoDecrement() { const p = count; count--; logEvent('decrement()', p, count); updatePhone(); }
+function demoReset()     { const p = count; count = 0; logEvent('reset()', p, count); updatePhone(); }
+
+function updatePhone() {
+  document.getElementById('phone-count').textContent = count;
+  document.getElementById('phone-count').style.color = count < 0 ? 'var(--red)' : count === 0 ? 'var(--muted)' : 'var(--accent)';
+  document.getElementById('phone-status').textContent = count === 0 ? 'At zero' : count > 0 ? 'Positive ↑' : 'Negative ↓';
+  const rb = document.getElementById('reset-btn');
+  rb.disabled = count === 0; rb.style.opacity = count === 0 ? '0.4' : '1';
+}
+
+function logEvent(action, before, after) {
+  const log = document.getElementById('event-log');
+  if (log.querySelector('[style*="text-align"]')) log.innerHTML = '';
+  const t = new Date().toLocaleTimeString('en', { hour12: false });
+  const el = document.createElement('div');
+  el.className = 'data-event';
+  el.innerHTML = `<span style="color:var(--muted)">${t}</span>  View → <span style="color:var(--accent)">vm.${action}</span>  @Published: ${before} → <span style="color:var(--green)">${after}</span>`;
+  log.insertBefore(el, log.firstChild);
+  if (log.children.length > 7) log.removeChild(log.lastChild);
+}
+
+// ── QUIZ ──
+const questions = [
+  {
+    q: "Which layer in MVVM holds just a plain Swift struct describing your data?",
+    opts: ["View", "ViewModel", "Model", "Controller"],
+    correct: 2,
+    exp: "✅ The Model is a plain Swift struct — no SwiftUI, no logic, just data properties. Example: struct Person { var name: String; var age: Int }"
+  },
+  {
+    q: "You want to create a ViewModel and keep it alive in your root View. Which property wrapper should you use?",
+    opts: ["@ObservedObject", "@State", "@StateObject", "@Published"],
+    correct: 2,
+    exp: "✅ @StateObject creates and owns the ViewModel. It survives view re-renders. @ObservedObject does NOT own it — using it to create a ViewModel is a common bug that resets your state."
+  },
+  {
+    q: "A ViewModel property marked @Published will...",
+    opts: [
+      "Save data to a file automatically",
+      "Tell SwiftUI to refresh the View when the value changes",
+      "Make the property read-only",
+      "Run the code on a background thread"
+    ],
+    correct: 1,
+    exp: "✅ @Published notifies SwiftUI to re-render whenever the value changes. That's the magic that keeps your View in sync with your data without any manual update code."
+  },
+  {
+    q: "The user taps a '+' button. What is the correct MVVM sequence?",
+    opts: [
+      "View directly sets vm.count = vm.count + 1",
+      "View calls vm.increment() → ViewModel updates count → @Published fires → View re-renders",
+      "Model updates itself, then tells the ViewModel",
+      "View calculates the new value and stores it in @State"
+    ],
+    correct: 1,
+    exp: "✅ The View calls a ViewModel function (vm.increment()). The ViewModel updates the @Published property. SwiftUI detects the change and re-renders the View automatically."
+  }
+];
+
+let currentQ = 0, correct = 0, answered = false;
+
+function renderQuiz() {
+  const c = document.getElementById('quiz-container');
+  if (currentQ >= questions.length) {
+    c.style.display = 'none';
+    document.getElementById('quiz-complete').style.display = 'block';
+    document.getElementById('quiz-score').textContent = `${correct}/${questions.length}`;
+    return;
+  }
+  const q = questions[currentQ]; answered = false;
+  c.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--muted)">Question ${currentQ+1} of ${questions.length}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--accent)">Score: ${correct}/${currentQ}</div>
+    </div>
+    <div class="quiz-question">${q.q}</div>
+    <div class="quiz-options">
+      ${q.opts.map((o,i) => `
+        <div class="quiz-option" onclick="selectAns(${i})" id="opt-${i}">
+          <div class="opt-letter">${String.fromCharCode(65+i)}</div>
+          <span>${o}</span>
+        </div>`).join('')}
+    </div>
+    <div class="quiz-feedback" id="quiz-fb"></div>
+    <button class="quiz-next" id="quiz-next-btn" onclick="nextQ()">${currentQ < questions.length-1 ? 'Next Question →' : 'See Results'}</button>
+  `;
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[currentQ];
+  const ok = idx === q.correct;
+  if (ok) correct++;
+  document.querySelectorAll('.quiz-option').forEach((el, i) => {
+    el.style.pointerEvents = 'none';
+    if (i === q.correct) el.classList.add('correct');
+    if (i === idx && !ok) el.classList.add('wrong');
+  });
+  const fb = document.getElementById('quiz-fb');
+  fb.textContent = q.exp;
+  fb.className = `quiz-feedback show ${ok ? 'correct-fb' : 'wrong-fb'}`;
+  document.getElementById('quiz-next-btn').classList.add('show');
+}
+
+function nextQ() { currentQ++; renderQuiz(); }
+renderQuiz();
+</script>
+</body>
+</html>

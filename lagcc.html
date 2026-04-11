@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVVM SwiftUI Architecture – Interactive Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1f2937;
+    --border: #30363d;
+    --accent-blue: #58a6ff;
+    --accent-orange: #f97316;
+    --accent-green: #3fb950;
+    --accent-purple: #a371f7;
+    --accent-red: #f85149;
+    --accent-yellow: #e3b341;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #484f58;
+    --code-bg: #0d1117;
+    --tag-model: #1d3557;
+    --tag-model-t: #90caf9;
+    --tag-vm: #1a2f1a;
+    --tag-vm-t: #3fb950;
+    --tag-view: #2d1b33;
+    --tag-view-t: #a371f7;
+    --tag-service: #2a1500;
+    --tag-service-t: #f97316;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─── SLIDE SYSTEM ─── */
+  #presentation {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 50px 60px;
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity 0.45s cubic-bezier(0.4,0,0.2,1), transform 0.45s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+    overflow-y: auto;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: all;
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ─── NAVIGATION ─── */
+  #nav {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 20px;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+
+  #nav button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    font-family: monospace;
+  }
+  #nav button:hover { color: var(--accent-blue); background: rgba(88,166,255,0.1); }
+  #nav button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  #slide-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--text-muted);
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .dot-nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .dot.active { background: var(--accent-blue); transform: scale(1.4); }
+
+  /* ─── GLOBAL SLIDE COMPONENTS ─── */
+  .slide-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  h1.slide-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    letter-spacing: 2px;
+    line-height: 1;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+  }
+
+  h2.section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+
+  .subtitle {
+    font-size: 20px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+  }
+
+  /* ─── CODE BLOCKS ─── */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    line-height: 1.65;
+    position: relative;
+  }
+
+  pre .file-badge {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  .kw    { color: #ff7b72; }
+  .type  { color: #79c0ff; }
+  .str   { color: #a5d6ff; }
+  .num   { color: #f2cc60; }
+  .cmt   { color: #8b949e; font-style: italic; }
+  .fn    { color: #d2a8ff; }
+  .prop  { color: #ffa657; }
+  .ann   { color: #f97316; }
+  .macro { color: #3fb950; }
+
+  /* ─── TAGS ─── */
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+  .tag-model   { background: var(--tag-model);   color: var(--tag-model-t);   }
+  .tag-vm      { background: var(--tag-vm);      color: var(--tag-vm-t);      }
+  .tag-view    { background: var(--tag-view);    color: var(--tag-view-t);    }
+  .tag-service { background: var(--tag-service); color: var(--tag-service-t); }
+
+  /* ─── GRID / CARD LAYOUTS ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card p, .card li {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .card ul { padding-left: 18px; }
+  .card ul li { margin-bottom: 5px; }
+
+  /* ─── FILE TREE ─── */
+  .tree {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    line-height: 2.2;
+  }
+  .tree-group {
+    color: var(--accent-yellow);
+    font-weight: 700;
+  }
+  .tree-file { color: var(--text-secondary); padding-left: 28px; display: block; }
+  .tree-file.model   { color: var(--tag-model-t);   }
+  .tree-file.vm      { color: var(--tag-vm-t);      }
+  .tree-file.view    { color: var(--tag-view-t);    }
+  .tree-file.service { color: var(--tag-service-t); }
+
+  /* ─── LAYER DIAGRAM ─── */
+  .layer-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+    width: 100%;
+  }
+  .layer-box {
+    width: 100%;
+    max-width: 700px;
+    padding: 18px 30px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 19px;
+    position: relative;
+  }
+  .layer-arrow {
+    font-size: 24px;
+    color: var(--text-muted);
+    margin: 4px 0;
+    line-height: 1;
+  }
+  .layer-view    { background: rgba(163,113,247,0.15); border: 2px solid #a371f7; color: #a371f7; }
+  .layer-vm      { background: rgba(63,185,80,0.15);  border: 2px solid #3fb950; color: #3fb950; }
+  .layer-model   { background: rgba(88,166,255,0.15); border: 2px solid #58a6ff; color: #58a6ff; }
+  .layer-service { background: rgba(249,115,22,0.15); border: 2px solid #f97316; color: #f97316; }
+
+  .layer-desc {
+    font-size: 13px;
+    opacity: 0.75;
+    font-weight: 400;
+    margin-top: 3px;
+  }
+
+  /* ─── HERO SLIDE ─── */
+  #slide-0 {
+    background: radial-gradient(ellipse at 20% 50%, rgba(88,166,255,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(163,113,247,0.07) 0%, transparent 50%),
+                var(--bg);
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .hero-line {
+    height: 2px;
+    width: 60px;
+    background: var(--accent-blue);
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 4px;
+    color: var(--accent-blue);
+    text-transform: uppercase;
+  }
+
+  .hero-sub {
+    font-size: 22px;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin-top: 16px;
+    margin-bottom: 40px;
+  }
+
+  .hero-chips {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    border: 1px solid;
+  }
+
+  /* ─── DIVIDERS & MISC ─── */
+  .rule {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+
+  .highlight-box {
+    background: rgba(88,166,255,0.08);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    margin: 16px 0;
+    font-size: 17px;
+    color: var(--text-secondary);
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .col-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* Keyboard hint */
+  #kb-hint {
+    position: fixed;
+    bottom: 82px;
+    right: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div id="presentation">
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 0 — HERO
+  ══════════════════════════════════════════ -->
+  <div class="slide active" id="slide-0">
+    <div class="hero-eyebrow">
+      <div class="hero-line"></div>
+      <span class="hero-label">MAC 221 · iOS Development · SwiftUI</span>
+    </div>
+
+    <div class="slide-label">LaGuardia Community College — CUNY / MEC Department</div>
+
+    <h1 class="slide-title" style="font-size:80px;">MVVM<br>Architecture<br>in SwiftUI</h1>
+
+    <p class="hero-sub">
+      Refactoring a CUNY Campus ID app into a clean, testable,
+      and scalable <strong>Model · ViewModel · View</strong> structure —
+      with a dedicated Service layer.
+    </p>
+
+    <div class="hero-chips">
+      <span class="chip tag-model" style="border-color:#58a6ff;">Model</span>
+      <span class="chip tag-vm" style="border-color:#3fb950;">ViewModel</span>
+      <span class="chip tag-view" style="border-color:#a371f7;">View</span>
+      <span class="chip tag-service" style="border-color:#f97316;">Service</span>
+      <span class="chip" style="border-color:var(--border);color:var(--text-muted);">SwiftUI · ObservableObject · @Published</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 1 — WHAT IS MVVM?
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-1">
+    <div class="slide-label">01 · Concept Overview</div>
+    <h2 class="section-title">What is MVVM?</h2>
+    <p class="subtitle">A design pattern that separates concerns into three distinct layers.</p>
+
+    <div class="layer-diagram">
+      <div class="layer-box layer-view">
+        <div>VIEW</div>
+        <div class="layer-desc">SwiftUI Views — renders UI, observes ViewModel state</div>
+      </div>
+      <div class="layer-arrow">⟵ binds / observes · triggers actions ⟶</div>
+      <div class="layer-box layer-vm">
+        <div>VIEW MODEL</div>
+        <div class="layer-desc">ObservableObject — business logic, state, @Published properties</div>
+      </div>
+      <div class="layer-arrow">⟵ requests data · receives results ⟶</div>
+      <div class="layer-box layer-model">
+        <div>MODEL</div>
+        <div class="layer-desc">Pure Swift structs / data types — no UI dependency</div>
+      </div>
+      <div class="layer-arrow">↑ fetches from</div>
+      <div class="layer-box layer-service">
+        <div>SERVICE LAYER</div>
+        <div class="layer-desc">DatabaseService — simulates DB / API calls</div>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:24px;">
+      💡 In SwiftUI, the ViewModel uses <code>@Published</code> + <code>ObservableObject</code>,
+      and Views observe it with <code>@StateObject</code> or <code>@ObservedObject</code>.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 2 — PROJECT FILE STRUCTURE
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-2">
+    <div class="slide-label">02 · Xcode Project Structure</div>
+    <h2 class="section-title">Groups &amp; Files</h2>
+    <p class="subtitle">Create a <strong>Group</strong> for each layer in Xcode Navigator.</p>
+
+    <div class="grid-2" style="align-items:start; gap:28px;">
+      <div class="tree">
+        <div><span class="tree-group">📁 CampusIDApp/</span></div>
+        <span class="tree-file">  CampusIDApp.swift</span>
+        <div style="margin-top:8px;"><span class="tree-group">  📁 Models/</span></div>
+        <span class="tree-file model">    Course.swift</span>
+        <span class="tree-file model">    DaySchedule.swift</span>
+        <div style="margin-top:8px;"><span class="tree-group">  📁 ViewModels/</span></div>
+        <span class="tree-file vm">    ScheduleViewModel.swift</span>
+        <div style="margin-top:8px;"><span class="tree-group">  📁 Views/</span></div>
+        <span class="tree-file view">    ContentView.swift</span>
+        <span class="tree-file view">    SecondScreen.swift</span>
+        <span class="tree-file view">    ThirdScreen.swift</span>
+        <span class="tree-file view">    ScheduleView.swift</span>
+        <span class="tree-file view">    FlippableCard.swift</span>
+        <span class="tree-file view">    IDCardFront.swift</span>
+        <span class="tree-file view">    IDCardBack.swift</span>
+        <div style="margin-top:8px;"><span class="tree-group">  📁 Services/</span></div>
+        <span class="tree-file service">    DatabaseService.swift</span>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="card">
+          <h3><span class="tag tag-model">Model</span> Pure Data</h3>
+          <ul>
+            <li><code>Course</code> — Identifiable struct with name, code, time, room, instructor</li>
+            <li><code>DaySchedule</code> — Identifiable struct, holds a day's array of courses</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="tag tag-vm">ViewModel</span> State &amp; Logic</h3>
+          <ul>
+            <li><code>ScheduleViewModel</code> — <code>ObservableObject</code>, holds <code>@Published</code> weeklySchedule, isLoading, errorMessage</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="tag tag-service">Service</span> Data Source</h3>
+          <ul>
+            <li><code>DatabaseService</code> — Singleton that simulates async DB fetch with a <code>Result</code> callback</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 3 — MODEL: Course.swift
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-3">
+    <div class="slide-label">03 · Model Layer</div>
+    <h2 class="section-title">Course.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Models group — <span class="tag tag-model">Model</span></div>
+
+    <pre><span class="file-badge">Course.swift</span><span class="cmt">// MARK: - Course Model</span>
+<span class="cmt">// Pure Swift struct — no UIKit / SwiftUI imports needed</span>
+<span class="cmt">// Identifiable allows use in ForEach loops directly</span>
+
+<span class="kw">import</span> Foundation
+
+<span class="kw">struct</span> <span class="type">Course</span>: <span class="type">Identifiable</span> {
+    <span class="kw">let</span> <span class="prop">id</span>   = <span class="type">UUID</span>()
+    <span class="kw">let</span> <span class="prop">name</span>       : <span class="type">String</span>  <span class="cmt">// "iOS App Development with SwiftUI"</span>
+    <span class="kw">let</span> <span class="prop">code</span>       : <span class="type">String</span>  <span class="cmt">// "MAC221"</span>
+    <span class="kw">let</span> <span class="prop">time</span>       : <span class="type">String</span>  <span class="cmt">// "1:00 – 2:15 PM"</span>
+    <span class="kw">let</span> <span class="prop">room</span>       : <span class="type">String</span>  <span class="cmt">// "E-201"</span>
+    <span class="kw">let</span> <span class="prop">instructor</span> : <span class="type">String</span>  <span class="cmt">// "Prof. Kassou"</span>
+}</pre>
+
+    <div class="highlight-box" style="margin-top:20px;">
+      ✅ <strong>Key MVVM rule:</strong> Models are <em>pure data</em>.
+      They do NOT know about any View or ViewModel.
+      They only describe <em>what</em> the data is, never <em>how</em> it is displayed.
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3 style="font-size:16px;">Why <code>Identifiable</code>?</h3>
+      <p>SwiftUI's <code>ForEach</code> requires each element to be uniquely identified.
+      Adding <code>Identifiable</code> with a <code>let id = UUID()</code> property
+      satisfies that requirement automatically — no need to write <code>ForEach(items, id: \.self)</code>.</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 4 — MODEL: DaySchedule.swift
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-4">
+    <div class="slide-label">04 · Model Layer</div>
+    <h2 class="section-title">DaySchedule.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Models group — <span class="tag tag-model">Model</span></div>
+
+    <pre><span class="file-badge">DaySchedule.swift</span><span class="cmt">// MARK: - DaySchedule Model</span>
+<span class="cmt">// Groups a weekday name with its list of courses</span>
+
+<span class="kw">import</span> Foundation
+
+<span class="kw">struct</span> <span class="type">DaySchedule</span>: <span class="type">Identifiable</span> {
+    <span class="kw">let</span> <span class="prop">id</span>      = <span class="type">UUID</span>()
+    <span class="kw">let</span> <span class="prop">dayName</span> : <span class="type">String</span>    <span class="cmt">// e.g. "Monday"</span>
+    <span class="kw">let</span> <span class="prop">courses</span> : [<span class="type">Course</span>]  <span class="cmt">// zero or more courses that day</span>
+}</pre>
+
+    <div class="grid-2" style="margin-top:20px; gap:16px;">
+      <div class="card">
+        <h3 style="font-size:16px;">Composition over inheritance</h3>
+        <p><code>DaySchedule</code> <em>contains</em> an array of <code>Course</code> structs.
+        This is classic Swift value-type composition — simple, predictable, and copy-safe.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:16px;">Empty Friday is intentional</h3>
+        <p>The <code>courses: []</code> case on Friday is handled gracefully in <code>ScheduleView</code>
+        by showing a <em>"No classes"</em> message — the Model itself stays clean.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 5 — SERVICE: DatabaseService.swift
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-5">
+    <div class="slide-label">05 · Service Layer</div>
+    <h2 class="section-title">DatabaseService.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Services group — <span class="tag tag-service">Service</span></div>
+
+    <pre><span class="file-badge">DatabaseService.swift</span><span class="cmt">// MARK: - DatabaseService</span>
+<span class="cmt">// Singleton — replace internals with real API/DB when ready</span>
+
+<span class="kw">import</span> Foundation
+
+<span class="kw">final class</span> <span class="type">DatabaseService</span> {
+
+    <span class="kw">static let</span> <span class="prop">shared</span> = <span class="type">DatabaseService</span>()   <span class="cmt">// Singleton instance</span>
+    <span class="kw">private init</span>() {}                            <span class="cmt">// Prevents external init</span>
+
+    <span class="kw">func</span> <span class="fn">fetchSchedule</span>(
+        <span class="kw">for</span> studentId: <span class="type">String</span>,
+        completion: <span class="ann">@escaping</span> (<span class="type">Result</span>&lt;[<span class="type">DaySchedule</span>], <span class="type">Error</span>&gt;) -> <span class="type">Void</span>
+    ) {
+        <span class="cmt">// Simulate async network / DB latency</span>
+        <span class="type">DispatchQueue</span>.global().<span class="fn">asyncAfter</span>(deadline: .now() + <span class="num">0.5</span>) {
+            <span class="kw">let</span> data: [<span class="type">DaySchedule</span>] = [
+                <span class="type">DaySchedule</span>(dayName: <span class="str">"Monday"</span>, courses: [
+                    <span class="type">Course</span>(name: <span class="str">"College Algebra"</span>, code: <span class="str">"MAT115"</span>,
+                           time: <span class="str">"9:00–10:15 AM"</span>, room: <span class="str">"E-215"</span>,
+                           instructor: <span class="str">"Prof. Kassou"</span>),
+                    <span class="cmt">// … more courses</span>
+                ]),
+                <span class="cmt">// … more days</span>
+            ]
+            completion(.<span class="fn">success</span>(data))
+        }
+    }
+}</pre>
+
+    <div class="highlight-box">
+      📌 <strong>Singleton pattern</strong>: <code>static let shared</code> + <code>private init()</code>
+      ensures a single shared instance. Later, swap the mock data for a real URLSession or CoreData call
+      <em>without touching the ViewModel or Views</em>.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 6 — VIEWMODEL: ScheduleViewModel.swift
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-6">
+    <div class="slide-label">06 · ViewModel Layer</div>
+    <h2 class="section-title">ScheduleViewModel.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 ViewModels group — <span class="tag tag-vm">ViewModel</span></div>
+
+    <pre><span class="file-badge">ScheduleViewModel.swift</span><span class="cmt">// MARK: - ScheduleViewModel</span>
+
+<span class="kw">import</span> Foundation
+<span class="kw">import</span> Combine
+
+<span class="kw">final class</span> <span class="type">ScheduleViewModel</span>: <span class="type">ObservableObject</span> {
+
+    <span class="cmt">// @Published → SwiftUI Views automatically re-render when these change</span>
+    <span class="ann">@Published</span> <span class="kw">var</span> <span class="prop">weeklySchedule</span> : [<span class="type">DaySchedule</span>] = []
+    <span class="ann">@Published</span> <span class="kw">var</span> <span class="prop">isLoading</span>      : <span class="type">Bool</span>         = <span class="kw">false</span>
+    <span class="ann">@Published</span> <span class="kw">var</span> <span class="prop">errorMessage</span>   : <span class="type">String</span>?
+
+    <span class="kw">func</span> <span class="fn">load</span>(<span class="kw">for</span> studentId: <span class="type">String</span>) {
+        isLoading     = <span class="kw">true</span>
+        errorMessage  = <span class="kw">nil</span>
+
+        <span class="type">DatabaseService</span>.shared.<span class="fn">fetchSchedule</span>(<span class="kw">for</span>: studentId) { [<span class="kw">weak self</span>] result <span class="kw">in</span>
+            <span class="type">DispatchQueue</span>.main.<span class="fn">async</span> {                  <span class="cmt">// Always update UI on main thread</span>
+                <span class="kw">guard let self</span> = <span class="kw">self else</span> { <span class="kw">return</span> }
+                <span class="kw">self</span>.isLoading = <span class="kw">false</span>
+                <span class="kw">switch</span> result {
+                <span class="kw">case</span> .<span class="fn">success</span>(<span class="kw">let</span> data) : <span class="kw">self</span>.weeklySchedule = data
+                <span class="kw">case</span> .<span class="fn">failure</span>(<span class="kw">let</span> err)  : <span class="kw">self</span>.errorMessage = err.<span class="prop">localizedDescription</span>
+                }
+            }
+        }
+    }
+}</pre>
+
+    <div class="highlight-box">
+      🔑 The ViewModel is the <em>only</em> layer that calls the Service.
+      Views never touch <code>DatabaseService</code> directly.
+      The ViewModel translates raw Model data into something the View can bind to.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 7 — @Published & ObservableObject
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-7">
+    <div class="slide-label">07 · SwiftUI Binding Mechanics</div>
+    <h2 class="section-title">@Published &amp; ObservableObject</h2>
+    <p class="subtitle">How SwiftUI knows when to redraw the View.</p>
+
+    <div class="grid-3" style="gap:16px; margin-bottom:20px;">
+      <div class="card" style="border-color:#3fb950;">
+        <h3 style="color:#3fb950; font-size:17px;">ObservableObject</h3>
+        <p>A protocol that enables a class to broadcast change notifications to SwiftUI.
+        When any <code>@Published</code> property changes, all observing views update.</p>
+      </div>
+      <div class="card" style="border-color:#f97316;">
+        <h3 style="color:#f97316; font-size:17px;">@Published</h3>
+        <p>A property wrapper that wraps a value and automatically fires an
+        <code>objectWillChange</code> event before the value changes, triggering UI updates.</p>
+      </div>
+      <div class="card" style="border-color:#a371f7;">
+        <h3 style="color:#a371f7; font-size:17px;">@StateObject</h3>
+        <p>Used in the <em>owner</em> View (ScheduleView). SwiftUI creates and keeps
+        the ViewModel alive for the View's lifetime. Use <code>@ObservedObject</code>
+        when passing it down.</p>
+      </div>
+    </div>
+
+    <pre style="font-size:14px;"><span class="cmt">// In ScheduleView — the View OWNS the ViewModel</span>
+<span class="kw">struct</span> <span class="type">ScheduleView</span>: <span class="type">View</span> {
+    <span class="kw">let</span> <span class="prop">studentId</span>: <span class="type">String</span>
+
+    <span class="ann">@StateObject</span> <span class="kw">private var</span> <span class="prop">viewModel</span> = <span class="type">ScheduleViewModel</span>()
+    <span class="cmt">//  ↑ SwiftUI manages ScheduleViewModel's lifetime tied to this View</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="cmt">// The view reads viewModel.isLoading, viewModel.weeklySchedule, etc.</span>
+        <span class="cmt">// When those @Published props change → body is called again automatically</span>
+    }
+}</pre>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 8 — VIEW: ScheduleView.swift
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-8">
+    <div class="slide-label">08 · View Layer</div>
+    <h2 class="section-title">ScheduleView.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Views group — <span class="tag tag-view">View</span></div>
+
+    <pre><span class="file-badge">ScheduleView.swift</span><span class="cmt">// MARK: - ScheduleView</span>
+
+<span class="kw">struct</span> <span class="type">ScheduleView</span>: <span class="type">View</span> {
+    <span class="kw">let</span> <span class="prop">studentId</span>: <span class="type">String</span>
+    <span class="ann">@StateObject</span> <span class="kw">private var</span> <span class="prop">viewModel</span> = <span class="type">ScheduleViewModel</span>()
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Group</span> {
+            <span class="kw">if</span> viewModel.<span class="prop">isLoading</span> {
+                <span class="type">ProgressView</span>(<span class="str">"Loading schedule…"</span>)          <span class="cmt">// State 1: Loading</span>
+
+            } <span class="kw">else if let</span> error = viewModel.<span class="prop">errorMessage</span> {
+                <span class="type">VStack</span> {
+                    <span class="type">Text</span>(error).<span class="fn">foregroundColor</span>(.<span class="prop">red</span>)
+                    <span class="type">Button</span>(<span class="str">"Retry"</span>) { viewModel.<span class="fn">load</span>(<span class="kw">for</span>: studentId) }  <span class="cmt">// State 2: Error</span>
+                }
+            } <span class="kw">else if</span> viewModel.<span class="prop">weeklySchedule</span>.<span class="prop">isEmpty</span> {
+                <span class="type">Text</span>(<span class="str">"No schedule found."</span>)                  <span class="cmt">// State 3: Empty</span>
+
+            } <span class="kw">else</span> {
+                <span class="type">List</span> {                                          <span class="cmt">// State 4: Data</span>
+                    <span class="type">ForEach</span>(viewModel.<span class="prop">weeklySchedule</span>) { day <span class="kw">in</span>
+                        <span class="type">Section</span>(header: <span class="type">Text</span>(day.<span class="prop">dayName</span>)) {
+                            <span class="type">ForEach</span>(day.<span class="prop">courses</span>) { course <span class="kw">in</span>
+                                <span class="type">CourseRow</span>(course: course)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .<span class="fn">navigationTitle</span>(<span class="str">"Weekly Schedule"</span>)
+        .<span class="fn">onAppear</span> { viewModel.<span class="fn">load</span>(<span class="kw">for</span>: studentId) }
+    }
+}</pre>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 9 — VIEW: ContentView.swift (key parts)
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-9">
+    <div class="slide-label">09 · View Layer</div>
+    <h2 class="section-title">ContentView.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Views group — <span class="tag tag-view">View</span> · Root screen with NavigationStack</div>
+
+    <pre style="font-size:14.5px;"><span class="file-badge">ContentView.swift</span><span class="kw">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+
+    <span class="cmt">// Computed property — presentation logic only, no business logic</span>
+    <span class="kw">private var</span> <span class="prop">todayString</span>: <span class="type">String</span> {
+        <span class="kw">let</span> fmt = <span class="type">DateFormatter</span>()
+        fmt.<span class="prop">dateFormat</span> = <span class="str">"EEEE, MMM d, yyyy"</span>
+        <span class="kw">return</span> fmt.<span class="fn">string</span>(from: <span class="type">Date</span>())
+    }
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">NavigationStack</span> {                          <span class="cmt">// Root navigation container</span>
+            <span class="type">VStack</span>(spacing: <span class="num">20</span>) {
+
+                <span class="cmt">// ── NavigationLink → SecondScreen (ID Card) ──</span>
+                <span class="type">NavigationLink</span>(destination: <span class="type">SecondScreen</span>()) {
+                    <span class="type">HStack</span> {
+                        <span class="type">Image</span>(systemName: <span class="str">"person.text.rectangle"</span>)
+                        <span class="type">Text</span>(<span class="str">"ID CARD"</span>).<span class="fn">bold</span>()
+                    }
+                    .<span class="fn">padding</span>().<span class="fn">background</span>(<span class="type">Color</span>.blue)
+                    .<span class="fn">foregroundColor</span>(.<span class="prop">white</span>).<span class="fn">cornerRadius</span>(<span class="num">10</span>)
+                }
+
+                <span class="cmt">// ── NavigationLink → ScheduleView (date card tapped) ──</span>
+                <span class="type">NavigationLink</span> {
+                    <span class="type">ScheduleView</span>(studentId: <span class="str">"123456789"</span>)
+                } label: {
+                    <span class="type">Text</span>(todayString).<span class="fn">padding</span>()
+                        .<span class="fn">background</span>(<span class="type">Color</span>.white).<span class="fn">cornerRadius</span>(<span class="num">10</span>)
+                }
+            }
+            .<span class="fn">navigationBarHidden</span>(<span class="kw">true</span>)
+        }
+    }
+}</pre>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 10 — VIEW: FlippableCard + IDCardFront/Back
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-10">
+    <div class="slide-label">10 · View Layer — Reusable Components</div>
+    <h2 class="section-title">FlippableCard.swift</h2>
+    <div class="col-label" style="margin-bottom:12px;">📁 Views group — Generic view with <code>@Binding</code></div>
+
+    <pre style="font-size:14px;"><span class="file-badge">FlippableCard.swift</span><span class="cmt">// MARK: - FlippableCard (Generic View)</span>
+<span class="cmt">// Front and Back can be ANY View type — reusable component</span>
+
+<span class="kw">struct</span> <span class="type">FlippableCard</span>&lt;<span class="type">Front</span>: <span class="type">View</span>, <span class="type">Back</span>: <span class="type">View</span>&gt;: <span class="type">View</span> {
+    <span class="ann">@Binding</span> <span class="kw">var</span> <span class="prop">isFlipped</span>: <span class="type">Bool</span>   <span class="cmt">// Owned by parent (SecondScreen)</span>
+    <span class="kw">var</span> front: <span class="type">Front</span>
+    <span class="kw">var</span> back:  <span class="type">Back</span>
+
+    <span class="kw">var</span> body: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">ZStack</span> {
+            front
+                .<span class="fn">opacity</span>(isFlipped ? <span class="num">0.0</span> : <span class="num">1.0</span>)
+                .<span class="fn">rotation3DEffect</span>(.<span class="fn">degrees</span>(isFlipped ? <span class="num">180</span> : <span class="num">0</span>),
+                                   axis: (x: <span class="num">0</span>, y: <span class="num">1</span>, z: <span class="num">0</span>))
+            back
+                .<span class="fn">opacity</span>(isFlipped ? <span class="num">1.0</span> : <span class="num">0.0</span>)
+                .<span class="fn">rotation3DEffect</span>(.<span class="fn">degrees</span>(isFlipped ? <span class="num">0</span> : -<span class="num">180</span>),
+                                   axis: (x: <span class="num">0</span>, y: <span class="num">1</span>, z: <span class="num">0</span>))
+        }
+        .<span class="fn">animation</span>(.<span class="fn">easeInOut</span>(duration: <span class="num">0.7</span>), value: isFlipped)
+        .<span class="fn">onTapGesture</span> { isFlipped.<span class="fn">toggle</span>() }
+    }
+}
+<span class="cmt">// IDCardFront.swift and IDCardBack.swift are separate view files</span>
+<span class="cmt">// in the Views group — each displays one face of the card</span></pre>
+
+    <div class="highlight-box">
+      🔗 <code>@Binding</code> lets <code>FlippableCard</code> read and write <code>isFlipped</code>
+      that is <em>owned</em> by <code>SecondScreen</code> via its <code>@State</code>.
+      This is SwiftUI's two-way data binding at work.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 11 — FULL DATA FLOW DIAGRAM
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-11">
+    <div class="slide-label">11 · Architecture Summary</div>
+    <h2 class="section-title">Full Data Flow</h2>
+    <p class="subtitle">How data moves through all four layers in this app.</p>
+
+    <div style="display:flex; gap:0; align-items:stretch; margin-top:8px;">
+
+      <div style="flex:1; display:flex; flex-direction:column; gap:0; align-items:center;">
+        <div class="layer-box layer-service" style="width:100%; max-width:none; font-size:16px;">
+          <div style="font-size:20px;">📦 DatabaseService</div>
+          <div class="layer-desc">fetchSchedule(for:) → Result&lt;[DaySchedule], Error&gt;</div>
+        </div>
+        <div class="layer-arrow">↓ calls completion on main thread</div>
+        <div class="layer-box layer-vm" style="width:100%; max-width:none; font-size:16px;">
+          <div style="font-size:20px;">⚙️ ScheduleViewModel</div>
+          <div class="layer-desc">load(for:) · sets @Published weeklySchedule / isLoading / errorMessage</div>
+        </div>
+        <div class="layer-arrow">↓ @Published triggers body re-evaluation</div>
+        <div class="layer-box layer-view" style="width:100%; max-width:none; font-size:16px;">
+          <div style="font-size:20px;">🖼 ScheduleView</div>
+          <div class="layer-desc">@StateObject viewModel · displays loading / error / list states</div>
+        </div>
+        <div class="layer-arrow">↓ nested in NavigationStack via NavigationLink</div>
+        <div class="layer-box layer-view" style="width:100%; max-width:none; font-size:16px; border-color:#e879f9; color:#e879f9; background:rgba(232,121,249,0.1);">
+          <div style="font-size:20px;">🏠 ContentView</div>
+          <div class="layer-desc">NavigationStack root · links to SecondScreen + ScheduleView</div>
+        </div>
+      </div>
+
+      <div style="width:200px; display:flex; flex-direction:column; justify-content:center; padding:0 20px; gap:16px;">
+        <div class="card" style="font-size:14px; padding:14px 16px;">
+          <h3 style="font-size:15px; color:#f97316;">Service → VM</h3>
+          <p>Completion callback returns <code>Result</code> type</p>
+        </div>
+        <div class="card" style="font-size:14px; padding:14px 16px;">
+          <h3 style="font-size:15px; color:#3fb950;">VM → View</h3>
+          <p><code>@Published</code> + <code>@StateObject</code> binding</p>
+        </div>
+        <div class="card" style="font-size:14px; padding:14px 16px;">
+          <h3 style="font-size:15px; color:#a371f7;">View → VM</h3>
+          <p><code>.onAppear</code> + Button calls <code>viewModel.load()</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 12 — KEY SWIFTUI PROPERTY WRAPPERS
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-12">
+    <div class="slide-label">12 · SwiftUI Property Wrappers</div>
+    <h2 class="section-title">Wrappers Used in This App</h2>
+    <p class="subtitle">Each wrapper has a specific ownership and scope rule.</p>
+
+    <div class="grid-2" style="gap:16px;">
+      <div class="card" style="border-color:#3fb950;">
+        <h3 style="color:#3fb950; font-size:18px;"><code>@Published</code></h3>
+        <p>Used in <strong>ScheduleViewModel</strong> on <code>weeklySchedule</code>, <code>isLoading</code>, <code>errorMessage</code>.
+        Marks a property to broadcast changes to any observing SwiftUI view.</p>
+      </div>
+      <div class="card" style="border-color:#a371f7;">
+        <h3 style="color:#a371f7; font-size:18px;"><code>@StateObject</code></h3>
+        <p>Used in <strong>ScheduleView</strong>. Creates and owns a <code>ScheduleViewModel</code> instance.
+        SwiftUI keeps it alive across re-renders of the same view.</p>
+      </div>
+      <div class="card" style="border-color:#58a6ff;">
+        <h3 style="color:#58a6ff; font-size:18px;"><code>@State</code></h3>
+        <p>Used in <strong>SecondScreen / ThirdScreen</strong> for <code>flipped: Bool</code>.
+        Local, view-owned state. Not shared outside the view that declares it.</p>
+      </div>
+      <div class="card" style="border-color:#f97316;">
+        <h3 style="color:#f97316; font-size:18px;"><code>@Binding</code></h3>
+        <p>Used in <strong>FlippableCard</strong> for <code>isFlipped</code>.
+        A two-way reference to a parent's <code>@State</code> — reads and writes the parent's value.</p>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:16px; font-size:16px;">
+      📌 <strong>Rule of thumb:</strong>
+      <code>@State</code> = local · <code>@Binding</code> = borrowed · <code>@StateObject</code> = owns the VM ·
+      <code>@ObservedObject</code> = references the VM · <code>@Published</code> = triggers re-render
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 13 — XCODE STEP-BY-STEP
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-13">
+    <div class="slide-label">13 · Xcode Setup</div>
+    <h2 class="section-title">Step-by-Step in Xcode</h2>
+    <p class="subtitle">How to create the Group structure and move the files.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; padding:18px 22px;">
+        <div style="font-size:32px; min-width:50px; text-align:center;">①</div>
+        <div>
+          <h3 style="font-size:18px; margin-bottom:6px;">Create Groups</h3>
+          <p>Right-click the project folder in the Navigator → <strong>New Group</strong>.
+          Create four groups: <code>Models</code>, <code>ViewModels</code>, <code>Views</code>, <code>Services</code>.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; padding:18px 22px;">
+        <div style="font-size:32px; min-width:50px; text-align:center;">②</div>
+        <div>
+          <h3 style="font-size:18px; margin-bottom:6px;">Add New Swift Files</h3>
+          <p>Right-click each group → <strong>New File → Swift File</strong>.
+          Name them exactly as shown: <code>Course.swift</code>, <code>DaySchedule.swift</code>,
+          <code>ScheduleViewModel.swift</code>, <code>DatabaseService.swift</code>, etc.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; padding:18px 22px;">
+        <div style="font-size:32px; min-width:50px; text-align:center;">③</div>
+        <div>
+          <h3 style="font-size:18px; margin-bottom:6px;">Move / Refactor Existing Code</h3>
+          <p>Cut each <code>// MARK:</code> section from the original monolithic file and paste
+          into the new dedicated file. Keep the original <code>ContentView.swift</code> in the Views group.</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex; gap:20px; align-items:flex-start; padding:18px 22px;">
+        <div style="font-size:32px; min-width:50px; text-align:center;">④</div>
+        <div>
+          <h3 style="font-size:18px; margin-bottom:6px;">Build &amp; Verify</h3>
+          <p>Press <kbd style="background:var(--border); border-radius:4px; padding:2px 6px;">⌘ B</kbd> to build.
+          Each type is now in its own file — Swift's access control defaults (<code>internal</code>)
+          mean all types in the same module can see each other without imports.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SLIDE 14 — SUMMARY
+  ══════════════════════════════════════════ -->
+  <div class="slide" id="slide-14">
+    <div class="slide-label">14 · Summary</div>
+    <h2 class="section-title">What We Built</h2>
+    <p class="subtitle">A clean MVVM Campus ID app — scalable, testable, and SwiftUI-idiomatic.</p>
+
+    <div class="grid-3" style="margin-bottom:24px;">
+      <div class="card" style="border-color:var(--tag-model-t); text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">📦</div>
+        <div class="tag tag-model" style="margin-bottom:10px;">Model</div>
+        <p style="font-size:15px;"><code>Course</code><br><code>DaySchedule</code><br>Pure Swift structs</p>
+      </div>
+      <div class="card" style="border-color:var(--tag-vm-t); text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">⚙️</div>
+        <div class="tag tag-vm" style="margin-bottom:10px;">ViewModel</div>
+        <p style="font-size:15px;"><code>ScheduleViewModel</code><br>ObservableObject<br>@Published state</p>
+      </div>
+      <div class="card" style="border-color:var(--tag-view-t); text-align:center;">
+        <div style="font-size:36px; margin-bottom:8px;">🖼</div>
+        <div class="tag tag-view" style="margin-bottom:10px;">View</div>
+        <p style="font-size:15px;"><code>ContentView</code><br><code>ScheduleView</code><br><code>FlippableCard</code><br><code>IDCardFront/Back</code></p>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:var(--tag-service-t); display:flex; gap:20px; align-items:center;">
+      <div style="font-size:40px;">🗄</div>
+      <div>
+        <div class="tag tag-service" style="margin-bottom:6px;">Service</div>
+        <p>
+          <code>DatabaseService.shared.fetchSchedule(for:completion:)</code> — Singleton, async-ready,
+          easily swappable with URLSession or CoreData in production.
+          The ViewModel is the only consumer; Views never touch the Service directly.
+        </p>
+      </div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:20px; font-size:18px;">
+      🎓 <strong>MVVM = Separation of Concerns.</strong>
+      Each file has one job. Changing the data source never breaks the UI.
+      Adding a new screen never pollutes the business logic.
+    </div>
+  </div>
+
+</div><!-- #presentation -->
+
+<!-- ─── NAVIGATION BAR ─── -->
+<div id="nav">
+  <button id="btn-prev" onclick="changeSlide(-1)" disabled>&#8592;</button>
+  <div class="dot-nav" id="dot-nav"></div>
+  <span id="slide-counter">1 / 15</span>
+  <button id="btn-next" onclick="changeSlide(1)">&#8594;</button>
+</div>
+
+<div id="kb-hint">← → arrow keys to navigate</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let   current = 0;
+
+  const dotNav  = document.getElementById('dot-nav');
+  const counter = document.getElementById('slide-counter');
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotNav.appendChild(d);
+  });
+
+  function goTo(idx) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(() => slides[current < idx ? current : current].classList.remove('exit'), 450);
+
+    const prev = current;
+    current = idx;
+
+    slides[current].classList.add('active');
+    setTimeout(() => slides[prev].classList.remove('exit'), 450);
+
+    // Dots
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+
+    counter.textContent = `${current + 1} / ${total}`;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) {
+    const next = current + dir;
+    if (next < 0 || next >= total) return;
+    goTo(next);
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+</script>
+</body>
+</html>

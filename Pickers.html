@@ -1,0 +1,3096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftUI Pickers — MAC221 | Khalid Kassou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #05060e;
+  --bg-mid: #0a0d1f;
+  --bg-soft: #131634;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b76cff;
+  --neon-pink: #ff3ea5;
+  --neon-green: #4cffaf;
+  --neon-orange: #ffb547;
+  --text-bright: #f0f4ff;
+  --text-mid: #a8b2d1;
+  --text-dim: #6c7493;
+  --border-glow: rgba(0, 240, 255, 0.25);
+  --code-bg: #0d1029;
+  --ios-bg: #f2f2f7;
+  --ios-card: #ffffff;
+  --ios-text: #000000;
+  --ios-blue: #007aff;
+  --ios-gray: #8e8e93;
+  --ios-sep: #c6c6c8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-bright);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(183, 108, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 240, 255, 0.15), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 62, 165, 0.08), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(10, 13, 31, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 14px; font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 0.18em; }
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid; place-items: center;
+  font-size: 14px; color: #000;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.6);
+}
+.brand-text {
+  font-size: 13px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.top-meta {
+  display: flex; align-items: center; gap: 24px;
+  font-size: 12px; color: var(--text-mid);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.top-meta .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon-green); margin-right: 8px;
+  box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.deck {
+  position: relative;
+  width: 100vw; height: 100vh;
+  padding-top: 56px; padding-bottom: 64px;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 56px 0 64px 0;
+  padding: 32px 56px;
+  opacity: 0;
+  transform: translateX(40px) scale(0.98);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-cyan) transparent;
+}
+.slide::-webkit-scrollbar { width: 6px; }
+.slide::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--neon-cyan), var(--neon-purple));
+  border-radius: 3px;
+}
+.slide.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: all; }
+.slide.prev { transform: translateX(-40px) scale(0.98); }
+
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(10, 13, 31, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-glow);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--border-glow);
+  color: var(--text-bright);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.progress-track {
+  flex: 1;
+  margin: 0 32px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+.slide-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-mid);
+  letter-spacing: 0.1em;
+  min-width: 80px;
+  text-align: center;
+}
+.slide-counter .current { color: var(--neon-cyan); font-weight: 700; }
+
+.slide-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.slide-num .accent { color: var(--neon-cyan); }
+
+h1.title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(40px, 5.5vw, 76px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-bright) 20%, var(--neon-cyan) 60%, var(--neon-purple) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 24px;
+}
+h2.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(26px, 3.2vw, 40px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  color: var(--text-bright);
+}
+h2.section-title .neon {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+h3.sub {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--neon-cyan);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+p.lede {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  max-width: 900px;
+  margin-bottom: 16px;
+}
+
+/* Cover */
+.cover { display: grid; place-items: center; text-align: center; height: 100%; }
+.cover-inner { max-width: 1100px; }
+.cover-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--neon-cyan);
+  padding: 8px 18px;
+  border: 1px solid var(--border-glow);
+  border-radius: 100px;
+  margin-bottom: 28px;
+  background: rgba(0, 240, 255, 0.05);
+}
+.cover h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(56px, 9vw, 128px);
+  font-weight: 900; line-height: 0.9; letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+.cover h1 .l1 {
+  display: block;
+  background: linear-gradient(135deg, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cover h1 .l2 {
+  display: block;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-style: italic;
+}
+.cover-sub { font-size: 22px; color: var(--text-mid); margin: 28px auto 40px; max-width: 700px; line-height: 1.5; }
+.cover-meta {
+  display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+  margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border-glow);
+}
+.cover-meta-item { text-align: left; }
+.cover-meta-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 6px;
+}
+.cover-meta-val { font-size: 18px; color: var(--text-bright); font-weight: 500; }
+.cover-meta-val.accent { color: var(--neon-cyan); font-family: 'JetBrains Mono', monospace; }
+
+/* Layouts */
+.row {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-top: 12px;
+}
+.row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.col-text { min-width: 0; }
+
+/* Code blocks */
+.code-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  position: relative;
+}
+.code-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  opacity: 0.6;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dots span { width: 11px; height: 11px; border-radius: 50%; }
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #febc2e; }
+.code-dots span:nth-child(3) { background: #28c840; }
+.code-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px; color: var(--text-mid);
+}
+.code-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 4px; font-weight: 600;
+}
+.code-badge.basic { background: rgba(76, 255, 175, 0.15); color: var(--neon-green); border: 1px solid rgba(76, 255, 175, 0.3); }
+.code-badge.inter { background: rgba(255, 181, 71, 0.15); color: var(--neon-orange); border: 1px solid rgba(255, 181, 71, 0.3); }
+.code-badge.adv   { background: rgba(255, 62, 165, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 62, 165, 0.3); }
+
+pre.code {
+  padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #e8ecff;
+}
+pre.code::-webkit-scrollbar { height: 6px; }
+pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+
+.kw    { color: #ff7ab2; font-weight: 500; }
+.type  { color: #5ec8ff; }
+.str   { color: #ffd479; }
+.num   { color: #d0a8ff; }
+.cmt   { color: #6c7493; font-style: italic; }
+.fn    { color: #4cffaf; }
+.attr  { color: #ff9b6b; }
+.prop  { color: #67d4ff; }
+
+/* Code explanation box */
+.code-explain {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.05), transparent);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: var(--text-mid);
+  line-height: 1.6;
+}
+.code-explain-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.code-explain ol {
+  list-style: none;
+  counter-reset: expl;
+}
+.code-explain ol li {
+  counter-increment: expl;
+  padding: 4px 0 4px 28px;
+  position: relative;
+}
+.code-explain ol li::before {
+  content: counter(expl);
+  position: absolute;
+  left: 0; top: 4px;
+  width: 20px; height: 20px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  color: #000;
+  border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid; place-items: center;
+}
+.code-explain code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 240, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--neon-cyan);
+}
+
+/* iPhone */
+.iphone {
+  width: 300px;
+  height: 600px;
+  background: #1a1a1a;
+  border-radius: 46px;
+  padding: 12px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 0 0 2px #2a2a2a, 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(0, 240, 255, 0.15);
+}
+.iphone::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 26px;
+  background: #1a1a1a;
+  border-radius: 0 0 16px 16px;
+  z-index: 10;
+}
+.iphone-screen {
+  width: 100%; height: 100%;
+  background: var(--ios-bg);
+  border-radius: 36px;
+  overflow: hidden;
+  position: relative;
+  color: var(--ios-text);
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.ios-status {
+  height: 44px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px;
+  font-size: 13px; font-weight: 600;
+  flex-shrink: 0;
+}
+.ios-status-icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+.ios-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  font-size: 15px;
+}
+.ios-content::-webkit-scrollbar { width: 0; }
+
+.ios-nav-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 4px 4px 16px;
+}
+
+.ios-list {
+  background: var(--ios-card);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ios-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--ios-sep);
+  min-height: 44px;
+}
+.ios-row:last-child { border-bottom: none; }
+.ios-row-label { font-size: 15px; color: var(--ios-text); font-weight: 400; }
+.ios-row-value {
+  font-size: 15px;
+  color: var(--ios-gray);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ios-row-value::after {
+  content: '›';
+  color: #c7c7cc;
+  font-size: 18px;
+  margin-left: 4px;
+}
+.ios-row.no-chevron .ios-row-value::after { content: ''; }
+
+.seg-picker {
+  display: inline-flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 9px;
+  padding: 2px;
+  width: 100%;
+  margin: 6px 0;
+}
+.seg-picker button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ios-text);
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+.seg-picker button.active {
+  background: var(--ios-card);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 3px 8px rgba(0,0,0,0.04);
+}
+
+.wheel-picker {
+  position: relative;
+  height: 200px;
+  background: var(--ios-card);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wheel-picker::before, .wheel-picker::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 80px;
+  pointer-events: none;
+  z-index: 2;
+}
+.wheel-picker::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), transparent);
+}
+.wheel-picker::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(255,255,255,0.95), transparent);
+}
+.wheel-selection-bar {
+  position: absolute;
+  left: 8px; right: 8px;
+  top: 50%;
+  height: 36px;
+  transform: translateY(-50%);
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 8px;
+  z-index: 1;
+}
+.wheel-list {
+  list-style: none;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 3;
+  user-select: none;
+  cursor: grab;
+}
+.wheel-list:active { cursor: grabbing; }
+.wheel-list li {
+  height: 36px;
+  line-height: 36px;
+  font-size: 21px;
+  font-weight: 400;
+  color: var(--ios-text);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.ios-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  color: var(--ios-blue);
+  font-weight: 400;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.ios-menu-trigger::after {
+  content: '⌄';
+  font-size: 16px;
+  margin-top: -4px;
+}
+
+.menu-popup {
+  background: rgba(245, 245, 247, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 13px;
+  padding: 6px 0;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  margin: 6px 0;
+  border: 0.5px solid rgba(0,0,0,0.05);
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-size: 15px;
+  color: var(--ios-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.menu-item:hover { background: rgba(0,0,0,0.04); }
+.menu-item.selected::after {
+  content: '✓';
+  color: var(--ios-blue);
+  font-weight: 600;
+}
+
+.dp-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: var(--ios-text);
+  cursor: pointer;
+  font-weight: 400;
+}
+.dp-compact-time {
+  background: rgba(118, 118, 128, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.dp-graph {
+  background: var(--ios-card);
+  border-radius: 13px;
+  padding: 14px;
+  font-size: 13px;
+}
+.dp-graph-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+.dp-graph-header .nav-arrows { display: flex; gap: 14px; color: var(--ios-blue); }
+.dp-graph-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  color: var(--ios-gray);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.dp-graph-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  gap: 2px;
+}
+.dp-graph-days div {
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.dp-graph-days div.dim { color: #c7c7cc; }
+.dp-graph-days div.today { color: var(--ios-blue); font-weight: 600; }
+.dp-graph-days div.selected {
+  background: var(--ios-blue);
+  color: #fff;
+  font-weight: 600;
+}
+.dp-graph-days div:hover:not(.selected):not(.dim) {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.time-wheels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: var(--ios-card);
+  border-radius: 12px;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+.time-wheels::before, .time-wheels::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 70px;
+  pointer-events: none;
+  z-index: 2;
+}
+.time-wheels::before { top: 0; background: linear-gradient(180deg, rgba(255,255,255,0.95), transparent); }
+.time-wheels::after { bottom: 0; background: linear-gradient(0deg, rgba(255,255,255,0.95), transparent); }
+.time-wheels .wheel-selection-bar {
+  position: absolute;
+  left: 8px; right: 8px;
+  top: 50%;
+  height: 36px;
+  transform: translateY(-50%);
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 8px;
+  z-index: 1;
+}
+.time-col {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 20px;
+}
+.time-col span { line-height: 36px; }
+.time-col .center { font-weight: 500; }
+.time-col .faded { opacity: 0.3; }
+
+/* Concept cards */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.feature-card {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(183, 108, 255, 0.04));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle, var(--neon-cyan), transparent 70%);
+  opacity: 0.2;
+  filter: blur(20px);
+}
+.feature-card:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 240, 255, 0.15);
+}
+.feature-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid; place-items: center;
+  margin-bottom: 12px;
+  font-size: 17px;
+  color: #000;
+  font-weight: 700;
+}
+.feature-card h4 { font-size: 16px; font-weight: 600; color: var(--text-bright); margin-bottom: 6px; }
+.feature-card p { font-size: 13.5px; color: var(--text-mid); line-height: 1.5; }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: var(--neon-cyan);
+}
+.chip.purple { background: rgba(183, 108, 255, 0.1); border-color: rgba(183, 108, 255, 0.3); color: var(--neon-purple); }
+.chip.pink { background: rgba(255, 62, 165, 0.1); border-color: rgba(255, 62, 165, 0.3); color: var(--neon-pink); }
+.chip.green { background: rgba(76, 255, 175, 0.1); border-color: rgba(76, 255, 175, 0.3); color: var(--neon-green); }
+
+/* Style preview card for "three faces" slide */
+.style-preview {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.04), transparent);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+}
+.style-preview h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  color: var(--neon-cyan);
+  margin-bottom: 4px;
+}
+.style-preview .when {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.style-preview .phone-mini {
+  width: 200px;
+  margin: 0 auto;
+  transform: scale(0.68);
+  transform-origin: top center;
+  margin-bottom: -180px;
+}
+
+/* Exercise */
+.exercise-card {
+  background: linear-gradient(135deg, rgba(255, 62, 165, 0.08), rgba(183, 108, 255, 0.05));
+  border: 1px solid rgba(255, 62, 165, 0.25);
+  border-radius: 16px;
+  padding: 26px;
+  position: relative;
+}
+.exercise-card .ex-num {
+  position: absolute;
+  top: -14px; left: 22px;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  letter-spacing: 0.1em;
+  box-shadow: 0 4px 14px rgba(255, 62, 165, 0.4);
+}
+.exercise-card h3 {
+  font-size: 22px;
+  margin: 6px 0 12px;
+  color: var(--text-bright);
+  font-weight: 600;
+}
+.exercise-card p { color: var(--text-mid); line-height: 1.6; font-size: 15px; margin-bottom: 14px; }
+.task-list { list-style: none; margin-top: 14px; }
+.task-list li {
+  position: relative;
+  padding: 8px 8px 8px 30px;
+  color: var(--text-bright);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 6px;
+}
+.task-list li::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 12px;
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--neon-cyan);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.task-list li.done::before {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan);
+}
+.task-list li.done::after {
+  content: '✓';
+  position: absolute;
+  left: 9px; top: 9px;
+  color: #000;
+  font-weight: 700;
+  font-size: 12px;
+}
+.task-list li.done { text-decoration: line-through; color: var(--text-dim); }
+.task-list li:hover { background: rgba(0, 240, 255, 0.05); }
+
+/* Section cover */
+.section-cover {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  text-align: center;
+}
+.section-cover-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(120px, 18vw, 240px);
+  font-weight: 900;
+  line-height: 0.85;
+  background: linear-gradient(135deg, transparent 30%, var(--neon-cyan) 50%, var(--neon-purple) 70%, transparent 90%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 2px rgba(0, 240, 255, 0.2);
+  margin-bottom: -20px;
+  letter-spacing: -0.04em;
+}
+.section-cover-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.section-cover-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 800;
+  background: linear-gradient(90deg, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.section-cover-desc {
+  font-size: 18px;
+  color: var(--text-mid);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+/* TOC */
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 28px;
+}
+.toc-card {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.06), rgba(0, 240, 255, 0));
+  border: 1px solid var(--border-glow);
+  border-radius: 18px;
+  padding: 26px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+.toc-card:nth-child(2) {
+  background: linear-gradient(180deg, rgba(183, 108, 255, 0.06), rgba(183, 108, 255, 0));
+  border-color: rgba(183, 108, 255, 0.3);
+}
+.toc-card:nth-child(3) {
+  background: linear-gradient(180deg, rgba(255, 62, 165, 0.06), rgba(255, 62, 165, 0));
+  border-color: rgba(255, 62, 165, 0.3);
+}
+.toc-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(0, 240, 255, 0.08), transparent 60%);
+  animation: rotate 8s linear infinite;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.toc-card:hover::before { opacity: 1; }
+.toc-card:hover { transform: translateY(-6px); }
+@keyframes rotate { to { transform: rotate(360deg); } }
+.toc-card-content { position: relative; z-index: 1; }
+.toc-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 14px;
+}
+.toc-card:nth-child(2) .toc-num { background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.toc-card:nth-child(3) .toc-num { background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.toc-card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.toc-card p {
+  color: var(--text-mid);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.toc-card ul {
+  list-style: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.toc-card ul li {
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+.toc-card ul li:last-child { border-bottom: none; }
+
+/* Style table */
+.style-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13.5px;
+}
+.style-table th, .style-table td {
+  padding: 9px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.style-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.style-table td { color: var(--text-mid); }
+.style-table td:first-child {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--neon-pink);
+  font-size: 12px;
+}
+.style-table tr:hover td { background: rgba(0, 240, 255, 0.03); }
+
+.tip {
+  background: linear-gradient(90deg, rgba(76, 255, 175, 0.08), transparent);
+  border-left: 3px solid var(--neon-green);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 12px 0;
+  font-size: 13.5px;
+  color: var(--text-mid);
+}
+.tip strong { color: var(--neon-green); }
+
+.warn {
+  background: linear-gradient(90deg, rgba(255, 181, 71, 0.08), transparent);
+  border-left: 3px solid var(--neon-orange);
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 12px 0;
+  font-size: 13.5px;
+  color: var(--text-mid);
+}
+.warn strong { color: var(--neon-orange); }
+
+.thanks { display: grid; place-items: center; height: 100%; text-align: center; }
+.thanks-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(80px, 14vw, 200px);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+.thanks-msg { font-size: 22px; color: var(--text-mid); margin-bottom: 28px; }
+.thanks-sig {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.thanks-sig .name { color: var(--neon-cyan); }
+
+.kbd-hint {
+  position: fixed;
+  bottom: 80px;
+  right: 32px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  z-index: 99;
+}
+.kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  margin: 0 3px;
+  color: var(--text-mid);
+}
+
+@media (max-width: 1100px) {
+  .row, .toc-grid, .row-3 { grid-template-columns: 1fr; }
+  .iphone { transform: scale(0.85); }
+  .slide { padding: 24px 28px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand">
+    <div class="brand-mark">K</div>
+    <div class="brand-text">MAC221 // SwiftUI</div>
+  </div>
+  <div class="top-meta">
+    <span><span class="dot"></span>LIVE LECTURE</span>
+    <span>Khalid Kassou · LaGuardia CC</span>
+  </div>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- ================== SLIDE 1: COVER ================== -->
+  <section class="slide active">
+    <div class="cover">
+      <div class="cover-inner">
+        <div class="cover-tag">◆ MAC221 · iOS Application Development</div>
+        <h1>
+          <span class="l1">SwiftUI</span>
+          <span class="l2">Pickers.</span>
+        </h1>
+        <p class="cover-sub">Selecting values, the SwiftUI way — from simple option lists to date and time selection that feels native, fluid, and futuristic.</p>
+        <div class="cover-meta">
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Instructor</div>
+            <div class="cover-meta-val">Khalid Kassou</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Course</div>
+            <div class="cover-meta-val accent">MAC221</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Department</div>
+            <div class="cover-meta-val">MEC · LaGuardia CC</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Topic</div>
+            <div class="cover-meta-val accent">Pickers + DatePicker</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 2: AGENDA ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">02</span> · today's agenda</div>
+    <h2 class="section-title">Three parts. <span class="neon">One mission.</span></h2>
+    <p class="lede">By the end of this lecture, you will confidently use Picker views and DatePicker views in any SwiftUI app — and you will have written real code in three live exercises.</p>
+
+    <div class="toc-grid">
+      <div class="toc-card">
+        <div class="toc-card-content">
+          <div class="toc-num">01</div>
+          <h3>Pickers</h3>
+          <p>What pickers are, what they look like, and how to build them — starting from the absolute simplest example.</p>
+          <ul>
+            <li>→ Definition & what it looks like</li>
+            <li>→ 3 Picker styles visually</li>
+            <li>→ Easy code examples</li>
+            <li>→ ForEach + enums</li>
+          </ul>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-card-content">
+          <div class="toc-num">02</div>
+          <h3>DatePicker</h3>
+          <p>The specialized picker for dates and times. Same three-style pattern, with calendars and wheels.</p>
+          <ul>
+            <li>→ Definition & what it looks like</li>
+            <li>→ 3 DatePicker styles visually</li>
+            <li>→ Easy code examples</li>
+            <li>→ Date + time + ranges</li>
+          </ul>
+        </div>
+      </div>
+      <div class="toc-card">
+        <div class="toc-card-content">
+          <div class="toc-num">03</div>
+          <h3>Practice</h3>
+          <p>Three guided exercises — from simplest to most realistic — that you will build in the second half of class.</p>
+          <ul>
+            <li>→ Favorite color picker</li>
+            <li>→ Pizza order builder</li>
+            <li>→ Event scheduler app</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 3: PART 1 SECTION COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">01</div>
+      <div class="section-cover-label">▸ Part One</div>
+      <div class="section-cover-title">Pickers in SwiftUI</div>
+      <div class="section-cover-desc">A view that lets the user choose one value from a list of options. The cornerstone of any form-based screen.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 4: WHAT IS A PICKER ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">04</span> · concept</div>
+    <h2 class="section-title">What is a <span class="neon">Picker</span>?</h2>
+    <p class="lede">A <strong>Picker</strong> is a SwiftUI view that lets the user select <strong>one value</strong> from a set of options. Think of it like a fancy radio-button group, dropdown, or wheel — SwiftUI decides the visual style, but the idea is always the same: <em>pick one</em>.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>Built-in & Native</h4>
+        <p>Comes with iOS — no third-party libraries. One line of SwiftUI gives you a fully animated, accessible picker.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h4>Multiple Styles</h4>
+        <p>The same Picker code can render as a wheel, a menu dropdown, or a segmented control. You change one modifier.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h4>Two-Way Binding</h4>
+        <p>Pickers automatically update a <code>@State</code> variable when the user picks. No manual event handling needed.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">♿</div>
+        <h4>Accessible</h4>
+        <p>VoiceOver, Dynamic Type, and Dark Mode all work without writing a single extra line. Apple handles it.</p>
+      </div>
+    </div>
+
+    <div class="tip"><strong>💡 Mental model:</strong> A Picker is just a binding to one variable — the variable is the "currently selected value", and the Picker is the UI control that changes it.</div>
+  </section>
+
+  <!-- ================== SLIDE 5: THREE FACES (VISUAL FIRST) ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">05</span> · before we code, let's LOOK</div>
+    <h2 class="section-title">The same picker — <span class="neon">three faces</span></h2>
+    <p class="lede">Before we write a single line of code, let's see what pickers actually <strong>look like</strong> on a real iPhone. SwiftUI has three main visual styles. Try them below 👇</p>
+
+    <div class="row-3" style="margin-top: 14px;">
+
+      <div class="style-preview">
+        <h3>.menu</h3>
+        <div class="when">Tap → dropdown appears</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Menu</div>
+                <div class="ios-list">
+                  <div class="ios-row">
+                    <span class="ios-row-label">Difficulty</span>
+                    <button class="ios-menu-trigger" id="intro-menu-trigger"><span id="intro-menu-val">Medium</span></button>
+                  </div>
+                  <div id="intro-menu-pop" style="display:none; padding: 0 12px 12px;">
+                    <div class="menu-popup">
+                      <div class="menu-item" data-intro="Easy">Easy</div>
+                      <div class="menu-item selected" data-intro="Medium">Medium</div>
+                      <div class="menu-item" data-intro="Hard">Hard</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-preview">
+        <h3>.segmented</h3>
+        <div class="when">Always-visible pill bar</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Segments</div>
+                <div style="margin: 0 4px 12px;">
+                  <div class="seg-picker" id="intro-seg">
+                    <button data-intro-seg="Easy">Easy</button>
+                    <button class="active" data-intro-seg="Medium">Medium</button>
+                    <button data-intro-seg="Hard">Hard</button>
+                  </div>
+                </div>
+                <div class="ios-list">
+                  <div class="ios-row no-chevron">
+                    <span class="ios-row-label">Mode</span>
+                    <span class="ios-row-value" id="intro-seg-val" style="color: var(--ios-blue); font-weight: 500;">Medium</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-preview">
+        <h3>.wheel</h3>
+        <div class="when">Scroll/drag the drum</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Wheel</div>
+                <div class="wheel-picker" id="intro-wheel">
+                  <div class="wheel-selection-bar"></div>
+                  <ul class="wheel-list" id="intro-wheel-list">
+                    <li>Easy</li>
+                    <li class="center">Medium</li>
+                    <li>Hard</li>
+                    <li>Expert</li>
+                    <li>Legendary</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tip" style="margin-top: 16px;"><strong>💡 Important:</strong> All three previews above are the SAME picker concept — "Pick one from a list". Only the visual style is different. Now that you've seen them, let's write the code.</div>
+  </section>
+
+  <!-- ================== SLIDE 6: EASY EXAMPLE 1 — SIMPLE (.menu is default) ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">06</span> · easy example #1 · the simplest picker</div>
+    <h2 class="section-title">Your first Picker — <span class="neon">3 ingredients</span></h2>
+    <p class="lede">Every picker needs three things: a <strong>title</strong>, a <strong>selection binding</strong>, and a <strong>list of options</strong>. That's it. Here's the absolute simplest version.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">SimplePicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">SimplePicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">favoriteFruit</span> = <span class="str">"Apple"</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Picker</span>(<span class="str">"Pick a fruit"</span>, selection: <span class="prop">$favoriteFruit</span>) {
+            <span class="type">Text</span>(<span class="str">"Apple"</span>).<span class="fn">tag</span>(<span class="str">"Apple"</span>)
+            <span class="type">Text</span>(<span class="str">"Banana"</span>).<span class="fn">tag</span>(<span class="str">"Banana"</span>)
+            <span class="type">Text</span>(<span class="str">"Cherry"</span>).<span class="fn">tag</span>(<span class="str">"Cherry"</span>)
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>@State</code> tells SwiftUI: "watch this variable — redraw the screen whenever it changes."</li>
+            <li><code>favoriteFruit = "Apple"</code> is the <strong>starting value</strong>. Apple is selected when the screen opens.</li>
+            <li><code>Picker("Pick a fruit", ...)</code> — the first string is the <strong>label</strong> (shown next to the picker in a Form).</li>
+            <li><code>selection: $favoriteFruit</code> — the <code>$</code> creates a <strong>two-way binding</strong>. The picker can now read AND write this variable.</li>
+            <li><code>Text("Apple").tag("Apple")</code> — each row shows <code>Text</code> and has a <code>.tag()</code> that identifies it. The tag is what gets stored in the variable.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 The $ sign matters:</strong> <code>$favoriteFruit</code> means "give me a two-way binding". Without the <code>$</code>, the picker could only read — never write.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Xcode preview · exactly what you'll see</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status">
+              <span>9:41</span>
+              <div class="ios-status-icons">●●●●● 100%</div>
+            </div>
+            <div class="ios-content" style="display: flex; align-items: center; justify-content: center;">
+              <button class="ios-menu-trigger" id="fruit-trigger" style="font-size: 17px;">
+                <span id="fruit-value">Apple</span>
+              </button>
+              <div id="fruit-menu" style="display:none; position: absolute; top: 50%; margin-top: 30px; left: 50%; transform: translateX(-50%); z-index: 50;">
+                <div class="menu-popup">
+                  <div class="menu-item selected" data-fruit="Apple">🍎 Apple</div>
+                  <div class="menu-item" data-fruit="Banana">🍌 Banana</div>
+                  <div class="menu-item" data-fruit="Cherry">🍒 Cherry</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ Notice:</strong> The label <code>"Pick a fruit"</code> is <em>not</em> shown! When a Picker is alone (not inside a <code>Form</code> or <code>List</code>), iOS hides the label. We'll fix this on the next slide.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 6.5: WRAP IN FORM ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">07</span> · same picker · now inside a Form</div>
+    <h2 class="section-title">Make the label appear — <span class="neon">wrap in a Form</span></h2>
+    <p class="lede">A bare Picker floats in the middle of the screen and hides its label. To get the proper "label on the left, value on the right" layout you see in Settings apps, wrap the Picker in a <code>Form</code>.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">SimplePickerInForm.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">SimplePicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">favoriteFruit</span> = <span class="str">"Apple"</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Picker</span>(<span class="str">"Pick a fruit"</span>, selection: <span class="prop">$favoriteFruit</span>) {
+                <span class="type">Text</span>(<span class="str">"Apple"</span>).<span class="fn">tag</span>(<span class="str">"Apple"</span>)
+                <span class="type">Text</span>(<span class="str">"Banana"</span>).<span class="fn">tag</span>(<span class="str">"Banana"</span>)
+                <span class="type">Text</span>(<span class="str">"Cherry"</span>).<span class="fn">tag</span>(<span class="str">"Cherry"</span>)
+            }
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What changed?</div>
+          <ol>
+            <li>We added <code>Form { ... }</code> around the Picker. Everything else stayed exactly the same.</li>
+            <li>A <code>Form</code> is a SwiftUI view that creates the iOS settings-style list — gray background, white rounded rows, neat separators.</li>
+            <li>Now the label <code>"Pick a fruit"</code> appears on the left of the row, and the current value <code>"Apple ⌄"</code> appears on the right.</li>
+            <li>Tapping the row opens a dropdown menu — this is the default <code>.menu</code> style automatically chosen by Form.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 Best practice:</strong> Almost every real app puts pickers inside a <code>Form</code>. It gives you proper labels, automatic styling, and matches what users expect from iOS.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ With Form · proper iOS look</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status">
+              <span>9:41</span>
+              <div class="ios-status-icons">●●●●● 100%</div>
+            </div>
+            <div class="ios-content">
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Pick a fruit</span>
+                  <button class="ios-menu-trigger" id="form-trigger">
+                    <span id="form-value">Apple</span>
+                  </button>
+                </div>
+                <div id="form-menu" style="display:none; padding: 0 12px 12px;">
+                  <div class="menu-popup">
+                    <div class="menu-item selected" data-form="Apple">🍎 Apple</div>
+                    <div class="menu-item" data-form="Banana">🍌 Banana</div>
+                    <div class="menu-item" data-form="Cherry">🍒 Cherry</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 7: EASY EXAMPLE 2 — .segmented ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">08</span> · easy example #2 · segmented style</div>
+    <h2 class="section-title">Same picker — <span class="neon">.segmented style</span></h2>
+    <p class="lede">We keep the <em>exact same code</em> from the previous slide and add <strong>one modifier</strong>: <code>.pickerStyle(.segmented)</code>. The picker now shows as a pill bar — great for 2–4 options.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">SegmentedPicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">SegmentedPicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">size</span> = <span class="str">"Medium"</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Picker</span>(<span class="str">"Size"</span>, selection: <span class="prop">$size</span>) {
+            <span class="type">Text</span>(<span class="str">"Small"</span>).<span class="fn">tag</span>(<span class="str">"Small"</span>)
+            <span class="type">Text</span>(<span class="str">"Medium"</span>).<span class="fn">tag</span>(<span class="str">"Medium"</span>)
+            <span class="type">Text</span>(<span class="str">"Large"</span>).<span class="fn">tag</span>(<span class="str">"Large"</span>)
+        }
+        .<span class="fn">pickerStyle</span>(.<span class="prop">segmented</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What changed from slide 6?</div>
+          <ol>
+            <li>Nothing in the Picker itself — same title, same <code>$size</code> binding, same <code>Text(...).tag(...)</code> rows.</li>
+            <li>We added ONE line at the end: <code>.pickerStyle(.segmented)</code>. This modifier tells SwiftUI: "render as a segmented control".</li>
+            <li>Notice the <strong>dot notation</strong>: <code>.segmented</code> is shorthand for <code>PickerStyle.segmented</code> — Swift infers the type from context.</li>
+            <li>The label <code>"Size"</code> is <strong>hidden</strong> visually in segmented style — but VoiceOver will still read it (accessibility!).</li>
+          </ol>
+        </div>
+
+        <div class="warn"><strong>⚠ When to use:</strong> Segmented works best for 2–4 short options. More than 4, or long labels, and the pills get cramped. Switch to <code>.menu</code> or <code>.wheel</code>.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Xcode preview · tap a segment</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content" style="display: flex; align-items: center; padding: 0 20px;">
+              <div style="width: 100%;">
+                <div class="seg-picker" id="size-seg">
+                  <button data-size="Small">Small</button>
+                  <button class="active" data-size="Medium">Medium</button>
+                  <button data-size="Large">Large</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ Notice:</strong> No label, no header, no "Selected" row — just the segmented bar centered on the screen. That's the actual Xcode preview output of this code. To get a structured layout, wrap it in a <code>Form</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 8: EASY EXAMPLE 3 — .wheel ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">09</span> · easy example #3 · wheel style</div>
+    <h2 class="section-title">Same picker — <span class="neon">.wheel style</span></h2>
+    <p class="lede">Change <code>.segmented</code> to <code>.wheel</code> and watch the same picker become an iOS-classic spinning drum. Perfect for long ordered lists.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">WheelPicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">WheelPicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">level</span> = <span class="str">"Medium"</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Picker</span>(<span class="str">"Difficulty"</span>, selection: <span class="prop">$level</span>) {
+            <span class="type">Text</span>(<span class="str">"Easy"</span>).<span class="fn">tag</span>(<span class="str">"Easy"</span>)
+            <span class="type">Text</span>(<span class="str">"Medium"</span>).<span class="fn">tag</span>(<span class="str">"Medium"</span>)
+            <span class="type">Text</span>(<span class="str">"Hard"</span>).<span class="fn">tag</span>(<span class="str">"Hard"</span>)
+            <span class="type">Text</span>(<span class="str">"Expert"</span>).<span class="fn">tag</span>(<span class="str">"Expert"</span>)
+            <span class="type">Text</span>(<span class="str">"Legendary"</span>).<span class="fn">tag</span>(<span class="str">"Legendary"</span>)
+        }
+        .<span class="fn">pickerStyle</span>(.<span class="prop">wheel</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What changed from slide 8?</div>
+          <ol>
+            <li>Only the modifier changed: <code>.pickerStyle(.wheel)</code> instead of <code>.segmented</code>.</li>
+            <li>The picker is now a <strong>rotating drum</strong>. The middle row (highlighted) is the selected value.</li>
+            <li>I added more options (5 instead of 3) because wheels are ideal when you have many items — the user can spin quickly.</li>
+            <li>Wheel pickers take <strong>vertical space</strong> (about 200 pts by default), so make sure your screen has room.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 iOS classic:</strong> The wheel picker is iconic on iOS — it's what powers the clock app's timer, the health app's weight entry, and many system dialogs. Students instantly recognize it.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Xcode preview · spin it!</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content" style="display: flex; align-items: center; padding: 0 14px;">
+              <div style="width: 100%;">
+                <div class="wheel-picker" id="main-wheel">
+                  <div class="wheel-selection-bar"></div>
+                  <ul class="wheel-list" id="main-wheel-list">
+                    <li>Easy</li>
+                    <li class="center">Medium</li>
+                    <li>Hard</li>
+                    <li>Expert</li>
+                    <li>Legendary</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ Notice:</strong> Just the wheel — no label, no header. The label <code>"Difficulty"</code> is hidden because the Picker isn't inside a <code>Form</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 9: EASY EXAMPLE 4 — ForEach ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">10</span> · easy example #4 · cleaner with ForEach</div>
+    <h2 class="section-title">Don't repeat yourself — use <span class="neon">ForEach</span></h2>
+    <p class="lede">Writing <code>Text(...).tag(...)</code> for 5 options is OK. For 50, it's a nightmare. Let's store options in an <strong>array</strong> and loop with <code>ForEach</code>.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">ForEachPicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">FruitPicker</span>: <span class="type">View</span> {
+    <span class="kw">let</span> <span class="fn">fruits</span> = [<span class="str">"Apple"</span>, <span class="str">"Banana"</span>, <span class="str">"Cherry"</span>,
+                  <span class="str">"Mango"</span>, <span class="str">"Peach"</span>]
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">selected</span> = <span class="str">"Apple"</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Picker</span>(<span class="str">"Fruit"</span>, selection: <span class="prop">$selected</span>) {
+                <span class="type">ForEach</span>(<span class="prop">fruits</span>, id: <span class="prop">\.self</span>) { <span class="fn">fruit</span> <span class="kw">in</span>
+                    <span class="type">Text</span>(<span class="prop">fruit</span>)
+                }
+            }
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>let fruits = [...]</code> — a plain array of strings. We use <code>let</code> because it never changes.</li>
+            <li><code>Form { ... }</code> — wraps the picker so we get the proper iOS list look (label on left, value on right).</li>
+            <li><code>ForEach(fruits, id: \.self)</code> — loop through every item. <code>id: \.self</code> means "use the value itself as the unique ID" (works because each fruit string is unique).</li>
+            <li><code>{ fruit in Text(fruit) }</code> — this is a <strong>closure</strong>. <code>fruit</code> is the current item in the loop. For each, we create a <code>Text</code> row.</li>
+            <li>No <code>.tag()</code> needed! When <code>id: \.self</code> is used and the type matches the binding, SwiftUI auto-tags each row.</li>
+          </ol>
+        </div>
+
+        <div class="warn"><strong>⚠ Gotcha:</strong> If <code>id: \.self</code> is missing and your items aren't <code>Identifiable</code>, SwiftUI won't know how to track them and the picker will silently stop updating.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Inside Form · default = Menu</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Fruit</span>
+                  <button class="ios-menu-trigger" id="fruit2-trigger">
+                    <span id="fruit2-value">Apple</span>
+                  </button>
+                </div>
+                <div id="fruit2-menu" style="display:none; padding: 0 12px 12px;">
+                  <div class="menu-popup">
+                    <div class="menu-item selected" data-fruit2="Apple">Apple</div>
+                    <div class="menu-item" data-fruit2="Banana">Banana</div>
+                    <div class="menu-item" data-fruit2="Cherry">Cherry</div>
+                    <div class="menu-item" data-fruit2="Mango">Mango</div>
+                    <div class="menu-item" data-fruit2="Peach">Peach</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 10: EASY EXAMPLE 5 — Numbers with range ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">11</span> · easy example #5 · numbers with a range</div>
+    <h2 class="section-title">Picking <span class="neon">numbers</span> — ranges made easy</h2>
+    <p class="lede">Sometimes you need the user to pick a number: age, quantity, rating, etc. Instead of an array, we can loop over a <strong>range</strong>.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">NumberPicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">AgePicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">age</span> = <span class="num">18</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Picker</span>(<span class="str">"Age"</span>, selection: <span class="prop">$age</span>) {
+            <span class="type">ForEach</span>(<span class="num">1</span>..&lt;<span class="num">100</span>, id: <span class="prop">\.self</span>) { <span class="fn">number</span> <span class="kw">in</span>
+                <span class="type">Text</span>(<span class="str">"\(number) years"</span>).<span class="fn">tag</span>(<span class="prop">number</span>)
+            }
+        }
+        .<span class="fn">pickerStyle</span>(.<span class="prop">wheel</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>@State private var age = 18</code> — this time the variable is an <code>Int</code>, not a <code>String</code>. The starting age is 18.</li>
+            <li><code>1..&lt;100</code> — a <strong>Swift range</strong>. This means "1, 2, 3, ... 99" (100 is excluded). Use <code>1...100</code> if you want 100 included.</li>
+            <li><code>ForEach(1..&lt;100, id: \.self)</code> — loop through the range just like an array.</li>
+            <li><code>Text("\(number) years")</code> — string interpolation. The <code>\(...)</code> inserts the variable's value into the string.</li>
+            <li><code>.tag(number)</code> — the tag type (<code>Int</code>) must match the selection type (<code>age</code> is <code>Int</code>). This is critical!</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 Rule:</strong> The type inside <code>.tag()</code> MUST match the type of the <code>@State</code> variable. Mixing <code>Int</code> tags with a <code>String</code> binding = silent picker failure.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Xcode preview · scroll the wheel</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content" style="display: flex; align-items: center; padding: 0 14px;">
+              <div style="width: 100%;">
+                <div class="wheel-picker" id="age-wheel">
+                  <div class="wheel-selection-bar"></div>
+                  <ul class="wheel-list" id="age-wheel-list">
+                    <li>16 years</li>
+                    <li>17 years</li>
+                    <li class="center">18 years</li>
+                    <li>19 years</li>
+                    <li>20 years</li>
+                    <li>21 years</li>
+                    <li>22 years</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ Notice:</strong> Just the wheel, centered. To label it "Age" with a row layout, wrap the Picker inside a <code>Form</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 11: INTERMEDIATE — Enums ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">12</span> · level up · type-safe with enums</div>
+    <h2 class="section-title">Pickers + <span class="neon">Enums</span></h2>
+    <p class="lede">Strings like <code>"Easy"</code> are fragile — one typo silently breaks your code. Use an <strong>enum</strong> instead: type-safe, autocompletes, and your future self will thank you.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">EnumPicker.swift</div>
+            <div class="code-badge inter">● Intermediate</div>
+          </div>
+<pre class="code"><span class="kw">enum</span> <span class="type">PizzaSize</span>: <span class="type">String</span>, <span class="type">CaseIterable</span>, <span class="type">Identifiable</span> {
+    <span class="kw">case</span> <span class="prop">small</span>  = <span class="str">"Small 🍕"</span>
+    <span class="kw">case</span> <span class="prop">medium</span> = <span class="str">"Medium 🍕🍕"</span>
+    <span class="kw">case</span> <span class="prop">large</span>  = <span class="str">"Large 🍕🍕🍕"</span>
+
+    <span class="kw">var</span> <span class="fn">id</span>: <span class="type">String</span> { <span class="prop">rawValue</span> }
+}
+
+<span class="kw">struct</span> <span class="type">PizzaOrder</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">size</span>: <span class="type">PizzaSize</span> = .<span class="prop">medium</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Section</span>(header: <span class="type">Text</span>(<span class="str">"Size"</span>)) {
+                <span class="type">Picker</span>(<span class="str">"Size"</span>, selection: <span class="prop">$size</span>) {
+                    <span class="type">ForEach</span>(<span class="type">PizzaSize</span>.<span class="prop">allCases</span>) { <span class="fn">option</span> <span class="kw">in</span>
+                        <span class="type">Text</span>(<span class="prop">option.rawValue</span>).<span class="fn">tag</span>(<span class="prop">option</span>)
+                    }
+                }
+                .<span class="fn">pickerStyle</span>(.<span class="prop">segmented</span>)
+            }
+
+            <span class="type">Section</span> {
+                <span class="type">HStack</span> {
+                    <span class="type">Text</span>(<span class="str">"Your size"</span>)
+                    <span class="type">Spacer</span>()
+                    <span class="type">Text</span>(<span class="prop">size.rawValue</span>)
+                        .<span class="fn">foregroundColor</span>(.<span class="prop">blue</span>)
+                }
+            }
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ How the code maps to the preview</div>
+          <ol>
+            <li><code>enum PizzaSize: String, CaseIterable, Identifiable</code> — three protocols. <code>String</code> gives raw values, <code>CaseIterable</code> gives <code>.allCases</code>, <code>Identifiable</code> lets <code>ForEach</code> identify each case.</li>
+            <li><code>var id: String { rawValue }</code> — Identifiable requires an <code>id</code>; we reuse <code>rawValue</code> since it's already unique.</li>
+            <li><code>@State var size: PizzaSize = .medium</code> — the variable's type IS the enum. Type-safe, no string typos possible.</li>
+            <li><code>Form { ... }</code> — gives us the iOS settings-style background and grouped layout.</li>
+            <li><code>Section(header: Text("Size"))</code> — <strong>this is how we get the "SIZE" label to appear</strong> above the segmented bar. The <code>.segmented</code> style hides the picker's own label, so we add it ourselves as a section header.</li>
+            <li><code>.pickerStyle(.segmented)</code> — renders the choices as a pill bar.</li>
+            <li>The second <code>Section { HStack { ... } }</code> creates the "Your size · Medium 🍕🍕" row in its own grouped section below.</li>
+          </ol>
+        </div>
+
+        <div class="warn"><strong>⚠ Important rule:</strong> <code>.pickerStyle(.segmented)</code> ALWAYS hides the picker's own label, even inside a Form. To show a label with segmented, wrap the Picker in a <code>Section(header:)</code> — this is the standard SwiftUI pattern for labeled segmented pickers.</div>
+
+        <div class="chip-row">
+          <span class="chip green">CaseIterable → .allCases</span>
+          <span class="chip purple">Identifiable → ForEach happy</span>
+          <span class="chip pink">Section(header:) for label</span>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Live preview · pick a size</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <p style="font-size: 11px; color: var(--ios-gray); padding: 4px 16px 6px; text-transform: uppercase; letter-spacing: 0.05em;">Size</p>
+              <div style="margin: 0 4px 18px;">
+                <div class="seg-picker" id="pizza-seg">
+                  <button data-pizza="Small 🍕">Small 🍕</button>
+                  <button class="active" data-pizza="Medium 🍕🍕">Medium 🍕🍕</button>
+                  <button data-pizza="Large 🍕🍕🍕">Large 🍕🍕🍕</button>
+                </div>
+              </div>
+              <div class="ios-list">
+                <div class="ios-row no-chevron">
+                  <span class="ios-row-label">Your size</span>
+                  <span class="ios-row-value" id="pizza-val" style="color: var(--ios-blue); font-weight: 500;">Medium 🍕🍕</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 12: ADVANCED — Custom Objects ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">13</span> · advanced · real-world data</div>
+    <h2 class="section-title">Pickers with <span class="neon">custom objects</span></h2>
+    <p class="lede">In real apps, you rarely pick strings — you pick a <em>User</em>, a <em>Product</em>, a <em>Country</em>. Here's the production-grade pattern.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">CountryPicker.swift</div>
+            <div class="code-badge adv">● Advanced</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">Country</span>: <span class="type">Identifiable</span>, <span class="type">Hashable</span> {
+    <span class="kw">let</span> <span class="fn">id</span> = <span class="type">UUID</span>()
+    <span class="kw">let</span> <span class="fn">name</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">flag</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">code</span>: <span class="type">String</span>
+
+    <span class="cmt">// Our 4 countries — defined inside Country for easy access</span>
+    <span class="kw">static let</span> <span class="fn">morocco</span> = <span class="type">Country</span>(name: <span class="str">"Morocco"</span>, flag: <span class="str">"🇲🇦"</span>, code: <span class="str">"+212"</span>)
+    <span class="kw">static let</span> <span class="fn">usa</span>     = <span class="type">Country</span>(name: <span class="str">"USA"</span>,     flag: <span class="str">"🇺🇸"</span>, code: <span class="str">"+1"</span>)
+    <span class="kw">static let</span> <span class="fn">france</span>  = <span class="type">Country</span>(name: <span class="str">"France"</span>,  flag: <span class="str">"🇫🇷"</span>, code: <span class="str">"+33"</span>)
+    <span class="kw">static let</span> <span class="fn">japan</span>   = <span class="type">Country</span>(name: <span class="str">"Japan"</span>,   flag: <span class="str">"🇯🇵"</span>, code: <span class="str">"+81"</span>)
+
+    <span class="kw">static let</span> <span class="fn">all</span> = [<span class="prop">morocco</span>, <span class="prop">usa</span>, <span class="prop">france</span>, <span class="prop">japan</span>]
+}
+
+<span class="kw">struct</span> <span class="type">CountryPicker</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">selected</span> = <span class="type">Country</span>.<span class="prop">morocco</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Picker</span>(<span class="str">"Country"</span>, selection: <span class="prop">$selected</span>) {
+                <span class="type">ForEach</span>(<span class="type">Country</span>.<span class="prop">all</span>) { <span class="fn">c</span> <span class="kw">in</span>
+                    <span class="type">Text</span>(<span class="str">"\(c.flag) \(c.name) \(c.code)"</span>)
+                        .<span class="fn">tag</span>(<span class="prop">c</span>)
+                }
+            }
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>struct Country: Identifiable, Hashable</code> — both protocols required. <strong>Identifiable</strong> for ForEach, <strong>Hashable</strong> so the picker can compare and track which country is selected.</li>
+            <li><code>let id = UUID()</code> — auto-generated unique ID for every Country instance.</li>
+            <li><code>static let morocco = Country(...)</code> — <code>static let</code> creates a constant that belongs to the <strong>type itself</strong>, not to an instance. We can write <code>Country.morocco</code> from anywhere.</li>
+            <li><code>static let all = [morocco, usa, france, japan]</code> — same idea: a ready-to-use array of all countries, accessible as <code>Country.all</code>.</li>
+            <li><code>@State private var selected = Country.morocco</code> — Morocco is the default selected country. Clean, one line, no init needed.</li>
+            <li><code>Form { Picker(...) { ForEach(Country.all) ... } }</code> — Form gives us the iOS row layout, ForEach loops through every country.</li>
+            <li><code>.tag(c)</code> — each row is tagged with the Country itself, matching the binding type.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 Why <code>static let</code> is great here:</strong> It groups the countries WITH the Country type itself. You can write <code>Country.morocco</code> or <code>Country.all</code> anywhere in your app — no need to pass an array around or recreate countries every time.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Form-style menu · tap to choose</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Country</span>
+                  <button class="ios-menu-trigger" id="country-trigger">
+                    <span id="country-val">🇲🇦 Morocco +212</span>
+                  </button>
+                </div>
+                <div id="country-menu" style="display:none; padding: 0 12px 12px;">
+                  <div class="menu-popup">
+                    <div class="menu-item selected" data-country="🇲🇦 Morocco +212">🇲🇦 Morocco +212</div>
+                    <div class="menu-item" data-country="🇺🇸 USA +1">🇺🇸 USA +1</div>
+                    <div class="menu-item" data-country="🇫🇷 France +33">🇫🇷 France +33</div>
+                    <div class="menu-item" data-country="🇯🇵 Japan +81">🇯🇵 Japan +81</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 13: STYLES REFERENCE TABLE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">14</span> · reference · picking the right style</div>
+    <h2 class="section-title">Picker styles — <span class="neon">cheat sheet</span></h2>
+    <p class="lede">Use this table as your go-to reference. The right style depends on how many options you have and how prominent the choice should be.</p>
+
+    <table class="style-table">
+      <thead>
+        <tr><th>Style</th><th>Visual</th><th>Best For</th><th>Avoid When</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>.menu</td>
+          <td>Tap-to-open dropdown</td>
+          <td>Many options, settings rows, infrequent choice</td>
+          <td>Only 2–3 options (overkill)</td>
+        </tr>
+        <tr>
+          <td>.segmented</td>
+          <td>Horizontal pill bar</td>
+          <td>2–4 options, frequent toggle, mode switching</td>
+          <td>Long labels, more than 4 options</td>
+        </tr>
+        <tr>
+          <td>.wheel</td>
+          <td>Spinning drum</td>
+          <td>Numbers, long ordered lists</td>
+          <td>Quick choices — too slow to spin</td>
+        </tr>
+        <tr>
+          <td>.inline</td>
+          <td>Expanded list, all visible</td>
+          <td>Inside a Form, when all options should be seen</td>
+          <td>Outside a List/Form (looks awkward)</td>
+        </tr>
+        <tr>
+          <td>.navigationLink</td>
+          <td>Pushes a new screen</td>
+          <td>Many options needing search/scroll</td>
+          <td>Simple 3-option choices</td>
+        </tr>
+        <tr>
+          <td>.automatic</td>
+          <td>SwiftUI decides for you</td>
+          <td>Default — adapts to context (Form, etc.)</td>
+          <td>When you need a guaranteed look</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip"><strong>💡 Rule of thumb:</strong> Inside a <code>Form</code>, the default <code>.automatic</code> usually does the right thing. Only set a style when you want something specific (like <code>.segmented</code>).</div>
+  </section>
+
+  <!-- ================== SLIDE 14: PART 2 SECTION COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">02</div>
+      <div class="section-cover-label">▸ Part Two</div>
+      <div class="section-cover-title">DatePicker</div>
+      <div class="section-cover-desc">A specialized picker built specifically for selecting dates, times, or both — with localization, ranges, and three beautiful display styles.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 15: WHAT IS DATEPICKER ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">16</span> · concept</div>
+    <h2 class="section-title">What is a <span class="neon">DatePicker</span>?</h2>
+    <p class="lede">A <strong>DatePicker</strong> is a specialized SwiftUI view that helps users pick a <strong>date</strong>, a <strong>time</strong>, or <strong>both</strong>. It handles calendars, time zones, and locales — so you don't have to.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h4>Date / Time / Both</h4>
+        <p>Use <code>displayedComponents</code> to choose: <code>.date</code>, <code>.hourAndMinute</code>, or both.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h4>3 Visual Styles</h4>
+        <p><code>.compact</code> (small bubble), <code>.graphical</code> (full calendar), <code>.wheel</code> (spinning drum).</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h4>Auto-Localized</h4>
+        <p>Calendars, weekdays, AM/PM, and number formats follow the user's locale automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h4>Range-Aware</h4>
+        <p>Limit selectable dates with a <code>ClosedRange&lt;Date&gt;</code> — no past dates, no far future.</p>
+      </div>
+    </div>
+
+    <div class="tip"><strong>💡 Big idea:</strong> DatePicker is just like Picker — but its options are dates instead of arbitrary values. The selection binding is a <code>Date</code>.</div>
+  </section>
+
+  <!-- ================== SLIDE 16: DATEPICKER THREE FACES (VISUAL FIRST) ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">17</span> · before we code, let's LOOK</div>
+    <h2 class="section-title">DatePicker — <span class="neon">three faces</span></h2>
+    <p class="lede">Just like Picker, DatePicker has three main visual styles. Let's see them on a real iPhone before we write any code.</p>
+
+    <div class="row-3" style="margin-top: 14px;">
+
+      <div class="style-preview">
+        <h3>.compact</h3>
+        <div class="when">Default · tap to open calendar</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Settings</div>
+                <div class="ios-list">
+                  <div class="ios-row">
+                    <span class="ios-row-label">Date</span>
+                    <span class="dp-compact">Apr 24, 2026</span>
+                  </div>
+                  <div class="ios-row">
+                    <span class="ios-row-label">Time</span>
+                    <span class="dp-compact dp-compact-time">9:41 AM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-preview">
+        <h3>.graphical</h3>
+        <div class="when">Full always-visible calendar</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Calendar</div>
+                <div class="dp-graph">
+                  <div class="dp-graph-header">
+                    <span>April 2026</span>
+                    <span class="nav-arrows"><span>‹</span><span>›</span></span>
+                  </div>
+                  <div class="dp-graph-week"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+                  <div class="dp-graph-days" id="intro-dp-days">
+                    <div class="dim">29</div><div class="dim">30</div><div class="dim">31</div>
+                    <div>1</div><div>2</div><div>3</div><div>4</div>
+                    <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
+                    <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
+                    <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div class="selected">24</div><div>25</div>
+                    <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div class="dim">1</div><div class="dim">2</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="style-preview">
+        <h3>.wheel</h3>
+        <div class="when">Spinning drum — classic iOS</div>
+        <div class="phone-mini">
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Time</div>
+                <div class="time-wheels">
+                  <div class="wheel-selection-bar"></div>
+                  <div class="time-col">
+                    <span class="faded">7</span>
+                    <span class="faded">8</span>
+                    <span class="center">9</span>
+                    <span class="faded">10</span>
+                    <span class="faded">11</span>
+                  </div>
+                  <div class="time-col">
+                    <span class="faded">39</span>
+                    <span class="faded">40</span>
+                    <span class="center">41</span>
+                    <span class="faded">42</span>
+                    <span class="faded">43</span>
+                  </div>
+                  <div class="time-col">
+                    <span class="faded">PM</span>
+                    <span class="faded">·</span>
+                    <span class="center">AM</span>
+                    <span class="faded">·</span>
+                    <span class="faded">PM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tip" style="margin-top: 16px;"><strong>💡 Same pattern as Picker:</strong> all three styles represent the same DatePicker concept — "Pick a date" — just rendered differently. Now let's code each one.</div>
+  </section>
+
+  <!-- ================== SLIDE 17: DATEPICKER EASY #1 — COMPACT ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">18</span> · easy example #1 · compact style</div>
+    <h2 class="section-title">Your first DatePicker — <span class="neon">.compact</span></h2>
+    <p class="lede">Just like Picker, you need three things: a <strong>title</strong>, a <strong>binding to a Date</strong>, and that's it. The compact style is the default — small and clean.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">CompactDatePicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">BirthdayView</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">birthday</span> = <span class="type">Date</span>()
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">DatePicker</span>(
+            <span class="str">"Birthday"</span>,
+            selection: <span class="prop">$birthday</span>,
+            displayedComponents: .<span class="prop">date</span>
+        )
+        .<span class="fn">datePickerStyle</span>(.<span class="prop">compact</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>@State var birthday = Date()</code> — creates a variable holding <strong>today's date and time</strong>. Calling <code>Date()</code> with no arguments = current moment.</li>
+            <li><code>DatePicker("Birthday", ...)</code> — the title string works the same as in Picker: it's the label shown in Forms.</li>
+            <li><code>selection: $birthday</code> — two-way binding. The <code>$</code> is essential.</li>
+            <li><code>displayedComponents: .date</code> — show only the calendar, NOT the time. Options: <code>.date</code>, <code>.hourAndMinute</code>, or both.</li>
+            <li><code>.datePickerStyle(.compact)</code> — renders as a small tappable bubble. Tapping it pops open a calendar.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 Space-saver:</strong> Compact is perfect inside a <code>Form</code> or settings list — it takes minimal space until the user taps it.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Tap the date to open</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Profile</div>
+              <div class="ios-list">
+                <div class="ios-row" style="cursor:pointer;" id="bday-row">
+                  <span class="ios-row-label">Birthday</span>
+                  <div style="display:flex; gap:6px;">
+                    <span class="dp-compact" id="bday-display">Apr 24, 2026</span>
+                  </div>
+                </div>
+                <div id="bday-cal" style="display:none; padding: 12px;">
+                  <div class="dp-graph">
+                    <div class="dp-graph-header">
+                      <span>April 2026</span>
+                      <span class="nav-arrows"><span style="cursor:pointer;">‹</span><span style="cursor:pointer;">›</span></span>
+                    </div>
+                    <div class="dp-graph-week">
+                      <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                    </div>
+                    <div class="dp-graph-days" id="bday-days">
+                      <div class="dim">29</div><div class="dim">30</div><div class="dim">31</div>
+                      <div>1</div><div>2</div><div>3</div><div>4</div>
+                      <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
+                      <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
+                      <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div class="selected today">24</div><div>25</div>
+                      <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div class="dim">1</div><div class="dim">2</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 18: DATEPICKER EASY #2 — GRAPHICAL ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">19</span> · easy example #2 · graphical style</div>
+    <h2 class="section-title">Full calendar — <span class="neon">.graphical</span></h2>
+    <p class="lede">Same code, new modifier: <code>.datePickerStyle(.graphical)</code>. Now the entire calendar is always visible — great for booking and reservation screens.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">GraphicalDatePicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">AppointmentView</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">appointment</span> = <span class="type">Date</span>()
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">DatePicker</span>(
+            <span class="str">"Appointment"</span>,
+            selection: <span class="prop">$appointment</span>,
+            displayedComponents: .<span class="prop">date</span>
+        )
+        .<span class="fn">datePickerStyle</span>(.<span class="prop">graphical</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What changed from slide 18?</div>
+          <ol>
+            <li>Only the modifier changed: <code>.datePickerStyle(.graphical)</code> instead of <code>.compact</code>.</li>
+            <li>The title <code>"Appointment"</code> is now <strong>hidden</strong> — the graphical style doesn't show labels (the calendar is self-explanatory).</li>
+            <li>The calendar takes <strong>much more vertical space</strong> (~350 pts). Don't use it if your screen is already crowded.</li>
+            <li>Users can swipe between months — Apple built all that navigation for free.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 When to use:</strong> Hero date selection — the main purpose of the screen is to pick a date. Think: reservations, event scheduling, appointment booking.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Tap any day to select</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Appointment</div>
+              <div class="dp-graph">
+                <div class="dp-graph-header">
+                  <span id="graph-month">April 2026</span>
+                  <span class="nav-arrows"><span style="cursor:pointer;">‹</span><span style="cursor:pointer;">›</span></span>
+                </div>
+                <div class="dp-graph-week"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+                <div class="dp-graph-days" id="graph-days">
+                  <div class="dim">29</div><div class="dim">30</div><div class="dim">31</div>
+                  <div>1</div><div>2</div><div>3</div><div>4</div>
+                  <div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div>
+                  <div>12</div><div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div>
+                  <div>19</div><div>20</div><div>21</div><div>22</div><div>23</div><div class="selected">24</div><div>25</div>
+                  <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div class="dim">1</div><div class="dim">2</div>
+                </div>
+              </div>
+              <div class="ios-list" style="margin-top: 12px;">
+                <div class="ios-row no-chevron">
+                  <span class="ios-row-label">Selected</span>
+                  <span class="ios-row-value" id="graph-val" style="color: var(--ios-blue); font-weight: 500;">Apr 24, 2026</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 19: DATEPICKER EASY #3 — WHEEL + TIME ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">20</span> · easy example #3 · wheel style for time</div>
+    <h2 class="section-title">Picking time — <span class="neon">.wheel</span></h2>
+    <p class="lede">For time selection, the wheel style feels most natural. We also change <code>displayedComponents</code> to <code>.hourAndMinute</code> so only the time shows.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">WheelTimePicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">AlarmView</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">alarmTime</span> = <span class="type">Date</span>()
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">DatePicker</span>(
+            <span class="str">"Alarm"</span>,
+            selection: <span class="prop">$alarmTime</span>,
+            displayedComponents: .<span class="prop">hourAndMinute</span>
+        )
+        .<span class="fn">datePickerStyle</span>(.<span class="prop">wheel</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Two changes from the compact version</div>
+          <ol>
+            <li><code>displayedComponents: .hourAndMinute</code> — show ONLY hours and minutes, NOT the date. The variable is still a full <code>Date</code>, but only the time parts are shown/editable.</li>
+            <li><code>.datePickerStyle(.wheel)</code> — use the classic iOS spinning drum. Three columns: hour, minute, AM/PM.</li>
+            <li>AM/PM shows automatically in locales that use 12-hour time. In 24-hour locales, that column disappears. All automatic.</li>
+          </ol>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip green">displayedComponents: .hourAndMinute</span>
+          <span class="chip purple">Auto-localized AM/PM</span>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Wheel time picker</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Alarm</div>
+              <div class="time-wheels" style="margin-bottom: 14px;">
+                <div class="wheel-selection-bar"></div>
+                <div class="time-col">
+                  <span class="faded">5</span>
+                  <span class="faded">6</span>
+                  <span class="center">7</span>
+                  <span class="faded">8</span>
+                  <span class="faded">9</span>
+                </div>
+                <div class="time-col">
+                  <span class="faded">28</span>
+                  <span class="faded">29</span>
+                  <span class="center">30</span>
+                  <span class="faded">31</span>
+                  <span class="faded">32</span>
+                </div>
+                <div class="time-col">
+                  <span class="faded">PM</span>
+                  <span class="faded">·</span>
+                  <span class="center">AM</span>
+                  <span class="faded">·</span>
+                  <span class="faded">PM</span>
+                </div>
+              </div>
+              <div class="ios-list">
+                <div class="ios-row no-chevron">
+                  <span class="ios-row-label">Alarm set for</span>
+                  <span class="ios-row-value" style="color: var(--ios-blue); font-weight: 500;">7:30 AM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 20: DATEPICKER EASY #4 — BOTH ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">21</span> · easy example #4 · date AND time together</div>
+    <h2 class="section-title">Date <strong>and</strong> time — <span class="neon">in one picker</span></h2>
+    <p class="lede">Pass an <strong>array</strong> to <code>displayedComponents</code> and the picker shows both — perfect for scheduling meetings, flights, or any event.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">MeetingPicker.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">MeetingView</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">meetingTime</span> = <span class="type">Date</span>()
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">DatePicker</span>(
+            <span class="str">"Meeting"</span>,
+            selection: <span class="prop">$meetingTime</span>,
+            displayedComponents: [.<span class="prop">date</span>, .<span class="prop">hourAndMinute</span>]
+        )
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <ol>
+            <li><code>displayedComponents: [.date, .hourAndMinute]</code> — the <strong>square brackets</strong> make this an array (technically an <code>OptionSet</code>). Both components are shown.</li>
+            <li>No <code>.datePickerStyle()</code> modifier — we rely on <code>.automatic</code>, which inside a <code>Form</code> gives us the compact style. Two small bubbles appear: one for date, one for time.</li>
+            <li>The <code>meetingTime</code> variable stores BOTH the date and the time in a single <code>Date</code> value.</li>
+            <li>Tapping either bubble opens the appropriate picker (calendar or time wheels).</li>
+          </ol>
+        </div>
+
+        <table class="style-table" style="margin-top: 12px;">
+          <thead><tr><th>Component</th><th>What user sees</th></tr></thead>
+          <tbody>
+            <tr><td>.date</td><td>Calendar grid — month/day/year</td></tr>
+            <tr><td>.hourAndMinute</td><td>Time picker — hours, minutes, AM/PM</td></tr>
+            <tr><td>[.date, .hourAndMinute]</td><td>Both — full datetime picker</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Both components together</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Meeting</div>
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Starts</span>
+                  <div style="display:flex; gap:6px;">
+                    <span class="dp-compact">Apr 24, 2026</span>
+                    <span class="dp-compact dp-compact-time">9:41 AM</span>
+                  </div>
+                </div>
+                <div class="ios-row">
+                  <span class="ios-row-label">Ends</span>
+                  <div style="display:flex; gap:6px;">
+                    <span class="dp-compact">Apr 24, 2026</span>
+                    <span class="dp-compact dp-compact-time">10:41 AM</span>
+                  </div>
+                </div>
+                <div class="ios-row no-chevron">
+                  <span class="ios-row-label">Duration</span>
+                  <span class="ios-row-value" style="color: var(--ios-blue); font-weight: 500;">1 hour</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 21: ADVANCED — Ranges ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">22</span> · advanced · limit valid dates</div>
+    <h2 class="section-title">Restrict to a <span class="neon">date range</span></h2>
+    <p class="lede">Real apps need rules: "no past dates", "must be within 90 days", "between two known dates". Pass a <code>ClosedRange&lt;Date&gt;</code> as the <code>in:</code> parameter — SwiftUI grays out everything outside.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">DateRange.swift</div>
+            <div class="code-badge adv">● Advanced</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">BookingView</span>: <span class="type">View</span> {
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">checkIn</span> = <span class="type">Date</span>()
+
+    <span class="cmt">// Valid range: today → 90 days from now</span>
+    <span class="kw">var</span> <span class="fn">range</span>: <span class="type">ClosedRange</span>&lt;<span class="type">Date</span>&gt; {
+        <span class="kw">let</span> <span class="fn">cal</span>   = <span class="type">Calendar</span>.<span class="prop">current</span>
+        <span class="kw">let</span> <span class="fn">start</span> = <span class="type">Date</span>()
+        <span class="kw">let</span> <span class="fn">end</span>   = <span class="prop">cal</span>.<span class="fn">date</span>(byAdding: .<span class="prop">day</span>,
+                             value: <span class="num">90</span>, to: <span class="prop">start</span>)!
+        <span class="kw">return</span> <span class="prop">start</span>...<span class="prop">end</span>
+    }
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">DatePicker</span>(
+            <span class="str">"Check-in"</span>,
+            selection: <span class="prop">$checkIn</span>,
+            <span class="kw">in</span>: <span class="prop">range</span>,
+            displayedComponents: .<span class="prop">date</span>
+        )
+        .<span class="fn">datePickerStyle</span>(.<span class="prop">graphical</span>)
+        .<span class="fn">tint</span>(.<span class="prop">pink</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Key concepts</div>
+          <ol>
+            <li><code>var range: ClosedRange&lt;Date&gt;</code> — a <strong>computed property</strong> that returns a range of two Date values.</li>
+            <li><code>Calendar.current</code> — the user's calendar (Gregorian, Hijri, etc.). Respects locale automatically.</li>
+            <li><code>cal.date(byAdding: .day, value: 90, to: start)!</code> — adds 90 days to today. The <code>!</code> force-unwraps the optional (safe here because adding days to a valid date always works).</li>
+            <li><code>start...end</code> — Swift's closed-range operator. Means "all dates from start through end, inclusive".</li>
+            <li><code>in: range</code> — the <strong>new parameter</strong>. Dates outside the range are disabled (grayed out).</li>
+            <li><code>.tint(.pink)</code> — customizes the accent color (the selected-day circle).</li>
+          </ol>
+        </div>
+
+        <div class="warn"><strong>⚠ Range variants:</strong> <code>start...end</code> both ends · <code>start...</code> no past · <code>...end</code> no future · Use <code>PartialRangeFrom</code>/<code>PartialRangeThrough</code> for one-sided.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Past dates disabled · pink accent</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Book Stay</div>
+              <div class="dp-graph" style="background: white;">
+                <div class="dp-graph-header" style="color: #ff3ea5;">
+                  <span style="color: #000;">April 2026</span>
+                  <span class="nav-arrows" style="color: #ff3ea5;"><span>‹</span><span>›</span></span>
+                </div>
+                <div class="dp-graph-week"><div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div></div>
+                <div class="dp-graph-days">
+                  <div class="dim">29</div><div class="dim">30</div><div class="dim">31</div>
+                  <div class="dim">1</div><div class="dim">2</div><div class="dim">3</div><div class="dim">4</div>
+                  <div class="dim">5</div><div class="dim">6</div><div class="dim">7</div><div class="dim">8</div><div class="dim">9</div><div class="dim">10</div><div class="dim">11</div>
+                  <div class="dim">12</div><div class="dim">13</div><div class="dim">14</div><div class="dim">15</div><div class="dim">16</div><div class="dim">17</div><div class="dim">18</div>
+                  <div class="dim">19</div><div class="dim">20</div><div class="dim">21</div><div class="dim">22</div><div class="dim">23</div>
+                  <div style="background: #ff3ea5; color: white; font-weight: 600; border-radius: 50%;">24</div>
+                  <div>25</div>
+                  <div>26</div><div>27</div><div>28</div><div>29</div><div>30</div><div class="dim">1</div><div class="dim">2</div>
+                </div>
+                <p style="font-size: 11px; color: var(--ios-gray); margin-top: 10px; text-align: center;">Past dates disabled · accent color: pink</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 22: PART 3 SECTION COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">03</div>
+      <div class="section-cover-label">▸ Part Three</div>
+      <div class="section-cover-title">Practice Time</div>
+      <div class="section-cover-desc">Three exercises — easy, medium, hard. You'll build them in Xcode, and we'll review together.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 23: EXERCISE 1 ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">24</span> · exercise one · warm-up</div>
+    <div class="exercise-card">
+      <div class="ex-num">EXERCISE 01</div>
+      <h3>🎨 Favorite Color Picker</h3>
+      <p>Build a screen that lets the user pick their favorite color from a list and shows the chosen color in a colored rectangle below.</p>
+
+      <div class="row" style="margin-top: 18px;">
+        <div class="col-text">
+          <h3 class="sub">▸ Your tasks (click to check off)</h3>
+          <ul class="task-list" id="ex1-tasks">
+            <li>Create a SwiftUI <code>View</code> called <code>ColorPickerView</code></li>
+            <li>Make a <code>@State</code> variable for the selected color name</li>
+            <li>Build a Picker with at least 4 colors (red, blue, green, orange)</li>
+            <li>Show the picked color in a 200×200 <code>Rectangle</code> below</li>
+            <li>Try all three styles: <code>.menu</code>, <code>.segmented</code>, <code>.wheel</code></li>
+            <li>Bonus: Wrap it in a <code>Form</code> and observe the default style</li>
+          </ul>
+
+          <div class="tip" style="margin-top: 18px;">
+            <strong>💡 Hint:</strong> Use a dictionary or switch to map a name like <code>"Red"</code> to a real <code>Color.red</code>. Or use an enum that stores the actual <code>Color</code>.
+          </div>
+        </div>
+
+        <div>
+          <h3 class="sub">▸ Expected result</h3>
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Color</div>
+                <div style="margin: 0 4px 18px;">
+                  <div class="seg-picker" id="ex1-seg">
+                    <button data-c="Red">Red</button>
+                    <button class="active" data-c="Blue">Blue</button>
+                    <button data-c="Green">Green</button>
+                    <button data-c="Orange">Orange</button>
+                  </div>
+                </div>
+                <div id="ex1-swatch" style="width: 100%; height: 220px; background: #007aff; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,122,255,0.4); transition: all 0.4s ease;"></div>
+                <p style="text-align:center; margin-top: 14px; font-weight: 600; font-size: 17px;" id="ex1-label">Your color: Blue</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 24: EXERCISE 2 ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">25</span> · exercise two · combine pickers</div>
+    <div class="exercise-card">
+      <div class="ex-num">EXERCISE 02</div>
+      <h3>🍕 Pizza Order Builder</h3>
+      <p>Build a small order form combining multiple Pickers. Two pickers, one Form — and the total price updates live as the user changes selections.</p>
+
+      <div class="row" style="margin-top: 18px;">
+        <div class="col-text">
+          <h3 class="sub">▸ Your tasks (click to check off)</h3>
+          <ul class="task-list" id="ex2-tasks">
+            <li>Create an enum <code>Size</code> with cases: small, medium, large</li>
+            <li>Create an enum <code>Crust</code> with cases: thin, regular, stuffed</li>
+            <li>Both enums must be <code>String, CaseIterable, Identifiable</code></li>
+            <li>Wrap two Pickers inside a <code>Form</code></li>
+            <li>Add a computed property <code>total</code> based on the two selections</li>
+            <li>Display the total in a third row at the bottom</li>
+            <li>Bonus: Use <code>.segmented</code> for size, <code>.menu</code> for crust</li>
+          </ul>
+
+          <div class="warn" style="margin-top: 18px;">
+            <strong>⚠ Watch out:</strong> The two enums must conform to <code>Hashable</code> (you get this free with <code>String</code> raw values). The selection binding's type must match the enum exactly.
+          </div>
+        </div>
+
+        <div>
+          <h3 class="sub">▸ Expected result</h3>
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">Pizza Order</div>
+                <p style="font-size: 11px; color: var(--ios-gray); padding: 0 4px 6px; text-transform: uppercase; letter-spacing: 0.05em;">Size</p>
+                <div style="margin: 0 4px 14px;">
+                  <div class="seg-picker" id="ex2-seg">
+                    <button data-size="Small" data-price="9.99">Small</button>
+                    <button class="active" data-size="Medium" data-price="14.99">Medium</button>
+                    <button data-size="Large" data-price="19.99">Large</button>
+                  </div>
+                </div>
+                <p style="font-size: 11px; color: var(--ios-gray); padding: 0 4px 6px; text-transform: uppercase; letter-spacing: 0.05em;">Crust</p>
+                <div class="ios-list" style="margin-bottom: 14px;">
+                  <div class="ios-row">
+                    <span class="ios-row-label">Crust</span>
+                    <button class="ios-menu-trigger" id="ex2-crust-trig"><span id="ex2-crust-val">Regular</span></button>
+                  </div>
+                  <div id="ex2-crust-menu" style="display:none; padding: 0 12px 12px;">
+                    <div class="menu-popup">
+                      <div class="menu-item" data-crust="Thin" data-extra="0">Thin (+$0)</div>
+                      <div class="menu-item selected" data-crust="Regular" data-extra="0">Regular (+$0)</div>
+                      <div class="menu-item" data-crust="Stuffed" data-extra="3">Stuffed (+$3)</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="ios-list">
+                  <div class="ios-row no-chevron">
+                    <span class="ios-row-label" style="font-weight: 600;">Total</span>
+                    <span class="ios-row-value" id="ex2-total" style="color: var(--ios-blue); font-size: 22px; font-weight: 700;">$14.99</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 25: EXERCISE 3 ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">26</span> · exercise three · the boss level</div>
+    <div class="exercise-card">
+      <div class="ex-num">EXERCISE 03</div>
+      <h3>📅 Event Scheduler</h3>
+      <p>Build a small event scheduler combining everything you've learned: a Picker for category, a DatePicker for date, a DatePicker for time, and a live summary card.</p>
+
+      <div class="row" style="margin-top: 18px;">
+        <div class="col-text">
+          <h3 class="sub">▸ Your tasks (click to check off)</h3>
+          <ul class="task-list" id="ex3-tasks">
+            <li>Create a <code>Form</code> with the title "New Event"</li>
+            <li>Add a <code>TextField</code> for event name</li>
+            <li>Add a Picker for category: Work, Personal, School, Travel</li>
+            <li>Add a DatePicker for the event date — restrict to today onward</li>
+            <li>Add a separate DatePicker for time only</li>
+            <li>Use <code>.datePickerStyle(.graphical)</code> on the date one</li>
+            <li>Show a live summary card at the bottom: "Meeting · Personal · Apr 25 · 7:00 PM"</li>
+            <li>Bonus: Apply <code>.tint(.purple)</code> to match the category color</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="sub">▸ Expected result</h3>
+          <div class="iphone">
+            <div class="iphone-screen">
+              <div class="ios-status"><span>9:41</span><div class="ios-status-icons">●●●●●</div></div>
+              <div class="ios-content">
+                <div class="ios-nav-title">New Event</div>
+                <div class="ios-list" style="margin-bottom: 14px;">
+                  <div class="ios-row no-chevron">
+                    <span class="ios-row-label">Title</span>
+                    <span class="ios-row-value" style="color: var(--ios-text);">Team Standup</span>
+                  </div>
+                  <div class="ios-row">
+                    <span class="ios-row-label">Category</span>
+                    <button class="ios-menu-trigger" id="ex3-cat-trig"><span id="ex3-cat-val">Work</span></button>
+                  </div>
+                  <div id="ex3-cat-menu" style="display:none; padding: 0 12px 12px;">
+                    <div class="menu-popup">
+                      <div class="menu-item selected" data-cat="Work" data-color="#007aff">Work</div>
+                      <div class="menu-item" data-cat="Personal" data-color="#b76cff">Personal</div>
+                      <div class="menu-item" data-cat="School" data-color="#ff3ea5">School</div>
+                      <div class="menu-item" data-cat="Travel" data-color="#4cffaf">Travel</div>
+                    </div>
+                  </div>
+                  <div class="ios-row">
+                    <span class="ios-row-label">Date</span>
+                    <span class="dp-compact">Apr 25, 2026</span>
+                  </div>
+                  <div class="ios-row">
+                    <span class="ios-row-label">Time</span>
+                    <span class="dp-compact dp-compact-time">7:00 PM</span>
+                  </div>
+                </div>
+                <div style="background: linear-gradient(135deg, var(--ios-blue), #5856d6); border-radius: 14px; padding: 16px; color: white;" id="ex3-summary">
+                  <p style="font-size: 11px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Summary</p>
+                  <p style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">Team Standup</p>
+                  <p style="font-size: 13px; opacity: 0.95;" id="ex3-summary-line"><span id="ex3-cat-display">Work</span> · Apr 25, 2026 · 7:00 PM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 26: KEY TAKEAWAYS ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">27</span> · summary · key takeaways</div>
+    <h2 class="section-title">What you should <span class="neon">remember</span></h2>
+    <p class="lede">If you only remember five things from today's lecture, make it these:</p>
+
+    <div class="feature-grid" style="margin-top: 20px;">
+      <div class="feature-card">
+        <div class="feature-icon">1</div>
+        <h4>Picker = title + binding + options</h4>
+        <p>Three ingredients. Always. The binding is what makes the picker actually <em>do</em> something.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">2</div>
+        <h4>Use enums, not strings</h4>
+        <p>Strings break silently. Enums with <code>CaseIterable</code> + <code>Identifiable</code> are the SwiftUI standard.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">3</div>
+        <h4>Pick the right .pickerStyle</h4>
+        <p><code>.menu</code> for many, <code>.segmented</code> for 2–4, <code>.wheel</code> for ordered lists.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">4</div>
+        <h4>DatePicker is just a special Picker</h4>
+        <p>Use <code>displayedComponents</code> for date/time and <code>in: range</code> to restrict.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">5</div>
+        <h4>Tags must match the binding type</h4>
+        <p>If your binding is <code>Country?</code>, every tag must be <code>Country?</code>. The #1 silent bug.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>Practice beats theory</h4>
+        <p>Build the three exercises. Pickers are easy when you've written 5; impossible if you've only read about them.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 27: THANKS ================== -->
+  <section class="slide">
+    <div class="thanks">
+      <div>
+        <div class="thanks-num">FIN.</div>
+        <p class="thanks-msg">Questions? Let's discuss.</p>
+        <div class="thanks-sig">
+          <span class="name">Khalid Kassou</span> · MAC221 · iOS Application Development<br>
+          Mathematics, Engineering &amp; Computer Science · LaGuardia Community College
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn" id="prev">‹ Prev</button>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress"></div>
+  </div>
+  <div class="slide-counter"><span class="current" id="cur">01</span> / <span id="total">27</span></div>
+  <button class="nav-btn" id="next">Next ›</button>
+</div>
+
+<div class="kbd-hint">
+  <span class="kbd">←</span><span class="kbd">→</span> navigate · <span class="kbd">F</span> fullscreen
+</div>
+
+<script>
+/* ============ NAVIGATION ============ */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+document.getElementById('total').textContent = String(total).padStart(2, '0');
+
+function go(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'prev');
+    if (i === idx) s.classList.add('active');
+    else if (i < idx) s.classList.add('prev');
+  });
+  current = idx;
+  document.getElementById('cur').textContent = String(idx + 1).padStart(2, '0');
+  document.getElementById('progress').style.width = `${((idx + 1) / total) * 100}%`;
+  document.getElementById('prev').disabled = idx === 0;
+  document.getElementById('next').disabled = idx === total - 1;
+  slides[idx].scrollTop = 0;
+}
+
+document.getElementById('next').onclick = () => go(current + 1);
+document.getElementById('prev').onclick = () => go(current - 1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(current + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(current - 1); }
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(total - 1);
+  if (e.key === 'f' || e.key === 'F') {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }
+});
+
+go(0);
+
+/* ============ MENU PICKERS HELPER ============ */
+function setupMenuPicker(triggerId, menuId, valueId, displayId, attr) {
+  const trigger = document.getElementById(triggerId);
+  const menu = document.getElementById(menuId);
+  if (!trigger || !menu) return;
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  });
+  menu.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const val = item.dataset[attr];
+      document.getElementById(valueId).textContent = val;
+      if (displayId) document.getElementById(displayId).textContent = val;
+      menu.querySelectorAll('.menu-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      menu.style.display = 'none';
+    });
+  });
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && e.target !== trigger) menu.style.display = 'none';
+  });
+}
+
+setupMenuPicker('intro-menu-trigger', 'intro-menu-pop', 'intro-menu-val', null, 'intro');
+setupMenuPicker('fruit-trigger', 'fruit-menu', 'fruit-value', null, 'fruit');
+setupMenuPicker('form-trigger', 'form-menu', 'form-value', null, 'form');
+setupMenuPicker('fruit2-trigger', 'fruit2-menu', 'fruit2-value', null, 'fruit2');
+
+/* ============ SEGMENTED PICKERS HELPER ============ */
+function setupSegPicker(containerId, valDisplayId, attr, callback) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const val = btn.dataset[attr];
+      if (valDisplayId) document.getElementById(valDisplayId).textContent = val;
+      if (callback) callback(btn);
+    });
+  });
+}
+
+setupSegPicker('intro-seg', 'intro-seg-val', 'introSeg');
+setupSegPicker('size-seg', 'size-val', 'size');
+
+/* ============ WHEEL PICKERS HELPER ============ */
+function setupWheel(containerId, listId, valDisplayId) {
+  const container = document.getElementById(containerId);
+  const list = document.getElementById(listId);
+  if (!container || !list) return;
+  let centerIdx = 1;
+  const items = list.querySelectorAll('li');
+  // find initial center
+  items.forEach((it, i) => { if (it.classList.contains('center')) centerIdx = i; });
+
+  function render() {
+    items.forEach((li, i) => {
+      const dist = Math.abs(i - centerIdx);
+      li.classList.toggle('center', i === centerIdx);
+      li.style.opacity = Math.max(0.2, 1 - dist * 0.35);
+      li.style.transform = `scale(${Math.max(0.7, 1 - dist * 0.12)})`;
+      li.style.fontWeight = i === centerIdx ? '500' : '400';
+    });
+    list.style.transform = `translateY(${(1 - centerIdx) * 36}px)`;
+    if (valDisplayId) {
+      const el = document.getElementById(valDisplayId);
+      if (el) el.textContent = items[centerIdx].textContent;
+    }
+  }
+  render();
+
+  let startY = 0, scrolling = false;
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY > 0 && centerIdx < items.length - 1) centerIdx++;
+    else if (e.deltaY < 0 && centerIdx > 0) centerIdx--;
+    render();
+  });
+  list.addEventListener('mousedown', (e) => { startY = e.clientY; scrolling = true; });
+  document.addEventListener('mousemove', (e) => {
+    if (!scrolling) return;
+    const dy = e.clientY - startY;
+    if (Math.abs(dy) > 30) {
+      if (dy < 0 && centerIdx < items.length - 1) centerIdx++;
+      else if (dy > 0 && centerIdx > 0) centerIdx--;
+      startY = e.clientY;
+      render();
+    }
+  });
+  document.addEventListener('mouseup', () => { scrolling = false; });
+  list.addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; });
+  list.addEventListener('touchmove', (e) => {
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dy) > 30) {
+      if (dy < 0 && centerIdx < items.length - 1) centerIdx++;
+      else if (dy > 0 && centerIdx > 0) centerIdx--;
+      startY = e.touches[0].clientY;
+      render();
+    }
+  });
+}
+
+setupWheel('intro-wheel', 'intro-wheel-list', null);
+setupWheel('main-wheel', 'main-wheel-list', 'main-wheel-val');
+setupWheel('age-wheel', 'age-wheel-list', 'age-wheel-val');
+
+/* ============ PIZZA SEGMENTED (slide 12) ============ */
+setupSegPicker('pizza-seg', 'pizza-val', 'pizza');
+
+/* ============ COUNTRY (slide 13) ============ */
+setupMenuPicker('country-trigger', 'country-menu', 'country-val', null, 'country');
+
+/* ============ BIRTHDAY DATEPICKER (slide 17) ============ */
+const bdayRow = document.getElementById('bday-row');
+const bdayCal = document.getElementById('bday-cal');
+const bdayDays = document.getElementById('bday-days');
+if (bdayRow) {
+  bdayRow.addEventListener('click', () => {
+    bdayCal.style.display = bdayCal.style.display === 'none' ? 'block' : 'none';
+  });
+  bdayDays.querySelectorAll('div:not(.dim)').forEach(d => {
+    d.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bdayDays.querySelectorAll('div').forEach(x => x.classList.remove('selected'));
+      d.classList.add('selected');
+      const day = d.textContent;
+      document.getElementById('bday-display').textContent = `Apr ${day}, 2026`;
+    });
+  });
+}
+
+/* ============ GRAPHICAL DATEPICKER (slide 18) ============ */
+const graphDays = document.getElementById('graph-days');
+if (graphDays) {
+  graphDays.querySelectorAll('div:not(.dim)').forEach(d => {
+    d.addEventListener('click', () => {
+      graphDays.querySelectorAll('div').forEach(x => x.classList.remove('selected'));
+      d.classList.add('selected');
+      const day = d.textContent;
+      document.getElementById('graph-val').textContent = `Apr ${day}, 2026`;
+    });
+  });
+}
+
+/* ============ EXERCISE 1 — COLOR PICKER ============ */
+const ex1Colors = {
+  'Red':    { bg: '#ff3b30', shadow: 'rgba(255, 59, 48, 0.4)' },
+  'Blue':   { bg: '#007aff', shadow: 'rgba(0, 122, 255, 0.4)' },
+  'Green':  { bg: '#34c759', shadow: 'rgba(52, 199, 89, 0.4)' },
+  'Orange': { bg: '#ff9500', shadow: 'rgba(255, 149, 0, 0.4)' }
+};
+setupSegPicker('ex1-seg', null, 'c', (btn) => {
+  const c = ex1Colors[btn.dataset.c];
+  const swatch = document.getElementById('ex1-swatch');
+  swatch.style.background = c.bg;
+  swatch.style.boxShadow = `0 8px 24px ${c.shadow}`;
+  document.getElementById('ex1-label').textContent = `Your color: ${btn.dataset.c}`;
+});
+
+/* task list toggle */
+document.querySelectorAll('.task-list li').forEach(li => {
+  li.addEventListener('click', () => li.classList.toggle('done'));
+});
+
+/* ============ EXERCISE 2 — PIZZA ORDER ============ */
+let ex2Size = 14.99, ex2Crust = 0;
+function ex2UpdateTotal() {
+  document.getElementById('ex2-total').textContent = '$' + (ex2Size + ex2Crust).toFixed(2);
+}
+setupSegPicker('ex2-seg', null, 'size', (btn) => {
+  ex2Size = parseFloat(btn.dataset.price);
+  ex2UpdateTotal();
+});
+const ex2CrustTrig = document.getElementById('ex2-crust-trig');
+const ex2CrustMenu = document.getElementById('ex2-crust-menu');
+if (ex2CrustTrig) {
+  ex2CrustTrig.addEventListener('click', (e) => {
+    e.stopPropagation();
+    ex2CrustMenu.style.display = ex2CrustMenu.style.display === 'none' ? 'block' : 'none';
+  });
+  ex2CrustMenu.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      ex2CrustMenu.querySelectorAll('.menu-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      document.getElementById('ex2-crust-val').textContent = item.dataset.crust;
+      ex2Crust = parseFloat(item.dataset.extra);
+      ex2UpdateTotal();
+      ex2CrustMenu.style.display = 'none';
+    });
+  });
+}
+
+/* ============ EXERCISE 3 — EVENT SCHEDULER ============ */
+const ex3Trig = document.getElementById('ex3-cat-trig');
+const ex3Menu = document.getElementById('ex3-cat-menu');
+if (ex3Trig) {
+  ex3Trig.addEventListener('click', (e) => {
+    e.stopPropagation();
+    ex3Menu.style.display = ex3Menu.style.display === 'none' ? 'block' : 'none';
+  });
+  ex3Menu.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      ex3Menu.querySelectorAll('.menu-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      const cat = item.dataset.cat;
+      document.getElementById('ex3-cat-val').textContent = cat;
+      document.getElementById('ex3-cat-display').textContent = cat;
+      const summary = document.getElementById('ex3-summary');
+      const colorMap = {
+        'Work':     'linear-gradient(135deg, #007aff, #5856d6)',
+        'Personal': 'linear-gradient(135deg, #b76cff, #ff3ea5)',
+        'School':   'linear-gradient(135deg, #ff3ea5, #ff9500)',
+        'Travel':   'linear-gradient(135deg, #34c759, #00f0ff)'
+      };
+      summary.style.background = colorMap[cat] || colorMap['Work'];
+      ex3Menu.style.display = 'none';
+    });
+  });
+}
+
+/* close on outside click */
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.menu-popup, .ios-menu-trigger, .dp-graph, .ios-row, [id$="-trig"], [id$="-trigger"], #bday-cal')) {
+    document.querySelectorAll('[id$="-menu"], [id$="-pop"], #bday-cal').forEach(m => {
+      if (m) m.style.display = 'none';
+    });
+  }
+});
+</script>
+
+</body>
+</html>

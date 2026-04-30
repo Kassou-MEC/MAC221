@@ -191,11 +191,11 @@ body::after {
 
 .slide-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-dim);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .slide-num .accent { color: var(--neon-cyan); }
 
@@ -211,11 +211,11 @@ h1.title {
 }
 h2.section-title {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(26px, 3.2vw, 40px);
+  font-size: clamp(32px, 3.8vw, 50px);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   color: var(--text-bright);
 }
 h2.section-title .neon {
@@ -224,18 +224,18 @@ h2.section-title .neon {
 }
 h3.sub {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   color: var(--neon-cyan);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   letter-spacing: 0.02em;
 }
 p.lede {
-  font-size: 17px;
+  font-size: 21px;
   line-height: 1.55;
   color: var(--text-mid);
-  max-width: 900px;
-  margin-bottom: 16px;
+  max-width: 1000px;
+  margin-bottom: 18px;
 }
 
 /* Cover */
@@ -330,22 +330,22 @@ p.lede {
 .code-dots span:nth-child(3) { background: #28c840; }
 .code-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px; color: var(--text-mid);
+  font-size: 13px; color: var(--text-mid);
 }
 .code-badge {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-  padding: 3px 10px; border-radius: 4px; font-weight: 600;
+  font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 4px 11px; border-radius: 4px; font-weight: 600;
 }
 .code-badge.basic { background: rgba(76, 255, 175, 0.15); color: var(--neon-green); border: 1px solid rgba(76, 255, 175, 0.3); }
 .code-badge.inter { background: rgba(255, 181, 71, 0.15); color: var(--neon-orange); border: 1px solid rgba(255, 181, 71, 0.3); }
 .code-badge.adv   { background: rgba(255, 62, 165, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 62, 165, 0.3); }
 
 pre.code {
-  padding: 16px 20px;
+  padding: 18px 22px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.65;
   overflow-x: auto;
   color: #e8ecff;
 }
@@ -366,19 +366,19 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   background: linear-gradient(90deg, rgba(0, 240, 255, 0.05), transparent);
   border: 1px solid rgba(0, 240, 255, 0.15);
   border-radius: 10px;
-  padding: 14px 16px;
-  margin-top: 14px;
-  font-size: 13.5px;
+  padding: 16px 18px;
+  margin-top: 16px;
+  font-size: 16px;
   color: var(--text-mid);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .code-explain-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--neon-cyan);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   display: flex; align-items: center; gap: 8px;
 }
 .code-explain ol {
@@ -387,28 +387,28 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
 }
 .code-explain ol li {
   counter-increment: expl;
-  padding: 4px 0 4px 28px;
+  padding: 6px 0 6px 32px;
   position: relative;
 }
 .code-explain ol li::before {
   content: counter(expl);
   position: absolute;
-  left: 0; top: 4px;
-  width: 20px; height: 20px;
+  left: 0; top: 6px;
+  width: 22px; height: 22px;
   background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
   color: #000;
   border-radius: 50%;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   display: grid; place-items: center;
 }
 .code-explain code {
   font-family: 'JetBrains Mono', monospace;
   background: rgba(0, 240, 255, 0.08);
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--neon-cyan);
 }
 
@@ -772,14 +772,14 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   color: #000;
   font-weight: 700;
 }
-.feature-card h4 { font-size: 16px; font-weight: 600; color: var(--text-bright); margin-bottom: 6px; }
-.feature-card p { font-size: 13.5px; color: var(--text-mid); line-height: 1.5; }
+.feature-card h4 { font-size: 19px; font-weight: 600; color: var(--text-bright); margin-bottom: 8px; }
+.feature-card p { font-size: 16px; color: var(--text-mid); line-height: 1.55; }
 
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .chip {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px;
-  padding: 5px 10px;
+  font-size: 13px;
+  padding: 6px 12px;
   border-radius: 6px;
   background: rgba(0, 240, 255, 0.1);
   border: 1px solid rgba(0, 240, 255, 0.25);
@@ -840,18 +840,18 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   box-shadow: 0 4px 14px rgba(255, 62, 165, 0.4);
 }
 .exercise-card h3 {
-  font-size: 22px;
-  margin: 6px 0 12px;
+  font-size: 26px;
+  margin: 6px 0 14px;
   color: var(--text-bright);
   font-weight: 600;
 }
-.exercise-card p { color: var(--text-mid); line-height: 1.6; font-size: 15px; margin-bottom: 14px; }
+.exercise-card p { color: var(--text-mid); line-height: 1.6; font-size: 17px; margin-bottom: 14px; }
 .task-list { list-style: none; margin-top: 14px; }
 .task-list li {
   position: relative;
-  padding: 8px 8px 8px 30px;
+  padding: 10px 8px 10px 32px;
   color: var(--text-bright);
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
   border-radius: 6px;
@@ -917,9 +917,9 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   margin-bottom: 24px;
 }
 .section-cover-desc {
-  font-size: 18px;
+  font-size: 22px;
   color: var(--text-mid);
-  max-width: 600px;
+  max-width: 700px;
   line-height: 1.6;
 }
 
@@ -975,22 +975,22 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
 .toc-card:nth-child(3) .toc-num { background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .toc-card h3 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--text-bright);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   letter-spacing: -0.01em;
 }
 .toc-card p {
   color: var(--text-mid);
-  font-size: 13.5px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  font-size: 16px;
+  line-height: 1.55;
+  margin-bottom: 14px;
 }
 .toc-card ul {
   list-style: none;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--text-dim);
 }
 .toc-card ul li {
@@ -1003,17 +1003,17 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
 .style-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
-  font-size: 13.5px;
+  margin-top: 14px;
+  font-size: 16px;
 }
 .style-table th, .style-table td {
-  padding: 9px 12px;
+  padding: 11px 14px;
   text-align: left;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .style-table th {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--neon-cyan);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1023,29 +1023,31 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
 .style-table td:first-child {
   font-family: 'JetBrains Mono', monospace;
   color: var(--neon-pink);
-  font-size: 12px;
+  font-size: 14px;
 }
 .style-table tr:hover td { background: rgba(0, 240, 255, 0.03); }
 
 .tip {
   background: linear-gradient(90deg, rgba(76, 255, 175, 0.08), transparent);
   border-left: 3px solid var(--neon-green);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 6px;
-  margin: 12px 0;
-  font-size: 13.5px;
+  margin: 14px 0;
+  font-size: 16px;
   color: var(--text-mid);
+  line-height: 1.55;
 }
 .tip strong { color: var(--neon-green); }
 
 .warn {
   background: linear-gradient(90deg, rgba(255, 181, 71, 0.08), transparent);
   border-left: 3px solid var(--neon-orange);
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: 6px;
-  margin: 12px 0;
-  font-size: 13.5px;
+  margin: 14px 0;
+  font-size: 16px;
   color: var(--text-mid);
+  line-height: 1.55;
 }
 .warn strong { color: var(--neon-orange); }
 
@@ -1205,32 +1207,27 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   <section class="slide">
     <div class="slide-num">// <span class="accent">04</span> · concept</div>
     <h2 class="section-title">What is a <span class="neon">Picker</span>?</h2>
-    <p class="lede">A <strong>Picker</strong> is a SwiftUI view that lets the user select <strong>one value</strong> from a set of options. Think of it like a fancy radio-button group, dropdown, or wheel — SwiftUI decides the visual style, but the idea is always the same: <em>pick one</em>.</p>
+    <p class="lede">A <strong>Picker</strong> is a SwiftUI view that lets the user choose <strong>one value</strong> from a list of options — like a dropdown, radio-button group, or spinning wheel.</p>
 
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <h4>Built-in & Native</h4>
-        <p>Comes with iOS — no third-party libraries. One line of SwiftUI gives you a fully animated, accessible picker.</p>
+        <h4>Built into iOS</h4>
+        <p>No extra libraries needed. One line of SwiftUI = a working picker.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🎨</div>
-        <h4>Multiple Styles</h4>
-        <p>The same Picker code can render as a wheel, a menu dropdown, or a segmented control. You change one modifier.</p>
+        <h4>3 Visual Styles</h4>
+        <p>Same code can show as a menu, segmented bar, or wheel. You choose with one modifier.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔗</div>
-        <h4>Two-Way Binding</h4>
-        <p>Pickers automatically update a <code>@State</code> variable when the user picks. No manual event handling needed.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">♿</div>
-        <h4>Accessible</h4>
-        <p>VoiceOver, Dynamic Type, and Dark Mode all work without writing a single extra line. Apple handles it.</p>
+        <h4>Updates Automatically</h4>
+        <p>The selected value is stored in a variable. SwiftUI updates it for you when the user picks.</p>
       </div>
     </div>
 
-    <div class="tip"><strong>💡 Mental model:</strong> A Picker is just a binding to one variable — the variable is the "currently selected value", and the Picker is the UI control that changes it.</div>
+    <div class="tip"><strong>💡 Easy way to remember:</strong> A Picker = a list of options + a variable to store what the user chose. That's it.</div>
   </section>
 
   <!-- ================== SLIDE 5: THREE FACES (VISUAL FIRST) ================== -->
@@ -1357,17 +1354,17 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>@State</code> tells SwiftUI: "watch this variable — redraw the screen whenever it changes."</li>
-            <li><code>favoriteFruit = "Apple"</code> is the <strong>starting value</strong>. Apple is selected when the screen opens.</li>
-            <li><code>Picker("Pick a fruit", ...)</code> — the first string is the <strong>label</strong> (shown next to the picker in a Form).</li>
-            <li><code>selection: $favoriteFruit</code> — the <code>$</code> creates a <strong>two-way binding</strong>. The picker can now read AND write this variable.</li>
-            <li><code>Text("Apple").tag("Apple")</code> — each row shows <code>Text</code> and has a <code>.tag()</code> that identifies it. The tag is what gets stored in the variable.</li>
+            <li><code>@State</code> means "this is a variable that can change. When it changes, redraw the screen."</li>
+            <li><code>favoriteFruit = "Apple"</code> — the starting value. Apple is selected when the screen opens.</li>
+            <li><code>Picker("Pick a fruit", ...)</code> — creates a Picker. The text is the label.</li>
+            <li><code>$favoriteFruit</code> — the <code>$</code> means "connect this variable to the Picker". When the user picks, the variable changes automatically.</li>
+            <li><code>Text("Apple").tag("Apple")</code> — one row of the picker. The tag is what gets saved when this row is picked.</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 The $ sign matters:</strong> <code>$favoriteFruit</code> means "give me a two-way binding". Without the <code>$</code>, the picker could only read — never write.</div>
+        <div class="tip"><strong>💡 Remember the $ sign:</strong> Without <code>$</code>, the Picker can only read. With <code>$</code>, the Picker can write back. We need it!</div>
       </div>
 
       <div>
@@ -1428,16 +1425,16 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ What changed?</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li>We added <code>Form { ... }</code> around the Picker. Everything else stayed exactly the same.</li>
-            <li>A <code>Form</code> is a SwiftUI view that creates the iOS settings-style list — gray background, white rounded rows, neat separators.</li>
-            <li>Now the label <code>"Pick a fruit"</code> appears on the left of the row, and the current value <code>"Apple ⌄"</code> appears on the right.</li>
-            <li>Tapping the row opens a dropdown menu — this is the default <code>.menu</code> style automatically chosen by Form.</li>
+            <li>We added <code>Form { ... }</code> around the Picker. Nothing else changed!</li>
+            <li><code>Form</code> is a SwiftUI container. It gives us the iOS Settings-style look: gray background, white rounded rows.</li>
+            <li>Now the label "Pick a fruit" appears on the LEFT and the value "Apple" appears on the RIGHT.</li>
+            <li>Tapping the row opens a small dropdown menu. This is the default style inside a Form.</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 Best practice:</strong> Almost every real app puts pickers inside a <code>Form</code>. It gives you proper labels, automatic styling, and matches what users expect from iOS.</div>
+        <div class="tip"><strong>💡 Best practice:</strong> Real iOS apps almost always put pickers inside a <code>Form</code>. It looks correct and matches what users expect.</div>
       </div>
 
       <div>
@@ -1500,12 +1497,12 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ What changed from slide 6?</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li>Nothing in the Picker itself — same title, same <code>$size</code> binding, same <code>Text(...).tag(...)</code> rows.</li>
-            <li>We added ONE line at the end: <code>.pickerStyle(.segmented)</code>. This modifier tells SwiftUI: "render as a segmented control".</li>
-            <li>Notice the <strong>dot notation</strong>: <code>.segmented</code> is shorthand for <code>PickerStyle.segmented</code> — Swift infers the type from context.</li>
-            <li>The label <code>"Size"</code> is <strong>hidden</strong> visually in segmented style — but VoiceOver will still read it (accessibility!).</li>
+            <li>The Picker code is the same as before — title, binding, and three rows.</li>
+            <li>The new line is at the bottom: <code>.pickerStyle(.segmented)</code>.</li>
+            <li>This tells SwiftUI: "show this picker as a segmented bar instead of a menu".</li>
+            <li>The label "Size" is hidden by SwiftUI in segmented style — there's no room for it next to the bar.</li>
           </ol>
         </div>
 
@@ -1565,12 +1562,12 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ What changed from slide 8?</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li>Only the modifier changed: <code>.pickerStyle(.wheel)</code> instead of <code>.segmented</code>.</li>
-            <li>The picker is now a <strong>rotating drum</strong>. The middle row (highlighted) is the selected value.</li>
-            <li>I added more options (5 instead of 3) because wheels are ideal when you have many items — the user can spin quickly.</li>
-            <li>Wheel pickers take <strong>vertical space</strong> (about 200 pts by default), so make sure your screen has room.</li>
+            <li>Same picker code — only the modifier changed: <code>.pickerStyle(.wheel)</code>.</li>
+            <li>The picker is now a spinning drum. Drag up/down to change the value.</li>
+            <li>The middle row (highlighted) shows what is currently selected.</li>
+            <li>Wheel pickers take a lot of screen space. Use them when the user needs to scroll through many options.</li>
           </ol>
         </div>
 
@@ -1636,13 +1633,13 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>let fruits = [...]</code> — a plain array of strings. We use <code>let</code> because it never changes.</li>
-            <li><code>Form { ... }</code> — wraps the picker so we get the proper iOS list look (label on left, value on right).</li>
-            <li><code>ForEach(fruits, id: \.self)</code> — loop through every item. <code>id: \.self</code> means "use the value itself as the unique ID" (works because each fruit string is unique).</li>
-            <li><code>{ fruit in Text(fruit) }</code> — this is a <strong>closure</strong>. <code>fruit</code> is the current item in the loop. For each, we create a <code>Text</code> row.</li>
-            <li>No <code>.tag()</code> needed! When <code>id: \.self</code> is used and the type matches the binding, SwiftUI auto-tags each row.</li>
+            <li><code>let fruits = [...]</code> — an array of strings. We use <code>let</code> because the list never changes.</li>
+            <li><code>Form { ... }</code> — same as before, gives us the iOS row look.</li>
+            <li><code>ForEach(fruits, id: \.self)</code> — this is a loop. It goes through each fruit in the array.</li>
+            <li><code>id: \.self</code> tells SwiftUI: "use the fruit name itself as the unique ID". Required so SwiftUI can track which row is which.</li>
+            <li><code>{ fruit in Text(fruit) }</code> — for each <code>fruit</code> in the loop, create a Text row with that fruit name.</li>
           </ol>
         </div>
 
@@ -1708,17 +1705,17 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>@State private var age = 18</code> — this time the variable is an <code>Int</code>, not a <code>String</code>. The starting age is 18.</li>
-            <li><code>1..&lt;100</code> — a <strong>Swift range</strong>. This means "1, 2, 3, ... 99" (100 is excluded). Use <code>1...100</code> if you want 100 included.</li>
-            <li><code>ForEach(1..&lt;100, id: \.self)</code> — loop through the range just like an array.</li>
-            <li><code>Text("\(number) years")</code> — string interpolation. The <code>\(...)</code> inserts the variable's value into the string.</li>
-            <li><code>.tag(number)</code> — the tag type (<code>Int</code>) must match the selection type (<code>age</code> is <code>Int</code>). This is critical!</li>
+            <li><code>@State private var age = 18</code> — this time the variable is a number (Int), not a String. Default is 18.</li>
+            <li><code>1..&lt;100</code> — a Swift range. Means "every number from 1 to 99". Use <code>1...100</code> if you want 100 included.</li>
+            <li><code>ForEach(1..&lt;100, id: \.self)</code> — loop through every number in the range.</li>
+            <li><code>Text("\(number) years")</code> — the <code>\(...)</code> inserts a variable into a string. Result: "18 years".</li>
+            <li><code>.tag(number)</code> — saves the number when this row is picked. The tag type (Int) MUST match the variable type (Int).</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 Rule:</strong> The type inside <code>.tag()</code> MUST match the type of the <code>@State</code> variable. Mixing <code>Int</code> tags with a <code>String</code> binding = silent picker failure.</div>
+        <div class="tip"><strong>💡 Important rule:</strong> The type inside <code>.tag()</code> must MATCH the type of the <code>@State</code> variable. Mixing types = the picker won't work.</div>
       </div>
 
       <div>
@@ -1754,7 +1751,9 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
   <section class="slide">
     <div class="slide-num">// <span class="accent">12</span> · level up · type-safe with enums</div>
     <h2 class="section-title">Pickers + <span class="neon">Enums</span></h2>
-    <p class="lede">Strings like <code>"Easy"</code> are fragile — one typo silently breaks your code. Use an <strong>enum</strong> instead: type-safe, autocompletes, and your future self will thank you.</p>
+    <p class="lede">Using strings like <code>"Easy"</code> is dangerous — one typo and your code breaks silently. Better solution: use an <strong>enum</strong>.</p>
+
+    <div class="tip" style="margin-bottom: 16px;"><strong>💡 What is an enum?</strong> An <strong>enum</strong> (short for "enumeration") is a Swift type that represents a fixed group of related values. Instead of writing strings like <code>"small"</code>, <code>"medium"</code>, <code>"large"</code> all over your app, you define them once as cases of an enum. Then Swift makes sure you never make a typo — if you write <code>.smll</code> by mistake, Xcode shows a red error immediately.</div>
 
     <div class="row">
       <div class="col-text">
@@ -1800,15 +1799,16 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ How the code maps to the preview</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>enum PizzaSize: String, CaseIterable, Identifiable</code> — three protocols. <code>String</code> gives raw values, <code>CaseIterable</code> gives <code>.allCases</code>, <code>Identifiable</code> lets <code>ForEach</code> identify each case.</li>
-            <li><code>var id: String { rawValue }</code> — Identifiable requires an <code>id</code>; we reuse <code>rawValue</code> since it's already unique.</li>
-            <li><code>@State var size: PizzaSize = .medium</code> — the variable's type IS the enum. Type-safe, no string typos possible.</li>
-            <li><code>Form { ... }</code> — gives us the iOS settings-style background and grouped layout.</li>
-            <li><code>Section(header: Text("Size"))</code> — <strong>this is how we get the "SIZE" label to appear</strong> above the segmented bar. The <code>.segmented</code> style hides the picker's own label, so we add it ourselves as a section header.</li>
-            <li><code>.pickerStyle(.segmented)</code> — renders the choices as a pill bar.</li>
-            <li>The second <code>Section { HStack { ... } }</code> creates the "Your size · Medium 🍕🍕" row in its own grouped section below.</li>
+            <li><code>enum PizzaSize</code> — creates a new enum with three options: small, medium, and large.</li>
+            <li><code>: String</code> — each case has a String value. So <code>PizzaSize.small.rawValue</code> gives us <code>"Small 🍕"</code>.</li>
+            <li><code>: CaseIterable</code> — gives us <code>PizzaSize.allCases</code> (a list of all cases). Perfect for ForEach.</li>
+            <li><code>: Identifiable</code> — needed by ForEach to identify each case. We use <code>rawValue</code> as the id.</li>
+            <li><code>@State var size: PizzaSize = .medium</code> — the variable type is the enum itself. No more typos!</li>
+            <li><code>Form { Section(header: ...) }</code> — Section adds the "SIZE" title above the segmented bar.</li>
+            <li><code>ForEach(PizzaSize.allCases)</code> — loops through small, medium, large automatically.</li>
+            <li>The second Section shows "Your size · Medium 🍕🍕" using <code>HStack</code> + <code>Spacer()</code> to push the value to the right.</li>
           </ol>
         </div>
 
@@ -1894,19 +1894,20 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>struct Country: Identifiable, Hashable</code> — both protocols required. <strong>Identifiable</strong> for ForEach, <strong>Hashable</strong> so the picker can compare and track which country is selected.</li>
-            <li><code>let id = UUID()</code> — auto-generated unique ID for every Country instance.</li>
-            <li><code>static let morocco = Country(...)</code> — <code>static let</code> creates a constant that belongs to the <strong>type itself</strong>, not to an instance. We can write <code>Country.morocco</code> from anywhere.</li>
-            <li><code>static let all = [morocco, usa, france, japan]</code> — same idea: a ready-to-use array of all countries, accessible as <code>Country.all</code>.</li>
-            <li><code>@State private var selected = Country.morocco</code> — Morocco is the default selected country. Clean, one line, no init needed.</li>
-            <li><code>Form { Picker(...) { ForEach(Country.all) ... } }</code> — Form gives us the iOS row layout, ForEach loops through every country.</li>
-            <li><code>.tag(c)</code> — each row is tagged with the Country itself, matching the binding type.</li>
+            <li><code>struct Country</code> — creates a custom type holding 4 pieces of info: id, name, flag, and code.</li>
+            <li><code>: Identifiable, Hashable</code> — these two protocols are required so we can use Country in a Picker.</li>
+            <li><code>let id = UUID()</code> — every Country gets a unique ID automatically. UUID = "Universally Unique ID".</li>
+            <li><code>static let morocco = Country(...)</code> — <code>static</code> means this Country belongs to the type itself. Now you can write <code>Country.morocco</code> anywhere in your app.</li>
+            <li><code>static let all = [morocco, usa, france, japan]</code> — a ready-made array of all 4 countries, accessed as <code>Country.all</code>.</li>
+            <li><code>@State var selected = Country.morocco</code> — Morocco is the default selected country.</li>
+            <li><code>ForEach(Country.all)</code> — loops through all 4 countries to build the picker rows.</li>
+            <li><code>.tag(c)</code> — saves the whole Country object when the user picks a row.</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 Why <code>static let</code> is great here:</strong> It groups the countries WITH the Country type itself. You can write <code>Country.morocco</code> or <code>Country.all</code> anywhere in your app — no need to pass an array around or recreate countries every time.</div>
+        <div class="tip"><strong>💡 Why <code>static let</code> is helpful:</strong> It groups your data with the type itself. Apple does this with colors: <code>Color.red</code>, <code>Color.blue</code>. Same idea here with <code>Country.morocco</code>.</div>
       </div>
 
       <div>
@@ -2171,17 +2172,17 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>@State var birthday = Date()</code> — creates a variable holding <strong>today's date and time</strong>. Calling <code>Date()</code> with no arguments = current moment.</li>
-            <li><code>DatePicker("Birthday", ...)</code> — the title string works the same as in Picker: it's the label shown in Forms.</li>
-            <li><code>selection: $birthday</code> — two-way binding. The <code>$</code> is essential.</li>
-            <li><code>displayedComponents: .date</code> — show only the calendar, NOT the time. Options: <code>.date</code>, <code>.hourAndMinute</code>, or both.</li>
-            <li><code>.datePickerStyle(.compact)</code> — renders as a small tappable bubble. Tapping it pops open a calendar.</li>
+            <li><code>@State var birthday = Date()</code> — creates a variable holding today's date. <code>Date()</code> with no arguments = right now.</li>
+            <li><code>DatePicker("Birthday", ...)</code> — creates the date picker. The title is the label.</li>
+            <li><code>selection: $birthday</code> — connects the variable to the picker. The <code>$</code> is required.</li>
+            <li><code>displayedComponents: .date</code> — show only the date, no time. Options: <code>.date</code>, <code>.hourAndMinute</code>, or both.</li>
+            <li><code>.datePickerStyle(.compact)</code> — small bubble that pops open a calendar when tapped.</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 Space-saver:</strong> Compact is perfect inside a <code>Form</code> or settings list — it takes minimal space until the user taps it.</div>
+        <div class="tip"><strong>💡 Space-saver:</strong> Compact is perfect inside a Form. It stays small until the user taps to open the calendar.</div>
       </div>
 
       <div>
@@ -2254,16 +2255,16 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ What changed from slide 18?</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li>Only the modifier changed: <code>.datePickerStyle(.graphical)</code> instead of <code>.compact</code>.</li>
-            <li>The title <code>"Appointment"</code> is now <strong>hidden</strong> — the graphical style doesn't show labels (the calendar is self-explanatory).</li>
-            <li>The calendar takes <strong>much more vertical space</strong> (~350 pts). Don't use it if your screen is already crowded.</li>
-            <li>Users can swipe between months — Apple built all that navigation for free.</li>
+            <li>Same DatePicker code as before — only the style modifier changed.</li>
+            <li><code>.datePickerStyle(.graphical)</code> — show the full calendar always, no need to tap.</li>
+            <li>The label "Appointment" is hidden because the calendar takes the whole space.</li>
+            <li>Users can swipe between months. SwiftUI handles all the navigation for us.</li>
           </ol>
         </div>
 
-        <div class="tip"><strong>💡 When to use:</strong> Hero date selection — the main purpose of the screen is to pick a date. Think: reservations, event scheduling, appointment booking.</div>
+        <div class="tip"><strong>💡 When to use:</strong> When picking a date is the MAIN purpose of the screen. Think: booking apps, event scheduling, appointments.</div>
       </div>
 
       <div>
@@ -2330,11 +2331,11 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Two changes from the compact version</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>displayedComponents: .hourAndMinute</code> — show ONLY hours and minutes, NOT the date. The variable is still a full <code>Date</code>, but only the time parts are shown/editable.</li>
-            <li><code>.datePickerStyle(.wheel)</code> — use the classic iOS spinning drum. Three columns: hour, minute, AM/PM.</li>
-            <li>AM/PM shows automatically in locales that use 12-hour time. In 24-hour locales, that column disappears. All automatic.</li>
+            <li><code>displayedComponents: .hourAndMinute</code> — show ONLY the time, no date. The variable still holds a full Date but the user only sees/edits the time.</li>
+            <li><code>.datePickerStyle(.wheel)</code> — the classic iOS spinning drum with 3 columns: hour, minute, AM/PM.</li>
+            <li>AM/PM appears automatically. In countries that use 24-hour time, that column disappears. SwiftUI handles it.</li>
           </ol>
         </div>
 
@@ -2416,12 +2417,12 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Line-by-line explanation</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>displayedComponents: [.date, .hourAndMinute]</code> — the <strong>square brackets</strong> make this an array (technically an <code>OptionSet</code>). Both components are shown.</li>
-            <li>No <code>.datePickerStyle()</code> modifier — we rely on <code>.automatic</code>, which inside a <code>Form</code> gives us the compact style. Two small bubbles appear: one for date, one for time.</li>
-            <li>The <code>meetingTime</code> variable stores BOTH the date and the time in a single <code>Date</code> value.</li>
-            <li>Tapping either bubble opens the appropriate picker (calendar or time wheels).</li>
+            <li><code>[.date, .hourAndMinute]</code> — the <strong>square brackets</strong> create an array. Both date AND time will be shown.</li>
+            <li>The picker now displays TWO small bubbles in the same row: one for date, one for time.</li>
+            <li>The <code>meetingTime</code> variable stores BOTH date and time together in a single Date value.</li>
+            <li>Tapping a bubble opens the right picker (calendar for date, wheels for time).</li>
           </ol>
         </div>
 
@@ -2509,18 +2510,18 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
         </div>
 
         <div class="code-explain">
-          <div class="code-explain-title">▸ Key concepts</div>
+          <div class="code-explain-title">▸ What each line does</div>
           <ol>
-            <li><code>var range: ClosedRange&lt;Date&gt;</code> — a <strong>computed property</strong> that returns a range of two Date values.</li>
-            <li><code>Calendar.current</code> — the user's calendar (Gregorian, Hijri, etc.). Respects locale automatically.</li>
-            <li><code>cal.date(byAdding: .day, value: 90, to: start)!</code> — adds 90 days to today. The <code>!</code> force-unwraps the optional (safe here because adding days to a valid date always works).</li>
-            <li><code>start...end</code> — Swift's closed-range operator. Means "all dates from start through end, inclusive".</li>
-            <li><code>in: range</code> — the <strong>new parameter</strong>. Dates outside the range are disabled (grayed out).</li>
-            <li><code>.tint(.pink)</code> — customizes the accent color (the selected-day circle).</li>
+            <li><code>var range: ClosedRange&lt;Date&gt;</code> — a property that gives us back a range between two dates.</li>
+            <li><code>let start = Date()</code> — start of range = today (right now).</li>
+            <li><code>cal.date(byAdding: .day, value: 90, to: start)!</code> — adds 90 days to today to get the end date.</li>
+            <li><code>start...end</code> — the three dots mean "all dates from start to end". Like a number range, but with dates.</li>
+            <li><code>in: range</code> — tells the DatePicker: "user can only pick dates inside this range". Other dates are grayed out.</li>
+            <li><code>.tint(.pink)</code> — changes the accent color of the picker (the highlight color of the selected day).</li>
           </ol>
         </div>
 
-        <div class="warn"><strong>⚠ Range variants:</strong> <code>start...end</code> both ends · <code>start...</code> no past · <code>...end</code> no future · Use <code>PartialRangeFrom</code>/<code>PartialRangeThrough</code> for one-sided.</div>
+        <div class="warn"><strong>⚠ Range options:</strong> <code>start...end</code> = both limits · <code>start...</code> = no past dates · <code>...end</code> = no future dates.</div>
       </div>
 
       <div>
@@ -2622,6 +2623,8 @@ pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius:
       <div class="ex-num">EXERCISE 02</div>
       <h3>🍕 Pizza Order Builder</h3>
       <p>Build a small order form combining multiple Pickers. Two pickers, one Form — and the total price updates live as the user changes selections.</p>
+
+      <div class="tip" style="margin-top: 12px;"><strong>💡 Reminder — what is an enum?</strong> An enum is a Swift type that lets you define a fixed group of related values (like small/medium/large) as cases. Using enums prevents typos because Xcode shows you all available cases automatically.</div>
 
       <div class="row" style="margin-top: 18px;">
         <div class="col-text">

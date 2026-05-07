@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAC221 Lab 04 — MVVM Refactor Challenge | Khalid Kassou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #05060e;
+  --bg-mid: #0a0d1f;
+  --bg-soft: #131634;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b76cff;
+  --neon-pink: #ff3ea5;
+  --neon-green: #4cffaf;
+  --neon-orange: #ffb547;
+  --neon-yellow: #ffe45e;
+  --neon-red: #ff4d6d;
+  --text-bright: #f0f4ff;
+  --text-mid: #a8b2d1;
+  --text-dim: #6c7493;
+  --border-glow: rgba(0, 240, 255, 0.25);
+  --code-bg: #0d1029;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-bright);
+  min-height: 100vh;
+  scroll-behavior: smooth;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(183, 108, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 240, 255, 0.15), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 62, 165, 0.08), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========== TOP BAR ========== */
+.top-bar {
+  position: sticky;
+  top: 0;
+  height: 70px;
+  background: rgba(10, 13, 31, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+  gap: 20px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+.brand-mark {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid; place-items: center;
+  font-size: 18px;
+  color: #000;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.6);
+}
+.brand-text {
+  font-size: 14px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.timer-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 181, 71, 0.35);
+  background: rgba(255, 181, 71, 0.08);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--neon-orange);
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+}
+.timer-box.warning {
+  border-color: var(--neon-pink);
+  background: rgba(255, 62, 165, 0.1);
+  color: var(--neon-pink);
+}
+.timer-box.danger {
+  border-color: var(--neon-red);
+  background: rgba(255, 77, 109, 0.15);
+  color: var(--neon-red);
+  animation: timer-pulse 1s infinite;
+}
+@keyframes timer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.timer-icon { font-size: 16px; }
+.timer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-right: 4px;
+}
+.student-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.student-info .lab-name {
+  font-size: 11px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.student-info .instructor {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+/* ========== HERO ========== */
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 70px 56px 50px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 62, 165, 0.3);
+  border-radius: 100px;
+  background: rgba(255, 62, 165, 0.05);
+  margin-bottom: 24px;
+}
+.hero h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(48px, 6.5vw, 84px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin-bottom: 22px;
+}
+.hero h1 .l1 {
+  display: block;
+  background: linear-gradient(135deg, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero h1 .l2 {
+  display: block;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-style: italic;
+}
+.hero p.subtitle {
+  font-size: 21px;
+  color: var(--text-mid);
+  max-width: 900px;
+  line-height: 1.55;
+  margin-bottom: 30px;
+}
+.hero-stats {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  padding-top: 26px;
+  border-top: 1px solid var(--border-glow);
+}
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ========== Section structure ========== */
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 30px 56px;
+}
+.section-mark {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+h2.sec-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(30px, 3.5vw, 46px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
+  color: var(--text-bright);
+}
+h2.sec-title .neon {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+p.lede {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-mid);
+  max-width: 1000px;
+  margin-bottom: 24px;
+}
+p.lede strong { color: var(--text-bright); }
+
+/* ========== Scenario card ========== */
+.scenario {
+  background: linear-gradient(135deg, rgba(255, 62, 165, 0.08), rgba(183, 108, 255, 0.05));
+  border: 1px solid rgba(255, 62, 165, 0.25);
+  border-radius: 20px;
+  padding: 32px;
+  margin: 24px 0;
+  position: relative;
+  overflow: hidden;
+}
+.scenario::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(255, 62, 165, 0.15), transparent 70%);
+  filter: blur(40px);
+}
+.scenario-content { position: relative; z-index: 1; }
+.scenario-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--neon-pink);
+  padding: 5px 14px;
+  background: rgba(255, 62, 165, 0.1);
+  border-radius: 100px;
+  margin-bottom: 18px;
+}
+.scenario h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-bright);
+}
+.scenario p {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-mid);
+  margin-bottom: 12px;
+}
+.scenario .character {
+  font-style: italic;
+  color: var(--neon-yellow);
+  font-weight: 500;
+}
+
+/* ========== Original code display ========== */
+.original-code {
+  background: var(--code-bg);
+  border: 2px solid rgba(255, 181, 71, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 24px 0;
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5);
+}
+.original-code-head {
+  background: rgba(255, 181, 71, 0.1);
+  border-bottom: 1px solid rgba(255, 181, 71, 0.2);
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.original-code-head .file-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--neon-orange);
+  font-weight: 600;
+}
+.original-code-head .badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: rgba(255, 77, 109, 0.15);
+  color: var(--neon-red);
+  border: 1px solid rgba(255, 77, 109, 0.3);
+  font-weight: 600;
+}
+.original-code pre {
+  padding: 22px 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #e8ecff;
+  overflow-x: auto;
+}
+.original-code pre::-webkit-scrollbar { height: 8px; }
+.original-code pre::-webkit-scrollbar-thumb { background: var(--neon-orange); border-radius: 4px; }
+
+.kw    { color: #ff7ab2; font-weight: 500; }
+.type  { color: #5ec8ff; }
+.str   { color: #ffd479; }
+.num   { color: #d0a8ff; }
+.cmt   { color: #6c7493; font-style: italic; }
+.fn    { color: #4cffaf; }
+.attr  { color: #ff9b6b; }
+.prop  { color: #67d4ff; }
+
+.line-num {
+  display: inline-block;
+  width: 28px;
+  color: var(--text-dim);
+  user-select: none;
+  text-align: right;
+  margin-right: 14px;
+  font-size: 12px;
+}
+
+/* ========== Part divider ========== */
+.part-divider {
+  position: relative;
+  z-index: 1;
+  max-width: 1500px;
+  margin: 60px auto 30px;
+  padding: 0 56px;
+}
+.part-banner {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.1), rgba(183, 108, 255, 0.08));
+  border: 1px solid var(--border-glow);
+  border-radius: 20px;
+  padding: 32px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.part-banner.p2 {
+  background: linear-gradient(135deg, rgba(255, 62, 165, 0.1), rgba(255, 181, 71, 0.06));
+  border-color: rgba(255, 62, 165, 0.3);
+}
+.part-banner::before {
+  content: '';
+  position: absolute;
+  top: -80px; right: -80px;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.18), transparent 70%);
+  filter: blur(40px);
+}
+.part-banner.p2::before {
+  background: radial-gradient(circle, rgba(255, 62, 165, 0.18), transparent 70%);
+}
+.part-banner-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.part-num {
+  width: 90px; height: 90px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid;
+  place-items: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #000;
+  flex-shrink: 0;
+  box-shadow: 0 8px 30px rgba(0, 240, 255, 0.35);
+}
+.part-banner.p2 .part-num {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange));
+  box-shadow: 0 8px 30px rgba(255, 62, 165, 0.35);
+}
+.part-info { flex: 1; min-width: 280px; }
+.part-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  margin-bottom: 8px;
+}
+.part-banner.p2 .part-tag { color: var(--neon-pink); }
+.part-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--text-bright);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  line-height: 1.05;
+}
+.part-desc {
+  font-size: 17px;
+  color: var(--text-mid);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.part-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.part-meta-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.part-meta-item .val {
+  color: var(--neon-cyan);
+  font-weight: 700;
+  margin-right: 6px;
+}
+.part-banner.p2 .part-meta-item .val { color: var(--neon-pink); }
+
+/* ========== Part 2 spec card ========== */
+.spec-card {
+  background: rgba(255, 181, 71, 0.04);
+  border: 1px dashed rgba(255, 181, 71, 0.3);
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin: 22px 0;
+}
+.spec-card h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--neon-orange);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.spec-card .spec-list {
+  list-style: none;
+}
+.spec-card .spec-list li {
+  position: relative;
+  padding: 6px 8px 6px 28px;
+  font-size: 16px;
+  color: var(--text-bright);
+  line-height: 1.55;
+}
+.spec-card .spec-list li::before {
+  content: '◆';
+  position: absolute;
+  left: 6px; top: 8px;
+  color: var(--neon-orange);
+  font-size: 10px;
+}
+.spec-card .spec-list li code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255, 181, 71, 0.1);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neon-orange);
+}
+
+/* ========== Interactive preview iPhones ========== */
+.preview-section {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 36px;
+  align-items: start;
+  margin: 24px 0;
+}
+.preview-text h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-bright);
+}
+.preview-text p {
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.preview-text p strong { color: var(--text-bright); }
+.preview-text .preview-tip {
+  background: linear-gradient(90deg, rgba(76, 255, 175, 0.08), transparent);
+  border-left: 3px solid var(--neon-green);
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14.5px;
+  margin-top: 14px;
+}
+.preview-text .preview-tip strong { color: var(--neon-green); }
+
+.iphone {
+  width: 320px;
+  height: 640px;
+  background: #1a1a1a;
+  border-radius: 50px;
+  padding: 14px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow:
+    0 0 0 2px #2a2a2a,
+    0 30px 80px rgba(0,0,0,0.6),
+    0 0 60px rgba(0, 240, 255, 0.15);
+}
+.iphone::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 28px;
+  background: #1a1a1a;
+  border-radius: 0 0 18px 18px;
+  z-index: 10;
+}
+.iphone-screen {
+  width: 100%; height: 100%;
+  background: #f2f2f7;
+  border-radius: 38px;
+  overflow: hidden;
+  position: relative;
+  color: #000;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.ios-status {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px 0 32px;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+  color: #000;
+}
+.ios-status-icons { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+.ios-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  font-size: 15px;
+  background: #f2f2f7;
+}
+.ios-content::-webkit-scrollbar { width: 0; }
+.ios-nav-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 4px 0 14px;
+  color: #000;
+}
+
+/* TipJar specific */
+.tipjar-row {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  color: #000;
+}
+.tipjar-input {
+  background: #fff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+}
+.tipjar-btn {
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.tipjar-btn:hover { background: #0066d6; }
+.tipjar-btn.danger { background: #ff3b30; }
+.tipjar-btn.danger:hover { background: #d62b22; }
+.tipjar-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.tipjar-stat-label { color: #8e8e93; font-size: 14px; }
+.tipjar-stat-val { color: #000; font-weight: 600; font-size: 16px; }
+
+/* Mood Tracker specific (matches the screenshot) */
+.mood-emoji-row {
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 6px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-around;
+}
+.mood-emoji-btn {
+  font-size: 30px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  margin: 0 2px;
+}
+.mood-emoji-btn:hover { background: rgba(0, 122, 255, 0.05); }
+.mood-emoji-btn.selected { background: rgba(0, 122, 255, 0.12); transform: scale(1.05); }
+
+.mood-input {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  color: #000;
+}
+.mood-input::placeholder { color: #8e8e93; }
+
+.mood-slider-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.mood-slider-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #8e8e93;
+  font-size: 15px;
+}
+.mood-slider-row .val { color: #8e8e93; font-weight: 500; }
+.mood-slider {
+  width: 100%;
+  height: 22px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+.mood-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(to right, #007aff 0%, #007aff var(--pct, 60%), rgba(118,118,128,0.2) var(--pct, 60%), rgba(118,118,128,0.2) 100%);
+  border-radius: 2px;
+}
+.mood-slider::-moz-range-track {
+  height: 4px;
+  background: rgba(118, 118, 128, 0.2);
+  border-radius: 2px;
+}
+.mood-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18), 0 0 0 0.5px rgba(0,0,0,0.04);
+  margin-top: -9px;
+}
+
+.mood-save-btn {
+  width: 100%;
+  background: #007aff;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 14px;
+  transition: all 0.2s;
+}
+.mood-save-btn:disabled { background: #8e8e93; opacity: 0.55; cursor: not-allowed; }
+
+.mood-summary {
+  background: linear-gradient(135deg, #b76cff, #ff3ea5);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  color: white;
+}
+.mood-summary-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+.mood-summary-mood {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mood-summary-mood .em { font-size: 30px; }
+.mood-summary-meta { font-size: 13px; opacity: 0.95; }
+
+.mood-history-label {
+  font-size: 11px;
+  color: #8e8e93;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.mood-history {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.mood-history-row {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 0.5px solid #c6c6c8;
+  font-size: 14px;
+}
+.mood-history-row:last-child { border-bottom: none; }
+.mood-history-emoji { font-size: 26px; }
+.mood-history-meta { flex: 1; }
+.mood-history-meta .h-mood { font-weight: 600; color: #000; }
+.mood-history-meta .h-time { font-size: 11px; color: #8e8e93; }
+.mood-history-meta .h-note {
+  font-size: 11px;
+  color: #8e8e93;
+  font-style: italic;
+  margin-top: 1px;
+}
+.mood-history-empty {
+  padding: 16px;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 13px;
+}
+
+.dropzones {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 22px;
+  margin: 30px 0;
+}
+.dropzone {
+  background: var(--code-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+.dropzone.model { border: 2px solid rgba(255, 62, 165, 0.4); }
+.dropzone.viewmodel { border: 2px solid rgba(183, 108, 255, 0.4); }
+.dropzone.view { border: 2px solid rgba(0, 240, 255, 0.4); }
+.dropzone-head {
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.dropzone.model .dropzone-head { background: rgba(255, 62, 165, 0.1); }
+.dropzone.viewmodel .dropzone-head { background: rgba(183, 108, 255, 0.1); }
+.dropzone.view .dropzone-head { background: rgba(0, 240, 255, 0.1); }
+
+.dropzone-icon { font-size: 24px; }
+.dropzone-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+}
+.dropzone-filename {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.dropzone-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-mid);
+}
+.dropzone.model .dropzone-count { color: var(--neon-pink); }
+.dropzone.viewmodel .dropzone-count { color: var(--neon-purple); }
+.dropzone.view .dropzone-count { color: var(--neon-cyan); }
+
+.dropzone-body {
+  flex: 1;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  min-height: 480px;
+}
+.dropzone-body::-webkit-scrollbar { width: 6px; }
+.dropzone-body::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 3px; }
+
+.dropzone-body.dragover {
+  background: rgba(0, 240, 255, 0.05);
+  box-shadow: inset 0 0 0 2px var(--neon-cyan);
+}
+.dropzone-empty {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  padding: 40px 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-style: italic;
+}
+
+/* ========== Code chunks (draggable) ========== */
+.chunks-pool {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glow);
+  border-radius: 16px;
+  padding: 22px;
+  margin: 30px 0;
+}
+.chunks-pool-head {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chunks-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 60px;
+}
+.chunks-list.dragover {
+  background: rgba(0, 240, 255, 0.04);
+  border-radius: 12px;
+}
+
+.chunk {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(183, 108, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e8ecff;
+  cursor: grab;
+  transition: all 0.2s ease;
+  position: relative;
+  white-space: pre;
+  user-select: none;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.chunk::-webkit-scrollbar { height: 4px; }
+.chunk:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 240, 255, 0.2);
+}
+.chunk:active { cursor: grabbing; }
+.chunk.dragging {
+  opacity: 0.4;
+  transform: scale(0.95);
+}
+.chunk.in-zone {
+  width: 100%;
+}
+.chunk-num {
+  display: inline-block;
+  width: 24px;
+  height: 18px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--neon-cyan);
+  text-align: center;
+  line-height: 18px;
+  border-radius: 4px;
+  margin-right: 8px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.chunk-content { display: inline-block; vertical-align: middle; }
+
+/* Grading state */
+.chunk.correct {
+  border-color: var(--neon-green);
+  background: linear-gradient(135deg, rgba(76, 255, 175, 0.12), rgba(76, 255, 175, 0.04));
+  box-shadow: 0 0 12px rgba(76, 255, 175, 0.2);
+}
+.chunk.correct::after {
+  content: '✓';
+  position: absolute;
+  top: 6px; right: 8px;
+  color: var(--neon-green);
+  font-weight: 700;
+  font-size: 14px;
+}
+.chunk.wrong {
+  border-color: var(--neon-red);
+  background: linear-gradient(135deg, rgba(255, 77, 109, 0.12), rgba(255, 77, 109, 0.04));
+  box-shadow: 0 0 12px rgba(255, 77, 109, 0.2);
+}
+.chunk.wrong::after {
+  content: '✗';
+  position: absolute;
+  top: 6px; right: 8px;
+  color: var(--neon-red);
+  font-weight: 700;
+  font-size: 14px;
+}
+.chunk.partial {
+  border-color: var(--neon-orange);
+  background: linear-gradient(135deg, rgba(255, 181, 71, 0.12), rgba(255, 181, 71, 0.04));
+  box-shadow: 0 0 12px rgba(255, 181, 71, 0.2);
+}
+.chunk.partial::after {
+  content: '↕';
+  position: absolute;
+  top: 6px; right: 8px;
+  color: var(--neon-orange);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Tip box */
+.tip {
+  background: linear-gradient(90deg, rgba(76, 255, 175, 0.08), transparent);
+  border-left: 3px solid var(--neon-green);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 14px 0;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.tip strong { color: var(--neon-green); }
+.tip code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(76, 255, 175, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neon-green);
+}
+
+.warn {
+  background: linear-gradient(90deg, rgba(255, 181, 71, 0.08), transparent);
+  border-left: 3px solid var(--neon-orange);
+  padding: 14px 18px;
+  border-radius: 6px;
+  margin: 14px 0;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.warn strong { color: var(--neon-orange); }
+.warn code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255, 181, 71, 0.08);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neon-orange);
+}
+
+/* ========== Student info form ========== */
+.student-form {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(183, 108, 255, 0.04));
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  border-radius: 16px;
+  padding: 26px;
+  margin: 30px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.student-form .full {
+  grid-column: 1 / -1;
+}
+.form-field label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.form-field input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  color: var(--text-bright);
+  transition: all 0.2s;
+}
+.form-field input:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 240, 255, 0.15);
+}
+
+/* ========== Grade panel ========== */
+.grade-panel {
+  background: linear-gradient(135deg, rgba(76, 255, 175, 0.08), rgba(0, 240, 255, 0.05));
+  border: 1px solid rgba(76, 255, 175, 0.3);
+  border-radius: 18px;
+  padding: 32px;
+  margin: 30px 0;
+}
+.grade-panel h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  margin-bottom: 18px;
+  color: var(--text-bright);
+}
+.grade-controls {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.password-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  color: var(--text-bright);
+  letter-spacing: 0.2em;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+.password-input:focus {
+  outline: none;
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 3px rgba(76, 255, 175, 0.15);
+}
+.btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  font-weight: 600;
+}
+.btn-grade {
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+  border-color: transparent;
+  color: #000;
+}
+.btn-grade:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(76, 255, 175, 0.4);
+}
+.btn-print {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: rgba(0, 240, 255, 0.3);
+  color: var(--neon-cyan);
+}
+.btn-print:hover {
+  background: rgba(0, 240, 255, 0.15);
+  transform: translateY(-2px);
+}
+.btn-reset {
+  background: rgba(255, 77, 109, 0.08);
+  border-color: rgba(255, 77, 109, 0.3);
+  color: var(--neon-red);
+}
+.btn-reset:hover {
+  background: rgba(255, 77, 109, 0.15);
+}
+
+/* ========== Score display ========== */
+.score-display {
+  display: none;
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.score-display.visible { display: block; }
+.score-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 100px;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.score-row:last-child { border-bottom: none; }
+.score-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-mid);
+  letter-spacing: 0.1em;
+}
+.score-bar-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
+  border-radius: 5px;
+  transition: width 0.8s ease;
+}
+.score-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--neon-cyan);
+}
+.score-final {
+  margin-top: 24px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  text-align: center;
+}
+.score-final-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  line-height: 1;
+}
+.score-final-num.low { background: linear-gradient(135deg, var(--neon-red), var(--neon-orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.score-final-num.mid { background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.score-final-grade {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  margin-top: 8px;
+  color: var(--text-mid);
+  letter-spacing: 0.1em;
+}
+.score-feedback {
+  margin-top: 16px;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.visible { display: flex; }
+.modal {
+  background: var(--bg-mid);
+  border: 1px solid var(--border-glow);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.modal h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  margin-bottom: 14px;
+  color: var(--text-bright);
+}
+.modal p {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+.modal-close {
+  background: rgba(0, 240, 255, 0.08);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--neon-cyan);
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Footer */
+footer {
+  background: rgba(10, 13, 31, 0.6);
+  border-top: 1px solid var(--border-glow);
+  padding: 40px 56px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 60px;
+  position: relative;
+  z-index: 1;
+}
+footer .name { color: var(--neon-cyan); }
+
+/* ========== Print styles ========== */
+@media print {
+  @page { size: letter; margin: 0.5in; }
+
+  body, html {
+    background: white !important;
+    color: black !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body::before, body::after { display: none !important; }
+  .top-bar, .timer-box, .student-info,
+  .chunks-pool, .grade-controls, .modal-overlay,
+  .btn, .scenario, footer, .hero-stats, .hero-badge {
+    display: none !important;
+  }
+  .hero, .container { padding: 10px 20px !important; max-width: 100% !important; page-break-inside: avoid; }
+  .hero h1 { color: black !important; font-size: 28px !important; -webkit-text-fill-color: black !important; }
+  .hero h1 .l1, .hero h1 .l2 {
+    color: black !important;
+    -webkit-text-fill-color: black !important;
+    background: none !important;
+    display: inline !important;
+    margin-right: 8px;
+  }
+  .hero p.subtitle { color: #333 !important; font-size: 12px !important; }
+  h2.sec-title { color: black !important; font-size: 20px !important; margin-top: 18px !important; -webkit-text-fill-color: black !important; }
+  h2.sec-title .neon { color: black !important; -webkit-text-fill-color: black !important; background: none !important; }
+  .section-mark { color: #555 !important; font-size: 10px !important; }
+  p.lede { color: #333 !important; font-size: 12px !important; }
+
+  /* DROP ZONES — make all code visible */
+  .dropzones {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    page-break-inside: avoid;
+  }
+  .dropzone {
+    background: white !important;
+    border: 2px solid #333 !important;
+    min-height: auto !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .dropzone-head {
+    background: #f0f0f0 !important;
+    border-bottom: 1px solid #ccc !important;
+    color: black !important;
+  }
+  .dropzone-title { color: black !important; }
+  .dropzone-filename { color: #555 !important; }
+  .dropzone-count { color: #333 !important; }
+  .dropzone-body {
+    background: white !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 14px !important;
+  }
+  .dropzone-empty { display: none !important; }
+
+  /* CHUNKS — make all visible, no clipping */
+  .chunk {
+    background: #f8f8f8 !important;
+    border: 1px solid #999 !important;
+    color: #000 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    margin-bottom: 4px !important;
+  }
+  .chunk .kw    { color: #b00080 !important; }
+  .chunk .type  { color: #0050a0 !important; }
+  .chunk .str   { color: #905000 !important; }
+  .chunk .num   { color: #6020a0 !important; }
+  .chunk .cmt   { color: #888 !important; }
+  .chunk .fn    { color: #007050 !important; }
+  .chunk .attr  { color: #b04000 !important; }
+  .chunk .prop  { color: #0070a0 !important; }
+  .chunk-num { background: #ddd !important; color: #333 !important; }
+  .chunk.correct { border-color: #060 !important; background: #e8f5e8 !important; }
+  .chunk.wrong { border-color: #c00 !important; background: #fde8e8 !important; }
+  .chunk.partial { border-color: #c70 !important; background: #fdf3e0 !important; }
+
+  /* ORIGINAL CODE */
+  .original-code {
+    background: white !important;
+    border: 2px solid #333 !important;
+    page-break-inside: avoid;
+  }
+  .original-code-head { background: #f0f0f0 !important; }
+  .original-code-head .file-name { color: #333 !important; }
+  .original-code pre {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+    white-space: pre-wrap !important;
+    font-size: 11px !important;
+  }
+  .original-code .kw    { color: #b00080 !important; }
+  .original-code .type  { color: #0050a0 !important; }
+  .original-code .str   { color: #905000 !important; }
+  .original-code .num   { color: #6020a0 !important; }
+  .original-code .cmt   { color: #888 !important; }
+  .original-code .fn    { color: #007050 !important; }
+  .original-code .attr  { color: #b04000 !important; }
+  .original-code .prop  { color: #0070a0 !important; }
+
+  /* STUDENT FORM — show prominently */
+  .student-form {
+    background: white !important;
+    border: 2px solid #333 !important;
+    page-break-inside: avoid;
+  }
+  .form-field label { color: #333 !important; }
+  .form-field input {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #999 !important;
+  }
+
+  /* SCORE PANEL — show if graded */
+  .grade-panel {
+    background: white !important;
+    border: 2px solid #060 !important;
+    page-break-inside: avoid;
+  }
+  .grade-panel h3 { color: black !important; }
+  .score-display.visible { display: block !important; }
+  .score-row { color: black !important; border-bottom: 1px solid #ddd !important; }
+  .score-label { color: #333 !important; }
+  .score-num { color: #060 !important; }
+  .score-bar-track { background: #ddd !important; border: 1px solid #999 !important; }
+  .score-bar-fill { background: #060 !important; }
+  .score-final { background: #f0f0f0 !important; }
+  .score-final-num { color: #060 !important; -webkit-text-fill-color: #060 !important; background: none !important; }
+  .score-final-grade { color: #333 !important; }
+  .score-feedback { color: #333 !important; }
+
+  .tip, .warn { background: #f0f0f0 !important; color: #333 !important; border-color: #666 !important; }
+  .tip code, .warn code { background: white !important; color: black !important; border: 1px solid #ccc !important; }
+
+  /* Part dividers */
+  .part-divider { padding: 8px 20px !important; margin: 20px auto 12px !important; max-width: 100% !important; }
+  .part-banner {
+    background: white !important;
+    border: 2px solid #333 !important;
+    page-break-after: avoid;
+  }
+  .part-num {
+    background: #333 !important;
+    color: white !important;
+    box-shadow: none !important;
+  }
+  .part-tag, .part-meta-item .val { color: #333 !important; }
+  .part-title, .part-desc { color: black !important; }
+
+  .spec-card { background: #f8f8f8 !important; border: 1px solid #999 !important; }
+  .spec-card h4, .spec-card .spec-list li code { color: #333 !important; }
+  .spec-card .spec-list li::before { color: #333 !important; }
+
+  /* Hide interactive previews from PDF — they don't translate well */
+  .preview-section { display: none !important; }
+}
+
+@media (max-width: 1024px) {
+  .dropzones { grid-template-columns: 1fr; }
+  .student-form { grid-template-columns: 1fr; }
+  .hero, .container { padding-left: 24px; padding-right: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="brand">
+    <div class="brand-mark">K</div>
+    <div class="brand-text">MAC221 // LAB 04</div>
+  </div>
+  <div class="timer-box" id="timerBox">
+    <span class="timer-icon">⏱</span>
+    <span class="timer-label">Time left</span>
+    <span id="timerDisplay">2:00:00</span>
+  </div>
+  <div class="student-info">
+    <span class="lab-name">MVVM Refactor</span>
+    <span class="instructor">Prof. Khalid Kassou</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">◆ Lab 04 · MVVM Refactoring Challenge</div>
+  <h1>
+    <span class="l1">Two scenarios.</span>
+    <span class="l2">One MVVM challenge.</span>
+  </h1>
+  <p class="subtitle">A two-part lab that tests every MVVM concept from lecture. <strong>Part 1:</strong> refactor a junior dev's messy code. <strong>Part 2:</strong> assemble a brand-new app from scratch using MVVM. No typing — just dragging chunks where they belong.</p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-value">2 hours</div>
+      <div class="stat-label">Time Budget</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">100 pts</div>
+      <div class="stat-label">Total Score</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">2</div>
+      <div class="stat-label">Lab Parts</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">3</div>
+      <div class="stat-label">MVVM Layers</div>
+    </div>
+  </div>
+</section>
+
+<!-- STUDENT INFO -->
+<section class="container">
+  <div class="section-mark">// before you start</div>
+  <h2 class="sec-title">Your <span class="neon">information</span></h2>
+  <p class="lede">Fill in your details before starting. This will appear on your printed/PDF submission.</p>
+
+  <div class="student-form">
+    <div class="form-field">
+      <label>Student Name</label>
+      <input type="text" id="studentName" placeholder="First Last">
+    </div>
+    <div class="form-field">
+      <label>Student ID</label>
+      <input type="text" id="studentID" placeholder="EMPL ID">
+    </div>
+    <div class="form-field full">
+      <label>Section / Date</label>
+      <input type="text" id="studentSection" placeholder="MAC221 — Spring 2026">
+    </div>
+  </div>
+</section>
+
+<!-- ====== PART 1 DIVIDER ====== -->
+<div class="part-divider">
+  <div class="part-banner">
+    <div class="part-banner-content">
+      <div class="part-num">01</div>
+      <div class="part-info">
+        <div class="part-tag">▸ PART ONE · Refactor</div>
+        <div class="part-title">Clean up the messy code</div>
+        <div class="part-desc">A junior dev jammed an iOS app into one giant ContentView. Drag each piece into the correct MVVM file.</div>
+        <div class="part-meta">
+          <div class="part-meta-item"><span class="val">~45</span>min suggested</div>
+          <div class="part-meta-item"><span class="val">50</span>points</div>
+          <div class="part-meta-item"><span class="val">20</span>chunks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENARIO -->
+<section class="container">
+  <div class="section-mark">// the brief</div>
+  <h2 class="sec-title">The <span class="neon">scenario</span></h2>
+
+  <div class="scenario">
+    <div class="scenario-content">
+      <span class="scenario-tag">📱 Real-world bug ticket</span>
+      <h3>Senior dev review · TipJar app v1.0</h3>
+      <p><span class="character">Maya</span>, your junior teammate, just submitted her first iOS app for code review: a <strong>Tip Jar</strong> app that tracks how much money has been tipped, plus the average tip size. It works perfectly — but she put <strong>everything in one file</strong> called <code style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px; color:var(--neon-orange); font-family:'JetBrains Mono',monospace;">ContentView.swift</code>.</p>
+      <p>Your senior architect Sarah commented on the PR:</p>
+      <p style="margin-top: 14px; padding: 14px 18px; background: rgba(0,0,0,0.25); border-left: 3px solid var(--neon-yellow); border-radius: 6px; font-style: italic; color: var(--text-mid);">"The app works, but this is unmaintainable. Please refactor into proper MVVM: separate Model, ViewModel, and View files. Each layer must follow the rules we covered in the architecture lecture. — Sarah"</p>
+      <p style="margin-top: 14px;"><strong style="color: var(--text-bright);">Your task:</strong> Read Maya's ContentView.swift below, then drag each piece of code into its correct MVVM layer. Submit before the timer hits zero!</p>
+    </div>
+  </div>
+</section>
+
+<!-- TIPJAR INTERACTIVE PREVIEW -->
+<section class="container">
+  <div class="section-mark">// see what it does</div>
+  <h2 class="sec-title">Try the <span class="neon">running app</span></h2>
+  <p class="lede">This is Maya's TipJar app actually running. Type an amount, tap "Add Tip", watch the total and average update. Save a few tips to see how the numbers change. <strong>Your job in this lab is to refactor the source code that powers this app, not to add features.</strong></p>
+
+  <div class="preview-section">
+    <div class="preview-text">
+      <h3>How it works</h3>
+      <p>Type any number in the field, then tap <strong>Add Tip</strong>. Each tip you add updates two computed values: the total of all tips, and their average.</p>
+      <p>The "Clear All" button empties everything in one tap.</p>
+      <div class="preview-tip"><strong>💡 Hint for grading:</strong> Notice the app has 5 visible UI elements: a title, a text field, an Add button, two stat rows, and a Clear button. That's the "View" layer. Everything else (computing total, computing average, adding tips, clearing the list) lives in the ViewModel.</div>
+    </div>
+
+    <div class="iphone">
+      <div class="iphone-screen">
+        <div class="ios-status">
+          <span>9:41</span>
+          <div class="ios-status-icons">●●●●● 100%</div>
+        </div>
+        <div class="ios-content">
+          <div class="ios-nav-title" style="text-align:center; font-size:32px;">Tip Jar 💰</div>
+
+          <input type="text" class="tipjar-input" id="tjAmount" placeholder="Amount" inputmode="decimal">
+
+          <button class="tipjar-btn" id="tjAddBtn">Add Tip</button>
+
+          <div class="tipjar-row">
+            <span class="tipjar-stat-label">Total</span>
+            <span class="tipjar-stat-val" id="tjTotal">$0.00</span>
+          </div>
+          <div class="tipjar-row">
+            <span class="tipjar-stat-label">Average</span>
+            <span class="tipjar-stat-val" id="tjAvg">$0.00</span>
+          </div>
+          <div class="tipjar-row">
+            <span class="tipjar-stat-label">Tips counted</span>
+            <span class="tipjar-stat-val" id="tjCount">0</span>
+          </div>
+
+          <button class="tipjar-btn danger" id="tjClearBtn">Clear All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORIGINAL CODE -->
+<section class="container">
+  <div class="section-mark">// step 1 · read the messy code</div>
+  <h2 class="sec-title">Maya's <span class="neon">ContentView.swift</span></h2>
+  <p class="lede">Read every line carefully. Notice how the data structure, the logic for adding tips, and the UI are all mixed together. Your goal: separate them into three files using MVVM rules.</p>
+
+  <div class="original-code">
+    <div class="original-code-head">
+      <div>
+        <div class="file-name">📄 ContentView.swift</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:4px;">Maya's submission · 1 file · ~50 lines</div>
+      </div>
+      <span class="badge">⚠ Needs refactoring</span>
+    </div>
+<pre><span class="cmt"><span class="line-num">1</span>// ContentView.swift  ·  TipJar app  ·  Author: Maya</span>
+<span class="cmt"><span class="line-num">2</span>// Status: works, but everything in one file 😬</span>
+<span class="line-num">3</span>
+<span class="line-num">4</span><span class="kw">import</span> <span class="type">SwiftUI</span>
+<span class="line-num">5</span>
+<span class="line-num">6</span><span class="kw">struct</span> <span class="type">Tip</span>: <span class="type">Identifiable</span> {
+<span class="line-num">7</span>    <span class="kw">let</span> <span class="fn">id</span> = <span class="type">UUID</span>()
+<span class="line-num">8</span>    <span class="kw">let</span> <span class="fn">amount</span>: <span class="type">Double</span>
+<span class="line-num">9</span>}
+<span class="line-num">10</span>
+<span class="line-num">11</span><span class="kw">class</span> <span class="type">TipJarVM</span>: <span class="type">ObservableObject</span> {
+<span class="line-num">12</span>    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">tips</span>: [<span class="type">Tip</span>] = []
+<span class="line-num">13</span>    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">newAmount</span>: <span class="type">String</span> = <span class="str">""</span>
+<span class="line-num">14</span>
+<span class="line-num">15</span>    <span class="kw">var</span> <span class="fn">total</span>: <span class="type">Double</span> {
+<span class="line-num">16</span>        <span class="prop">tips</span>.<span class="fn">reduce</span>(<span class="num">0</span>) { $<span class="num">0</span> + $<span class="num">1</span>.<span class="prop">amount</span> }
+<span class="line-num">17</span>    }
+<span class="line-num">18</span>
+<span class="line-num">19</span>    <span class="kw">var</span> <span class="fn">average</span>: <span class="type">Double</span> {
+<span class="line-num">20</span>        <span class="prop">tips</span>.<span class="prop">isEmpty</span> ? <span class="num">0</span> : <span class="prop">total</span> / <span class="type">Double</span>(<span class="prop">tips</span>.<span class="prop">count</span>)
+<span class="line-num">21</span>    }
+<span class="line-num">22</span>
+<span class="line-num">23</span>    <span class="kw">func</span> <span class="fn">addTip</span>() {
+<span class="line-num">24</span>        <span class="kw">guard let</span> <span class="fn">value</span> = <span class="type">Double</span>(<span class="prop">newAmount</span>) <span class="kw">else</span> { <span class="kw">return</span> }
+<span class="line-num">25</span>        <span class="prop">tips</span>.<span class="fn">append</span>(<span class="type">Tip</span>(amount: <span class="prop">value</span>))
+<span class="line-num">26</span>        <span class="prop">newAmount</span> = <span class="str">""</span>
+<span class="line-num">27</span>    }
+<span class="line-num">28</span>
+<span class="line-num">29</span>    <span class="kw">func</span> <span class="fn">clearAll</span>() {
+<span class="line-num">30</span>        <span class="prop">tips</span>.<span class="fn">removeAll</span>()
+<span class="line-num">31</span>    }
+<span class="line-num">32</span>}
+<span class="line-num">33</span>
+<span class="line-num">34</span><span class="kw">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {
+<span class="line-num">35</span>    <span class="attr">@StateObject</span> <span class="kw">var</span> <span class="fn">vm</span> = <span class="type">TipJarVM</span>()
+<span class="line-num">36</span>
+<span class="line-num">37</span>    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+<span class="line-num">38</span>        <span class="type">VStack</span>(spacing: <span class="num">16</span>) {
+<span class="line-num">39</span>            <span class="type">Text</span>(<span class="str">"Tip Jar 💰"</span>).<span class="fn">font</span>(.<span class="prop">largeTitle</span>)
+<span class="line-num">40</span>            <span class="type">TextField</span>(<span class="str">"Amount"</span>, text: $<span class="prop">vm</span>.<span class="prop">newAmount</span>)
+<span class="line-num">41</span>            <span class="type">Button</span>(<span class="str">"Add Tip"</span>) { <span class="prop">vm</span>.<span class="fn">addTip</span>() }
+<span class="line-num">42</span>            <span class="type">Text</span>(<span class="str">"Total: $"</span> + <span class="type">String</span>(format: <span class="str">"%.2f"</span>, <span class="prop">vm</span>.<span class="prop">total</span>))
+<span class="line-num">43</span>            <span class="type">Text</span>(<span class="str">"Average: $"</span> + <span class="type">String</span>(format: <span class="str">"%.2f"</span>, <span class="prop">vm</span>.<span class="prop">average</span>))
+<span class="line-num">44</span>            <span class="type">Button</span>(<span class="str">"Clear All"</span>) { <span class="prop">vm</span>.<span class="fn">clearAll</span>() }
+<span class="line-num">45</span>        }
+<span class="line-num">46</span>        .<span class="fn">padding</span>()
+<span class="line-num">47</span>    }
+<span class="line-num">48</span>}</pre>
+  </div>
+
+  <div class="warn"><strong>⚠ Important:</strong> The <code>import SwiftUI</code> on line 4 is shared. You'll need to decide which files need <code>import SwiftUI</code> and which only need <code>import Foundation</code>. (Hint: only the View needs SwiftUI!)</div>
+</section>
+
+<!-- INSTRUCTIONS -->
+<section class="container">
+  <div class="section-mark">// step 2 · refactor</div>
+  <h2 class="sec-title">Drag each chunk to the <span class="neon">right file</span></h2>
+  <p class="lede">Below you'll see <strong>code chunks</strong> from Maya's ContentView. Drag each one into the correct MVVM layer (Model, ViewModel, or View). Order matters within each file — chunks must appear in the right sequence so the code compiles!</p>
+
+  <div class="tip"><strong>💡 MVVM rules to remember:</strong>
+    <ul style="list-style:none; margin-top:8px; padding-left:0;">
+      <li>→ <strong>Model</strong> = plain data (struct), no UI, no logic. <code>import Foundation</code> only.</li>
+      <li>→ <strong>ViewModel</strong> = the brain. ObservableObject, @Published, functions, computed properties. <code>import Foundation</code> only.</li>
+      <li>→ <strong>View</strong> = pure UI. SwiftUI struct + body. Reads from VM, calls VM functions. <code>import SwiftUI</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- DROP ZONES -->
+<section class="container">
+  <div class="dropzones">
+
+    <div class="dropzone model" data-zone="p1-model">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">🗄️</span>
+            <span class="dropzone-title">Model</span>
+          </div>
+          <div class="dropzone-filename">Models/Tip.swift</div>
+        </div>
+        <span class="dropzone-count" id="p1-count-model">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p1-model" id="p1-zone-model">
+        <div class="dropzone-empty">Drag the data struct chunks here</div>
+      </div>
+    </div>
+
+    <div class="dropzone viewmodel" data-zone="p1-viewmodel">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">⚙️</span>
+            <span class="dropzone-title">ViewModel</span>
+          </div>
+          <div class="dropzone-filename">ViewModels/TipJarVM.swift</div>
+        </div>
+        <span class="dropzone-count" id="p1-count-viewmodel">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p1-viewmodel" id="p1-zone-viewmodel">
+        <div class="dropzone-empty">Drag the logic & state chunks here</div>
+      </div>
+    </div>
+
+    <div class="dropzone view" data-zone="p1-view">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">📱</span>
+            <span class="dropzone-title">View</span>
+          </div>
+          <div class="dropzone-filename">Views/ContentView.swift</div>
+        </div>
+        <span class="dropzone-count" id="p1-count-view">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p1-view" id="p1-zone-view">
+        <div class="dropzone-empty">Drag the UI chunks here</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CHUNKS POOL -->
+<section class="container">
+  <div class="chunks-pool">
+    <div class="chunks-pool-head">
+      <span>◆ Part 1 code chunks · <span id="p1-poolRemaining">20</span> left</span>
+      <span style="color: var(--text-dim); text-transform: none; letter-spacing: 0.05em;">Drag chunks above · drag back here to undo</span>
+    </div>
+    <div class="chunks-list" id="p1-chunksPool" data-zone="p1-pool">
+      <!-- Chunks populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ========================= -->
+<!-- ====== PART 2 ========== -->
+<!-- ========================= -->
+
+<div class="part-divider">
+  <div class="part-banner p2">
+    <div class="part-banner-content">
+      <div class="part-num">02</div>
+      <div class="part-info">
+        <div class="part-tag">▸ PART TWO · Build from scratch</div>
+        <div class="part-title">Build the Mood Tracker</div>
+        <div class="part-desc">No starter code this time. Read the spec, then drag the right chunks into Model, ViewModel, and View — assembled in the correct order.</div>
+        <div class="part-meta">
+          <div class="part-meta-item"><span class="val">~75</span>min suggested</div>
+          <div class="part-meta-item"><span class="val">50</span>points</div>
+          <div class="part-meta-item"><span class="val">22</span>chunks</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PART 2 SCENARIO -->
+<section class="container">
+  <div class="section-mark">// the brief</div>
+  <h2 class="sec-title">A new <span class="neon">scenario</span></h2>
+
+  <div class="scenario">
+    <div class="scenario-content">
+      <span class="scenario-tag">📱 Client request</span>
+      <h3>Meet Sarah from MindfulMornings</h3>
+      <p><span class="character">Sarah</span> runs a wellness startup. She wants a small <strong>Mood Tracker</strong> app that lets users log how they feel each day — quickly, with one tap on an emoji.</p>
+      <p style="margin-top: 14px; padding: 14px 18px; background: rgba(0,0,0,0.25); border-left: 3px solid var(--neon-yellow); border-radius: 6px; font-style: italic; color: var(--text-mid);">"Hi! I want users to pick how they're feeling from a row of emoji faces, optionally write a short note, and rate the intensity from 1–10. They should see their last entries in a small history. Build it in MVVM please. — Sarah"</p>
+      <p style="margin-top: 14px;"><strong style="color: var(--text-bright);">Your task:</strong> Below the spec, drag the available code chunks into the correct files — in the correct order so the code compiles!</p>
+    </div>
+  </div>
+</section>
+
+<!-- MOOD TRACKER INTERACTIVE PREVIEW -->
+<section class="container">
+  <div class="section-mark">// see what you'll build</div>
+  <h2 class="sec-title">Try the <span class="neon">target app</span></h2>
+  <p class="lede">This is what Sarah's Mood Tracker app does when finished. Tap an emoji, drag the slider, hit Save and watch the history grow. <strong>Your job is to assemble the Swift code that powers this app — using MVVM separation.</strong></p>
+
+  <div class="preview-section">
+    <div class="preview-text">
+      <h3>How it works</h3>
+      <p><strong>Tap any emoji</strong> to pick a mood — the Save button enables only when something is selected.</p>
+      <p><strong>Type a note</strong> if you want, then drag the slider to set intensity from 1 to 10.</p>
+      <p><strong>Tap Save</strong> — the entry appears at the top of "Recent Moods" and the form resets.</p>
+      <div class="preview-tip"><strong>💡 Architecture clue:</strong> Notice that "save" only works when a mood is picked — that's the <code>canSave</code> computed property in the ViewModel. The View doesn't decide; it just trusts the ViewModel. That's MVVM in action.</div>
+    </div>
+
+    <div class="iphone">
+      <div class="iphone-screen">
+        <div class="ios-status">
+          <span>9:41</span>
+          <div class="ios-status-icons">●●●●● 100%</div>
+        </div>
+        <div class="ios-content">
+          <div class="ios-nav-title">How are you?</div>
+
+          <div class="mood-emoji-row">
+            <button class="mood-emoji-btn" data-mood="Sad" data-emoji="😢">😢</button>
+            <button class="mood-emoji-btn" data-mood="Down" data-emoji="😕">😕</button>
+            <button class="mood-emoji-btn" data-mood="Okay" data-emoji="😐">😐</button>
+            <button class="mood-emoji-btn" data-mood="Good" data-emoji="🙂">🙂</button>
+            <button class="mood-emoji-btn" data-mood="Great" data-emoji="😄">😄</button>
+          </div>
+
+          <input type="text" class="mood-input" id="mtNote" placeholder="Add a note (optional)...">
+
+          <div class="mood-slider-card">
+            <div class="mood-slider-row">
+              <span>Intensity</span>
+              <span class="val" id="mtIntensityVal">6</span>
+            </div>
+            <input type="range" min="1" max="10" step="1" value="6" class="mood-slider" id="mtSlider" style="--pct: 60%;">
+          </div>
+
+          <button class="mood-save-btn" id="mtSaveBtn" disabled>Save Mood</button>
+
+          <div id="mtSummary" style="display:none;">
+            <div class="mood-summary">
+              <div class="mood-summary-label">Current selection</div>
+              <div class="mood-summary-mood">
+                <span class="em" id="mtSumEmoji"></span><span id="mtSumMood"></span>
+              </div>
+              <div class="mood-summary-meta" id="mtSumMeta"></div>
+            </div>
+          </div>
+
+          <div class="mood-history-label">Recent moods</div>
+          <div class="mood-history" id="mtHistory">
+            <div class="mood-history-empty">No moods saved yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 2 SPEC -->
+<section class="container">
+  <div class="section-mark">// step 1 · read the spec</div>
+  <h2 class="sec-title">App <span class="neon">requirements</span></h2>
+  <p class="lede">This is the only documentation you have. There is no starter code — you must figure out which chunks belong in which file based on MVVM rules.</p>
+
+  <div class="spec-card">
+    <h4>◆ Sarah's spec</h4>
+    <ul class="spec-list">
+      <li>Each saved entry stores: a <code>mood</code> name, an <code>emoji</code>, an optional <code>note</code>, an <code>intensity</code> (1-10), and a <code>timestamp</code></li>
+      <li>The Model is named <code>MoodEntry</code> and conforms to <code>Identifiable</code></li>
+      <li>The ViewModel is named <code>MoodViewModel</code> and tracks: the current selection, the entered note, the intensity, and the saved history</li>
+      <li>The ViewModel has a computed property <code>canSave</code> — true only when a mood is selected</li>
+      <li>The ViewModel has a function <code>selectMood(name:emoji:)</code> that sets both selection fields</li>
+      <li>The ViewModel has a function <code>saveMood()</code> that creates a MoodEntry, inserts it at the top of history, then resets the form</li>
+      <li>The View is named <code>MoodView</code> and shows: an emoji row, a note text field, an intensity slider, a Save button, and a history list</li>
+      <li>The Save button is disabled when <code>vm.canSave</code> is false</li>
+      <li>Files: <code>MoodEntry.swift</code> (Model), <code>MoodViewModel.swift</code> (ViewModel), <code>MoodView.swift</code> (View)</li>
+    </ul>
+  </div>
+
+  <div class="tip"><strong>💡 Reminder:</strong> Same MVVM rules as Part 1.
+    <ul style="list-style:none; margin-top:8px; padding-left:0;">
+      <li>→ <strong>Model</strong> = data only. <code>import Foundation</code>.</li>
+      <li>→ <strong>ViewModel</strong> = state + logic. <code>ObservableObject</code>, <code>@Published</code>. <code>import Foundation</code>.</li>
+      <li>→ <strong>View</strong> = UI. <code>import SwiftUI</code>, reads from VM, calls VM functions.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- PART 2 DROP ZONES -->
+<section class="container">
+  <div class="section-mark">// step 2 · drag the chunks</div>
+  <h2 class="sec-title">Assemble the <span class="neon">three files</span></h2>
+
+  <div class="dropzones">
+
+    <div class="dropzone model" data-zone="p2-model">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">🗄️</span>
+            <span class="dropzone-title">Model</span>
+          </div>
+          <div class="dropzone-filename">Models/MoodEntry.swift</div>
+        </div>
+        <span class="dropzone-count" id="p2-count-model">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p2-model" id="p2-zone-model">
+        <div class="dropzone-empty">Drag the data struct chunks here</div>
+      </div>
+    </div>
+
+    <div class="dropzone viewmodel" data-zone="p2-viewmodel">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">⚙️</span>
+            <span class="dropzone-title">ViewModel</span>
+          </div>
+          <div class="dropzone-filename">ViewModels/MoodViewModel.swift</div>
+        </div>
+        <span class="dropzone-count" id="p2-count-viewmodel">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p2-viewmodel" id="p2-zone-viewmodel">
+        <div class="dropzone-empty">Drag state & logic chunks here</div>
+      </div>
+    </div>
+
+    <div class="dropzone view" data-zone="p2-view">
+      <div class="dropzone-head">
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dropzone-icon">📱</span>
+            <span class="dropzone-title">View</span>
+          </div>
+          <div class="dropzone-filename">Views/MoodView.swift</div>
+        </div>
+        <span class="dropzone-count" id="p2-count-view">0 chunks</span>
+      </div>
+      <div class="dropzone-body" data-zone="p2-view" id="p2-zone-view">
+        <div class="dropzone-empty">Drag the UI chunks here</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PART 2 CHUNKS POOL -->
+<section class="container">
+  <div class="chunks-pool">
+    <div class="chunks-pool-head">
+      <span>◆ Part 2 code chunks · <span id="p2-poolRemaining">22</span> left</span>
+      <span style="color: var(--text-dim); text-transform: none; letter-spacing: 0.05em;">Drag chunks above · drag back here to undo</span>
+    </div>
+    <div class="chunks-list" id="p2-chunksPool" data-zone="p2-pool">
+      <!-- Chunks populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- GRADE PANEL -->
+<section class="container">
+  <div class="grade-panel">
+    <h3>📋 Submit & grade</h3>
+    <p style="font-size:16px; color:var(--text-mid); line-height:1.6;">When you're done dragging all chunks into their correct files, your instructor will enter the grading password and click <strong>Grade Lab</strong> to score your work. You can then save the page as PDF for submission.</p>
+
+    <div class="grade-controls">
+      <input type="password" class="password-input" id="passwordInput" placeholder="Instructor password">
+      <button class="btn btn-grade" id="gradeBtn">⚡ Grade Lab</button>
+      <button class="btn btn-print" id="printBtn">🖨 Save as PDF</button>
+      <button class="btn btn-reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <div class="score-display" id="scoreDisplay">
+      <h3 style="font-size:18px; margin-bottom:14px;">📊 Score breakdown</h3>
+
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--neon-cyan); letter-spacing:0.2em; text-transform:uppercase; margin: 16px 0 10px;">▸ PART 1 · TipJar Refactor</div>
+      <div class="score-row">
+        <div class="score-label">Model file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p1-model" style="width:0"></div></div>
+        <div class="score-num" id="num-p1-model">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">ViewModel file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p1-viewmodel" style="width:0"></div></div>
+        <div class="score-num" id="num-p1-viewmodel">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">View file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p1-view" style="width:0"></div></div>
+        <div class="score-num" id="num-p1-view">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">Order within files</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p1-order" style="width:0"></div></div>
+        <div class="score-num" id="num-p1-order">0 / 0</div>
+      </div>
+
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--neon-pink); letter-spacing:0.2em; text-transform:uppercase; margin: 22px 0 10px;">▸ PART 2 · Mood Tracker</div>
+      <div class="score-row">
+        <div class="score-label">Model file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p2-model" style="width:0"></div></div>
+        <div class="score-num" id="num-p2-model">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">ViewModel file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p2-viewmodel" style="width:0"></div></div>
+        <div class="score-num" id="num-p2-viewmodel">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">View file</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p2-view" style="width:0"></div></div>
+        <div class="score-num" id="num-p2-view">0 / 0</div>
+      </div>
+      <div class="score-row">
+        <div class="score-label">Order within files</div>
+        <div class="score-bar-track"><div class="score-bar-fill" id="bar-p2-order" style="width:0"></div></div>
+        <div class="score-num" id="num-p2-order">0 / 0</div>
+      </div>
+
+      <div class="score-final">
+        <div class="score-final-num" id="finalScore">—</div>
+        <div class="score-final-grade" id="finalGrade">UNGRADED</div>
+        <div class="score-feedback" id="finalFeedback">Click "Grade Lab" to see your score.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Notice</h3>
+    <p id="modalMsg">Message goes here.</p>
+    <button class="modal-close" id="modalClose">OK</button>
+  </div>
+</div>
+
+<footer>
+  <p style="margin-bottom: 8px;"><span class="name">MAC221 — iOS Application Development</span> · Lab 04 · MVVM Refactor</p>
+  <p>Khalid Kassou · Mathematics, Engineering &amp; Computer Science · LaGuardia Community College, CUNY</p>
+</footer>
+
+<script>
+/* ============================================
+   CHUNK DEFINITIONS — Two parts
+   Each chunk has: id, html, part ('p1'|'p2'),
+   zone ('p1-model'|'p1-viewmodel'|'p1-view'|...),
+   order (1-indexed within its file)
+   ============================================ */
+const CHUNKS = [
+  /* ============ PART 1 — TipJar Refactor ============ */
+
+  // MODEL chunks (3)
+  { id: 'p1m1', part: 'p1', zone: 'p1-model', order: 1,
+    html: '<span class="kw">import</span> <span class="type">Foundation</span>' },
+  { id: 'p1m2', part: 'p1', zone: 'p1-model', order: 2,
+    html: '<span class="kw">struct</span> <span class="type">Tip</span>: <span class="type">Identifiable</span> {' },
+  { id: 'p1m3', part: 'p1', zone: 'p1-model', order: 3,
+    html: '    <span class="kw">let</span> <span class="fn">id</span> = <span class="type">UUID</span>()\n    <span class="kw">let</span> <span class="fn">amount</span>: <span class="type">Double</span>\n}' },
+
+  // VIEWMODEL chunks (9)
+  { id: 'p1vm1', part: 'p1', zone: 'p1-viewmodel', order: 1,
+    html: '<span class="kw">import</span> <span class="type">Foundation</span>' },
+  { id: 'p1vm2', part: 'p1', zone: 'p1-viewmodel', order: 2,
+    html: '<span class="kw">class</span> <span class="type">TipJarVM</span>: <span class="type">ObservableObject</span> {' },
+  { id: 'p1vm3', part: 'p1', zone: 'p1-viewmodel', order: 3,
+    html: '    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">tips</span>: [<span class="type">Tip</span>] = []' },
+  { id: 'p1vm4', part: 'p1', zone: 'p1-viewmodel', order: 4,
+    html: '    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">newAmount</span>: <span class="type">String</span> = <span class="str">""</span>' },
+  { id: 'p1vm5', part: 'p1', zone: 'p1-viewmodel', order: 5,
+    html: '    <span class="kw">var</span> <span class="fn">total</span>: <span class="type">Double</span> {\n        <span class="prop">tips</span>.<span class="fn">reduce</span>(<span class="num">0</span>) { $<span class="num">0</span> + $<span class="num">1</span>.<span class="prop">amount</span> }\n    }' },
+  { id: 'p1vm6', part: 'p1', zone: 'p1-viewmodel', order: 6,
+    html: '    <span class="kw">var</span> <span class="fn">average</span>: <span class="type">Double</span> {\n        <span class="prop">tips</span>.<span class="prop">isEmpty</span> ? <span class="num">0</span> : <span class="prop">total</span> / <span class="type">Double</span>(<span class="prop">tips</span>.<span class="prop">count</span>)\n    }' },
+  { id: 'p1vm7', part: 'p1', zone: 'p1-viewmodel', order: 7,
+    html: '    <span class="kw">func</span> <span class="fn">addTip</span>() {\n        <span class="kw">guard let</span> <span class="fn">value</span> = <span class="type">Double</span>(<span class="prop">newAmount</span>) <span class="kw">else</span> { <span class="kw">return</span> }\n        <span class="prop">tips</span>.<span class="fn">append</span>(<span class="type">Tip</span>(amount: <span class="prop">value</span>))\n        <span class="prop">newAmount</span> = <span class="str">""</span>\n    }' },
+  { id: 'p1vm8', part: 'p1', zone: 'p1-viewmodel', order: 8,
+    html: '    <span class="kw">func</span> <span class="fn">clearAll</span>() {\n        <span class="prop">tips</span>.<span class="fn">removeAll</span>()\n    }' },
+  { id: 'p1vm9', part: 'p1', zone: 'p1-viewmodel', order: 9,
+    html: '}' },
+
+  // VIEW chunks (8)
+  { id: 'p1v1', part: 'p1', zone: 'p1-view', order: 1,
+    html: '<span class="kw">import</span> <span class="type">SwiftUI</span>' },
+  { id: 'p1v2', part: 'p1', zone: 'p1-view', order: 2,
+    html: '<span class="kw">struct</span> <span class="type">ContentView</span>: <span class="type">View</span> {' },
+  { id: 'p1v3', part: 'p1', zone: 'p1-view', order: 3,
+    html: '    <span class="attr">@StateObject</span> <span class="kw">var</span> <span class="fn">vm</span> = <span class="type">TipJarVM</span>()' },
+  { id: 'p1v4', part: 'p1', zone: 'p1-view', order: 4,
+    html: '    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {\n        <span class="type">VStack</span>(spacing: <span class="num">16</span>) {' },
+  { id: 'p1v5', part: 'p1', zone: 'p1-view', order: 5,
+    html: '            <span class="type">Text</span>(<span class="str">"Tip Jar 💰"</span>).<span class="fn">font</span>(.<span class="prop">largeTitle</span>)\n            <span class="type">TextField</span>(<span class="str">"Amount"</span>, text: $<span class="prop">vm</span>.<span class="prop">newAmount</span>)\n            <span class="type">Button</span>(<span class="str">"Add Tip"</span>) { <span class="prop">vm</span>.<span class="fn">addTip</span>() }' },
+  { id: 'p1v6', part: 'p1', zone: 'p1-view', order: 6,
+    html: '            <span class="type">Text</span>(<span class="str">"Total: $"</span> + <span class="type">String</span>(format: <span class="str">"%.2f"</span>, <span class="prop">vm</span>.<span class="prop">total</span>))\n            <span class="type">Text</span>(<span class="str">"Average: $"</span> + <span class="type">String</span>(format: <span class="str">"%.2f"</span>, <span class="prop">vm</span>.<span class="prop">average</span>))\n            <span class="type">Button</span>(<span class="str">"Clear All"</span>) { <span class="prop">vm</span>.<span class="fn">clearAll</span>() }' },
+  { id: 'p1v7', part: 'p1', zone: 'p1-view', order: 7,
+    html: '        }\n        .<span class="fn">padding</span>()\n    }' },
+  { id: 'p1v8', part: 'p1', zone: 'p1-view', order: 8,
+    html: '}' },
+
+  /* ============ PART 2 — Mood Tracker ============ */
+
+  // MODEL chunks (4)
+  { id: 'p2m1', part: 'p2', zone: 'p2-model', order: 1,
+    html: '<span class="kw">import</span> <span class="type">Foundation</span>' },
+  { id: 'p2m2', part: 'p2', zone: 'p2-model', order: 2,
+    html: '<span class="kw">struct</span> <span class="type">MoodEntry</span>: <span class="type">Identifiable</span> {' },
+  { id: 'p2m3', part: 'p2', zone: 'p2-model', order: 3,
+    html: '    <span class="kw">let</span> <span class="fn">id</span> = <span class="type">UUID</span>()\n    <span class="kw">let</span> <span class="fn">mood</span>: <span class="type">String</span>\n    <span class="kw">let</span> <span class="fn">emoji</span>: <span class="type">String</span>\n    <span class="kw">let</span> <span class="fn">note</span>: <span class="type">String</span>\n    <span class="kw">let</span> <span class="fn">intensity</span>: <span class="type">Int</span>\n    <span class="kw">let</span> <span class="fn">timestamp</span>: <span class="type">Date</span> = <span class="type">Date</span>()' },
+  { id: 'p2m4', part: 'p2', zone: 'p2-model', order: 4,
+    html: '}' },
+
+  // VIEWMODEL chunks (10)
+  { id: 'p2vm1', part: 'p2', zone: 'p2-viewmodel', order: 1,
+    html: '<span class="kw">import</span> <span class="type">Foundation</span>' },
+  { id: 'p2vm2', part: 'p2', zone: 'p2-viewmodel', order: 2,
+    html: '<span class="kw">class</span> <span class="type">MoodViewModel</span>: <span class="type">ObservableObject</span> {' },
+  { id: 'p2vm3', part: 'p2', zone: 'p2-viewmodel', order: 3,
+    html: '    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">selectedMood</span>: <span class="type">String</span> = <span class="str">""</span>\n    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">selectedEmoji</span>: <span class="type">String</span> = <span class="str">""</span>' },
+  { id: 'p2vm4', part: 'p2', zone: 'p2-viewmodel', order: 4,
+    html: '    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">note</span>: <span class="type">String</span> = <span class="str">""</span>\n    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">intensity</span>: <span class="type">Double</span> = <span class="num">6</span>' },
+  { id: 'p2vm5', part: 'p2', zone: 'p2-viewmodel', order: 5,
+    html: '    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">history</span>: [<span class="type">MoodEntry</span>] = []' },
+  { id: 'p2vm6', part: 'p2', zone: 'p2-viewmodel', order: 6,
+    html: '    <span class="kw">var</span> <span class="fn">canSave</span>: <span class="type">Bool</span> {\n        !<span class="prop">selectedMood</span>.<span class="prop">isEmpty</span>\n    }' },
+  { id: 'p2vm7', part: 'p2', zone: 'p2-viewmodel', order: 7,
+    html: '    <span class="kw">func</span> <span class="fn">selectMood</span>(name: <span class="type">String</span>, emoji: <span class="type">String</span>) {\n        <span class="prop">selectedMood</span> = <span class="prop">name</span>\n        <span class="prop">selectedEmoji</span> = <span class="prop">emoji</span>\n    }' },
+  { id: 'p2vm8', part: 'p2', zone: 'p2-viewmodel', order: 8,
+    html: '    <span class="kw">func</span> <span class="fn">saveMood</span>() {\n        <span class="kw">guard</span> <span class="prop">canSave</span> <span class="kw">else</span> { <span class="kw">return</span> }\n        <span class="kw">let</span> <span class="fn">entry</span> = <span class="type">MoodEntry</span>(\n            mood: <span class="prop">selectedMood</span>, emoji: <span class="prop">selectedEmoji</span>,\n            note: <span class="prop">note</span>, intensity: <span class="type">Int</span>(<span class="prop">intensity</span>))' },
+  { id: 'p2vm9', part: 'p2', zone: 'p2-viewmodel', order: 9,
+    html: '        <span class="prop">history</span>.<span class="fn">insert</span>(<span class="prop">entry</span>, at: <span class="num">0</span>)\n        <span class="prop">selectedMood</span> = <span class="str">""</span>\n        <span class="prop">selectedEmoji</span> = <span class="str">""</span>\n        <span class="prop">note</span> = <span class="str">""</span>\n        <span class="prop">intensity</span> = <span class="num">6</span>\n    }' },
+  { id: 'p2vm10', part: 'p2', zone: 'p2-viewmodel', order: 10,
+    html: '}' },
+
+  // VIEW chunks (8)
+  { id: 'p2v1', part: 'p2', zone: 'p2-view', order: 1,
+    html: '<span class="kw">import</span> <span class="type">SwiftUI</span>' },
+  { id: 'p2v2', part: 'p2', zone: 'p2-view', order: 2,
+    html: '<span class="kw">struct</span> <span class="type">MoodView</span>: <span class="type">View</span> {' },
+  { id: 'p2v3', part: 'p2', zone: 'p2-view', order: 3,
+    html: '    <span class="attr">@StateObject</span> <span class="kw">var</span> <span class="fn">vm</span> = <span class="type">MoodViewModel</span>()' },
+  { id: 'p2v4', part: 'p2', zone: 'p2-view', order: 4,
+    html: '    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {\n        <span class="type">VStack</span>(spacing: <span class="num">16</span>) {' },
+  { id: 'p2v5', part: 'p2', zone: 'p2-view', order: 5,
+    html: '            <span class="type">HStack</span> {\n                <span class="type">Button</span>(<span class="str">"😊 Happy"</span>) {\n                    <span class="prop">vm</span>.<span class="fn">selectMood</span>(name: <span class="str">"Happy"</span>, emoji: <span class="str">"😊"</span>)\n                }\n            }' },
+  { id: 'p2v6', part: 'p2', zone: 'p2-view', order: 6,
+    html: '            <span class="type">TextField</span>(<span class="str">"Add a note..."</span>, text: $<span class="prop">vm</span>.<span class="prop">note</span>)\n            <span class="type">Slider</span>(value: $<span class="prop">vm</span>.<span class="prop">intensity</span>, in: <span class="num">1</span>...<span class="num">10</span>, step: <span class="num">1</span>)' },
+  { id: 'p2v7', part: 'p2', zone: 'p2-view', order: 7,
+    html: '            <span class="type">Button</span>(<span class="str">"Save Mood"</span>) { <span class="prop">vm</span>.<span class="fn">saveMood</span>() }\n                .<span class="fn">disabled</span>(!<span class="prop">vm</span>.<span class="prop">canSave</span>)' },
+  { id: 'p2v8', part: 'p2', zone: 'p2-view', order: 8,
+    html: '            <span class="type">List</span>(<span class="prop">vm</span>.<span class="prop">history</span>) { <span class="fn">entry</span> <span class="kw">in</span>\n                <span class="type">Text</span>(<span class="str">"\\(entry.emoji) \\(entry.mood)"</span>)\n            }\n        }\n        .<span class="fn">padding</span>()\n    }\n}' }
+];
+
+const PASSWORD = 'kk80';
+
+// Score weights — Part 1 = 50pts, Part 2 = 50pts, total 100
+const PART_WEIGHTS = {
+  p1: { model: 8, viewmodel: 22, view: 16, order: 4 },   // 50 total
+  p2: { model: 8, viewmodel: 24, view: 14, order: 4 }    // 50 total
+};
+
+/* ============ State ============ */
+let placement = {};            // chunkId -> zone
+let zoneOrders = {             // zone -> [chunkId, ...]
+  'p1-model': [], 'p1-viewmodel': [], 'p1-view': [],
+  'p2-model': [], 'p2-viewmodel': [], 'p2-view': []
+};
+let graded = false;
+
+CHUNKS.forEach(c => placement[c.id] = c.part + '-pool');
+
+/* ============ Helpers ============ */
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function makeChunkEl(chunk, inZone = false) {
+  const el = document.createElement('div');
+  el.className = 'chunk' + (inZone ? ' in-zone' : '');
+  el.draggable = !graded;
+  el.dataset.id = chunk.id;
+  // chunk-num shows just the chunk's logical id (without part prefix mess)
+  // Use a clean badge like "M1", "VM3", "V5"
+  let badge = chunk.id.toUpperCase().replace('P1', '').replace('P2', '');
+  el.innerHTML = '<span class="chunk-num">' + badge + '</span><span class="chunk-content">' + chunk.html + '</span>';
+
+  if (graded && chunk._gradeResult) {
+    el.classList.add(chunk._gradeResult);
+  }
+
+  el.addEventListener('dragstart', e => {
+    if (graded) { e.preventDefault(); return; }
+    el.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', chunk.id);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  el.addEventListener('dragend', () => el.classList.remove('dragging'));
+
+  return el;
+}
+
+/* ============ Render functions ============ */
+function renderPool(part) {
+  const poolEl = document.getElementById(part + '-chunksPool');
+  poolEl.innerHTML = '';
+  const inPool = CHUNKS.filter(c => c.part === part && placement[c.id] === part + '-pool');
+  // Shuffle once on first render of full pool
+  const allInPart = CHUNKS.filter(c => c.part === part);
+  const isFullyInPool = inPool.length === allInPart.length;
+  const items = isFullyInPool ? shuffleArray(inPool) : inPool;
+
+  items.forEach(c => poolEl.appendChild(makeChunkEl(c)));
+  document.getElementById(part + '-poolRemaining').textContent = inPool.length;
+
+  if (inPool.length === 0) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-family:"JetBrains Mono",monospace; font-size:13px; color:var(--text-dim); padding:20px; font-style:italic; width:100%; text-align:center; pointer-events:none;';
+    empty.textContent = '✓ All chunks placed! (Drop a chunk here to move it back)';
+    poolEl.appendChild(empty);
+  }
+}
+
+function renderZone(zoneName) {
+  const el = document.getElementById(zoneName.replace(/^(p[12])-/, '$1-zone-'));
+  if (!el) return;
+  el.innerHTML = '';
+  const ordered = zoneOrders[zoneName];
+  if (ordered.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'dropzone-empty';
+    empty.textContent = 'Drag chunks here';
+    el.appendChild(empty);
+  } else {
+    ordered.forEach(chunkId => {
+      const chunk = CHUNKS.find(c => c.id === chunkId);
+      if (chunk) el.appendChild(makeChunkEl(chunk, true));
+    });
+  }
+  // Count
+  const countEl = document.getElementById(zoneName.replace(/^(p[12])-/, '$1-count-'));
+  if (countEl) countEl.textContent = ordered.length + ' chunks';
+}
+
+function renderAll() {
+  renderPool('p1');
+  renderPool('p2');
+  ['p1-model', 'p1-viewmodel', 'p1-view',
+   'p2-model', 'p2-viewmodel', 'p2-view'].forEach(renderZone);
+}
+
+/* ============ Drop targets ============ */
+function setupDropZones() {
+  document.querySelectorAll('.dropzone-body').forEach(z => attachDropHandlers(z, z.dataset.zone));
+  attachDropHandlers(document.getElementById('p1-chunksPool'), 'p1-pool');
+  attachDropHandlers(document.getElementById('p2-chunksPool'), 'p2-pool');
+}
+
+function attachDropHandlers(z, targetZone) {
+  z.addEventListener('dragover', e => {
+    if (graded) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    z.classList.add('dragover');
+  });
+  z.addEventListener('dragleave', e => {
+    if (!z.contains(e.relatedTarget)) z.classList.remove('dragover');
+  });
+  z.addEventListener('drop', e => {
+    if (graded) return;
+    e.preventDefault();
+    e.stopPropagation();
+    z.classList.remove('dragover');
+
+    const chunkId = e.dataTransfer.getData('text/plain');
+    if (!chunkId) return;
+    const chunk = CHUNKS.find(c => c.id === chunkId);
+    if (!chunk) return;
+
+    // Cross-part safety: don\'t allow Part 1 chunks into Part 2 zones
+    const targetPart = targetZone.split('-')[0];
+    if (chunk.part !== targetPart) {
+      // Silently reject — chunk stays where it was
+      return;
+    }
+
+    // Remove from previous zone
+    const prev = placement[chunkId];
+    if (prev && !prev.endsWith('-pool')) {
+      zoneOrders[prev] = zoneOrders[prev].filter(x => x !== chunkId);
+    }
+
+    // Add to new location
+    placement[chunkId] = targetZone;
+    if (!targetZone.endsWith('-pool')) {
+      zoneOrders[targetZone] = zoneOrders[targetZone].filter(x => x !== chunkId);
+      zoneOrders[targetZone].push(chunkId);
+    }
+
+    renderAll();
+  });
+}
+
+/* ============ Grading ============ */
+document.getElementById('gradeBtn').addEventListener('click', () => {
+  const pw = document.getElementById('passwordInput').value.trim();
+  if (pw !== PASSWORD) {
+    showModal('🔒 Access denied', 'The password is incorrect. Only the instructor can grade this lab.');
+    return;
+  }
+  const placedCount = Object.values(placement).filter(p => !p.endsWith('-pool')).length;
+  if (placedCount === 0) {
+    showModal('⚠ No work to grade', 'You haven\'t placed any chunks yet. Drag them into the correct files first.');
+    return;
+  }
+  doGrade();
+});
+
+function doGrade() {
+  // Reset grading marks
+  CHUNKS.forEach(c => delete c._gradeResult);
+
+  const scores = {
+    p1: { model: 0, viewmodel: 0, view: 0, order: 0 },
+    p2: { model: 0, viewmodel: 0, view: 0, order: 0 }
+  };
+
+  // Per-chunk placement scoring
+  ['p1', 'p2'].forEach(part => {
+    ['model', 'viewmodel', 'view'].forEach(layer => {
+      const layerKey = part + '-' + layer;
+      const chunksInLayer = CHUNKS.filter(c => c.zone === layerKey);
+      const pointsPerChunk = PART_WEIGHTS[part][layer] / chunksInLayer.length;
+
+      chunksInLayer.forEach(c => {
+        if (placement[c.id] === c.zone) {
+          scores[part][layer] += pointsPerChunk;
+          c._gradeResult = 'correct';
+        } else {
+          c._gradeResult = 'wrong';
+        }
+      });
+    });
+  });
+
+  // Order scoring (within each correctly-placed file)
+  ['p1', 'p2'].forEach(part => {
+    const orderPointsPerZone = PART_WEIGHTS[part].order / 3;
+    ['model', 'viewmodel', 'view'].forEach(layer => {
+      const layerKey = part + '-' + layer;
+      const studentOrder = zoneOrders[layerKey].filter(id => {
+        const c = CHUNKS.find(c => c.id === id);
+        return c && c.zone === layerKey;
+      });
+
+      if (studentOrder.length <= 1) {
+        // Auto-credit if only 0 or 1 chunks (no order to compare)
+        scores[part].order += orderPointsPerZone;
+        return;
+      }
+
+      let correctPairs = 0;
+      const totalPairs = studentOrder.length - 1;
+      for (let i = 0; i < studentOrder.length - 1; i++) {
+        const a = CHUNKS.find(c => c.id === studentOrder[i]).order;
+        const b = CHUNKS.find(c => c.id === studentOrder[i + 1]).order;
+        if (a < b) correctPairs++;
+      }
+      scores[part].order += (correctPairs / totalPairs) * orderPointsPerZone;
+
+      // Mark partial credit for chunks that are in right zone but wrong relative order
+      studentOrder.forEach((id, i) => {
+        if (i < studentOrder.length - 1) {
+          const a = CHUNKS.find(c => c.id === id).order;
+          const b = CHUNKS.find(c => c.id === studentOrder[i + 1]).order;
+          if (a >= b) {
+            const chunk = CHUNKS.find(c => c.id === id);
+            if (chunk._gradeResult === 'correct') chunk._gradeResult = 'partial';
+          }
+        }
+      });
+    });
+  });
+
+  graded = true;
+  renderAll();
+
+  // Show score panel
+  document.getElementById('scoreDisplay').classList.add('visible');
+
+  function setBar(barId, score, max) {
+    const pct = max > 0 ? (score / max) * 100 : 0;
+    document.getElementById('bar-' + barId).style.width = pct + '%';
+    document.getElementById('num-' + barId).textContent = score.toFixed(1) + ' / ' + max.toFixed(0);
+  }
+
+  ['p1', 'p2'].forEach(part => {
+    setBar(part + '-model', scores[part].model, PART_WEIGHTS[part].model);
+    setBar(part + '-viewmodel', scores[part].viewmodel, PART_WEIGHTS[part].viewmodel);
+    setBar(part + '-view', scores[part].view, PART_WEIGHTS[part].view);
+    setBar(part + '-order', scores[part].order, PART_WEIGHTS[part].order);
+  });
+
+  const total = scores.p1.model + scores.p1.viewmodel + scores.p1.view + scores.p1.order
+              + scores.p2.model + scores.p2.viewmodel + scores.p2.view + scores.p2.order;
+  const finalNum = Math.round(total);
+  const finalEl = document.getElementById('finalScore');
+  finalEl.textContent = finalNum + ' / 100';
+
+  finalEl.classList.remove('low', 'mid');
+  let grade = '', feedback = '';
+  if (finalNum >= 90) {
+    grade = 'A · EXCELLENT';
+    feedback = '🎉 Outstanding! You clearly mastered MVVM separation. Both refactor and build skills are solid.';
+  } else if (finalNum >= 80) {
+    grade = 'B · GOOD';
+    feedback = '👏 Strong work! Review the misplaced chunks to perfect your understanding.';
+  } else if (finalNum >= 70) {
+    grade = 'C · SATISFACTORY';
+    feedback = '✓ You have the basics. Review the MVVM rules — especially which file gets which kind of code.';
+    finalEl.classList.add('mid');
+  } else if (finalNum >= 60) {
+    grade = 'D · NEEDS WORK';
+    feedback = '⚠ Several chunks misplaced. Re-watch the MVVM lecture before next class.';
+    finalEl.classList.add('mid');
+  } else {
+    grade = 'F · REVIEW REQUIRED';
+    feedback = '❌ Many placements wrong. Please review the lecture and try again.';
+    finalEl.classList.add('low');
+  }
+  document.getElementById('finalGrade').textContent = grade;
+  document.getElementById('finalFeedback').textContent = feedback;
+
+  document.getElementById('gradeBtn').disabled = true;
+  document.getElementById('gradeBtn').style.opacity = '0.5';
+  document.getElementById('gradeBtn').textContent = '✓ Graded';
+
+  showModal('✓ Lab graded',
+    'Final score: ' + finalNum + '/100 (' + grade + ').\n\n' +
+    'Click "Save as PDF" to download your graded submission.');
+}
+
+/* ============ Print / PDF ============ */
+document.getElementById('printBtn').addEventListener('click', () => {
+  const name = document.getElementById('studentName').value.trim();
+  if (!name) {
+    if (!confirm('You haven\'t entered your name. Save anyway?')) return;
+  }
+  window.print();
+});
+
+/* ============ Reset ============ */
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Reset everything back to start? Your placements will be lost.')) return;
+  CHUNKS.forEach(c => {
+    placement[c.id] = c.part + '-pool';
+    delete c._gradeResult;
+  });
+  zoneOrders = {
+    'p1-model': [], 'p1-viewmodel': [], 'p1-view': [],
+    'p2-model': [], 'p2-viewmodel': [], 'p2-view': []
+  };
+  graded = false;
+  document.getElementById('scoreDisplay').classList.remove('visible');
+  document.getElementById('gradeBtn').disabled = false;
+  document.getElementById('gradeBtn').style.opacity = '1';
+  document.getElementById('gradeBtn').textContent = '⚡ Grade Lab';
+  document.getElementById('passwordInput').value = '';
+  renderAll();
+});
+
+/* ============ Modal ============ */
+function showModal(title, msg) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalMsg').textContent = msg;
+  document.getElementById('modal').classList.add('visible');
+}
+document.getElementById('modalClose').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('visible');
+});
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target.id === 'modal') document.getElementById('modal').classList.remove('visible');
+});
+
+/* ============ Timer ============ */
+let timeLeft = 120 * 60; // 2 hours in seconds
+let timerInterval = null;
+
+function formatTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  if (h > 0) return h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function updateTimer() {
+  const display = document.getElementById('timerDisplay');
+  const box = document.getElementById('timerBox');
+  display.textContent = formatTime(timeLeft);
+  box.classList.remove('warning', 'danger');
+  if (timeLeft <= 5 * 60) box.classList.add('danger');
+  else if (timeLeft <= 20 * 60) box.classList.add('warning');
+  if (timeLeft <= 0) {
+    clearInterval(timerInterval);
+    showModal('⏱ Time\'s up!',
+      'The 2-hour lab time has ended. Submit what you have — your instructor can still grade your current placement.');
+    return;
+  }
+  timeLeft--;
+}
+
+updateTimer();
+timerInterval = setInterval(updateTimer, 1000);
+
+/* ============ Init ============ */
+setupDropZones();
+renderAll();
+
+/* ============ Interactive preview: TipJar (Part 1) ============ */
+(function() {
+  const tips = [];
+  const fmt = n => '$' + n.toFixed(2);
+  const refresh = () => {
+    const total = tips.reduce((s, n) => s + n, 0);
+    const avg = tips.length === 0 ? 0 : total / tips.length;
+    document.getElementById('tjTotal').textContent = fmt(total);
+    document.getElementById('tjAvg').textContent = fmt(avg);
+    document.getElementById('tjCount').textContent = tips.length;
+  };
+  const addBtn = document.getElementById('tjAddBtn');
+  const clearBtn = document.getElementById('tjClearBtn');
+  const input = document.getElementById('tjAmount');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const v = parseFloat(input.value);
+      if (isNaN(v)) return;
+      tips.push(v);
+      input.value = '';
+      refresh();
+    });
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') addBtn.click();
+    });
+    clearBtn.addEventListener('click', () => {
+      tips.length = 0;
+      refresh();
+    });
+  }
+})();
+
+/* ============ Interactive preview: Mood Tracker (Part 2) ============ */
+(function() {
+  let state = { mood: '', emoji: '', note: '', intensity: 6, history: [] };
+
+  const refresh = () => {
+    // Save button
+    document.getElementById('mtSaveBtn').disabled = !state.mood;
+
+    // Summary
+    const sum = document.getElementById('mtSummary');
+    if (state.mood) {
+      sum.style.display = 'block';
+      document.getElementById('mtSumEmoji').textContent = state.emoji;
+      document.getElementById('mtSumMood').textContent = state.mood;
+      document.getElementById('mtSumMeta').textContent =
+        'Intensity ' + state.intensity + '/10' +
+        (state.note ? ' · ' + state.note : '');
+    } else {
+      sum.style.display = 'none';
+    }
+
+    // History
+    const histEl = document.getElementById('mtHistory');
+    if (state.history.length === 0) {
+      histEl.innerHTML = '<div class="mood-history-empty">No moods saved yet</div>';
+    } else {
+      histEl.innerHTML = state.history.map(h => `
+        <div class="mood-history-row">
+          <span class="mood-history-emoji">${h.emoji}</span>
+          <div class="mood-history-meta">
+            <div class="h-mood">${h.mood} · ${h.intensity}/10</div>
+            <div class="h-time">${h.time}</div>
+            <div class="h-note">"${h.note || '(no note)'}"</div>
+          </div>
+        </div>
+      `).join('');
+    }
+  };
+
+  // Emoji buttons
+  document.querySelectorAll('.mood-emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mood-emoji-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.mood = btn.dataset.mood;
+      state.emoji = btn.dataset.emoji;
+      refresh();
+    });
+  });
+
+  // Note
+  const noteInput = document.getElementById('mtNote');
+  if (noteInput) {
+    noteInput.addEventListener('input', e => {
+      state.note = e.target.value;
+      refresh();
+    });
+  }
+
+  // Slider
+  const slider = document.getElementById('mtSlider');
+  if (slider) {
+    slider.addEventListener('input', e => {
+      state.intensity = parseInt(e.target.value);
+      document.getElementById('mtIntensityVal').textContent = state.intensity;
+      const pct = ((state.intensity - 1) / 9) * 100;
+      slider.style.setProperty('--pct', pct + '%');
+      refresh();
+    });
+  }
+
+  // Save
+  const saveBtn = document.getElementById('mtSaveBtn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      if (!state.mood) return;
+      const entry = {
+        mood: state.mood,
+        emoji: state.emoji,
+        note: state.note,
+        intensity: state.intensity,
+        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+      };
+      state.history.unshift(entry);
+      if (state.history.length > 5) state.history = state.history.slice(0, 5);
+      // Reset form
+      state = { mood: '', emoji: '', note: '', intensity: 6, history: state.history };
+      document.querySelectorAll('.mood-emoji-btn').forEach(b => b.classList.remove('selected'));
+      noteInput.value = '';
+      slider.value = 6;
+      slider.style.setProperty('--pct', '55.5%');
+      document.getElementById('mtIntensityVal').textContent = '6';
+      refresh();
+    });
+  }
+
+  refresh();
+})();
+</script>
+
+</body>
+</html>

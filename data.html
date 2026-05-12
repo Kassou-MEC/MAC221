@@ -1,0 +1,2268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Persistence — MAC221 | Khalid Kassou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #05060e;
+  --bg-mid: #0a0d1f;
+  --bg-soft: #131634;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b76cff;
+  --neon-pink: #ff3ea5;
+  --neon-green: #4cffaf;
+  --neon-orange: #ffb547;
+  --neon-yellow: #ffe45e;
+  --neon-red: #ff4d6d;
+  --text-bright: #f0f4ff;
+  --text-mid: #a8b2d1;
+  --text-dim: #6c7493;
+  --border-glow: rgba(0, 240, 255, 0.25);
+  --code-bg: #0d1029;
+  --ios-bg: #f2f2f7;
+  --ios-card: #ffffff;
+  --ios-text: #000000;
+  --ios-blue: #007aff;
+  --ios-gray: #8e8e93;
+  --ios-sep: #c6c6c8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-bright);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(183, 108, 255, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(0, 240, 255, 0.15), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 62, 165, 0.08), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.top-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: rgba(10, 13, 31, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+.brand { display: flex; align-items: center; gap: 14px; font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 0.18em; }
+.brand-mark {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid; place-items: center;
+  font-size: 14px; color: #000;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.6);
+}
+.brand-text {
+  font-size: 13px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.top-meta {
+  display: flex; align-items: center; gap: 24px;
+  font-size: 12px; color: var(--text-mid);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.top-meta .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon-green); margin-right: 8px;
+  box-shadow: 0 0 8px var(--neon-green); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.deck {
+  position: relative;
+  width: 100vw; height: 100vh;
+  padding-top: 56px; padding-bottom: 64px;
+  z-index: 1;
+}
+
+.slide {
+  position: absolute;
+  inset: 56px 0 64px 0;
+  padding: 32px 56px;
+  opacity: 0;
+  transform: translateX(40px) scale(0.98);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-cyan) transparent;
+}
+.slide::-webkit-scrollbar { width: 6px; }
+.slide::-webkit-scrollbar-thumb {
+  background: linear-gradient(var(--neon-cyan), var(--neon-purple));
+  border-radius: 3px;
+}
+.slide.active { opacity: 1; transform: translateX(0) scale(1); pointer-events: all; }
+.slide.prev { transform: translateX(-40px) scale(0.98); }
+
+.nav-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(10, 13, 31, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-glow);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  z-index: 100;
+}
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--border-glow);
+  color: var(--text-bright);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.nav-btn:hover:not(:disabled) {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 240, 255, 0.1);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+}
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.progress-track {
+  flex: 1; margin: 0 32px; height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+.slide-counter {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--text-mid);
+  letter-spacing: 0.1em; min-width: 80px; text-align: center;
+}
+.slide-counter .current { color: var(--neon-cyan); font-weight: 700; }
+
+.slide-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 14px;
+}
+.slide-num .accent { color: var(--neon-cyan); }
+
+h2.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(32px, 3.8vw, 50px);
+  font-weight: 700; line-height: 1.1; letter-spacing: -0.01em;
+  margin-bottom: 16px; color: var(--text-bright);
+}
+h2.section-title .neon {
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+h3.sub {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px; font-weight: 500;
+  color: var(--neon-cyan); margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+p.lede {
+  font-size: 21px; line-height: 1.55;
+  color: var(--text-mid); max-width: 1000px; margin-bottom: 18px;
+}
+
+/* Cover */
+.cover { display: grid; place-items: center; text-align: center; height: 100%; }
+.cover-inner { max-width: 1100px; }
+.cover-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--neon-cyan);
+  padding: 8px 18px;
+  border: 1px solid var(--border-glow);
+  border-radius: 100px;
+  margin-bottom: 28px;
+  background: rgba(0, 240, 255, 0.05);
+}
+.cover h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(56px, 9vw, 128px);
+  font-weight: 900; line-height: 0.9; letter-spacing: -0.04em;
+  margin-bottom: 8px;
+}
+.cover h1 .l1 {
+  display: block;
+  background: linear-gradient(135deg, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.cover h1 .l2 {
+  display: block;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  font-style: italic;
+}
+.cover-sub { font-size: 22px; color: var(--text-mid); margin: 28px auto 40px; max-width: 700px; line-height: 1.5; }
+.cover-meta {
+  display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+  margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--border-glow);
+}
+.cover-meta-item { text-align: left; }
+.cover-meta-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--text-dim);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 6px;
+}
+.cover-meta-val { font-size: 18px; color: var(--text-bright); font-weight: 500; }
+.cover-meta-val.accent { color: var(--neon-cyan); font-family: 'JetBrains Mono', monospace; }
+
+/* Layouts */
+.row {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-top: 12px;
+}
+.col-text { min-width: 0; }
+
+/* Code blocks */
+.code-card {
+  background: var(--code-bg);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  position: relative;
+}
+.code-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+  opacity: 0.6;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.code-dots { display: flex; gap: 6px; }
+.code-dots span { width: 11px; height: 11px; border-radius: 50%; }
+.code-dots span:nth-child(1) { background: #ff5f57; }
+.code-dots span:nth-child(2) { background: #febc2e; }
+.code-dots span:nth-child(3) { background: #28c840; }
+.code-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-mid); }
+.code-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 4px 11px; border-radius: 4px; font-weight: 600;
+}
+.code-badge.basic { background: rgba(76, 255, 175, 0.15); color: var(--neon-green); border: 1px solid rgba(76, 255, 175, 0.3); }
+.code-badge.inter { background: rgba(255, 181, 71, 0.15); color: var(--neon-orange); border: 1px solid rgba(255, 181, 71, 0.3); }
+.code-badge.adv   { background: rgba(255, 62, 165, 0.15); color: var(--neon-pink); border: 1px solid rgba(255, 62, 165, 0.3); }
+
+pre.code {
+  padding: 18px 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  line-height: 1.65;
+  overflow-x: auto;
+  color: #e8ecff;
+}
+pre.code::-webkit-scrollbar { height: 6px; }
+pre.code::-webkit-scrollbar-thumb { background: var(--neon-cyan); border-radius: 3px; }
+
+.kw    { color: #ff7ab2; font-weight: 500; }
+.type  { color: #5ec8ff; }
+.str   { color: #ffd479; }
+.num   { color: #d0a8ff; }
+.cmt   { color: #6c7493; font-style: italic; }
+.fn    { color: #4cffaf; }
+.attr  { color: #ff9b6b; }
+.prop  { color: #67d4ff; }
+
+.code-explain {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.05), transparent);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-top: 16px;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+.code-explain-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  margin-bottom: 10px;
+}
+.code-explain ol {
+  list-style: none;
+  counter-reset: expl;
+}
+.code-explain ol li {
+  counter-increment: expl;
+  padding: 6px 0 6px 32px;
+  position: relative;
+}
+.code-explain ol li::before {
+  content: counter(expl);
+  position: absolute;
+  left: 0; top: 6px;
+  width: 22px; height: 22px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  color: #000;
+  border-radius: 50%;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.code-explain code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 240, 255, 0.08);
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neon-cyan);
+}
+
+/* iPhone preview */
+.iphone {
+  width: 300px;
+  height: 600px;
+  background: #1a1a1a;
+  border-radius: 46px;
+  padding: 12px;
+  position: relative;
+  margin: 0 auto;
+  box-shadow: 0 0 0 2px #2a2a2a, 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(0, 240, 255, 0.15);
+}
+.iphone::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 26px;
+  background: #1a1a1a;
+  border-radius: 0 0 16px 16px;
+  z-index: 10;
+}
+.iphone-screen {
+  width: 100%; height: 100%;
+  background: var(--ios-bg);
+  border-radius: 36px;
+  overflow: hidden;
+  position: relative;
+  color: var(--ios-text);
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+.ios-status {
+  height: 44px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 26px 0 30px;
+  font-size: 13px; font-weight: 600;
+  flex-shrink: 0;
+}
+.ios-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
+  font-size: 15px;
+}
+.ios-content::-webkit-scrollbar { width: 0; }
+.ios-nav-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 4px 4px 14px;
+}
+.ios-list {
+  background: var(--ios-card);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ios-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 0.5px solid var(--ios-sep);
+  min-height: 44px;
+}
+.ios-row:last-child { border-bottom: none; }
+.ios-row-label { font-size: 15px; color: var(--ios-text); font-weight: 400; }
+
+/* iOS toggle */
+.ios-toggle {
+  width: 48px; height: 28px;
+  background: rgba(120, 120, 128, 0.32);
+  border-radius: 100px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.ios-toggle.on { background: #34c759; }
+.ios-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 24px; height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.25s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.ios-toggle.on::after { left: 22px; }
+
+/* iOS stepper */
+.ios-stepper {
+  display: inline-flex;
+  background: rgba(118, 118, 128, 0.12);
+  border-radius: 9px;
+  overflow: hidden;
+  height: 32px;
+}
+.ios-stepper button {
+  width: 38px; height: 32px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ios-blue);
+  font-weight: 500;
+}
+.ios-stepper button:hover { background: rgba(0,122,255,0.08); }
+.ios-stepper .divider { width: 1px; background: rgba(0,0,0,0.1); }
+.ios-stepper-display {
+  padding: 0 8px;
+  display: flex; align-items: center;
+  font-size: 17px; font-weight: 500;
+  background: rgba(118, 118, 128, 0.16);
+  min-width: 36px;
+  justify-content: center;
+}
+
+/* Restart button for demos */
+.restart-btn {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-purple));
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 14px 0;
+  box-shadow: 0 4px 14px rgba(255, 62, 165, 0.3);
+  transition: all 0.2s;
+}
+.restart-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255, 62, 165, 0.4); }
+
+/* Feature cards */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.feature-card {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.06), rgba(183, 108, 255, 0.04));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle, var(--neon-cyan), transparent 70%);
+  opacity: 0.2;
+  filter: blur(20px);
+}
+.feature-card:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0, 240, 255, 0.15);
+}
+.feature-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  display: grid; place-items: center;
+  margin-bottom: 12px;
+  font-size: 17px; color: #000; font-weight: 700;
+}
+.feature-card h4 { font-size: 19px; font-weight: 600; color: var(--text-bright); margin-bottom: 8px; }
+.feature-card p { font-size: 16px; color: var(--text-mid); line-height: 1.55; }
+
+/* Tip/Warn */
+.tip {
+  background: linear-gradient(90deg, rgba(76, 255, 175, 0.08), transparent);
+  border-left: 3px solid var(--neon-green);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.tip strong { color: var(--neon-green); }
+.tip code, .warn code {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(0, 240, 255, 0.08);
+  padding: 1px 7px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--neon-cyan);
+}
+.warn {
+  background: linear-gradient(90deg, rgba(255, 181, 71, 0.08), transparent);
+  border-left: 3px solid var(--neon-orange);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.warn strong { color: var(--neon-orange); }
+.danger-card {
+  background: linear-gradient(90deg, rgba(255, 77, 109, 0.08), transparent);
+  border-left: 3px solid var(--neon-red);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 14px 0;
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.danger-card strong { color: var(--neon-red); }
+
+/* Section cover */
+.section-cover {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  text-align: center;
+}
+.section-cover-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(120px, 18vw, 240px);
+  font-weight: 900;
+  line-height: 0.85;
+  background: linear-gradient(135deg, transparent 30%, var(--neon-cyan) 50%, var(--neon-purple) 70%, transparent 90%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  -webkit-text-stroke: 2px rgba(0, 240, 255, 0.2);
+  margin-bottom: -20px;
+  letter-spacing: -0.04em;
+}
+.section-cover-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.section-cover-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(40px, 6vw, 80px);
+  font-weight: 800;
+  background: linear-gradient(90deg, #fff, var(--neon-cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.section-cover-desc {
+  font-size: 22px;
+  color: var(--text-mid);
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+/* TOC */
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 28px;
+}
+.toc-card {
+  background: linear-gradient(180deg, rgba(0, 240, 255, 0.06), rgba(0, 240, 255, 0));
+  border: 1px solid var(--border-glow);
+  border-radius: 18px;
+  padding: 26px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toc-card:nth-child(2) {
+  background: linear-gradient(180deg, rgba(183, 108, 255, 0.06), rgba(183, 108, 255, 0));
+  border-color: rgba(183, 108, 255, 0.3);
+}
+.toc-card:nth-child(3) {
+  background: linear-gradient(180deg, rgba(255, 62, 165, 0.06), rgba(255, 62, 165, 0));
+  border-color: rgba(255, 62, 165, 0.3);
+}
+.toc-card:hover { transform: translateY(-6px); }
+.toc-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 14px;
+}
+.toc-card:nth-child(2) .toc-num { background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.toc-card:nth-child(3) .toc-num { background: linear-gradient(135deg, var(--neon-pink), var(--neon-orange)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.toc-card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+.toc-card p {
+  color: var(--text-mid);
+  font-size: 16px;
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.toc-card ul {
+  list-style: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.toc-card ul li {
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+.toc-card ul li:last-child { border-bottom: none; }
+
+/* Decision tree */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  font-size: 16px;
+}
+.decision-table th, .decision-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  vertical-align: top;
+}
+.decision-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--neon-cyan);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.decision-table td:first-child {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--neon-pink);
+  font-weight: 600;
+  font-size: 14px;
+}
+.decision-table tr:hover td { background: rgba(0, 240, 255, 0.03); }
+
+/* Final slide */
+.thanks { display: grid; place-items: center; height: 100%; text-align: center; }
+.thanks-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(80px, 14vw, 200px);
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-pink), var(--neon-purple));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+.thanks-msg { font-size: 22px; color: var(--text-mid); margin-bottom: 28px; }
+.thanks-sig {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.thanks-sig .name { color: var(--neon-cyan); }
+
+.kbd-hint {
+  position: fixed;
+  bottom: 80px;
+  right: 32px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  z-index: 99;
+}
+.kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  margin: 0 3px;
+  color: var(--text-mid);
+}
+
+/* Two-iphone side-by-side for "before / after restart" demos */
+.phone-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+.phone-pair-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--text-dim);
+}
+.phone-pair-label.bad { color: var(--neon-red); }
+.phone-pair-label.good { color: var(--neon-green); }
+.phone-pair .iphone { transform: scale(0.78); transform-origin: top center; margin-bottom: -120px; }
+
+/* Chip row for protocols */
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  color: var(--neon-cyan);
+}
+.chip.purple { background: rgba(183, 108, 255, 0.1); border-color: rgba(183, 108, 255, 0.3); color: var(--neon-purple); }
+.chip.green { background: rgba(76, 255, 175, 0.1); border-color: rgba(76, 255, 175, 0.3); color: var(--neon-green); }
+.chip.pink { background: rgba(255, 62, 165, 0.1); border-color: rgba(255, 62, 165, 0.3); color: var(--neon-pink); }
+
+@media (max-width: 1100px) {
+  .row, .toc-grid, .phone-pair { grid-template-columns: 1fr; }
+  .iphone { transform: scale(0.85); }
+  .slide { padding: 24px 28px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="brand">
+    <div class="brand-mark">K</div>
+    <div class="brand-text">MAC221 // SwiftUI</div>
+  </div>
+  <div class="top-meta">
+    <span><span class="dot"></span>LIVE LECTURE</span>
+    <span>Khalid Kassou · LaGuardia CC</span>
+  </div>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- ================== SLIDE 1: COVER ================== -->
+  <section class="slide active">
+    <div class="cover">
+      <div class="cover-inner">
+        <div class="cover-tag">◆ MAC221 · iOS Application Development</div>
+        <h1>
+          <span class="l1">Data Persistence.</span>
+          <span class="l2">Make it stick.</span>
+        </h1>
+        <p class="cover-sub">From <code style="font-family: 'JetBrains Mono', monospace;">@AppStorage</code> to <code style="font-family: 'JetBrains Mono', monospace;">SwiftData</code> — three ways to save user data that survives app restarts, device reboots, and even iOS updates.</p>
+        <div class="cover-meta">
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Instructor</div>
+            <div class="cover-meta-val">Khalid Kassou</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Course</div>
+            <div class="cover-meta-val accent">MAC221</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Department</div>
+            <div class="cover-meta-val">MEC · LaGuardia CC</div>
+          </div>
+          <div class="cover-meta-item">
+            <div class="cover-meta-label">Topic</div>
+            <div class="cover-meta-val accent">Persistence</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 2: AGENDA ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">02</span> · today's agenda</div>
+    <h2 class="section-title">Three tools. <span class="neon">One goal.</span></h2>
+    <p class="lede">By the end of this lecture, you'll know exactly which persistence tool to reach for in any iOS app you build — from a single toggle to a full database.</p>
+
+    <div class="toc-grid">
+      <div class="toc-card">
+        <div class="toc-num">01</div>
+        <h3>@AppStorage</h3>
+        <p>The one-line wonder. Perfect for settings, toggles, and small user preferences.</p>
+        <ul>
+          <li>→ The problem with @State</li>
+          <li>→ @AppStorage basics</li>
+          <li>→ Real-world examples</li>
+          <li>→ Supported types & limits</li>
+        </ul>
+      </div>
+      <div class="toc-card">
+        <div class="toc-num">02</div>
+        <h3>JSON Files</h3>
+        <p>The honest workhorse. Save lists of custom data using Codable and FileManager.</p>
+        <ul>
+          <li>→ Codable refresher</li>
+          <li>→ Encoding to JSON</li>
+          <li>→ Writing to disk</li>
+          <li>→ Loading on launch</li>
+        </ul>
+      </div>
+      <div class="toc-card">
+        <div class="toc-num">03</div>
+        <h3>SwiftData</h3>
+        <p>Apple's modern database. The future of iOS persistence — and what real apps use.</p>
+        <ul>
+          <li>→ @Model macro</li>
+          <li>→ @Query for fetching</li>
+          <li>→ modelContainer setup</li>
+          <li>→ When to use what</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 3: WHY PERSISTENCE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">03</span> · the problem</div>
+    <h2 class="section-title">Your apps have <span class="neon">amnesia</span></h2>
+    <p class="lede">Try this with any app you've built so far: open it, do some work, then <strong>force-quit and reopen</strong>. Everything is gone. Your beautiful UI just lost its memory.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="danger-card"><strong>⚠ Try this with the Mood Tracker:</strong>
+          <ol style="margin-top: 8px; padding-left: 20px; line-height: 1.8;">
+            <li>Open the app, save 5 moods</li>
+            <li>Swipe up from the bottom to kill the app</li>
+            <li>Reopen the app</li>
+            <li>Your history is <strong>empty</strong>. All data lost.</li>
+          </ol>
+        </div>
+
+        <h3 class="sub" style="margin-top: 24px;">▸ Why does this happen?</h3>
+        <p style="font-size: 17px; color: var(--text-mid); line-height: 1.6;">Every variable in your code lives in <strong>RAM</strong> — the phone's short-term memory. When iOS shuts down your app, RAM is wiped clean. To survive, data must be written to <strong>permanent storage</strong>: a file on disk, the system's UserDefaults database, or a SwiftData store.</p>
+
+        <div class="tip" style="margin-top: 18px;"><strong>💡 The key insight:</strong> <code>@State</code> and <code>@Published</code> only persist as long as the app is alive. They are NOT storage. They are RAM-backed state, which means temporary by design.</div>
+      </div>
+
+      <div>
+        <div class="phone-pair-label bad">▸ Without persistence</div>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div>●●●●●</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Mood Tracker</div>
+              <div class="ios-list" id="ephemeral-list">
+                <div class="ios-row"><span class="ios-row-label" style="color:#8e8e93; text-align:center; flex:1; padding:20px 0; font-style:italic;">No moods saved yet</span></div>
+              </div>
+              <p style="font-size: 12px; color: var(--ios-gray); margin-top: 16px; text-align: center;">After force-quit and reopen 😢</p>
+              <button onclick="addEphemeral()" style="width:100%; background:#007aff; color:white; border:none; padding:10px; border-radius:10px; margin-top:12px; font-size:14px; font-weight:600;">+ Add Mood</button>
+              <button onclick="killEphemeral()" style="width:100%; background:#ff3b30; color:white; border:none; padding:10px; border-radius:10px; margin-top:8px; font-size:14px; font-weight:600;">💀 Kill & Reopen</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 4: PART 1 COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">01</div>
+      <div class="section-cover-label">▸ Part One</div>
+      <div class="section-cover-title">@AppStorage</div>
+      <div class="section-cover-desc">The simplest possible way to make a value survive app restarts. One property wrapper. One line of code. Done.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 5: WHAT IS @AppStorage ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">05</span> · concept</div>
+    <h2 class="section-title">What is <span class="neon">@AppStorage</span>?</h2>
+    <p class="lede">A property wrapper that looks like <code>@State</code>, but its value is automatically saved to the system's <strong>UserDefaults</strong> database. The phone remembers it forever — even after restarting.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>One line of code</h4>
+        <p>Replace <code>@State</code> with <code>@AppStorage("key")</code>. SwiftUI handles save and load automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔑</div>
+        <h4>Key-based</h4>
+        <p>Each value has a string key like <code>"username"</code>. The key is how iOS finds your data later.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <h4>Limited types</h4>
+        <p>Only basic types: <code>Bool</code>, <code>Int</code>, <code>Double</code>, <code>String</code>, <code>URL</code>, <code>Data</code>. Not arrays or structs.</p>
+      </div>
+    </div>
+
+    <div class="tip"><strong>💡 Easy way to remember:</strong> @AppStorage is for the SAME kind of small values you'd find in the iPhone <strong>Settings app</strong> — toggles, sliders, usernames, color choices. Anything that fits in one row.</div>
+
+    <div class="warn"><strong>⚠ When NOT to use it:</strong> If your data is a list, an array of custom objects, or anything bigger than ~1KB — use Part 2 (JSON files) or Part 3 (SwiftData) instead.</div>
+  </section>
+
+  <!-- ================== SLIDE 6: BASIC @AppStorage ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">06</span> · easiest possible example</div>
+    <h2 class="section-title">Your first <span class="neon">@AppStorage</span></h2>
+    <p class="lede">Let's start with the simplest case: a toggle for dark mode. The user flips it once — and the next time they open the app, it remembers their choice.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">SimpleAppStorage.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">SettingsView</span>: <span class="type">View</span> {
+    <span class="attr">@AppStorage</span>(<span class="str">"darkMode"</span>) <span class="kw">var</span> <span class="fn">darkMode</span> = <span class="kw">false</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">Toggle</span>(<span class="str">"Dark Mode"</span>, isOn: <span class="prop">$darkMode</span>)
+        }
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What each line does</div>
+          <ol>
+            <li><code>@AppStorage("darkMode")</code> — the property wrapper. The string <code>"darkMode"</code> is the unique KEY for saving this value.</li>
+            <li><code>var darkMode = false</code> — the variable. <code>false</code> is the DEFAULT used the FIRST time the app launches.</li>
+            <li><code>Toggle("Dark Mode", isOn: $darkMode)</code> — the UI. The <code>$</code> creates a two-way binding (same as @State).</li>
+            <li>Every time the user flips the toggle, SwiftUI saves the new value to UserDefaults <strong>automatically</strong> — you do nothing.</li>
+            <li>Next time the app opens, <code>darkMode</code> starts with whatever the user last chose.</li>
+          </ol>
+        </div>
+
+        <div class="tip"><strong>💡 That's it.</strong> No save button. No "did the user change it?" check. The phone remembers — forever.</div>
+      </div>
+
+      <div>
+        <div class="phone-pair-label good">▸ Try kill-and-reopen</div>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div>●●●●● 100%</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Settings</div>
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Dark Mode</span>
+                  <div class="ios-toggle" id="darkModeToggle" onclick="toggleDarkMode()"></div>
+                </div>
+              </div>
+              <button class="restart-btn" onclick="restartDemo1()" style="margin-top:18px;">💀 Kill & Reopen App</button>
+              <p style="font-size: 12px; color: var(--ios-gray); margin-top: 12px; text-align: center; line-height: 1.5;" id="demo1-status">Flip the toggle, then kill the app.<br>It will remember.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 7: USING THE VALUE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">07</span> · using the saved value</div>
+    <h2 class="section-title">Saving is <span class="neon">half the job</span></h2>
+    <p class="lede">A saved value is useless if you don't USE it. Here's how to apply the saved <code>darkMode</code> to actually change the app's appearance.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">ApplyDarkMode.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">SettingsView</span>: <span class="type">View</span> {
+    <span class="attr">@AppStorage</span>(<span class="str">"darkMode"</span>) <span class="kw">var</span> <span class="fn">darkMode</span> = <span class="kw">false</span>
+    <span class="attr">@AppStorage</span>(<span class="str">"username"</span>) <span class="kw">var</span> <span class="fn">username</span> = <span class="str">""</span>
+    <span class="attr">@AppStorage</span>(<span class="str">"fontSize"</span>) <span class="kw">var</span> <span class="fn">fontSize</span>: <span class="type">Double</span> = <span class="num">16</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Form</span> {
+            <span class="type">TextField</span>(<span class="str">"Your name"</span>, text: <span class="prop">$username</span>)
+            <span class="type">Toggle</span>(<span class="str">"Dark Mode"</span>, isOn: <span class="prop">$darkMode</span>)
+            <span class="type">Slider</span>(value: <span class="prop">$fontSize</span>, in: <span class="num">12</span>...<span class="num">24</span>)
+            <span class="type">Text</span>(<span class="str">"Hello, \(username)!"</span>)
+                .<span class="fn">font</span>(.<span class="prop">system</span>(size: <span class="prop">fontSize</span>))
+        }
+        .<span class="fn">preferredColorScheme</span>(<span class="prop">darkMode</span> ? .<span class="prop">dark</span> : .<span class="prop">light</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Three @AppStorage values working together</div>
+          <ol>
+            <li>Three saved values: a Bool, a String, and a Double. Each has its own unique key.</li>
+            <li><code>.preferredColorScheme(darkMode ? .dark : .light)</code> — applies the saved setting to the WHOLE screen.</li>
+            <li><code>.font(.system(size: fontSize))</code> — the text size also reflects the saved slider value.</li>
+            <li>Change anything, kill the app, reopen — every setting is exactly where the user left it.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ All three saved values</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div>●●●●●</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Settings</div>
+              <div class="ios-list">
+                <div class="ios-row">
+                  <span class="ios-row-label">Your name</span>
+                  <input type="text" id="usernameInput" placeholder="Khalid" style="background:transparent; border:none; text-align:right; outline:none; font-family:inherit; font-size:15px; color:var(--ios-blue); max-width:140px;">
+                </div>
+                <div class="ios-row">
+                  <span class="ios-row-label">Dark Mode</span>
+                  <div class="ios-toggle" id="darkModeToggle2" onclick="toggleDarkMode2()"></div>
+                </div>
+                <div class="ios-row" style="flex-direction: column; align-items: stretch;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span class="ios-row-label">Font size</span>
+                    <span style="color: var(--ios-gray);" id="fontSizeVal">16</span>
+                  </div>
+                  <input type="range" min="12" max="24" value="16" id="fontSizeSlider" oninput="updateFontSize(this.value)" style="width:100%;">
+                </div>
+                <div class="ios-row" style="background: var(--ios-bg);">
+                  <span class="ios-row-label" id="greetingText" style="font-size:16px; color: var(--ios-text);">Hello, Khalid!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 8: SUPPORTED TYPES ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">08</span> · the rules</div>
+    <h2 class="section-title">What can <span class="neon">@AppStorage</span> save?</h2>
+    <p class="lede">@AppStorage uses <code>UserDefaults</code> under the hood, which only accepts simple types. Trying to save anything else will give you a compiler error.</p>
+
+    <table class="decision-table">
+      <thead>
+        <tr><th>Type</th><th>Works?</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bool</td><td>✅ Yes</td><td><code>@AppStorage("darkMode") var darkMode = false</code></td></tr>
+        <tr><td>Int</td><td>✅ Yes</td><td><code>@AppStorage("score") var score = 0</code></td></tr>
+        <tr><td>Double</td><td>✅ Yes</td><td><code>@AppStorage("volume") var volume = 0.5</code></td></tr>
+        <tr><td>String</td><td>✅ Yes</td><td><code>@AppStorage("username") var name = ""</code></td></tr>
+        <tr><td>URL</td><td>✅ Yes</td><td><code>@AppStorage("avatarURL") var url: URL?</code></td></tr>
+        <tr><td>Data</td><td>✅ Yes</td><td>For images encoded as Data</td></tr>
+        <tr><td>Enums (with rawValue)</td><td>✅ Yes</td><td>If the enum is <code>String</code> or <code>Int</code> backed</td></tr>
+        <tr><td>[String], [Int]</td><td>❌ NO</td><td>Use JSON files instead (Part 2)</td></tr>
+        <tr><td>Custom structs</td><td>❌ NO</td><td>Use JSON files or SwiftData</td></tr>
+      </tbody>
+    </table>
+
+    <div class="warn" style="margin-top: 18px;"><strong>⚠ The honest limit:</strong> @AppStorage is for SMALL data. Apple warns against saving more than a few kilobytes total. If you have a list of 100 items, this is the wrong tool.</div>
+  </section>
+
+  <!-- ================== SLIDE 9: APPSTORAGE + ENUM ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">09</span> · advanced · enums with @AppStorage</div>
+    <h2 class="section-title">Saving <span class="neon">enum choices</span></h2>
+    <p class="lede">You can save an enum if it has a <code>rawValue</code> of String or Int. This is perfect for things like theme selection, language, or user role.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">AppStorageEnum.swift</div>
+            <div class="code-badge inter">● Intermediate</div>
+          </div>
+<pre class="code"><span class="kw">enum</span> <span class="type">AppTheme</span>: <span class="type">String</span>, <span class="type">CaseIterable</span> {
+    <span class="kw">case</span> <span class="prop">light</span>  = <span class="str">"Light"</span>
+    <span class="kw">case</span> <span class="prop">dark</span>   = <span class="str">"Dark"</span>
+    <span class="kw">case</span> <span class="prop">system</span> = <span class="str">"System"</span>
+}
+
+<span class="kw">struct</span> <span class="type">ThemeSettings</span>: <span class="type">View</span> {
+    <span class="attr">@AppStorage</span>(<span class="str">"theme"</span>) <span class="kw">var</span> <span class="fn">theme</span>: <span class="type">AppTheme</span> = .<span class="prop">system</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">Picker</span>(<span class="str">"Theme"</span>, selection: <span class="prop">$theme</span>) {
+            <span class="type">ForEach</span>(<span class="type">AppTheme</span>.<span class="prop">allCases</span>, id: <span class="prop">\.self</span>) { <span class="fn">t</span> <span class="kw">in</span>
+                <span class="type">Text</span>(<span class="prop">t</span>.<span class="prop">rawValue</span>).<span class="fn">tag</span>(<span class="prop">t</span>)
+            }
+        }
+        .<span class="fn">pickerStyle</span>(.<span class="prop">segmented</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ Why this works</div>
+          <ol>
+            <li><code>enum AppTheme: String</code> — the enum has String raw values. That's the key requirement.</li>
+            <li><code>@AppStorage("theme") var theme: AppTheme = .system</code> — saves the rawValue ("System") as a string in UserDefaults.</li>
+            <li>SwiftUI handles converting between the enum and the string for you. No manual encoding needed.</li>
+            <li>You get all the benefits of enums (type safety, autocomplete) AND persistence — no compromise.</li>
+          </ol>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip green">String-backed enum</span>
+          <span class="chip purple">CaseIterable for ForEach</span>
+          <span class="chip pink">Auto-saved on change</span>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Theme picker that remembers</h3>
+        <div class="iphone">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div>●●●●●</div></div>
+            <div class="ios-content">
+              <div class="ios-nav-title">Appearance</div>
+              <div class="ios-list">
+                <div class="ios-row" style="flex-direction: column; align-items: stretch;">
+                  <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <span class="ios-row-label">Theme</span>
+                  </div>
+                  <div style="display:inline-flex; background:rgba(118,118,128,0.12); border-radius:9px; padding:2px;">
+                    <button onclick="setTheme('Light')" id="theme-Light" style="flex:1; border:none; background:transparent; padding:6px; font-size:13px; border-radius:7px; cursor:pointer; font-family:inherit;">Light</button>
+                    <button onclick="setTheme('Dark')" id="theme-Dark" style="flex:1; border:none; background:transparent; padding:6px; font-size:13px; border-radius:7px; cursor:pointer; font-family:inherit;">Dark</button>
+                    <button onclick="setTheme('System')" id="theme-System" style="flex:1; border:none; background:white; padding:6px; font-size:13px; border-radius:7px; cursor:pointer; font-family:inherit; box-shadow:0 1px 3px rgba(0,0,0,0.1);">System</button>
+                  </div>
+                </div>
+                <div class="ios-row" style="background: var(--ios-bg);">
+                  <span class="ios-row-label">Current</span>
+                  <span id="currentTheme" style="color: var(--ios-blue); font-weight: 500;">System</span>
+                </div>
+              </div>
+              <button class="restart-btn" onclick="restartThemeDemo()" style="margin-top:14px;">💀 Kill & Reopen</button>
+              <p style="font-size: 11px; color: var(--ios-gray); margin-top: 8px; text-align: center;" id="theme-msg">Pick a theme, then restart.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 10: PART 2 COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">02</div>
+      <div class="section-cover-label">▸ Part Two</div>
+      <div class="section-cover-title">JSON Files</div>
+      <div class="section-cover-desc">When @AppStorage isn't enough — save arrays of custom structs to a JSON file on disk. The workhorse pattern for medium-sized data.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 11: WHY JSON ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">11</span> · concept</div>
+    <h2 class="section-title">Why <span class="neon">JSON files</span>?</h2>
+    <p class="lede">@AppStorage hit a wall: it can't save arrays of custom structs. For a list of saved moods, tasks, or contacts, we need a real file on disk. JSON is the universal format for that.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h4>Plain text format</h4>
+        <p>JSON is human-readable. You can open the saved file and inspect it. Great for debugging.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧬</div>
+        <h4>Codable does the work</h4>
+        <p>Swift converts your structs to JSON and back automatically. You just write <code>: Codable</code>.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h4>Saved on the phone</h4>
+        <p>The file lives in your app's private "Documents" folder. Other apps can't read it. Survives restarts and updates.</p>
+      </div>
+    </div>
+
+    <div class="tip"><strong>💡 Three steps for any JSON-based persistence:</strong>
+      <ol style="margin-top: 8px; padding-left: 20px; line-height: 1.8;">
+        <li>Make your struct <code>Codable</code> (one word)</li>
+        <li>Use <code>JSONEncoder</code> to convert array → Data, write to disk</li>
+        <li>Use <code>JSONDecoder</code> to read disk → Data → array on launch</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 12: CODABLE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">12</span> · prerequisite · Codable</div>
+    <h2 class="section-title">Meet <span class="neon">Codable</span></h2>
+    <p class="lede"><code>Codable</code> is a Swift protocol that means "this type can be converted to data and back". One word, and Swift automatically writes the conversion code for you.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">CodableStruct.swift</div>
+            <div class="code-badge basic">● Basic</div>
+          </div>
+<pre class="code"><span class="kw">struct</span> <span class="type">MoodEntry</span>: <span class="type">Codable</span>, <span class="type">Identifiable</span> {
+    <span class="kw">let</span> <span class="fn">id</span>: <span class="type">UUID</span>
+    <span class="kw">let</span> <span class="fn">mood</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">emoji</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">intensity</span>: <span class="type">Int</span>
+    <span class="kw">let</span> <span class="fn">timestamp</span>: <span class="type">Date</span>
+}
+
+<span class="cmt">// Now you can convert to/from JSON!</span>
+<span class="kw">let</span> <span class="fn">entry</span> = <span class="type">MoodEntry</span>(id: <span class="type">UUID</span>(), mood: <span class="str">"Great"</span>,
+                       emoji: <span class="str">"😄"</span>, intensity: <span class="num">9</span>,
+                       timestamp: <span class="type">Date</span>())
+
+<span class="kw">let</span> <span class="fn">jsonData</span> = <span class="kw">try</span>! <span class="type">JSONEncoder</span>().<span class="fn">encode</span>(<span class="prop">entry</span>)
+<span class="kw">let</span> <span class="fn">jsonString</span> = <span class="type">String</span>(data: <span class="prop">jsonData</span>, encoding: .<span class="prop">utf8</span>)!
+<span class="cmt">// → {"id":"...","mood":"Great","emoji":"😄","intensity":9,...}</span></pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What's happening</div>
+          <ol>
+            <li><code>: Codable</code> — adds two protocols at once: <code>Encodable</code> (object → data) and <code>Decodable</code> (data → object).</li>
+            <li>You write zero conversion code. Swift inspects your properties and generates the JSON automatically.</li>
+            <li><code>JSONEncoder().encode(entry)</code> — converts your struct to <code>Data</code>, which is what files store.</li>
+            <li>You can convert back the other way with <code>JSONDecoder().decode(MoodEntry.self, from: data)</code>.</li>
+          </ol>
+        </div>
+
+        <div class="warn"><strong>⚠ The rule:</strong> Every property type INSIDE your struct must also be Codable. Strings, Ints, Doubles, Bools, Dates, UUIDs, and arrays of Codable types — all already conform. You almost never have to do anything extra.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ What the JSON looks like</h3>
+<pre style="background: var(--code-bg); border:1px solid var(--border-glow); border-radius:12px; padding:18px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; color:#e8ecff; overflow-x:auto;">{
+  <span class="prop">"id"</span>: <span class="str">"A8F2..."</span>,
+  <span class="prop">"mood"</span>: <span class="str">"Great"</span>,
+  <span class="prop">"emoji"</span>: <span class="str">"😄"</span>,
+  <span class="prop">"intensity"</span>: <span class="num">9</span>,
+  <span class="prop">"timestamp"</span>: <span class="num">752183421.5</span>
+}</pre>
+        <p style="font-size: 14px; color: var(--text-mid); margin-top: 14px; line-height:1.6;">This text gets written to a file. Next launch, we read this text back and Swift rebuilds the struct.</p>
+
+        <div class="chip-row" style="margin-top: 16px;">
+          <span class="chip green">: Codable</span>
+          <span class="chip purple">JSONEncoder()</span>
+          <span class="chip pink">JSONDecoder()</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 13: MODEL FILE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">13</span> · file 1 of 3 · the model</div>
+    <h2 class="section-title">File 1 — <span class="neon">MoodEntry.swift</span></h2>
+    <p class="lede">The Model layer. Just a Codable struct holding one mood entry. <strong>No SwiftUI import. No logic. Just data.</strong></p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">Models/MoodEntry.swift</div>
+            <div class="code-badge basic">● File 1 of 3</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">struct</span> <span class="type">MoodEntry</span>: <span class="type">Codable</span>, <span class="type">Identifiable</span> {
+    <span class="kw">let</span> <span class="fn">id</span>: <span class="type">UUID</span>
+    <span class="kw">let</span> <span class="fn">mood</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">emoji</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">note</span>: <span class="type">String</span>
+    <span class="kw">let</span> <span class="fn">intensity</span>: <span class="type">Int</span>
+    <span class="kw">let</span> <span class="fn">timestamp</span>: <span class="type">Date</span>
+
+    <span class="kw">init</span>(mood: <span class="type">String</span>, emoji: <span class="type">String</span>,
+         note: <span class="type">String</span> = <span class="str">""</span>, intensity: <span class="type">Int</span>) {
+        <span class="prop">self</span>.<span class="prop">id</span> = <span class="type">UUID</span>()
+        <span class="prop">self</span>.<span class="prop">mood</span> = <span class="prop">mood</span>
+        <span class="prop">self</span>.<span class="prop">emoji</span> = <span class="prop">emoji</span>
+        <span class="prop">self</span>.<span class="prop">note</span> = <span class="prop">note</span>
+        <span class="prop">self</span>.<span class="prop">intensity</span> = <span class="prop">intensity</span>
+        <span class="prop">self</span>.<span class="prop">timestamp</span> = <span class="type">Date</span>()
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What each line does</div>
+          <ol>
+            <li><code>import Foundation</code> — only Foundation, NOT SwiftUI. Models stay UI-free.</li>
+            <li><code>: Codable</code> — the magic word. Now Swift can convert this struct to JSON and back automatically.</li>
+            <li><code>: Identifiable</code> — needed because we'll use this in a List/ForEach in the View.</li>
+            <li>All <code>let</code> properties — once a mood is saved, it never changes. That's the natural fit for data records.</li>
+            <li>Custom <code>init</code> — auto-generates the <code>id</code> and <code>timestamp</code> so the caller doesn't have to pass them.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Project structure</h3>
+<pre style="background: var(--code-bg); border:1px solid var(--border-glow); border-radius:12px; padding:18px; font-family:'JetBrains Mono',monospace; font-size:14px; line-height:1.8; color:#e8ecff;">📁 MoodTracker
+├─ 📁 <span class="prop">Models</span>
+│   └─ <span class="fn">MoodEntry.swift</span>  ← <span class="str">YOU ARE HERE</span>
+├─ 📁 <span class="prop">ViewModels</span>
+│   └─ MoodViewModel.swift
+└─ 📁 <span class="prop">Views</span>
+    └─ MoodView.swift</pre>
+
+        <div class="tip" style="margin-top: 18px;"><strong>💡 Why Codable now?</strong> In earlier lectures we used <code>: Identifiable</code> alone. Adding <code>: Codable</code> is what unlocks persistence — it lets Swift serialize this struct to a JSON file we'll write to disk.</div>
+
+        <div class="chip-row" style="margin-top: 14px;">
+          <span class="chip green">Codable</span>
+          <span class="chip purple">Identifiable</span>
+          <span class="chip">No SwiftUI</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 14: VIEWMODEL FILE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">14</span> · file 2 of 3 · the viewmodel</div>
+    <h2 class="section-title">File 2 — <span class="neon">MoodViewModel.swift</span></h2>
+    <p class="lede">The brain. Holds the array, exposes <code>addMood</code> / <code>delete</code> functions, and <strong>silently handles save/load behind the scenes</strong>. The View has no idea persistence exists.</p>
+
+    <div class="code-card">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <div class="code-title">ViewModels/MoodViewModel.swift</div>
+        <div class="code-badge inter">● File 2 of 3</div>
+      </div>
+<pre class="code"><span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="kw">class</span> <span class="type">MoodViewModel</span>: <span class="type">ObservableObject</span> {
+    <span class="attr">@Published</span> <span class="kw">var</span> <span class="fn">history</span>: [<span class="type">MoodEntry</span>] = []
+
+    <span class="cmt">// MARK: - File location on disk</span>
+    <span class="kw">private var</span> <span class="fn">fileURL</span>: <span class="type">URL</span> {
+        <span class="kw">let</span> <span class="fn">docs</span> = <span class="type">FileManager</span>.<span class="prop">default</span>.<span class="fn">urls</span>(<span class="kw">for</span>: .<span class="prop">documentDirectory</span>, <span class="kw">in</span>: .<span class="prop">userDomainMask</span>)[<span class="num">0</span>]
+        <span class="kw">return</span> <span class="prop">docs</span>.<span class="fn">appendingPathComponent</span>(<span class="str">"moods.json"</span>)
+    }
+
+    <span class="cmt">// MARK: - Lifecycle</span>
+    <span class="kw">init</span>() {
+        <span class="fn">load</span>()   <span class="cmt">// load existing data when ViewModel is created</span>
+    }
+
+    <span class="cmt">// MARK: - Public actions (the View calls these)</span>
+    <span class="kw">func</span> <span class="fn">addMood</span>(name: <span class="type">String</span>, emoji: <span class="type">String</span>, note: <span class="type">String</span>, intensity: <span class="type">Int</span>) {
+        <span class="kw">let</span> <span class="fn">entry</span> = <span class="type">MoodEntry</span>(mood: <span class="prop">name</span>, emoji: <span class="prop">emoji</span>, note: <span class="prop">note</span>, intensity: <span class="prop">intensity</span>)
+        <span class="prop">history</span>.<span class="fn">insert</span>(<span class="prop">entry</span>, at: <span class="num">0</span>)
+        <span class="fn">save</span>()
+    }
+
+    <span class="kw">func</span> <span class="fn">delete</span>(at offsets: <span class="type">IndexSet</span>) {
+        <span class="prop">history</span>.<span class="fn">remove</span>(atOffsets: <span class="prop">offsets</span>)
+        <span class="fn">save</span>()
+    }
+
+    <span class="kw">func</span> <span class="fn">clearAll</span>() {
+        <span class="prop">history</span>.<span class="fn">removeAll</span>()
+        <span class="fn">save</span>()
+    }
+
+    <span class="cmt">// MARK: - Private persistence (hidden from the View)</span>
+    <span class="kw">private func</span> <span class="fn">save</span>() {
+        <span class="kw">guard let</span> <span class="fn">data</span> = <span class="kw">try</span>? <span class="type">JSONEncoder</span>().<span class="fn">encode</span>(<span class="prop">history</span>) <span class="kw">else</span> { <span class="kw">return</span> }
+        <span class="kw">try</span>? <span class="prop">data</span>.<span class="fn">write</span>(to: <span class="prop">fileURL</span>)
+    }
+
+    <span class="kw">private func</span> <span class="fn">load</span>() {
+        <span class="kw">guard let</span> <span class="fn">data</span> = <span class="kw">try</span>? <span class="type">Data</span>(contentsOf: <span class="prop">fileURL</span>),
+              <span class="kw">let</span> <span class="fn">decoded</span> = <span class="kw">try</span>? <span class="type">JSONDecoder</span>().<span class="fn">decode</span>([<span class="type">MoodEntry</span>].<span class="prop">self</span>, from: <span class="prop">data</span>) <span class="kw">else</span> { <span class="kw">return</span> }
+        <span class="prop">history</span> = <span class="prop">decoded</span>
+    }
+}</pre>
+    </div>
+
+    <div class="row" style="margin-top: 18px;">
+      <div class="code-explain" style="margin-top: 0;">
+        <div class="code-explain-title">▸ Read the file top to bottom</div>
+        <ol>
+          <li><code>@Published var history</code> — the array of moods the View shows. Marked @Published so SwiftUI redraws when it changes.</li>
+          <li><code>fileURL</code> — a computed property that builds the path to <code>moods.json</code> in your app's Documents folder. Private, because the View shouldn't know about files.</li>
+          <li><code>init() { load() }</code> — runs ONCE when the ViewModel is created. Pulls existing moods off disk before the View renders.</li>
+          <li>Three public functions: <code>addMood</code>, <code>delete</code>, <code>clearAll</code> — every one calls <code>save()</code> at the end. That's the rule.</li>
+          <li><code>private func save()</code> and <code>private func load()</code> — the persistence logic. Marked private so the View can't call them directly. The View shouldn't even know they exist.</li>
+        </ol>
+      </div>
+
+      <div class="tip" style="margin-top: 0;"><strong>💡 The MVVM payoff:</strong> The View calls <code>vm.addMood(...)</code> and that's it. It has zero awareness of files, JSON, encoders, or disk. If you ever switch from JSON to SwiftData, you change THIS file only — every View keeps working unchanged. That's the entire point of MVVM.</div>
+    </div>
+
+    <div class="tip" style="margin-top: 18px; background: linear-gradient(90deg, rgba(76, 255, 175, 0.12), transparent); border-left-color: var(--neon-green);">
+      <strong style="color: var(--neon-green);">📂 But wait — who creates the moods.json file?</strong>
+      <p style="margin-top: 8px; color: var(--text-mid); line-height: 1.65;">
+        You don't! iOS handles it. Here's the exact sequence the first time a user runs your app:
+      </p>
+      <ol style="margin-top: 8px; padding-left: 22px; line-height: 1.85; color: var(--text-mid);">
+        <li><strong>App opens for the first time</strong> → ViewModel's <code>init()</code> calls <code>load()</code>.</li>
+        <li><code>load()</code> tries to read <code>moods.json</code> → <strong>the file doesn't exist yet</strong>.</li>
+        <li><code>try?</code> returns nil → <code>guard ... else { return }</code> quietly bails out. No crash. <code>history</code> stays empty <code>[]</code>.</li>
+        <li>User taps "Add Happy" → <code>save()</code> runs → <code>data.write(to: fileURL)</code> <strong>creates the file automatically</strong> because the <code>Documents/</code> folder already exists.</li>
+        <li>App restart → <code>load()</code> now finds the file → user's data comes back.</li>
+      </ol>
+      <p style="margin-top: 10px; color: var(--text-mid); line-height: 1.6;"><strong>The takeaway:</strong> The file is created on the FIRST save, not on launch. You never have to manually create, open, or close files in Swift.</p>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 15: VIEW FILE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">15</span> · file 3 of 3 · the view</div>
+    <h2 class="section-title">File 3 — <span class="neon">MoodView.swift</span></h2>
+    <p class="lede">Pure UI. Reads from the ViewModel, calls ViewModel functions. <strong>Every saved property — mood, emoji, note, intensity, AND timestamp — now appears on screen.</strong> Nothing in our Model is wasted.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">Views/MoodView.swift</div>
+            <div class="code-badge adv">● File 3 of 3</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftUI</span>
+
+<span class="kw">struct</span> <span class="type">MoodView</span>: <span class="type">View</span> {
+    <span class="attr">@StateObject</span> <span class="kw">var</span> <span class="fn">vm</span> = <span class="type">MoodViewModel</span>()
+    <span class="attr">@State</span> <span class="kw">private var</span> <span class="fn">newIntensity</span>: <span class="type">Double</span> = <span class="num">5</span>
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">NavigationStack</span> {
+            <span class="type">List</span> {
+                <span class="type">ForEach</span>(<span class="prop">vm</span>.<span class="prop">history</span>) { <span class="fn">entry</span> <span class="kw">in</span>
+                    <span class="type">HStack</span> {
+                        <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">emoji</span>)
+                            .<span class="fn">font</span>(.<span class="prop">title</span>)
+                        <span class="type">VStack</span>(alignment: .<span class="prop">leading</span>, spacing: <span class="num">3</span>) {
+                            <span class="type">HStack</span> {
+                                <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">mood</span>)
+                                    .<span class="fn">fontWeight</span>(.<span class="prop">semibold</span>)
+                                <span class="cmt">// 👇 intensity badge</span>
+                                <span class="type">Text</span>(<span class="str">"\(entry.intensity)/10"</span>)
+                                    .<span class="fn">font</span>(.<span class="prop">caption</span>)
+                                    .<span class="fn">foregroundStyle</span>(.<span class="prop">white</span>)
+                                    .<span class="fn">padding</span>(.<span class="prop">horizontal</span>, <span class="num">8</span>)
+                                    .<span class="fn">padding</span>(.<span class="prop">vertical</span>, <span class="num">2</span>)
+                                    .<span class="fn">background</span>(.<span class="prop">blue</span>)
+                                    .<span class="fn">clipShape</span>(<span class="type">Capsule</span>())
+                            }
+                            <span class="cmt">// 👇 timestamp — auto-updates as "5 min ago"</span>
+                            <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">timestamp</span>, style: .<span class="prop">relative</span>)
+                                .<span class="fn">font</span>(.<span class="prop">caption2</span>)
+                                .<span class="fn">foregroundStyle</span>(.<span class="prop">tertiary</span>)
+                            <span class="kw">if</span> !<span class="prop">entry</span>.<span class="prop">note</span>.<span class="prop">isEmpty</span> {
+                                <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">note</span>)
+                                    .<span class="fn">font</span>(.<span class="prop">caption</span>)
+                                    .<span class="fn">foregroundStyle</span>(.<span class="prop">secondary</span>)
+                            }
+                        }
+                    }
+                }
+                .<span class="fn">onDelete</span>(perform: <span class="prop">vm</span>.<span class="prop">delete</span>)
+            }
+            .<span class="fn">navigationTitle</span>(<span class="str">"My Moods"</span>)
+            .<span class="fn">safeAreaInset</span>(edge: .<span class="prop">bottom</span>) {
+                <span class="cmt">// 👇 intensity slider + Add button pinned to bottom</span>
+                <span class="type">VStack</span>(spacing: <span class="num">8</span>) {
+                    <span class="type">Text</span>(<span class="str">"Intensity: \(Int(newIntensity))/10"</span>)
+                        .<span class="fn">font</span>(.<span class="prop">caption</span>)
+                    <span class="type">Slider</span>(value: <span class="prop">$newIntensity</span>, in: <span class="num">1</span>...<span class="num">10</span>, step: <span class="num">1</span>)
+                    <span class="type">Button</span>(<span class="str">"Add Happy"</span>) {
+                        <span class="prop">vm</span>.<span class="fn">addMood</span>(name: <span class="str">"Happy"</span>,
+                                    emoji: <span class="str">"😊"</span>,
+                                    note: <span class="str">"Feeling great today!"</span>,
+                                    intensity: <span class="type">Int</span>(<span class="prop">newIntensity</span>))
+                    }
+                    .<span class="fn">buttonStyle</span>(.<span class="prop">borderedProminent</span>)
+                }
+                .<span class="fn">padding</span>()
+                .<span class="fn">background</span>(.<span class="prop">thinMaterial</span>)
+            }
+        }
+    }
+}
+
+<span class="attr">#Preview</span> {
+    <span class="type">MoodView</span>()
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What's new — every property now used</div>
+          <ol>
+            <li><code>@State private var newIntensity: Double = 5</code> — temporary slider value. Lives in the View, not the ViewModel, because it's UI state before saving.</li>
+            <li><code>Text("\(entry.intensity)/10")</code> styled as a <strong>blue capsule badge</strong> next to the mood name — shows the saved intensity at a glance.</li>
+            <li><code>Text(entry.timestamp, style: .relative)</code> — SwiftUI's built-in relative date formatter. Renders as <strong>"5 min ago"</strong>, "Yesterday at 9:41 AM", etc. Auto-updates over time. <strong>One line of code.</strong></li>
+            <li><code>.safeAreaInset(edge: .bottom)</code> — pins the slider + Add button to the bottom of the screen, above the home indicator.</li>
+            <li><code>Slider(value: $newIntensity, in: 1...10, step: 1)</code> — lets the user pick the intensity BEFORE saving. The <code>$</code> creates the two-way binding.</li>
+            <li><code>intensity: Int(newIntensity)</code> — slider gives us a Double; we convert to Int because our Model uses Int.</li>
+          </ol>
+        </div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ Common gotcha:</strong> If you pass <code>note: ""</code> to <code>addMood</code>, you'd think the note line just shows blank text. But SwiftUI renders <code>Text("")</code> as a view with <strong>zero height</strong> — completely invisible. That's why we use the <code>if</code> check.</div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Try the full app</h3>
+        <div class="iphone" style="transform: scale(0.95); transform-origin: top center;">
+          <div class="iphone-screen">
+            <div class="ios-status"><span>9:41</span><div>●●●●●</div></div>
+            <div class="ios-content" style="display:flex; flex-direction:column; padding-bottom:0;">
+              <div style="margin-bottom: 10px;">
+                <div class="ios-nav-title" style="margin: 0;">My Moods</div>
+              </div>
+              <div class="ios-list" id="full-mood-list" style="flex: 1; overflow-y: auto;">
+                <div class="ios-row" style="padding:18px; justify-content:center;">
+                  <span style="color:#8e8e93; font-style:italic; font-size: 13px;">Drag slider, tap "Add"</span>
+                </div>
+              </div>
+
+              <!-- Bottom slider + button -->
+              <div style="margin-top: 14px; padding: 12px; background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border-radius: 12px;">
+                <div style="font-size: 12px; color: #8e8e93; text-align:center; margin-bottom: 6px;">Intensity: <span id="full-int-val" style="color: var(--ios-blue); font-weight: 600;">5</span>/10</div>
+                <input type="range" min="1" max="10" step="1" value="5" id="full-int-slider" oninput="updateFullIntensity(this.value)" style="width:100%; accent-color: var(--ios-blue);">
+                <button onclick="addFullMood()" style="width: 100%; margin-top: 8px; background: var(--ios-blue); color: white; border: none; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">+ Add Happy</button>
+              </div>
+
+              <div style="display:flex; gap:6px; margin-top: 8px;">
+                <button class="restart-btn" onclick="restartFullDemo()" style="flex:1; margin: 0; font-size: 10px;">💀 Kill & Reopen</button>
+              </div>
+              <p style="font-size: 10px; color: var(--neon-green); margin-top: 6px; text-align: center; font-style: italic;" id="full-msg">All 3 files working together</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chip-row" style="margin-top: 14px; justify-content:center;">
+          <span class="chip pink">Model</span>
+          <span class="chip purple">+ ViewModel</span>
+          <span class="chip green">+ View</span>
+        </div>
+
+        <div class="tip" style="margin-top: 14px; font-size: 14px;"><strong>💡 Pro tip:</strong> Always save timestamps on every record — even if you don't display them yet. Once your app ships, you can never go back and add timestamps to old data.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 16: WHERE DOES MY DATA LIVE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">16</span> · debugging · find the file</div>
+    <h2 class="section-title">Where does <span class="neon">moods.json</span> live?</h2>
+    <p class="lede">A common student question: "I saved data — where IS the file on my computer?" Great instinct. Here are three ways to find it.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <h3 class="sub">▸ Method 1 · Let Swift print the path</h3>
+        <p style="font-size: 16px; color: var(--text-mid); line-height: 1.65;">Add one line to your ViewModel's <code>init()</code>. Xcode's console will print the exact path every launch.</p>
+
+        <div class="code-card" style="margin-top: 12px;">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">PrintPath.swift</div>
+            <div class="code-badge basic">● Debugging</div>
+          </div>
+<pre class="code"><span class="kw">init</span>() {
+    <span class="fn">print</span>(<span class="str">"📂 File: \(fileURL.path)"</span>)
+    <span class="fn">load</span>()
+}</pre>
+        </div>
+
+        <p style="font-size: 14px; color: var(--text-mid); margin-top: 12px; line-height: 1.6;">Run the app, look at Xcode's <strong>debug console</strong> (bottom of the window):</p>
+
+<pre style="background: var(--code-bg); border:1px solid var(--border-glow); border-radius:10px; padding:14px 18px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6; color:#e8ecff; overflow-x:auto; margin-top: 8px;">📂 File: /Users/khalid/Library/Developer/
+CoreSimulator/Devices/A8F2.../Documents/moods.json</pre>
+
+        <h3 class="sub" style="margin-top: 20px;">▸ Method 2 · Search with Terminal</h3>
+        <p style="font-size: 16px; color: var(--text-mid); line-height: 1.65;">No code changes needed. Open Terminal on your Mac and run:</p>
+
+<pre style="background: #0d1029; border:1px solid var(--border-glow); border-radius:10px; padding:14px 18px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.65; color:var(--neon-green); overflow-x:auto; margin-top: 10px;">$ <span style="color: #fff;">find ~/Library/Developer/CoreSimulator \
+       -name "moods.json" 2>/dev/null</span></pre>
+
+        <p style="font-size: 14px; color: var(--text-dim); margin-top: 10px; line-height: 1.55; font-style: italic;">The <code>2>/dev/null</code> part hides "permission denied" noise. The command searches every simulator and prints any match it finds.</p>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Method 3 · Open Finder right at the file</h3>
+        <p style="font-size: 16px; color: var(--text-mid); line-height: 1.65;">Once you have the path, paste it into Terminal with the <code>open</code> command to launch Finder:</p>
+
+<pre style="background: #0d1029; border:1px solid var(--border-glow); border-radius:10px; padding:14px 18px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.65; color:var(--neon-green); overflow-x:auto; margin-top: 10px;">$ <span style="color: #fff;">open "/Users/.../Documents/"</span></pre>
+
+        <div class="tip" style="margin-top: 16px;"><strong>💡 The path is huge — why?</strong> The Simulator gives each device and each app a random UUID for isolation. That's why the path has cryptic strings like <code>A8F2-9C1D-...</code>. Real iPhones use the same pattern internally — you just can't browse to it without Xcode.</div>
+
+        <div class="warn" style="margin-top: 14px;"><strong>⚠ The file is missing? Check first.</strong> The file is created on the FIRST save, not on app launch. If you haven't tapped "+ Add" yet, <code>moods.json</code> doesn't exist anywhere. Save something first, then look.</div>
+
+        <h3 class="sub" style="margin-top: 22px;">▸ The killer demo</h3>
+        <div class="tip" style="background: linear-gradient(90deg, rgba(183, 108, 255, 0.12), transparent); border-left-color: var(--neon-purple);">
+          <strong style="color: var(--neon-purple);">🎯 Try this in class:</strong>
+          <ol style="margin-top: 8px; padding-left: 22px; line-height: 1.85; color: var(--text-mid);">
+            <li>Run the app. Save one mood.</li>
+            <li>Find <code>moods.json</code> using Method 2.</li>
+            <li>Open the file in TextEdit. Change <code>"mood": "Happy"</code> to <code>"mood": "Sad"</code>. Save.</li>
+            <li>Force-quit the app, reopen.</li>
+            <li>The app shows <strong>Sad</strong> — your manual edit took effect.</li>
+          </ol>
+          <p style="margin-top: 10px; color: var(--text-mid); line-height: 1.6;">This proves the file is real, the JSON format is universal, and any tool can read or write it. Not just Swift.</p>
+        </div>
+
+        <div class="warn" style="margin-top: 14px; background: linear-gradient(90deg, rgba(255, 77, 109, 0.1), transparent); border-left-color: var(--neon-red);">
+          <strong style="color: var(--neon-red);">🛑 Canvas preview is NOT enough!</strong>
+          <p style="margin-top: 8px; color: var(--text-mid); line-height: 1.6;">If you're only watching the <code>#Preview</code> panel on the right side of Xcode — <strong>none of this works.</strong> The canvas runs your code in a throwaway process that wipes its disk every time you edit code. No persistent file is created.</p>
+          <p style="margin-top: 8px; color: var(--text-mid); line-height: 1.6;"><strong>You MUST run in the iOS Simulator</strong> to test persistence:</p>
+          <ol style="margin-top: 6px; padding-left: 22px; line-height: 1.75; color: var(--text-mid);">
+            <li>Top toolbar → pick a device (e.g. iPhone 15)</li>
+            <li>Press <code>⌘+R</code> or click the ▶ button</li>
+            <li>The Simulator opens with your real app</li>
+            <li>NOW the file gets created. NOW you can find it.</li>
+          </ol>
+        </div>
+
+        <div class="tip" style="margin-top: 14px; background: linear-gradient(90deg, rgba(0, 240, 255, 0.1), transparent); border-left-color: var(--neon-cyan);">
+          <strong style="color: var(--neon-cyan);">🔍 Finder's search bar won't find it!</strong>
+          <p style="margin-top: 8px; color: var(--text-mid); line-height: 1.6;">If you type <code>moods.json</code> into Finder's search bar — nothing shows up. That's because the file lives inside the <code>~/Library</code> folder, which macOS <strong>hides from Spotlight indexing</strong> by default. The file IS there; the search just can't see it.</p>
+          <p style="margin-top: 10px; color: var(--text-mid); line-height: 1.6;"><strong>The reliable fix — Go to Folder:</strong></p>
+          <ol style="margin-top: 6px; padding-left: 22px; line-height: 1.85; color: var(--text-mid);">
+            <li>Click any Finder window so Finder is the active app</li>
+            <li>Press <code>⌘ + ⇧ + G</code> (Cmd + Shift + G)</li>
+            <li>A small dialog appears with a text field</li>
+            <li>Paste the full path you got from <code>print(fileURL.path)</code></li>
+            <li>Press Enter → Finder jumps right to the folder</li>
+          </ol>
+          <p style="margin-top: 10px; color: var(--text-mid); line-height: 1.6;"><strong>Bonus — make Library always visible:</strong> Click your home folder in Finder's sidebar, press <code>⌘+J</code>, scroll down and check "Show Library Folder". From then on, Spotlight indexes it and the search bar works normally.</p>
+          <p style="margin-top: 10px; color: var(--text-dim); line-height: 1.6; font-size: 14px; font-style: italic;">⚠ <code>⌘+⇧+.</code> (period) is sometimes recommended to toggle hidden files, but it can be unreliable on some Mac setups. Use Go to Folder instead — it always works.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 17: PART 3 COVER ================== -->
+  <section class="slide">
+    <div class="section-cover">
+      <div class="section-cover-num">03</div>
+      <div class="section-cover-label">▸ Part Three</div>
+      <div class="section-cover-title">SwiftData</div>
+      <div class="section-cover-desc">Apple's modern database. When your data grows up — queries, relationships, undo, iCloud sync — SwiftData is what real iOS apps use.</div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 18: SWIFTDATA INTRO ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">18</span> · concept</div>
+    <h2 class="section-title">What is <span class="neon">SwiftData</span>?</h2>
+    <p class="lede">SwiftData is Apple's framework for storing data in a real database. It replaces Core Data for new code, and it's designed to feel like normal Swift — no SQL, no fetch requests, just <code>@Model</code> and <code>@Query</code>.</p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🗃️</div>
+        <h4>Real database</h4>
+        <p>Backed by SQLite, but you never write SQL. Swift handles it. Fast even with thousands of records.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h4>Powerful queries</h4>
+        <p>Filter, sort, group with simple Swift syntax. <code>#Predicate</code> lets you say "give me moods from this week, sorted by intensity".</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h4>Auto-sync (optional)</h4>
+        <p>One line of code and your data syncs across iPhone, iPad, and Mac via iCloud. Free.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h4>Relationships</h4>
+        <p>A User has many Posts. A Post has one Author. SwiftData handles connections between types.</p>
+      </div>
+    </div>
+
+    <div class="warn"><strong>⚠ Requirements:</strong> SwiftData requires iOS 17+. For older iOS versions, you need Core Data (much more complex) or stick with JSON files from Part 2.</div>
+  </section>
+
+  <!-- ================== SLIDE 19: @MODEL ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">19</span> · the @Model macro</div>
+    <h2 class="section-title">Defining a <span class="neon">@Model</span></h2>
+    <p class="lede">In SwiftData, your data type is a <strong>class</strong> (not struct) marked with <code>@Model</code>. The macro adds all the database magic behind the scenes — you just write normal Swift properties.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">MoodEntry.swift · SwiftData version</div>
+            <div class="code-badge adv">● Advanced</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftData</span>
+<span class="kw">import</span> <span class="type">Foundation</span>
+
+<span class="attr">@Model</span>
+<span class="kw">class</span> <span class="type">MoodEntry</span> {
+    <span class="kw">var</span> <span class="fn">mood</span>: <span class="type">String</span>
+    <span class="kw">var</span> <span class="fn">emoji</span>: <span class="type">String</span>
+    <span class="kw">var</span> <span class="fn">note</span>: <span class="type">String</span>
+    <span class="kw">var</span> <span class="fn">intensity</span>: <span class="type">Int</span>
+    <span class="kw">var</span> <span class="fn">timestamp</span>: <span class="type">Date</span>
+
+    <span class="kw">init</span>(mood: <span class="type">String</span>, emoji: <span class="type">String</span>,
+         note: <span class="type">String</span>, intensity: <span class="type">Int</span>) {
+        <span class="prop">self</span>.<span class="prop">mood</span> = <span class="prop">mood</span>
+        <span class="prop">self</span>.<span class="prop">emoji</span> = <span class="prop">emoji</span>
+        <span class="prop">self</span>.<span class="prop">note</span> = <span class="prop">note</span>
+        <span class="prop">self</span>.<span class="prop">intensity</span> = <span class="prop">intensity</span>
+        <span class="prop">self</span>.<span class="prop">timestamp</span> = <span class="type">Date</span>()
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ The key differences from a normal class</div>
+          <ol>
+            <li><code>@Model</code> — the macro. Tells Swift "this class is a database record".</li>
+            <li><code>class</code>, not <code>struct</code> — SwiftData needs reference types so multiple views can edit the same row.</li>
+            <li><code>var</code> properties (not <code>let</code>) — because database records can change after creation.</li>
+            <li><strong>No <code>Codable</code> needed!</strong> SwiftData handles serialization internally.</li>
+            <li>No <code>id</code> property either — SwiftData generates a unique identifier for every record automatically.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Setting up the container</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">App.swift</div>
+            <div class="code-badge inter">● Setup</div>
+          </div>
+<pre class="code"><span class="attr">@main</span>
+<span class="kw">struct</span> <span class="type">MoodTrackerApp</span>: <span class="type">App</span> {
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">Scene</span> {
+        <span class="type">WindowGroup</span> {
+            <span class="type">ContentView</span>()
+        }
+        .<span class="fn">modelContainer</span>(<span class="kw">for</span>: <span class="type">MoodEntry</span>.<span class="prop">self</span>)
+    }
+}</pre>
+        </div>
+
+        <div class="tip" style="margin-top: 16px;"><strong>💡 One line setup.</strong> The <code>.modelContainer(for:)</code> modifier creates the database file, sets up the SwiftData "context", and makes it available to every view. That's it.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 20: @QUERY ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">20</span> · fetching with @Query</div>
+    <h2 class="section-title">Loading data with <span class="neon">@Query</span></h2>
+    <p class="lede">In SwiftData, you don't manually read files. Just declare <code>@Query var moods: [MoodEntry]</code> and SwiftUI automatically gives you the latest data — AND updates the View whenever the database changes.</p>
+
+    <div class="row">
+      <div class="col-text">
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">MoodView.swift · SwiftData</div>
+            <div class="code-badge adv">● Advanced</div>
+          </div>
+<pre class="code"><span class="kw">import</span> <span class="type">SwiftUI</span>
+<span class="kw">import</span> <span class="type">SwiftData</span>
+
+<span class="kw">struct</span> <span class="type">MoodView</span>: <span class="type">View</span> {
+    <span class="attr">@Environment</span>(\.<span class="prop">modelContext</span>) <span class="kw">var</span> <span class="fn">context</span>
+    <span class="attr">@Query</span>(sort: \<span class="type">MoodEntry</span>.<span class="prop">timestamp</span>, order: .<span class="prop">reverse</span>)
+    <span class="kw">var</span> <span class="fn">moods</span>: [<span class="type">MoodEntry</span>]
+
+    <span class="kw">var</span> <span class="fn">body</span>: <span class="kw">some</span> <span class="type">View</span> {
+        <span class="type">List</span>(<span class="prop">moods</span>) { <span class="fn">entry</span> <span class="kw">in</span>
+            <span class="type">HStack</span> {
+                <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">emoji</span>).<span class="fn">font</span>(.<span class="prop">title</span>)
+                <span class="type">Text</span>(<span class="prop">entry</span>.<span class="prop">mood</span>)
+            }
+        }
+    }
+
+    <span class="kw">func</span> <span class="fn">addMood</span>(<span class="fn">name</span>: <span class="type">String</span>, <span class="fn">emoji</span>: <span class="type">String</span>) {
+        <span class="kw">let</span> <span class="fn">entry</span> = <span class="type">MoodEntry</span>(mood: <span class="prop">name</span>, emoji: <span class="prop">emoji</span>,
+                              note: <span class="str">""</span>, intensity: <span class="num">5</span>)
+        <span class="prop">context</span>.<span class="fn">insert</span>(<span class="prop">entry</span>)   <span class="cmt">// 👈 that's the "save"</span>
+    }
+}</pre>
+        </div>
+
+        <div class="code-explain">
+          <div class="code-explain-title">▸ What's happening</div>
+          <ol>
+            <li><code>@Environment(\.modelContext)</code> — gives the view access to SwiftData's "context", which is how you add/remove data.</li>
+            <li><code>@Query(sort:, order:)</code> — automatically fetches all MoodEntry records, sorted by timestamp newest-first.</li>
+            <li>The view auto-redraws every time the database changes. No <code>@Published</code>, no <code>load()</code> calls, no manual refresh.</li>
+            <li><code>context.insert(entry)</code> — adds a new record to the database. SwiftData saves automatically. That's the entire "save" operation.</li>
+            <li>To delete: <code>context.delete(entry)</code>. That's it.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="sub">▸ Powerful filtering</h3>
+        <div class="code-card">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <div class="code-title">FilteredQuery.swift</div>
+            <div class="code-badge adv">● Advanced</div>
+          </div>
+<pre class="code"><span class="cmt">// Only moods with intensity 7+</span>
+<span class="attr">@Query</span>(filter: <span class="attr">#Predicate</span>&lt;<span class="type">MoodEntry</span>&gt; {
+    $<span class="num">0</span>.<span class="prop">intensity</span> &gt;= <span class="num">7</span>
+})
+<span class="kw">var</span> <span class="fn">intenseMoods</span>: [<span class="type">MoodEntry</span>]
+
+
+<span class="cmt">// Only today's moods, newest first</span>
+<span class="attr">@Query</span>(
+    filter: <span class="attr">#Predicate</span>&lt;<span class="type">MoodEntry</span>&gt; {
+        $<span class="num">0</span>.<span class="prop">timestamp</span> &gt;= <span class="type">Calendar</span>.<span class="prop">current</span>
+            .<span class="fn">startOfDay</span>(for: <span class="type">Date</span>())
+    },
+    sort: \<span class="type">MoodEntry</span>.<span class="prop">timestamp</span>,
+    order: .<span class="prop">reverse</span>
+)
+<span class="kw">var</span> <span class="fn">todaysMoods</span>: [<span class="type">MoodEntry</span>]</pre>
+        </div>
+
+        <p style="font-size: 15px; color: var(--text-mid); margin-top: 14px; line-height: 1.6;">This is where SwiftData beats JSON files badly. Imagine doing the same filtering with a JSON array of 5000 moods — you'd have to load all of them into memory first. SwiftData lets the database do the work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 21: DECISION TREE ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">21</span> · reference · which one to use</div>
+    <h2 class="section-title">The <span class="neon">decision tree</span></h2>
+    <p class="lede">Take a screenshot of this slide. It's the cheat sheet you'll use the rest of your iOS career to pick the right persistence tool.</p>
+
+    <table class="decision-table">
+      <thead>
+        <tr><th>Use this</th><th>When</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>@AppStorage</td>
+          <td>Saving 1 simple value (Bool, Int, String). User-preference territory.</td>
+          <td>Dark mode toggle, font size, "has seen onboarding" flag</td>
+        </tr>
+        <tr>
+          <td>JSON file</td>
+          <td>Saving a list of custom structs. Small to medium dataset (under ~10,000 items).</td>
+          <td>Mood history, saved recipes, task list, journal entries</td>
+        </tr>
+        <tr>
+          <td>SwiftData</td>
+          <td>Lots of data, complex queries, relationships, iCloud sync, or iOS 17+ targeting.</td>
+          <td>Notes app, fitness tracker, library catalog, real production apps</td>
+        </tr>
+        <tr>
+          <td>Server / API</td>
+          <td>Multiple users share the same data. Beyond this lecture.</td>
+          <td>Social feed, multiplayer game, chat app</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="tip" style="margin-top: 18px;"><strong>💡 Senior dev mindset:</strong> Pick the SMALLEST tool that solves your problem. Don't reach for SwiftData when @AppStorage will do. Don't reach for JSON files when one Bool will do. Simplicity wins.</div>
+
+    <div class="warn"><strong>⚠ Common beginner mistake:</strong> Using @AppStorage to save a "history" array. It won't work — and even if you encode it manually, you'll hit performance issues fast. Use the right tool for the shape of your data.</div>
+  </section>
+
+  <!-- ================== SLIDE 22: TAKEAWAYS ================== -->
+  <section class="slide">
+    <div class="slide-num">// <span class="accent">22</span> · summary</div>
+    <h2 class="section-title">Five things to <span class="neon">remember</span></h2>
+    <p class="lede">If you only retain five points from today's lecture, make them these:</p>
+
+    <div class="feature-grid" style="margin-top: 20px;">
+      <div class="feature-card">
+        <div class="feature-icon">1</div>
+        <h4>@State doesn't persist</h4>
+        <p>Every @State variable dies when the app closes. That's by design. Use a real persistence tool for data that should survive.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">2</div>
+        <h4>Match the tool to the data</h4>
+        <p>One value → @AppStorage. List of structs → JSON file. Database with queries → SwiftData.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">3</div>
+        <h4>Persistence lives in the ViewModel</h4>
+        <p>The View never reads or writes files directly. The ViewModel handles save/load. That's MVVM.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">4</div>
+        <h4>Call save() everywhere</h4>
+        <p>For JSON: every function that mutates your array must call <code>save()</code>. Miss one and you lose data.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">5</div>
+        <h4>SwiftData is the future</h4>
+        <p>For iOS 17+ apps, SwiftData is what Apple recommends. Learn JSON files first to understand the foundation, then graduate.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h4>Test by killing the app</h4>
+        <p>Real test of persistence: open app, do something, FORCE-QUIT (don't just close), reopen. Did your data come back?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================== SLIDE 23: THANKS ================== -->
+  <section class="slide">
+    <div class="thanks">
+      <div>
+        <div class="thanks-num">FIN.</div>
+        <p class="thanks-msg">Questions? Let's discuss.</p>
+        <div class="thanks-sig">
+          <span class="name">Khalid Kassou</span> · MAC221 · iOS Application Development<br>
+          Mathematics, Engineering &amp; Computer Science · LaGuardia Community College
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn" id="prev">‹ Prev</button>
+  <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+  <div class="slide-counter"><span class="current" id="cur">01</span> / <span id="total">22</span></div>
+  <button class="nav-btn" id="next">Next ›</button>
+</div>
+
+<div class="kbd-hint">
+  <span class="kbd">←</span><span class="kbd">→</span> navigate · <span class="kbd">F</span> fullscreen
+</div>
+
+<script>
+/* ============ NAVIGATION ============ */
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+document.getElementById('total').textContent = String(total).padStart(2, '0');
+
+function go(idx) {
+  if (idx < 0 || idx >= total) return;
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'prev');
+    if (i === idx) s.classList.add('active');
+    else if (i < idx) s.classList.add('prev');
+  });
+  current = idx;
+  document.getElementById('cur').textContent = String(idx + 1).padStart(2, '0');
+  document.getElementById('progress').style.width = `${((idx + 1) / total) * 100}%`;
+  document.getElementById('prev').disabled = idx === 0;
+  document.getElementById('next').disabled = idx === total - 1;
+  slides[idx].scrollTop = 0;
+}
+
+document.getElementById('next').onclick = () => go(current + 1);
+document.getElementById('prev').onclick = () => go(current - 1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(current + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(current - 1); }
+  if (e.key === 'Home') go(0);
+  if (e.key === 'End') go(total - 1);
+  if (e.key === 'f' || e.key === 'F') {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  }
+});
+
+go(0);
+
+/* ============ Slide 3: Ephemeral demo (no persistence) ============ */
+let ephemeralCount = 0;
+function addEphemeral() {
+  ephemeralCount++;
+  const list = document.getElementById('ephemeral-list');
+  // Save to a sessionStorage so refresh shows behavior
+  const items = JSON.parse(sessionStorage.getItem('ephemeralDemo') || '[]');
+  items.push({ emoji: ['😢','😕','😐','🙂','😄'][ephemeralCount % 5], text: 'Mood #' + ephemeralCount });
+  sessionStorage.setItem('ephemeralDemo', JSON.stringify(items));
+  renderEphemeral();
+}
+function renderEphemeral() {
+  const list = document.getElementById('ephemeral-list');
+  if (!list) return;
+  const items = JSON.parse(sessionStorage.getItem('ephemeralDemo') || '[]');
+  if (items.length === 0) {
+    list.innerHTML = '<div class="ios-row"><span class="ios-row-label" style="color:#8e8e93; text-align:center; flex:1; padding:20px 0; font-style:italic;">No moods saved yet</span></div>';
+  } else {
+    list.innerHTML = items.map(i => `<div class="ios-row"><span style="font-size:24px; margin-right:10px;">${i.emoji}</span><span class="ios-row-label">${i.text}</span></div>`).join('');
+  }
+}
+function killEphemeral() {
+  // simulates the app being killed — wipes the "RAM"
+  sessionStorage.removeItem('ephemeralDemo');
+  ephemeralCount = 0;
+  renderEphemeral();
+  // Flash effect on phone
+  const phone = document.querySelector('.iphone');
+  if (phone) {
+    phone.style.transition = 'opacity 0.3s';
+    phone.style.opacity = '0.2';
+    setTimeout(() => { phone.style.opacity = '1'; }, 400);
+  }
+}
+renderEphemeral();
+
+/* ============ Slide 6: Dark mode toggle demo ============ */
+function toggleDarkMode() {
+  const t = document.getElementById('darkModeToggle');
+  t.classList.toggle('on');
+  localStorage.setItem('demo1_dark', t.classList.contains('on') ? '1' : '0');
+  document.getElementById('demo1-status').innerHTML = 'Dark mode is now <strong style="color:var(--ios-blue);">' + (t.classList.contains('on') ? 'ON' : 'OFF') + '</strong>.<br>Click Kill & Reopen to test.';
+}
+function restartDemo1() {
+  const t = document.getElementById('darkModeToggle');
+  // Simulate restart by reading from localStorage
+  const saved = localStorage.getItem('demo1_dark') === '1';
+  t.classList.toggle('on', saved);
+  // Visual restart effect
+  const phone = t.closest('.iphone');
+  if (phone) {
+    phone.style.opacity = '0.2';
+    setTimeout(() => { phone.style.opacity = '1'; }, 500);
+  }
+  document.getElementById('demo1-status').innerHTML = 'App reopened! Dark mode is still <strong style="color:var(--neon-green);">' + (saved ? 'ON' : 'OFF') + '</strong> ✓';
+}
+// Load on slide entry
+(function() {
+  const t = document.getElementById('darkModeToggle');
+  if (t && localStorage.getItem('demo1_dark') === '1') t.classList.add('on');
+})();
+
+/* ============ Slide 7: All three @AppStorage values ============ */
+function toggleDarkMode2() {
+  document.getElementById('darkModeToggle2').classList.toggle('on');
+}
+function updateFontSize(v) {
+  document.getElementById('fontSizeVal').textContent = v;
+  document.getElementById('greetingText').style.fontSize = v + 'px';
+}
+document.getElementById('usernameInput')?.addEventListener('input', e => {
+  const n = e.target.value || 'Khalid';
+  document.getElementById('greetingText').textContent = 'Hello, ' + n + '!';
+});
+
+/* ============ Slide 9: Theme picker with restart ============ */
+function setTheme(name) {
+  ['Light','Dark','System'].forEach(t => {
+    const btn = document.getElementById('theme-' + t);
+    if (!btn) return;
+    if (t === name) {
+      btn.style.background = 'white';
+      btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.boxShadow = 'none';
+    }
+  });
+  document.getElementById('currentTheme').textContent = name;
+  localStorage.setItem('demo_theme', name);
+  document.getElementById('theme-msg').innerHTML = 'Picked <strong style="color:var(--ios-blue)">' + name + '</strong>. Click Kill & Reopen.';
+}
+function restartThemeDemo() {
+  const saved = localStorage.getItem('demo_theme') || 'System';
+  setTheme(saved);
+  const phone = document.getElementById('currentTheme').closest('.iphone');
+  if (phone) {
+    phone.style.opacity = '0.2';
+    setTimeout(() => { phone.style.opacity = '1'; }, 500);
+  }
+  document.getElementById('theme-msg').innerHTML = 'App reopened! Theme is still <strong style="color:var(--neon-green)">' + saved + '</strong> ✓';
+}
+
+/* ============ Slide 15: Full 3-file app demo ============ */
+const moodSet = [
+  {emoji:'😄', name:'Great', note:'Productive day!'},
+  {emoji:'🙂', name:'Good', note:'Solid afternoon'},
+  {emoji:'😐', name:'Okay', note:'Just a normal day'},
+  {emoji:'😕', name:'Down', note:'Long meetings'},
+  {emoji:'😢', name:'Sad', note:'Tough morning'}
+];
+let fullIntensity = 5;
+
+function updateFullIntensity(v) {
+  fullIntensity = parseInt(v);
+  const el = document.getElementById('full-int-val');
+  if (el) el.textContent = fullIntensity;
+}
+
+function getFullMoods() {
+  return JSON.parse(localStorage.getItem('full_demo_moods') || '[]');
+}
+
+function relativeTime(savedAt) {
+  const seconds = Math.floor((Date.now() - savedAt) / 1000);
+  if (seconds < 5) return 'just now';
+  if (seconds < 60) return seconds + ' sec ago';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return minutes + ' min ago';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return hours + 'h ago';
+  return Math.floor(hours / 24) + 'd ago';
+}
+
+function addFullMood() {
+  const moods = getFullMoods();
+  // Always "Happy" since the button is "Add Happy"
+  moods.unshift({
+    emoji: '😊',
+    name: 'Happy',
+    note: 'Feeling great today!',
+    intensity: fullIntensity,
+    savedAt: Date.now()
+  });
+  if (moods.length > 5) moods.length = 5;
+  localStorage.setItem('full_demo_moods', JSON.stringify(moods));
+  renderFullMoods();
+  const msg = document.getElementById('full-msg');
+  if (msg) msg.textContent = 'Saved to moods.json ✓';
+}
+
+function renderFullMoods() {
+  const list = document.getElementById('full-mood-list');
+  if (!list) return;
+  const moods = getFullMoods();
+  if (moods.length === 0) {
+    list.innerHTML = '<div class="ios-row" style="padding:18px; justify-content:center;"><span style="color:#8e8e93; font-style:italic; font-size: 13px;">Drag slider, tap "Add"</span></div>';
+  } else {
+    list.innerHTML = moods.map(m => `
+      <div class="ios-row" style="padding: 10px 12px;">
+        <span style="font-size:22px; margin-right:10px;">${m.emoji}</span>
+        <div style="flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:2px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="ios-row-label" style="font-weight:600; font-size:14px;">${m.name}</span>
+            <span style="background: var(--ios-blue); color: white; padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 600;">${m.intensity}/10</span>
+          </div>
+          <span style="font-size:10px; color:#b8b8c0;">${relativeTime(m.savedAt)}</span>
+          <span style="font-size:11px; color:#8e8e93; font-style:italic;">${m.note}</span>
+        </div>
+      </div>`).join('');
+  }
+}
+
+function restartFullDemo() {
+  const phone = document.getElementById('full-mood-list')?.closest('.iphone');
+  if (phone) {
+    phone.style.opacity = '0.2';
+    setTimeout(() => { phone.style.opacity = '1'; }, 500);
+  }
+  renderFullMoods();
+  const msg = document.getElementById('full-msg');
+  if (msg) msg.textContent = 'Loaded from disk on launch ✓';
+}
+
+// Auto-refresh "relative time" every 10 seconds so it updates while viewing
+setInterval(() => {
+  if (document.querySelector('.slide.active')?.querySelector('#full-mood-list')) {
+    renderFullMoods();
+  }
+}, 10000);
+
+renderFullMoods();
+</script>
+
+</body>
+</html>

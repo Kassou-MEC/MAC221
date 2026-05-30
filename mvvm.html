@@ -2241,10 +2241,9 @@ function makeChunkEl(chunk, inZone = false) {
   el.className = 'chunk' + (inZone ? ' in-zone' : '');
   el.draggable = !graded;
   el.dataset.id = chunk.id;
-  // chunk-num shows just the chunk's logical id (without part prefix mess)
-  // Use a clean badge like "M1", "VM3", "V5"
-  let badge = chunk.id.toUpperCase().replace('P1', '').replace('P2', '');
-  el.innerHTML = '<span class="chunk-num">' + badge + '</span><span class="chunk-content">' + chunk.html + '</span>';
+  // No layer badge: hiding the M/VM/V index so students must reason about
+  // which file each chunk belongs to instead of matching the label.
+  el.innerHTML = '<span class="chunk-content">' + chunk.html + '</span>';
 
   if (graded && chunk._gradeResult) {
     el.classList.add(chunk._gradeResult);

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 07 · Make It Stick — Data Persistence | MAC221</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MAC221 · Data Persistence Lab
+   Instructor: change GRADE_PASSWORD in the <script> CONFIG block.
+   ============================================================ */
+:root{
+  --bg:#080810;
+  --bg-2:#0d0d1c;
+  --panel:#11112099;
+  --panel-solid:#12122a;
+  --line:#23234a;
+  --cyan:#00e5ff;
+  --purple:#b14eff;
+  --pink:#ff2e88;
+  --blue:#4d7dff;
+  --green:#27e8a7;
+  --amber:#ffb347;
+  --red:#ff4d6d;
+  --txt:#e8ecff;
+  --txt-dim:#8a90c0;
+  --txt-faint:#5a5f8a;
+  --mono:'JetBrains Mono',monospace;
+  --disp:'Orbitron',sans-serif;
+  --body:'Space Grotesk',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body);
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 8%, #1a0f3322 0, transparent 42%),
+    radial-gradient(circle at 88% 18%, #00e5ff14 0, transparent 40%),
+    radial-gradient(circle at 50% 110%, #ff2e8814 0, transparent 50%);
+  background-attachment:fixed;
+  color:var(--txt);
+  line-height:1.6;
+  padding:0 0 140px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+
+/* ---------- HEADER ---------- */
+header.hero{
+  position:relative;
+  padding:54px 20px 40px;
+  text-align:center;
+  border-bottom:1px solid var(--line);
+  overflow:hidden;
+}
+.hero .grid-bg{
+  position:absolute;inset:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(circle at 50% 30%,#000 0,transparent 70%);
+  opacity:.35;pointer-events:none;
+}
+.brandline{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.32em;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:18px;
+  position:relative;
+}
+.hero h1{
+  font-family:var(--disp);font-weight:900;
+  font-size:clamp(2rem,6vw,3.5rem);line-height:1.02;
+  letter-spacing:-.01em;position:relative;
+  background:linear-gradient(105deg,var(--cyan),var(--purple) 55%,var(--pink));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 50px #b14eff33;
+}
+.hero .sub{color:var(--txt-dim);margin-top:14px;font-size:1.02rem;position:relative}
+.meta-row{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  margin-top:26px;position:relative;
+}
+.chip{
+  font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;
+  padding:7px 14px;border:1px solid var(--line);border-radius:30px;
+  color:var(--txt-dim);background:#ffffff06;
+}
+.chip b{color:var(--txt)}
+
+/* ---------- IDENTITY GATE ---------- */
+.idgate{
+  margin:36px auto 10px;max-width:760px;
+  background:linear-gradient(160deg,#12122a,#0c0c1c);
+  border:1px solid var(--line);border-radius:18px;
+  padding:24px 26px;
+  box-shadow:0 0 0 1px #00e5ff10, 0 24px 60px -30px #000;
+}
+.idgate h3{font-family:var(--disp);font-size:.92rem;letter-spacing:.12em;color:var(--cyan);text-transform:uppercase;margin-bottom:4px}
+.idgate p{color:var(--txt-faint);font-size:.85rem;margin-bottom:18px}
+.id-fields{display:flex;gap:16px;flex-wrap:wrap}
+.field{flex:1;min-width:200px}
+.field label{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;color:var(--txt-dim);text-transform:uppercase;margin-bottom:7px}
+.field input{
+  width:100%;background:#06060f;border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;color:var(--txt);font-family:var(--mono);font-size:.92rem;
+  transition:.2s;
+}
+.field input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px #00e5ff22}
+
+/* ---------- SECTION / TASK ---------- */
+section.task{
+  margin:30px auto;
+  background:var(--panel);
+  border:1px solid var(--line);border-radius:18px;
+  padding:28px 26px 30px;
+  backdrop-filter:blur(8px);
+}
+.task-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:6px}
+.tnum{
+  flex:none;width:46px;height:46px;border-radius:12px;
+  display:grid;place-items:center;
+  font-family:var(--disp);font-weight:700;font-size:1.15rem;
+  color:var(--bg);background:linear-gradient(135deg,var(--cyan),var(--purple));
+  box-shadow:0 8px 24px -8px var(--purple);
+}
+.task-head h2{font-family:var(--disp);font-weight:700;font-size:1.18rem;letter-spacing:.01em}
+.task-head .pts{font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:.1em;margin-top:3px}
+.task-desc{color:var(--txt-dim);font-size:.95rem;margin:12px 0 20px}
+.task-desc code,.inline-code{font-family:var(--mono);font-size:.86em;color:var(--cyan);background:#00e5ff12;padding:2px 7px;border-radius:5px}
+
+.hint{
+  font-family:var(--mono);font-size:.74rem;color:var(--txt-faint);
+  border-left:2px solid var(--purple);padding:6px 0 6px 12px;margin:6px 0 18px;
+}
+
+/* ---------- TOKENS / DRAG ITEMS ---------- */
+.bank{
+  display:flex;flex-wrap:wrap;gap:10px;
+  padding:16px;border:1px dashed var(--line);border-radius:12px;
+  background:#06060f80;min-height:60px;margin-bottom:20px;
+}
+.bank.empty::after{content:"all placed ✓";color:var(--green);font-family:var(--mono);font-size:.78rem;opacity:.7}
+.token{
+  font-family:var(--body);font-size:.9rem;font-weight:500;
+  padding:9px 14px;border-radius:10px;cursor:grab;user-select:none;
+  background:linear-gradient(150deg,#1a1a36,#15152c);
+  border:1px solid #2c2c58;color:var(--txt);
+  transition:transform .12s, box-shadow .12s, border-color .12s;
+  touch-action:none;
+}
+.token .ic{margin-right:6px;opacity:.85}
+.token.code{font-family:var(--mono);color:var(--cyan)}
+.token:hover{transform:translateY(-2px);border-color:var(--cyan);box-shadow:0 6px 18px -8px var(--cyan)}
+.token.selected{border-color:var(--pink);box-shadow:0 0 0 2px var(--pink),0 0 22px -4px var(--pink);transform:translateY(-2px)}
+.token.dragging{opacity:.4}
+.token.locked-correct{border-color:var(--green)}
+.token.locked-wrong{border-color:var(--red)}
+.token{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px}
+.token .cue{font-family:var(--mono);font-size:.66rem;font-weight:400;color:var(--txt-faint);letter-spacing:.02em}
+.token.example{opacity:.55;cursor:default;border-style:dashed;background:#0e0e20}
+.token.example:hover{transform:none;box-shadow:none;border-color:#2c2c58}
+.token.example .extag{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;color:var(--green);text-transform:uppercase}
+
+/* ---------- BUCKETS ---------- */
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.bucket{
+  border:1px solid var(--line);border-radius:14px;padding:14px;
+  background:#0a0a18;min-height:130px;transition:.18s;
+}
+.bucket.dragover{border-color:var(--cyan);background:#00e5ff0d;box-shadow:0 0 0 2px #00e5ff33 inset}
+.bucket .bhead{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.bucket .bsub{font-size:.74rem;color:var(--txt-faint);margin-bottom:12px;min-height:30px}
+.bucket .drop-items{display:flex;flex-wrap:wrap;gap:8px;min-height:40px}
+.b-appstorage .bhead{color:var(--cyan)}
+.b-json .bhead{color:var(--green)}
+.b-swiftdata .bhead{color:var(--purple)}
+.b-server .bhead{color:var(--pink)}
+.bin-yes .bhead{color:var(--green)}
+.bin-no .bhead{color:var(--red)}
+
+/* ---------- ORDER LIST ---------- */
+.orderlist{display:flex;flex-direction:column;gap:10px}
+.ostep{
+  display:flex;align-items:center;gap:12px;
+  background:#0c0c1e;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+}
+.ostep .ohandle{font-family:var(--mono);color:var(--txt-faint);font-size:.8rem;cursor:grab}
+.ostep .obadge{font-family:var(--disp);font-weight:700;color:var(--purple);width:26px;text-align:center}
+.ostep .otext{flex:1;font-size:.92rem}
+.ostep .otext code{font-family:var(--mono);font-size:.84em;color:var(--cyan)}
+.ostep .oarrows{display:flex;flex-direction:column;gap:4px}
+.ostep .oarrows button{
+  background:#1a1a36;border:1px solid var(--line);color:var(--txt-dim);
+  width:30px;height:22px;border-radius:6px;cursor:pointer;font-size:.7rem;line-height:1;
+}
+.ostep .oarrows button:hover{border-color:var(--cyan);color:var(--cyan)}
+.ostep.dragging{opacity:.4}
+.ostep.mark-correct{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.ostep.mark-wrong{border-color:var(--red);box-shadow:0 0 0 1px var(--red) inset}
+
+/* ---------- CODE / BLANKS ---------- */
+.codeblock{
+  font-family:var(--mono);font-size:.84rem;line-height:1.9;
+  background:#06060f;border:1px solid var(--line);border-radius:12px;
+  padding:18px 18px;margin-bottom:16px;overflow-x:auto;white-space:pre-wrap;
+}
+.codeblock .cmt{color:var(--txt-faint)}
+.codeblock .kw{color:var(--pink)}
+.codeblock .str{color:var(--green)}
+.codeblock .typ{color:var(--amber)}
+.blank{
+  display:inline-block;min-width:92px;text-align:center;
+  border-bottom:2px dashed var(--purple);border-radius:6px 6px 0 0;
+  padding:2px 10px;margin:0 2px;cursor:pointer;color:var(--txt-faint);
+  font-family:var(--mono);font-size:.84rem;background:#b14eff10;transition:.15s;
+}
+.blank:hover{background:#b14eff22}
+.blank.filled{color:var(--cyan);border-bottom-style:solid;border-color:var(--cyan);background:#00e5ff12}
+.blank.armed{box-shadow:0 0 0 2px var(--pink);background:#ff2e8818}
+.blank.mark-correct{border-color:var(--green);color:var(--green);background:#27e8a712}
+.blank.mark-wrong{border-color:var(--red);color:var(--red);background:#ff4d6d12}
+
+/* ---------- TRUE / FALSE ---------- */
+.tf-list{display:flex;flex-direction:column;gap:12px}
+.tf-row{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:#0c0c1e;border:1px solid var(--line);border-radius:12px;padding:13px 16px;
+}
+.tf-row .stmt{flex:1;min-width:220px;font-size:.92rem}
+.tf-row .stmt code{font-family:var(--mono);font-size:.84em;color:var(--cyan)}
+.tf-btns{display:flex;gap:8px}
+.tf-btns button{
+  font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;
+  padding:8px 16px;border-radius:8px;cursor:pointer;
+  background:#15152c;border:1px solid var(--line);color:var(--txt-dim);transition:.15s;
+}
+.tf-btns button:hover{border-color:var(--txt-dim)}
+.tf-btns button.sel-true{background:#27e8a722;border-color:var(--green);color:var(--green)}
+.tf-btns button.sel-false{background:#ff4d6d22;border-color:var(--red);color:var(--red)}
+.tf-row.mark-correct{box-shadow:0 0 0 1px var(--green) inset}
+.tf-row.mark-wrong{box-shadow:0 0 0 1px var(--red) inset}
+
+/* ---------- WRITTEN ---------- */
+.written textarea{
+  width:100%;min-height:150px;resize:vertical;
+  background:#06060f;border:1px solid var(--line);border-radius:12px;
+  padding:16px;color:var(--txt);font-family:var(--mono);font-size:.86rem;line-height:1.7;
+}
+.written textarea:focus{outline:none;border-color:var(--purple);box-shadow:0 0 0 3px #b14eff22}
+.tag-instructor{font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--amber);border:1px solid var(--amber);padding:3px 8px;border-radius:20px}
+
+/* ---------- DOCK ---------- */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:linear-gradient(0deg,#06060f,#06060fe0);
+  border-top:1px solid var(--line);backdrop-filter:blur(12px);
+  padding:14px 20px;
+}
+.dock-inner{max-width:980px;margin:0 auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.progress-wrap{flex:1;min-width:180px}
+.progress-wrap .plabel{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;color:var(--txt-dim);margin-bottom:5px;display:flex;justify-content:space-between}
+.bar{height:8px;border-radius:6px;background:#15152c;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--purple),var(--pink));transition:width .4s}
+.pw-input{
+  background:#06060f;border:1px solid var(--line);border-radius:10px;
+  padding:11px 13px;color:var(--txt);font-family:var(--mono);font-size:.85rem;width:160px;
+}
+.pw-input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px #ffb34722}
+.btn{
+  font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;
+  padding:11px 18px;border-radius:10px;cursor:pointer;border:1px solid transparent;
+  transition:.15s;white-space:nowrap;font-weight:500;
+}
+.btn-grade{background:linear-gradient(135deg,var(--cyan),var(--purple));color:var(--bg);font-weight:700}
+.btn-grade:hover{box-shadow:0 8px 26px -8px var(--purple);transform:translateY(-1px)}
+.btn-pdf{background:#15152c;border-color:var(--line);color:var(--txt)}
+.btn-pdf:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-reset{background:transparent;border-color:var(--line);color:var(--txt-faint)}
+.btn-reset:hover{border-color:var(--red);color:var(--red)}
+
+/* ---------- RESULT MODAL ---------- */
+.scrim{position:fixed;inset:0;background:#000a;backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.scrim.show{display:flex}
+.result{
+  max-width:560px;width:100%;background:linear-gradient(165deg,#13132c,#0a0a18);
+  border:1px solid var(--line);border-radius:20px;padding:30px;
+  box-shadow:0 40px 100px -30px #000;
+}
+.result h3{font-family:var(--disp);font-size:1.1rem;letter-spacing:.06em;margin-bottom:4px}
+.score-big{font-family:var(--disp);font-weight:900;font-size:3.4rem;line-height:1;margin:14px 0 2px;
+  background:linear-gradient(105deg,var(--cyan),var(--purple),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.score-sub{color:var(--txt-dim);font-family:var(--mono);font-size:.82rem;margin-bottom:20px}
+.breakdown{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.brow{display:flex;justify-content:space-between;align-items:center;font-size:.86rem;padding:9px 13px;border-radius:9px;background:#0c0c1e;border:1px solid var(--line)}
+.brow .bscore{font-family:var(--mono);font-weight:700}
+.brow.full .bscore{color:var(--green)}
+.brow.part .bscore{color:var(--amber)}
+.brow.zero .bscore{color:var(--red)}
+.result .note{font-size:.8rem;color:var(--txt-faint);border-top:1px solid var(--line);padding-top:16px}
+.result .close{margin-top:18px;width:100%;text-align:center}
+.toast{position:fixed;top:22px;left:50%;transform:translateX(-50%) translateY(-80px);z-index:200;
+  background:#15152c;border:1px solid var(--red);color:var(--txt);padding:12px 20px;border-radius:12px;
+  font-family:var(--mono);font-size:.82rem;transition:transform .35s;box-shadow:0 20px 50px -20px #000}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ---------- PRINT ---------- */
+#printSummary{display:none}
+@media print{
+  body{background:#fff;color:#111;padding:0}
+  .hero .grid-bg,.dock,.scrim,.btn,.hint,.bank,.oarrows,.tf-btns,.tag-instructor{display:none !important}
+  header.hero{border-color:#ccc;padding:20px}
+  .hero h1{color:#111;-webkit-text-fill-color:#111}
+  .brandline{color:#444}
+  section.task,.idgate{break-inside:avoid;border-color:#ccc;background:#fff;box-shadow:none}
+  #printSummary{display:block;padding:0 20px;max-width:980px;margin:0 auto}
+  #printSummary h2{font-family:var(--disp);font-size:1rem;margin:18px 0 8px;color:#111;border-bottom:1px solid #ccc;padding-bottom:4px}
+  #printSummary .pline{font-size:.85rem;margin:4px 0;color:#111}
+  #printSummary .pline b{color:#000}
+  #printSummary .pk{font-family:var(--mono);color:#555}
+  .liveui{display:none !important}
+}
+.footer-note{text-align:center;color:var(--txt-faint);font-size:.78rem;margin:40px 0 0;font-family:var(--mono);letter-spacing:.05em}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="grid-bg"></div>
+  <div class="brandline">MAC221 · iOS Application Development · Lab 07</div>
+  <h1>Make&nbsp;It&nbsp;Stick</h1>
+  <p class="sub">Data Persistence — <span class="inline-code">@AppStorage</span> · JSON&nbsp;Files · SwiftData</p>
+  <div class="meta-row">
+    <span class="chip">Instructor <b>Khalid Kassou</b></span>
+    <span class="chip">Dept <b>MEC · LaGuardia CC</b></span>
+    <span class="chip">Auto-graded <b>40 pts</b></span>
+    <span class="chip">Format <b>Interactive</b></span>
+  </div>
+</header>
+
+<div class="wrap liveui">
+
+  <!-- IDENTITY -->
+  <div class="idgate">
+    <h3>◆ Student Identity</h3>
+    <p>Required before grading. Your name and EMPLID are stamped onto the PDF you submit.</p>
+    <div class="id-fields">
+      <div class="field"><label>Full Name</label><input id="stuName" type="text" placeholder="Last, First" autocomplete="off"></div>
+      <div class="field"><label>EMPLID</label><input id="stuId" type="text" placeholder="8-digit CUNY EMPLID" autocomplete="off"></div>
+    </div>
+  </div>
+
+  <!-- TASK 1 : DECISION TREE -->
+  <section class="task" id="task1">
+    <div class="task-head">
+      <div class="tnum">1</div>
+      <div><h2>The Decision Tree</h2><div class="pts">8 PTS · 1 PER CHIP</div></div>
+    </div>
+    <p class="task-desc">Pick the <em>smallest</em> tool that fits. Each chip shows its <b>data shape</b> in grey — match that shape to the column's rule. One <span style="color:var(--txt-faint)">dimmed worked example</span> is already placed in every column to show you the pattern. Drag a chip into a column, or <b>tap a chip then tap a column</b>.</p>
+    <div class="hint">// Match by data shape: one value → @AppStorage · a list → JSON · big/queryable/synced → SwiftData · shared between people → Server.</div>
+    <div class="bank" id="bank1"></div>
+    <div class="buckets" id="buckets1">
+      <div class="bucket b-appstorage" data-bucket="appstorage"><div class="bhead">@AppStorage</div><div class="bsub">ONE simple value<br>(Bool · Int · Double · String)</div><div class="drop-items"></div></div>
+      <div class="bucket b-json" data-bucket="json"><div class="bhead">JSON File</div><div class="bsub">A LIST of custom structs<br>(small to medium)</div><div class="drop-items"></div></div>
+      <div class="bucket b-swiftdata" data-bucket="swiftdata"><div class="bhead">SwiftData</div><div class="bsub">BIG data, queries,<br>relationships, or iCloud sync</div><div class="drop-items"></div></div>
+      <div class="bucket b-server" data-bucket="server"><div class="bhead">Server / API</div><div class="bsub">Data SHARED between<br>many different people</div><div class="drop-items"></div></div>
+    </div>
+  </section>
+
+  <!-- TASK 2 : TYPE GATE -->
+  <section class="task" id="task2">
+    <div class="task-head">
+      <div class="tnum">2</div>
+      <div><h2>The @AppStorage Type Gate</h2><div class="pts">8 PTS · 1 PER TYPE</div></div>
+    </div>
+    <p class="task-desc"><span class="inline-code">@AppStorage</span> is backed by <span class="inline-code">UserDefaults</span>, which only accepts a handful of types. Sort each type into whether it can be stored <em>directly</em>, or whether it needs JSON/SwiftData.</p>
+    <div class="bank" id="bank2"></div>
+    <div class="buckets" id="buckets2" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="bucket bin-yes" data-bucket="yes"><div class="bhead">✅ Stores Directly</div><div class="bsub">Compiles &amp; persists as-is</div><div class="drop-items"></div></div>
+      <div class="bucket bin-no" data-bucket="no"><div class="bhead">❌ Needs JSON / SwiftData</div><div class="bsub">Compiler error or wrong tool</div><div class="drop-items"></div></div>
+    </div>
+  </section>
+
+  <!-- TASK 3 : FIRST LAUNCH ORDER -->
+  <section class="task" id="task3">
+    <div class="task-head">
+      <div class="tnum">3</div>
+      <div><h2>First-Launch Sequence</h2><div class="pts">5 PTS · 1 PER STEP</div></div>
+    </div>
+    <p class="task-desc">Nobody manually creates <span class="inline-code">moods.json</span> — iOS does, but only at a precise moment. Put the lifecycle steps in the correct order using the arrows (or drag the rows).</p>
+    <div class="orderlist" id="order3"></div>
+  </section>
+
+  <!-- TASK 4 : FILL THE PIPELINE -->
+  <section class="task" id="task4">
+    <div class="task-head">
+      <div class="tnum">4</div>
+      <div><h2>Fill the Persistence Pipeline</h2><div class="pts">12 PTS · 2 PER BLANK</div></div>
+    </div>
+    <p class="task-desc">Drag a token onto each blank (or tap a token, then tap a blank). Tap a filled blank to clear it. Tokens span all three layers — and the bank contains decoys.</p>
+    <div class="codeblock" id="code4"><span class="cmt">// A · @AppStorage with a String-backed enum</span>
+<span class="kw">@AppStorage</span>(<span class="str">"theme"</span>) <span class="kw">var</span> theme: <span class="typ">AppTheme</span> = <span class="blank" data-blank="b1" data-section="A">?</span>
+
+<span class="cmt">// B · JSON ViewModel — the private save()</span>
+<span class="kw">let</span> data = <span class="kw">try?</span> <span class="typ">JSONEncoder</span>().<span class="blank" data-blank="b2" data-section="B">?</span>(history)
+<span class="kw">try?</span> data.write(to: fileURL)
+
+<span class="cmt">// C · JSON ViewModel — the private load()</span>
+<span class="kw">let</span> decoded = <span class="kw">try?</span> <span class="typ">JSONDecoder</span>().<span class="blank" data-blank="b3" data-section="C">?</span>([<span class="typ">MoodEntry</span>].<span class="kw">self</span>, from: data)
+
+<span class="cmt">// D · SwiftData — newest first</span>
+<span class="kw">@Query</span>(sort: \<span class="typ">MoodEntry</span>.timestamp, order: <span class="blank" data-blank="b4" data-section="D">?</span>)
+<span class="kw">var</span> moods: [<span class="typ">MoodEntry</span>]
+
+<span class="cmt">// E · SwiftData — add one record (the "save")</span>
+context.<span class="blank" data-blank="b5" data-section="E">?</span>(entry)
+
+<span class="cmt">// F · SwiftData — remove one record</span>
+context.<span class="blank" data-blank="b6" data-section="F">?</span>(entry)</div>
+    <div class="bank" id="bank4"></div>
+  </section>
+
+  <!-- TASK 5 : TRUE / FALSE -->
+  <section class="task" id="task5">
+    <div class="task-head">
+      <div class="tnum">5</div>
+      <div><h2>Myth or Mechanic?</h2><div class="pts">7 PTS · 1 PER STATEMENT</div></div>
+    </div>
+    <p class="task-desc">Mark each statement <b style="color:var(--green)">TRUE</b> or <b style="color:var(--red)">FALSE</b>. These are the misconceptions that cost real apps their data.</p>
+    <div class="tf-list" id="tf5"></div>
+  </section>
+
+  <!-- TASK 6 : WRITTEN -->
+  <section class="task" id="task6">
+    <div class="task-head">
+      <div class="tnum">6</div>
+      <div><h2>Design Challenge <span class="tag-instructor">INSTRUCTOR-REVIEWED · NOT AUTO-SCORED</span></h2><div class="pts">included in PDF submission</div></div>
+    </div>
+    <p class="task-desc">A teammate built the Mood Tracker but used <span class="inline-code">@AppStorage("history")</span> to store the whole array of moods. It "works" in the canvas preview but corrupts on real devices. In 4–6 sentences: <b>(a)</b> explain precisely why that's the wrong tool, and <b>(b)</b> describe what you'd change, naming the exact file in the MVVM structure you'd edit and why a View never touches it.</p>
+    <div class="written"><textarea id="written6" placeholder="Your analysis…"></textarea></div>
+  </section>
+
+  <p class="footer-note">MAC221 · Mathematics, Engineering &amp; Computer Science · LaGuardia Community College — “Test by killing the app.”</p>
+</div>
+
+<!-- PRINT-ONLY SUMMARY -->
+<div id="printSummary"></div>
+
+<!-- DOCK -->
+<div class="dock liveui">
+  <div class="dock-inner">
+    <div class="progress-wrap">
+      <div class="plabel"><span>COMPLETION</span><span id="pPct">0%</span></div>
+      <div class="bar"><i id="pBar"></i></div>
+    </div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="Grade password">
+    <button class="btn btn-grade" id="btnGrade">⚡ Auto-Grade</button>
+    <button class="btn btn-pdf" id="btnPdf">⬇ Save as PDF</button>
+    <button class="btn btn-reset" id="btnReset">Reset</button>
+  </div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="scrim" id="scrim">
+  <div class="result">
+    <h3 id="resTitle">Results</h3>
+    <div class="score-big" id="resScore">—</div>
+    <div class="score-sub" id="resSub"></div>
+    <div class="breakdown" id="resBreak"></div>
+    <div class="note">Per-task points only — the answer key is never shown. Review the lecture, adjust, and re-grade. Then <b>Save as PDF</b> and submit.</div>
+    <button class="btn btn-pdf close" id="resClose">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG — instructor settings
+   ============================================================ */
+const GRADE_PASSWORD = "lab4";   // <-- change this before distributing
+const PASS_THRESHOLD = 70;               // percent considered "passing" in the result blurb
+
+/* ============================================================
+   DATA + ANSWER KEY  (not displayed to students)
+   ============================================================ */
+const T1_ITEMS = [
+  {id:"s1", txt:"Dark-mode on/off toggle", cue:"one Bool", key:"appstorage"},
+  {id:"s2", txt:'"Has seen onboarding" flag', cue:"one Bool", key:"appstorage"},
+  {id:"s3", txt:"Preferred font-size", cue:"one Double", key:"appstorage"},
+  {id:"s4", txt:"A journal of 200 entries", cue:"a list of structs", key:"json"},
+  {id:"s5", txt:"Saved recipes list (~50)", cue:"a list of structs", key:"json"},
+  {id:"s6", txt:"Notes app · 10k notes · iCloud", cue:"big data + queries + sync", key:"swiftdata"},
+  {id:"s7", txt:"Library catalog (books ↔ authors)", cue:"records with relationships", key:"swiftdata"},
+  {id:"s8", txt:"Group chat feed", cue:"shared between many users", key:"server"},
+];
+// one worked example pre-placed in each column as a model (not graded)
+const T1_EXAMPLES = [
+  {id:"ex-as", txt:"Volume slider", cue:"one Double", bucket:"appstorage"},
+  {id:"ex-js", txt:"Saved bookmarks", cue:"a list of structs", bucket:"json"},
+  {id:"ex-sd", txt:"Fitness tracker · 50k workouts", cue:"big data + queries", bucket:"swiftdata"},
+  {id:"ex-sv", txt:"Live multiplayer leaderboard", cue:"shared between users", bucket:"server"},
+];
+const T2_ITEMS = [
+  {id:"t-bool", txt:"Bool", code:true, key:"yes"},
+  {id:"t-int", txt:"Int", code:true, key:"yes"},
+  {id:"t-str", txt:"String", code:true, key:"yes"},
+  {id:"t-url", txt:"URL", code:true, key:"yes"},
+  {id:"t-enum", txt:"String-backed enum", code:false, key:"yes"},
+  {id:"t-arrstr", txt:"[String]", code:true, key:"no"},
+  {id:"t-struct", txt:"Custom struct", code:false, key:"no"},
+  {id:"t-arrmood", txt:"[MoodEntry]", code:true, key:"no"},
+];
+const T3_STEPS = [
+  {id:"o1", txt:"App opens for the first time → <code>init()</code> calls <code>load()</code>"},
+  {id:"o2", txt:"<code>load()</code> tries to read <code>moods.json</code> — the file does not exist yet"},
+  {id:"o3", txt:"<code>try?</code> returns nil → <code>guard … else { return }</code> bails out; <code>history</code> stays <code>[]</code>"},
+  {id:"o4", txt:"User taps Add → <code>save()</code> runs → <code>write(to:)</code> creates the file"},
+  {id:"o5", txt:"App restarts → <code>load()</code> now finds the file → data comes back"},
+];
+const T3_ORDER = ["o1","o2","o3","o4","o5"]; // correct order
+
+const T4_TOKENS = [
+  {id:"k-encode", txt:"encode", code:true},
+  {id:"k-decode", txt:"decode", code:true},
+  {id:"k-insert", txt:"insert", code:true},
+  {id:"k-delete", txt:"delete", code:true},
+  {id:"k-reverse", txt:".reverse", code:true},
+  {id:"k-system", txt:".system", code:true},
+  {id:"k-save", txt:"save", code:true},        // decoy
+  {id:"k-load", txt:"load", code:true},        // decoy
+  {id:"k-append", txt:".append", code:true},   // decoy
+  {id:"k-forward", txt:".forward", code:true}, // decoy
+];
+const T4_KEY = {b1:"k-system", b2:"k-encode", b3:"k-decode", b4:"k-reverse", b5:"k-insert", b6:"k-delete"};
+
+const T5_STMTS = [
+  {id:"f1", txt:"A <code>@State</code> variable survives a force-quit.", key:false},
+  {id:"f2", txt:"<code>@AppStorage</code> can efficiently store an array of 100 custom structs.", key:false},
+  {id:"f3", txt:"In MVVM, the View should call <code>save()</code> directly.", key:false},
+  {id:"f4", txt:"<code>moods.json</code> is created on app launch, before the first save.", key:false},
+  {id:"f5", txt:"A SwiftData <code>@Model</code> class must conform to <code>Codable</code>.", key:false},
+  {id:"f6", txt:"<code>@Query</code> auto-updates the View when the database changes.", key:true},
+  {id:"f7", txt:"SwiftData models are a <code>class</code> with <code>var</code> properties, not a <code>struct</code> with <code>let</code>.", key:true},
+];
+
+const TASK_LABELS = {
+  t1:"1 · Decision Tree", t2:"2 · Type Gate", t3:"3 · First-Launch Order",
+  t4:"4 · Pipeline Blanks", t5:"5 · Myth or Mechanic"
+};
+const TASK_MAX = {t1:8, t2:8, t3:5, t4:12, t5:7};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  t1:{}, // itemId -> bucket
+  t2:{}, // itemId -> bucket
+  t3:[...T3_STEPS.map(s=>s.id)].sort(()=>Math.random()-0.5), // shuffled order
+  t4:{}, // blankId -> tokenId
+  t5:{}, // stmtId -> bool
+};
+let selectedToken = null;   // {kind, id}
+let armedBlank = null;      // blankId waiting for token
+let dragData = null;        // {kind,id}
+
+const $ = s=>document.querySelector(s);
+const ce = (t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5);}
+
+/* ============================================================
+   TASK 1 + 2  (classification: shared logic)
+   ============================================================ */
+function buildClassify(taskKey, items, bankId, bucketsId){
+  document.querySelectorAll("#"+bucketsId+" .bucket").forEach(b=>{
+    b.addEventListener("click",()=>dropClassify(taskKey,b.dataset.bucket,bankId,bucketsId));
+    b.addEventListener("dragover",e=>{e.preventDefault();b.classList.add("dragover");});
+    b.addEventListener("dragleave",()=>b.classList.remove("dragover"));
+    b.addEventListener("drop",e=>{e.preventDefault();b.classList.remove("dragover");
+      if(dragData&&dragData.kind===taskKey){placeClassify(taskKey,dragData.id,b.dataset.bucket,bankId,bucketsId);}});
+  });
+  renderClassify(taskKey,bankId,bucketsId);
+}
+function makeChip(it,taskKey){
+  const tok = ce("div","token"+(it.code?" code":""));
+  const main = ce("span"); main.textContent = it.txt; tok.appendChild(main);
+  if(it.cue){const cue=ce("span","cue"); cue.textContent="→ "+it.cue; tok.appendChild(cue);}
+  tok.dataset.id = it.id; tok.draggable = true;
+  tok.addEventListener("dragstart",()=>{dragData={kind:taskKey,id:it.id};tok.classList.add("dragging");});
+  tok.addEventListener("dragend",()=>{tok.classList.remove("dragging");dragData=null;});
+  return tok;
+}
+function selectClassifyToken(taskKey,id,el){
+  if(selectedToken&&selectedToken.id===id){clearSelection();return;}
+  clearSelection();
+  selectedToken={kind:taskKey,id};
+  el.classList.add("selected");
+}
+function dropClassify(taskKey,bucket,bankId,bucketsId){
+  if(selectedToken&&selectedToken.kind===taskKey){
+    placeClassify(taskKey,selectedToken.id,bucket,bankId,bucketsId);
+    clearSelection();
+  }
+}
+function placeClassify(taskKey,id,bucket,bankId,bucketsId){
+  state[taskKey][id]=bucket;
+  renderClassify(taskKey,bankId,bucketsId);
+  updateProgress();
+}
+function renderClassify(taskKey,bankId,bucketsId){
+  const items = taskKey==="t1"?T1_ITEMS:T2_ITEMS;
+  const bank = $("#"+bankId);
+  bank.innerHTML="";
+  document.querySelectorAll("#"+bucketsId+" .drop-items").forEach(d=>d.innerHTML="");
+  // seed one dimmed worked example per column (task 1 only) — not graded
+  if(taskKey==="t1"){
+    T1_EXAMPLES.forEach(ex=>{
+      const tok=ce("div","token example");
+      const tag=ce("span","extag"); tag.textContent="✓ example";
+      const main=ce("span"); main.textContent=ex.txt;
+      const cue=ce("span","cue"); cue.textContent="→ "+ex.cue;
+      tok.append(tag,main,cue);
+      const zone=document.querySelector("#"+bucketsId+" .bucket[data-bucket='"+ex.bucket+"'] .drop-items");
+      if(zone)zone.appendChild(tok);
+    });
+  }
+  items.forEach(it=>{
+    const placed = state[taskKey][it.id];
+    const tok = makeChip(it,taskKey);
+    if(placed){
+      tok.addEventListener("click",e=>{e.stopPropagation();delete state[taskKey][it.id];renderClassify(taskKey,bankId,bucketsId);updateProgress();});
+      const zone=document.querySelector("#"+bucketsId+" .bucket[data-bucket='"+placed+"'] .drop-items");
+      if(zone)zone.appendChild(tok);
+    }else{
+      tok.addEventListener("click",()=>selectClassifyToken(taskKey,it.id,tok));
+      bank.appendChild(tok);
+    }
+  });
+  bank.classList.toggle("empty", bank.children.length===0);
+}
+function clearSelection(){
+  selectedToken=null;
+  document.querySelectorAll(".token.selected").forEach(t=>t.classList.remove("selected"));
+}
+
+/* ============================================================
+   TASK 3 — ORDERING
+   ============================================================ */
+function renderOrder(){
+  const list = $("#order3");
+  list.innerHTML="";
+  state.t3.forEach((id,idx)=>{
+    const step = T3_STEPS.find(s=>s.id===id);
+    const row = ce("div","ostep");
+    row.dataset.id=id; row.draggable=true;
+    row.innerHTML = `<span class="ohandle">⠿</span><span class="obadge">${idx+1}</span><span class="otext">${step.txt}</span>`;
+    const arrows = ce("div","oarrows");
+    const up=ce("button"); up.textContent="▲"; up.title="Move up";
+    up.onclick=()=>moveStep(idx,-1);
+    const dn=ce("button"); dn.textContent="▼"; dn.title="Move down";
+    dn.onclick=()=>moveStep(idx,1);
+    arrows.append(up,dn); row.appendChild(arrows);
+    row.addEventListener("dragstart",()=>{dragData={kind:"t3",id};row.classList.add("dragging");});
+    row.addEventListener("dragend",()=>{row.classList.remove("dragging");dragData=null;});
+    row.addEventListener("dragover",e=>e.preventDefault());
+    row.addEventListener("drop",e=>{e.preventDefault();
+      if(dragData&&dragData.kind==="t3"){reorderTo(dragData.id,id);}});
+    list.appendChild(row);
+  });
+}
+function moveStep(idx,dir){
+  const ni=idx+dir;
+  if(ni<0||ni>=state.t3.length)return;
+  const a=state.t3; [a[idx],a[ni]]=[a[ni],a[idx]];
+  renderOrder(); updateProgress();
+}
+function reorderTo(dragId,targetId){
+  const a=state.t3;
+  const from=a.indexOf(dragId), to=a.indexOf(targetId);
+  a.splice(from,1); a.splice(to,0,dragId);
+  renderOrder(); updateProgress();
+}
+
+/* ============================================================
+   TASK 4 — BLANKS + TOKEN BANK
+   ============================================================ */
+function buildBlanks(){
+  const bank = $("#bank4");
+  shuffle(T4_TOKENS).forEach(t=>{
+    const tok = ce("div","token code");
+    tok.textContent=t.txt; tok.dataset.id=t.id; tok.draggable=true;
+    tok.addEventListener("click",()=>armToken(t.id,tok));
+    tok.addEventListener("dragstart",()=>{dragData={kind:"t4",id:t.id};tok.classList.add("dragging");});
+    tok.addEventListener("dragend",()=>{tok.classList.remove("dragging");dragData=null;});
+    bank.appendChild(tok);
+  });
+  document.querySelectorAll("#code4 .blank").forEach(bl=>{
+    bl.addEventListener("click",()=>onBlankClick(bl.dataset.blank,bl));
+    bl.addEventListener("dragover",e=>{e.preventDefault();bl.classList.add("armed");});
+    bl.addEventListener("dragleave",()=>{if(armedBlank!==bl.dataset.blank)bl.classList.remove("armed");});
+    bl.addEventListener("drop",e=>{e.preventDefault();
+      if(dragData&&dragData.kind==="t4"){fillBlank(bl.dataset.blank,dragData.id);}});
+  });
+  renderBlanks();
+}
+function armToken(id,el){
+  if(armedBlank){ fillBlank(armedBlank,id); return; }
+  if(selectedToken&&selectedToken.id===id){clearSelection();return;}
+  clearSelection();
+  selectedToken={kind:"t4",id};
+  el.classList.add("selected");
+}
+function onBlankClick(blankId,el){
+  if(state.t4[blankId]){ // clear it
+    delete state.t4[blankId]; renderBlanks(); updateProgress(); return;
+  }
+  if(selectedToken&&selectedToken.kind==="t4"){
+    fillBlank(blankId,selectedToken.id); clearSelection(); return;
+  }
+  // arm this blank to wait for a token
+  document.querySelectorAll("#code4 .blank").forEach(b=>b.classList.remove("armed"));
+  if(armedBlank===blankId){armedBlank=null;return;}
+  armedBlank=blankId; el.classList.add("armed");
+}
+function fillBlank(blankId,tokenId){
+  // remove token from any other blank (each token usable once)
+  Object.keys(state.t4).forEach(k=>{if(state.t4[k]===tokenId)delete state.t4[k];});
+  state.t4[blankId]=tokenId;
+  armedBlank=null; clearSelection();
+  renderBlanks(); updateProgress();
+}
+function renderBlanks(){
+  const used = new Set(Object.values(state.t4));
+  // blanks
+  document.querySelectorAll("#code4 .blank").forEach(bl=>{
+    bl.classList.remove("armed","mark-correct","mark-wrong");
+    const tid=state.t4[bl.dataset.blank];
+    if(tid){const t=T4_TOKENS.find(x=>x.id===tid);bl.textContent=t.txt;bl.classList.add("filled");}
+    else{bl.textContent="?";bl.classList.remove("filled");}
+  });
+  // bank — only unused tokens visible
+  const bank=$("#bank4"); bank.innerHTML="";
+  shuffle(T4_TOKENS).forEach(t=>{
+    if(used.has(t.id))return;
+    const tok=ce("div","token code"); tok.textContent=t.txt; tok.dataset.id=t.id; tok.draggable=true;
+    if(selectedToken&&selectedToken.id===t.id)tok.classList.add("selected");
+    tok.addEventListener("click",()=>armToken(t.id,tok));
+    tok.addEventListener("dragstart",()=>{dragData={kind:"t4",id:t.id};tok.classList.add("dragging");});
+    tok.addEventListener("dragend",()=>{tok.classList.remove("dragging");dragData=null;});
+    bank.appendChild(tok);
+  });
+  bank.classList.toggle("empty",bank.children.length===0);
+}
+
+/* ============================================================
+   TASK 5 — TRUE / FALSE
+   ============================================================ */
+function buildTF(){
+  const list=$("#tf5");
+  T5_STMTS.forEach(s=>{
+    const row=ce("div","tf-row"); row.dataset.id=s.id;
+    const st=ce("div","stmt"); st.innerHTML=s.txt;
+    const btns=ce("div","tf-btns");
+    const bt=ce("button"); bt.textContent="TRUE";
+    const bf=ce("button"); bf.textContent="FALSE";
+    bt.onclick=()=>{state.t5[s.id]=true;syncTF(s.id);updateProgress();};
+    bf.onclick=()=>{state.t5[s.id]=false;syncTF(s.id);updateProgress();};
+    btns.append(bt,bf);
+    row.append(st,btns); list.appendChild(row);
+  });
+}
+function syncTF(id){
+  const row=document.querySelector(`#tf5 .tf-row[data-id='${id}']`);
+  const [bt,bf]=row.querySelectorAll("button");
+  bt.classList.toggle("sel-true",state.t5[id]===true);
+  bf.classList.toggle("sel-false",state.t5[id]===false);
+}
+
+/* ============================================================
+   PROGRESS
+   ============================================================ */
+function countAnswered(){
+  let done=0,total=0;
+  total+=T1_ITEMS.length; done+=Object.keys(state.t1).length;
+  total+=T2_ITEMS.length; done+=Object.keys(state.t2).length;
+  total+=1; done+=1; // ordering always "engaged"
+  total+=Object.keys(T4_KEY).length; done+=Object.keys(state.t4).length;
+  total+=T5_STMTS.length; done+=Object.keys(state.t5).length;
+  return {done,total};
+}
+function updateProgress(){
+  const {done,total}=countAnswered();
+  const pct=Math.round(done/total*100);
+  $("#pBar").style.width=pct+"%";
+  $("#pPct").textContent=pct+"%";
+}
+
+/* ============================================================
+   GRADING
+   ============================================================ */
+function grade(){
+  const name=$("#stuName").value.trim();
+  const id=$("#stuId").value.trim();
+  if(!name||!id){toast("Enter your name and EMPLID first.");return;}
+  if($("#pwInput").value!==GRADE_PASSWORD){toast("Incorrect grade password.");return;}
+
+  const res={};
+  // T1
+  let c=0; T1_ITEMS.forEach(it=>{if(state.t1[it.id]===it.key)c++;}); res.t1=c;
+  // T2
+  c=0; T2_ITEMS.forEach(it=>{if(state.t2[it.id]===it.key)c++;}); res.t2=c;
+  // T3 — points per correct position
+  c=0; state.t3.forEach((id,i)=>{if(T3_ORDER[i]===id)c++;}); res.t3=c;
+  // T4 — 2 pts per blank
+  c=0; Object.keys(T4_KEY).forEach(b=>{if(state.t4[b]===T4_KEY[b])c+=2;}); res.t4=c;
+  // T5
+  c=0; T5_STMTS.forEach(s=>{if(state.t5[s.id]===s.key)c++;}); res.t5=c;
+
+  const got=Object.values(res).reduce((a,b)=>a+b,0);
+  const max=Object.values(TASK_MAX).reduce((a,b)=>a+b,0);
+  const pct=Math.round(got/max*100);
+  showResult(name,id,res,got,max,pct);
+  window._lastResult={name,id,res,got,max,pct,ts:new Date().toLocaleString()};
+}
+function showResult(name,id,res,got,max,pct){
+  $("#resTitle").textContent = pct>=PASS_THRESHOLD ? "✓ Passing — nice work" : "Keep iterating";
+  $("#resScore").textContent = pct+"%";
+  $("#resSub").textContent = `${got} / ${max} auto-graded points · ${name} · ${id}`;
+  const wrap=$("#resBreak"); wrap.innerHTML="";
+  Object.keys(TASK_MAX).forEach(k=>{
+    const got_=res[k], max_=TASK_MAX[k];
+    const cls = got_===max_?"full":(got_===0?"zero":"part");
+    const row=ce("div","brow "+cls);
+    row.innerHTML=`<span>${TASK_LABELS[k]}</span><span class="bscore">${got_} / ${max_}</span>`;
+    wrap.appendChild(row);
+  });
+  $("#scrim").classList.add("show");
+}
+
+/* ============================================================
+   PDF  (window.print with a clean print-only summary)
+   ============================================================ */
+function buildPrintSummary(){
+  const name=$("#stuName").value.trim()||"—";
+  const id=$("#stuId").value.trim()||"—";
+  const ps=$("#printSummary");
+  const r=window._lastResult;
+  let html = `<h2>Submission</h2>
+    <div class="pline"><b>Student:</b> ${escapeHtml(name)} &nbsp;·&nbsp; <b>EMPLID:</b> ${escapeHtml(id)}</div>
+    <div class="pline"><b>Lab:</b> 07 — Data Persistence (MAC221) &nbsp;·&nbsp; <b>Printed:</b> ${new Date().toLocaleString()}</div>`;
+  if(r){html+=`<div class="pline"><b>Auto-graded score:</b> ${r.got} / ${r.max} (${r.pct}%) &nbsp;·&nbsp; graded ${r.ts}</div>`;}
+  else{html+=`<div class="pline"><b>Auto-graded score:</b> not yet graded</div>`;}
+
+  html+=`<h2>1 · Decision Tree</h2>`;
+  T1_ITEMS.forEach(it=>html+=`<div class="pline"><span class="pk">${escapeHtml(it.txt)}</span> → <b>${state.t1[it.id]||"(blank)"}</b></div>`);
+  html+=`<h2>2 · @AppStorage Type Gate</h2>`;
+  T2_ITEMS.forEach(it=>html+=`<div class="pline"><span class="pk">${escapeHtml(it.txt)}</span> → <b>${state.t2[it.id]||"(blank)"}</b></div>`);
+  html+=`<h2>3 · First-Launch Order</h2>`;
+  state.t3.forEach((sid,i)=>{const s=T3_STEPS.find(x=>x.id===sid);html+=`<div class="pline"><b>${i+1}.</b> ${stripTags(s.txt)}</div>`;});
+  html+=`<h2>4 · Pipeline Blanks</h2>`;
+  Object.keys(T4_KEY).forEach(b=>{const t=T4_TOKENS.find(x=>x.id===state.t4[b]);html+=`<div class="pline"><span class="pk">${b}</span> → <b>${t?t.txt:"(blank)"}</b></div>`;});
+  html+=`<h2>5 · Myth or Mechanic</h2>`;
+  T5_STMTS.forEach(s=>{const v=state.t5[s.id];html+=`<div class="pline"><span class="pk">${stripTags(s.txt)}</span> → <b>${v===undefined?"(blank)":(v?"TRUE":"FALSE")}</b></div>`;});
+  html+=`<h2>6 · Design Challenge (instructor-reviewed)</h2>`;
+  const w=$("#written6").value.trim();
+  html+=`<div class="pline">${w?escapeHtml(w).replace(/\n/g,"<br>"):"<i>(no response)</i>"}</div>`;
+  ps.innerHTML=html;
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function stripTags(s){return s.replace(/<[^>]+>/g,"");}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2600);}
+function resetAll(){
+  if(!confirm("Clear all answers and start over?"))return;
+  state.t1={};state.t2={};state.t4={};state.t5={};
+  state.t3=shuffle(T3_STEPS.map(s=>s.id));
+  selectedToken=null;armedBlank=null;
+  renderClassify("t1","bank1","buckets1");
+  renderClassify("t2","bank2","buckets2");
+  renderOrder();renderBlanks();
+  T5_STMTS.forEach(s=>syncTF(s.id));
+  updateProgress();
+}
+
+// dismiss selection on outside click
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".token")&&!e.target.closest(".bucket")&&!e.target.closest(".blank")){
+    if(!e.target.closest(".btn")) clearSelection();
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+buildClassify("t1",T1_ITEMS,"bank1","buckets1");
+buildClassify("t2",T2_ITEMS,"bank2","buckets2");
+renderOrder();
+buildBlanks();
+buildTF();
+updateProgress();
+
+$("#btnGrade").onclick=grade;
+$("#btnReset").onclick=resetAll;
+$("#resClose").onclick=()=>$("#scrim").classList.remove("show");
+$("#scrim").onclick=e=>{if(e.target===$("#scrim"))$("#scrim").classList.remove("show");};
+$("#btnPdf").onclick=()=>{
+  if(!$("#stuName").value.trim()||!$("#stuId").value.trim()){toast("Add your name & EMPLID for the PDF header.");}
+  buildPrintSummary();
+  setTimeout(()=>window.print(),120);
+};
+window.addEventListener("beforeprint",buildPrintSummary);
+</script>
+</body>
+</html>

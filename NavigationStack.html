@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwiftUI NavigationStack — MAC221 Lecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --bg-2: #161a23; --bg-3: #1e2330; --panel: #13171f;
+    --text: #e6e9f0; --muted: #9aa3b5; --border: #262c3a;
+    --accent: #ff7a59; --accent-2: #5ac8fa; --green: #4cd964; --yellow: #ffd60a; --purple: #bf5af2; --pink: #ff2d55;
+    --kw: #ff7ab2; --type: #6ad1ff; --str: #ffb86c; --num: #c3e88d; --com: #6b7489; --prop: #c792ea;
+    --hl: rgba(255,122,89,0.14); --radius: 14px; --panel-w: 360px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+  .layout { display: grid; grid-template-columns: 1fr var(--panel-w); min-height: 100vh; }
+  main { padding: 0 48px 120px 48px; max-width: 980px; width: 100%; justify-self: center; }
+  @media (max-width: 1100px) {
+    .layout { grid-template-columns: 1fr; }
+    aside.explain { position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: 40vh; border-left: none; border-top: 1px solid var(--border); }
+    main { padding: 0 20px 48vh 20px; }
+  }
+
+  #progress { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: linear-gradient(90deg, var(--accent), var(--purple)); z-index: 100; }
+
+  header.hero { padding: 80px 0 40px; position: relative; }
+  header.hero::before { content: ""; position: absolute; top: -200px; left: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,122,89,.18), transparent 60%); pointer-events: none; }
+  header.hero::after { content: ""; position: absolute; top: -100px; right: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(90,200,250,.14), transparent 60%); pointer-events: none; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 18px; }
+  .eyebrow::before { content: ""; width: 24px; height: 2px; background: var(--accent); }
+  h1 { font-size: clamp(36px, 5vw, 58px); font-weight: 800; line-height: 1.08; letter-spacing: -0.02em; }
+  h1 span { background: linear-gradient(90deg, var(--accent), var(--purple)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { margin-top: 20px; font-size: 18px; color: var(--muted); max-width: 640px; }
+  .meta { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip { font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-2); color: var(--muted); }
+  .chip b { color: var(--text); }
+
+  .roadmap { margin: 36px 0 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .roadmap a { text-decoration: none; color: var(--text); background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; transition: .2s; position: relative; }
+  .roadmap a:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .roadmap a small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .roadmap a .lvl { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
+  .l1 { background: rgba(76,217,100,.15); color: var(--green); }
+  .l2 { background: rgba(255,214,10,.15); color: var(--yellow); }
+  .l3 { background: rgba(255,122,89,.18); color: var(--accent); }
+  .l4 { background: rgba(191,90,242,.18); color: var(--purple); }
+
+  section { padding-top: 70px; }
+  .section-head { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .num { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 16px; background: linear-gradient(135deg, var(--accent), var(--purple)); color: #fff; flex-shrink: 0; }
+  h2 { font-size: 30px; font-weight: 800; letter-spacing: -0.01em; }
+  .level-tag { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; letter-spacing: .06em; text-transform: uppercase; }
+  h3 { font-size: 20px; font-weight: 700; margin: 34px 0 8px; display: flex; align-items: center; gap: 10px; }
+  h3 .ex { font-size: 11px; font-weight: 800; letter-spacing: .1em; padding: 3px 8px; border-radius: 6px; background: var(--bg-3); color: var(--accent-2); border: 1px solid var(--border); }
+  p { color: #cdd3e0; margin: 10px 0; }
+  p strong { color: var(--text); }
+  p code, li code, .callout code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--bg-3); padding: 1px 6px; border-radius: 5px; color: var(--accent-2); }
+  ul { margin: 10px 0 10px 22px; color: #cdd3e0; }
+  li { margin: 5px 0; }
+
+  .def { margin: 22px 0; padding: 20px 22px; border-radius: var(--radius); background: linear-gradient(135deg, rgba(90,200,250,.08), rgba(191,90,242,.06)); border: 1px solid rgba(90,200,250,.25); position: relative; }
+  .def::before { content: "DEFINITION"; position: absolute; top: -10px; left: 16px; font-size: 10px; font-weight: 800; letter-spacing: .14em; background: var(--bg); color: var(--accent-2); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(90,200,250,.35); }
+  .def b { color: var(--accent-2); }
+  .callout { margin: 16px 0; padding: 14px 18px; border-radius: 12px; border-left: 4px solid; background: var(--bg-2); }
+  .callout.tip { border-color: var(--green); } .callout.warn { border-color: var(--yellow); } .callout.key { border-color: var(--accent); }
+  .callout .t { font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+  .callout.tip .t { color: var(--green); } .callout.warn .t { color: var(--yellow); } .callout.key .t { color: var(--accent); }
+
+  /* Code blocks — compact */
+  .code-wrap { margin: 14px 0 18px; border-radius: var(--radius); background: var(--bg-2); border: 1px solid var(--border); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+  .code-head { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--bg-3); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+  .code-head .fname { margin-left: 8px; font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  .code-head .hint { margin-left: auto; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+  .code-head .hint::before { content: "◉"; color: var(--accent); }
+  pre { font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.42; padding: 8px 0; overflow-x: auto; counter-reset: line; }
+  .ln { display: block; padding: 0 18px 0 0; position: relative; cursor: help; white-space: pre; }
+  .ln::before { counter-increment: line; content: counter(line); display: inline-block; width: 40px; text-align: right; margin-right: 16px; color: #3f475a; user-select: none; font-size: 11.5px; }
+  .ln:hover, .ln.active { background: var(--hl); }
+  .ln:hover::before, .ln.active::before { color: var(--accent); }
+  .ln.active { box-shadow: inset 3px 0 0 var(--accent); }
+  .ln[data-x]::after { content: ""; position: absolute; right: 8px; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .5; transform: translateY(-50%); }
+  .ln:not([data-x]) { cursor: default; }
+  .ln:not([data-x]):hover { background: transparent; }
+  .ln:not([data-x]):hover::before { color: #3f475a; }
+  .k { color: var(--kw); } .ty { color: var(--type); } .s { color: var(--str); } .n { color: var(--num); }
+  .c { color: var(--com); font-style: italic; } .at { color: var(--yellow); } .pv { color: var(--purple); font-weight: 600; }
+
+  /* Preview badge */
+  .preview-note { display: flex; gap: 10px; align-items: flex-start; margin: -8px 0 18px; font-size: 13px; color: var(--muted); }
+  .preview-note .ic { width: 22px; height: 22px; border-radius: 6px; background: linear-gradient(135deg, var(--accent-2), var(--purple)); display: grid; place-items: center; font-size: 12px; color: #fff; flex-shrink: 0; }
+
+  aside.explain { position: sticky; top: 0; height: 100vh; background: var(--panel); border-left: 1px solid var(--border); padding: 28px 24px; overflow-y: auto; display: flex; flex-direction: column; }
+  .explain .label { font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .explain .label .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,122,89,.6);} 70% { box-shadow: 0 0 0 10px rgba(255,122,89,0);} 100% { box-shadow: 0 0 0 0 rgba(255,122,89,0);} }
+  .explain .card { margin-top: 18px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; animation: fadeIn .2s ease; min-height: 180px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none; } }
+  .explain .card code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--bg-3); padding: 3px 8px; border-radius: 6px; color: var(--accent-2); display: inline-block; margin-bottom: 12px; max-width: 100%; overflow-x: auto; white-space: pre; }
+  .explain .card .title { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+  .explain .card .body { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .explain .idle { color: var(--muted); font-size: 14px; }
+  .explain .idle .kbd { display: inline-block; padding: 2px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: var(--bg-3); }
+  .explain .footer { margin-top: auto; padding-top: 18px; font-size: 11px; color: #5a6276; }
+  .explain .footer b { color: var(--muted); }
+
+  .quiz { margin: 22px 0; padding: 22px; border-radius: var(--radius); background: var(--bg-2); border: 1px solid var(--border); }
+  .quiz .q { font-weight: 600; margin-bottom: 12px; }
+  .quiz button { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-3); color: var(--text); font-family: inherit; font-size: 14px; cursor: pointer; transition: .15s; }
+  .quiz button:hover { border-color: var(--accent-2); }
+  .quiz button.right { border-color: var(--green); background: rgba(76,217,100,.12); }
+  .quiz button.wrong { border-color: var(--pink); background: rgba(255,45,85,.12); }
+  .quiz .fb { margin-top: 10px; font-size: 13px; color: var(--muted); min-height: 18px; }
+
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+  .flow .box { padding: 12px 18px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--border); font-weight: 600; font-size: 14px; }
+  .flow .box.root { border-color: var(--accent); }
+  .flow .arrow { color: var(--muted); font-size: 20px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  td code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--accent-2); }
+  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 60px 0 0; }
+  footer { margin-top: 60px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="layout">
+<main>
+
+<header class="hero">
+  <div class="eyebrow">MAC221 · iOS App Development with SwiftUI</div>
+  <h1>Mastering <span>NavigationStack</span><br>in SwiftUI</h1>
+  <p class="lead">From a single tap-to-navigate screen to programmatic, data-driven navigation. Every example is a <strong>complete ContentView.swift</strong> you can paste into Xcode and preview. Hover any dotted line to see what it does.</p>
+  <div class="meta">
+    <span class="chip">⏱ <b>~75 min</b></span>
+    <span class="chip">📱 <b>iOS 17+</b></span>
+    <span class="chip">📄 <b>One file per example</b></span>
+    <span class="chip">💡 <b>Hover-to-learn code</b></span>
+  </div>
+  <div class="roadmap">
+    <a href="#s1"><small>Section 1</small>Why Navigate?<span class="lvl l1">EASY</span></a>
+    <a href="#s2"><small>Section 2</small>First Stack<span class="lvl l1">EASY</span></a>
+    <a href="#s3"><small>Section 3</small>Many Screens<span class="lvl l1">EASY</span></a>
+    <a href="#s4"><small>Section 4</small>Passing Data<span class="lvl l2">MEDIUM</span></a>
+    <a href="#s5"><small>Section 5</small>Lists & Values<span class="lvl l2">MEDIUM</span></a>
+    <a href="#s6"><small>Section 6</small>Programmatic<span class="lvl l3">HARDER</span></a>
+    <a href="#s7"><small>Section 7</small>Route Enum<span class="lvl l4">ADVANCED</span></a>
+    <a href="#s8"><small>Section 8</small>Polish & Recap<span class="lvl l3">HARDER</span></a>
+  </div>
+</header>
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <div class="section-head"><div class="num">1</div><h2>Why Do Apps Need Navigation?</h2><span class="level-tag l1">Easy</span></div>
+  <p>Almost every iOS app has more than one screen: Settings → Wi-Fi → a network; Mail → Inbox → a message. Moving between screens, and being able to go <em>back</em>, is <strong>navigation</strong>.</p>
+  <div class="def"><b>Navigation</b> is the mechanism that lets a user move from one view (screen) to another while the app remembers where they came from, so they can return.</div>
+  <p>Think of a <strong>stack of index cards</strong>. Opening a screen places a card on top; tapping Back removes the top card and reveals the one underneath.</p>
+  <div class="flow">
+    <div class="box root">Home (root)</div><span class="arrow">→</span>
+    <div class="box">Detail</div><span class="arrow">→</span>
+    <div class="box">More Detail</div><span class="arrow">⟵ Back pops the top card</span>
+  </div>
+  <div class="def"><b>NavigationStack</b> is the SwiftUI container (iOS 16+) that manages this stack of views. It draws the navigation bar, adds the Back button automatically, and remembers the path the user has taken.</div>
+  <div class="callout warn"><div class="t">Heads up</div>Before iOS 16, SwiftUI used <code>NavigationView</code>. It still compiles but is deprecated. In this course we only use <code>NavigationStack</code>.</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <div class="section-head"><div class="num">2</div><h2>Your First NavigationStack</h2><span class="level-tag l1">Easy</span></div>
+  <p>Each example in this lecture is <strong>one file</strong>: <code>ContentView.swift</code>. Replace the file Xcode generates with the code shown, and the <code>#Preview</code> at the bottom will run on the canvas.</p>
+
+  <div class="def"><b>NavigationLink</b> is a tappable view that, when pressed, pushes a destination view onto the NavigationStack.</div>
+
+  <h3><span class="ex">EXAMPLE 2.1</span> One link, one text destination</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln" data-x="Every SwiftUI file starts with this. SwiftUI also re-exports Foundation, so types like String, Int, UUID and Date are available without a separate import Foundation."><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln" data-x="A screen in SwiftUI is a struct that conforms to the View protocol. ContentView is the name Xcode uses for the first screen."><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="The body property describes what the view looks like. SwiftUI calls it whenever the view needs to be drawn.">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln" data-x="The key line. NavigationStack wraps everything inside it, creates the navigation bar, and manages the stack. Whatever is inside the braces is the ROOT screen (the first card).">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln" data-x="NavigationLink takes a label (text the user sees) and a destination (the view to push). Tapping it slides the destination in from the right.">            <span class="ty">NavigationLink</span>(<span class="s">"Go to Detail Screen"</span>) {</span>
+<span class="ln" data-x="The destination. Any View works. Here it is a plain Text with a modifier.">                <span class="ty">Text</span>(<span class="s">"🎉 You navigated!"</span>)</span>
+<span class="ln">                    .font(.title)</span>
+<span class="ln">            }</span>
+<span class="ln" data-x="navigationTitle sets the title in the bar. IMPORTANT: it attaches to the content INSIDE the NavigationStack, not to the NavigationStack itself.">            .navigationTitle(<span class="s">"Home"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="#Preview (Xcode 15+) renders the view in the canvas on the right side of Xcode. The closure returns the view to show. Press Option+Command+Enter if the canvas is hidden."><span class="pv">#Preview</span> {</span>
+<span class="ln" data-x="Create an instance of the view to preview. The preview is interactive: click the link in the canvas and it navigates!">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> a screen titled “Home” with a blue link. Tap it and “🎉 You navigated!” slides in with an automatic <strong>&lt; Home</strong> back button.</div></div>
+
+  <div class="callout key"><div class="t">Key idea</div>The Back button is <strong>free</strong>. You never write code for it — NavigationStack adds it to every pushed screen.</div>
+
+  <h3><span class="ex">EXAMPLE 2.2</span> Destination as its own struct (same file)</h3>
+  <p>A destination that is more than a line of text should be its own struct. It can live <strong>in the same file</strong> — a Swift file may contain as many structs as you like.</p>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln" data-x="MARK comments show up in Xcode's jump bar and keep a multi-struct file organized."><span class="c">// MARK: - Root screen</span></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln">            <span class="ty">VStack</span>(spacing: <span class="n">20</span>) {</span>
+<span class="ln">                <span class="ty">Text</span>(<span class="s">"Welcome to MAC221"</span>).font(.largeTitle)</span>
+<span class="ln" data-x="Same NavigationLink as before, but the destination is now our own DetailView struct defined below in this same file.">                <span class="ty">NavigationLink</span>(<span class="s">"Open Detail"</span>) {</span>
+<span class="ln" data-x="Create an instance of DetailView. SwiftUI pushes it when the link is tapped.">                    <span class="ty">DetailView</span>()</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"Home"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Detail screen</span></span>
+<span class="ln" data-x="A second struct in the same file. Order does not matter: ContentView can reference DetailView even though DetailView is written below it."><span class="k">struct</span> <span class="ty">DetailView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">12</span>) {</span>
+<span class="ln" data-x="An SF Symbol icon. Apple ships thousands of them for free.">            <span class="ty">Image</span>(systemName: <span class="s">"star.fill"</span>)</span>
+<span class="ln">                .font(.system(size: <span class="n">80</span>))</span>
+<span class="ln">                .foregroundStyle(.yellow)</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"This is the detail screen"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln" data-x="The pushed screen gets its own title. Notice there is NO NavigationStack here: DetailView lives inside the stack that ContentView created. Nesting a second NavigationStack is a very common beginner bug.">        .navigationTitle(<span class="s">"Detail"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="Preview the root screen. From here you can tap into DetailView."><span class="pv">#Preview</span>(<span class="s">"Root"</span>) {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="You can have several #Preview blocks in one file, each with a name. This one shows DetailView directly, so you can design it without tapping through."><span class="pv">#Preview</span>(<span class="s">"Detail only"</span>) {</span>
+<span class="ln" data-x="DetailView has no NavigationStack of its own, so to see its title in the preview we wrap it in one HERE, only for previewing.">    <span class="ty">NavigationStack</span> { <span class="ty">DetailView</span>() }</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> two previews appear in the canvas tabs — “Root” and “Detail only”. The second shows the star screen with its “Detail” title.</div></div>
+
+  <div class="callout warn"><div class="t">Common mistake</div>Only <strong>one</strong> NavigationStack per flow, at the root. A second one inside DetailView gives you two navigation bars and broken Back behavior.</div>
+
+  <div class="quiz" data-answer="1">
+    <div class="q">Quick check: Where does <code>.navigationTitle()</code> go?</div>
+    <button>On the NavigationStack itself</button>
+    <button>On the content inside the NavigationStack</button>
+    <button>On the App struct</button>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <div class="section-head"><div class="num">3</div><h2>Many Screens, Still One File</h2><span class="level-tag l1">Easy</span></div>
+  <p>Let's grow to three screens: Home → Profile, Home → Settings, and a <em>nested</em> push Profile → Edit. One file, four structs.</p>
+
+  <h3><span class="ex">EXAMPLE 3.1</span> Multiple links and a nested push</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln" data-x="A List gives us the familiar grouped iOS rows. NavigationLinks inside a List automatically get the gray chevron (>) on the right.">            <span class="ty">List</span> {</span>
+<span class="ln" data-x="First link pushes ProfileView.">                <span class="ty">NavigationLink</span>(<span class="s">"👤 Profile"</span>) { <span class="ty">ProfileView</span>() }</span>
+<span class="ln" data-x="Second link pushes SettingsView. Both are siblings: from Home you can go to either one.">                <span class="ty">NavigationLink</span>(<span class="s">"⚙️ Settings"</span>) { <span class="ty">SettingsView</span>() }</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"Home"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ProfileView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">16</span>) {</span>
+<span class="ln">            <span class="ty">Image</span>(systemName: <span class="s">"person.circle.fill"</span>).font(.system(size: <span class="n">90</span>))</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"Khalid K."</span>).font(.title)</span>
+<span class="ln" data-x="A NESTED push: this link is on a screen that was itself pushed. Tapping it adds a third card. The stack is now Home → Profile → Edit, and Back pops one at a time.">            <span class="ty">NavigationLink</span>(<span class="s">"Edit Profile"</span>) { <span class="ty">EditProfileView</span>() }</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(<span class="s">"Profile"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">EditProfileView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="@State stores a value owned by this view. When the text field changes it, the view re-renders.">    <span class="at">@State</span> <span class="k">private var</span> name = <span class="s">"Khalid K."</span></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln" data-x="Form is a List styled for data entry.">        <span class="ty">Form</span> {</span>
+<span class="ln" data-x="$name passes a Binding so the TextField can write back into our @State.">            <span class="ty">TextField</span>(<span class="s">"Name"</span>, text: <span class="k">$</span>name)</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(<span class="s">"Edit"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">SettingsView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="at">@State</span> <span class="k">private var</span> darkMode = <span class="k">false</span></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">Form</span> {</span>
+<span class="ln">            <span class="ty">Toggle</span>(<span class="s">"Dark Mode"</span>, isOn: <span class="k">$</span>darkMode)</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(<span class="s">"Settings"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span> {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> a “Home” list with two rows and chevrons. Profile → Edit Profile pushes a third screen; the back button on Edit reads <strong>&lt; Profile</strong>, not Home.</div></div>
+
+  <div class="callout tip"><div class="t">Notice</div>The Back button’s label is always the <strong>title of the previous screen</strong>. That is why giving every screen a <code>.navigationTitle</code> matters.</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <div class="section-head"><div class="num">4</div><h2>Passing Data to the Next Screen</h2><span class="level-tag l2">Medium</span></div>
+  <p>A detail screen usually shows information about <em>something the user picked</em>. The simplest way: give the destination struct a property, and pass a value when you create it.</p>
+
+  <h3><span class="ex">EXAMPLE 4.1</span> One detail struct, reused with different data</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln">            <span class="ty">List</span> {</span>
+<span class="ln" data-x="The destination is created WITH data. We pass a course name and credits into CourseDetailView's initializer.">                <span class="ty">NavigationLink</span>(<span class="s">"MAC221 – SwiftUI"</span>) {</span>
+<span class="ln" data-x="Swift generated this initializer automatically (memberwise init). The argument labels match the property names declared in the struct.">                    <span class="ty">CourseDetailView</span>(courseName: <span class="s">"MAC221"</span>, credits: <span class="n">3</span>)</span>
+<span class="ln">                }</span>
+<span class="ln" data-x="Same destination type, different data. One screen struct is reused for every course.">                <span class="ty">NavigationLink</span>(<span class="s">"MAC286 – Data Structures"</span>) {</span>
+<span class="ln">                    <span class="ty">CourseDetailView</span>(courseName: <span class="s">"MAC286"</span>, credits: <span class="n">4</span>)</span>
+<span class="ln">                }</span>
+<span class="ln">                <span class="ty">NavigationLink</span>(<span class="s">"MAC280 – Unity"</span>) {</span>
+<span class="ln">                    <span class="ty">CourseDetailView</span>(courseName: <span class="s">"MAC280"</span>, credits: <span class="n">3</span>)</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"Courses"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">CourseDetailView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="A stored property with no default value. Swift REQUIRES whoever creates this view to supply a courseName. This is how data flows INTO a screen.">    <span class="k">let</span> courseName: <span class="ty">String</span></span>
+<span class="ln" data-x="A second required property.">    <span class="k">let</span> credits: <span class="ty">Int</span></span>
+<span class="ln"></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">12</span>) {</span>
+<span class="ln" data-x="String interpolation \( ) inserts the property into the text, so each course displays its own name.">            <span class="ty">Text</span>(<span class="s">"Course: \(courseName)"</span>).font(.title)</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"Credits: \(credits)"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln" data-x="The title is dynamic too. Each course gets its own title in the navigation bar.">        .navigationTitle(courseName)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span>(<span class="s">"List"</span>) {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="Previewing a view that requires data: just pass sample values. This is a great way to check the detail layout quickly."><span class="pv">#Preview</span>(<span class="s">"Detail"</span>) {</span>
+<span class="ln">    <span class="ty">NavigationStack</span> {</span>
+<span class="ln">        <span class="ty">CourseDetailView</span>(courseName: <span class="s">"MAC221"</span>, credits: <span class="n">3</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> “Courses” list with three rows. Each row opens the same layout with its own name, credits and bar title.</div></div>
+
+  <div class="callout tip"><div class="t">Why this matters</div>One screen struct, infinite variations. <strong>Views are functions of their data.</strong></div>
+  <div class="callout warn"><div class="t">Problem ahead</div>Writing a NavigationLink by hand for each course doesn’t scale. What if 50 courses come from a database? Section 5 fixes that.</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <div class="section-head"><div class="num">5</div><h2>Lists + Value-Based Navigation</h2><span class="level-tag l2">Medium</span></div>
+  <p>The modern, scalable pattern: instead of telling each link <em>which view</em> to show, we tell it <em>which value</em> was selected, and describe <strong>once</strong> how to turn any value into a screen.</p>
+
+  <div class="def"><b>NavigationLink(value:)</b> pushes a <em>value</em> (a struct, an Int…) instead of a view.<br><br><b>.navigationDestination(for:)</b> registers a rule: “whenever a value of this type is pushed, build this view for it.”</div>
+  <div class="def"><b>Hashable</b> is a Swift protocol that lets a type be compared and used as a lookup key. NavigationStack requires every pushed value to be Hashable so it can track it. Simple structs get Hashable for free just by declaring it.</div>
+
+  <h3><span class="ex">EXAMPLE 5.1</span> A model, a list, one destination rule</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Model</span></span>
+<span class="ln" data-x="Our data model lives in the same file. Identifiable lets List iterate it directly. Hashable is REQUIRED for value-based navigation."><span class="k">struct</span> <span class="ty">Course</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {</span>
+<span class="ln" data-x="Identifiable requires an id. UUID() (from Foundation, re-exported by SwiftUI) generates a unique value.">    <span class="k">let</span> id = <span class="ty">UUID</span>()</span>
+<span class="ln">    <span class="k">let</span> code: <span class="ty">String</span></span>
+<span class="ln">    <span class="k">let</span> title: <span class="ty">String</span></span>
+<span class="ln">    <span class="k">let</span> credits: <span class="ty">Int</span></span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="Sample data as a global constant. In a real app this could come from SwiftData, JSON, or the network."><span class="k">let</span> sampleCourses = [</span>
+<span class="ln">    <span class="ty">Course</span>(code: <span class="s">"MAC221"</span>, title: <span class="s">"iOS App Development"</span>, credits: <span class="n">3</span>),</span>
+<span class="ln">    <span class="ty">Course</span>(code: <span class="s">"MAC280"</span>, title: <span class="s">"Game Programming"</span>, credits: <span class="n">3</span>),</span>
+<span class="ln">    <span class="ty">Course</span>(code: <span class="s">"MAC286"</span>, title: <span class="s">"Data Structures"</span>, credits: <span class="n">4</span>)</span>
+<span class="ln">]</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Screens</span></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln" data-x="List builds one row per element. Because Course is Identifiable, no id: parameter is needed.">            <span class="ty">List</span>(sampleCourses) { course <span class="k">in</span></span>
+<span class="ln" data-x="THE NEW PART: NavigationLink(value:). We do NOT say which view to show, only 'this row represents this course'. The destination is decided below.">                <span class="ty">NavigationLink</span>(value: course) {</span>
+<span class="ln">                    <span class="ty">VStack</span>(alignment: .leading) {</span>
+<span class="ln">                        <span class="ty">Text</span>(course.code).font(.headline)</span>
+<span class="ln">                        <span class="ty">Text</span>(course.title).foregroundStyle(.secondary)</span>
+<span class="ln">                    }</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"MEC Courses"</span>)</span>
+<span class="ln" data-x="THE OTHER HALF. This registers: 'when a Course value is pushed, show this view'. Declared ONCE no matter how many rows exist. The closure receives the pushed course.">            .navigationDestination(for: <span class="ty">Course</span>.<span class="k">self</span>) { course <span class="k">in</span></span>
+<span class="ln" data-x="Build the detail from the value. WHAT was selected (the link) is cleanly separated from HOW it is displayed (this rule).">                <span class="ty">CourseDetailView</span>(course: course)</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">CourseDetailView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="This time we pass the whole Course struct instead of separate fields. Cleaner, and it scales as the model grows.">    <span class="k">let</span> course: <span class="ty">Course</span></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">12</span>) {</span>
+<span class="ln">            <span class="ty">Text</span>(course.title).font(.title)</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"\(course.credits) credits"</span>).foregroundStyle(.secondary)</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(course.code)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span> {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> a “MEC Courses” list of three two-line rows. Tapping any row pushes its detail — and adding a 4th course to <code>sampleCourses</code> needs <em>zero</em> new navigation code.</div></div>
+
+  <div class="callout key"><div class="t">Two halves of one idea</div><code>NavigationLink(value:)</code> = “<em>what</em> was tapped”. <code>.navigationDestination(for:)</code> = “<em>how</em> to show it”. They must agree on the type (here, <code>Course</code>).</div>
+  <div class="callout tip"><div class="t">Where to attach navigationDestination</div>Attach it to a view <strong>inside</strong> the NavigationStack (the List is perfect). Do not attach it to the NavigationLink itself — it won’t work inside lazy containers like List.</div>
+
+  <div class="quiz" data-answer="2">
+    <div class="q">Quick check: Why must <code>Course</code> conform to <code>Hashable</code>?</div>
+    <button>So it can be displayed in a Text view</button>
+    <button>So List can scroll faster</button>
+    <button>So NavigationStack can track the pushed value</button>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <div class="section-head"><div class="num">6</div><h2>Programmatic Navigation with NavigationPath</h2><span class="level-tag l3">Harder</span></div>
+  <p>So far the <em>user</em> drives navigation by tapping. Often the <em>code</em> must navigate: after login succeeds, when a timer fires, or when a “Finish” button should jump all the way back to the start.</p>
+
+  <div class="def"><b>NavigationPath</b> is a type-erased collection representing the current stack of pushed values. Bind it to the NavigationStack and you can read and modify the stack from code: <code>append</code> to push, <code>removeLast</code> to pop.</div>
+  <div class="def"><b>Programmatic navigation</b> means changing screens by changing <em>state</em>, not by tapping a link. The stack is just data — change the data, and the UI follows.</div>
+
+  <h3><span class="ex">EXAMPLE 6.1</span> A 3-question quiz flow with pop-to-root</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="The navigation state lives here. NavigationPath() starts empty = we are on the root screen. @State makes SwiftUI re-render when it changes.">    <span class="at">@State</span> <span class="k">private var</span> path = <span class="ty">NavigationPath</span>()</span>
+<span class="ln"></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln" data-x="$path creates a Binding: NavigationStack and our variable are two-way connected. Tapping a link appends to path; appending to path pushes a screen.">        <span class="ty">NavigationStack</span>(path: <span class="k">$</span>path) {</span>
+<span class="ln">            <span class="ty">VStack</span>(spacing: <span class="n">20</span>) {</span>
+<span class="ln">                <span class="ty">Text</span>(<span class="s">"MAC221 Quiz"</span>).font(.largeTitle)</span>
+<span class="ln" data-x="A plain Button, NOT a NavigationLink. We navigate purely from code inside the action.">                <span class="ty">Button</span>(<span class="s">"Start Quiz"</span>) {</span>
+<span class="ln" data-x="PUSH from code. Appending 1 pushes a screen. The navigationDestination below decides what an Int looks like.">                    path.append(<span class="n">1</span>)</span>
+<span class="ln">                }</span>
+<span class="ln">                .buttonStyle(.borderedProminent)</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"Quiz"</span>)</span>
+<span class="ln" data-x="Rule for Int values: whenever an Int is pushed, show QuestionView for that number. We hand it the path binding so the question can navigate too.">            .navigationDestination(for: <span class="ty">Int</span>.<span class="k">self</span>) { number <span class="k">in</span></span>
+<span class="ln">                <span class="ty">QuestionView</span>(number: number, path: <span class="k">$</span>path)</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">QuestionView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">let</span> number: <span class="ty">Int</span></span>
+<span class="ln" data-x="@Binding: this view does NOT own the path, it borrows it from ContentView. Any change here updates the parent's @State, which updates the NavigationStack.">    <span class="at">@Binding</span> <span class="k">var</span> path: <span class="ty">NavigationPath</span></span>
+<span class="ln"></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">20</span>) {</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"Question \(number) of 3"</span>).font(.title)</span>
+<span class="ln" data-x="Conditional UI: Next on questions 1–2, Finish on the last one.">            <span class="k">if</span> number &lt; <span class="n">3</span> {</span>
+<span class="ln" data-x="Push the next question. The path becomes [1, 2], then [1, 2, 3].">                <span class="ty">Button</span>(<span class="s">"Next"</span>) { path.append(number + <span class="n">1</span>) }</span>
+<span class="ln">            } <span class="k">else</span> {</span>
+<span class="ln" data-x="POP TO ROOT in one line. Removing every element empties the stack, so SwiftUI animates all the way back to the root. Impossible with plain NavigationLinks!">                <span class="ty">Button</span>(<span class="s">"Finish 🎓"</span>) { path.removeLast(path.count) }</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(<span class="s">"Q\(number)"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span> {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> “Quiz” with a Start button. Start → Q1 → Q2 → Q3 → Finish pops straight back to “Quiz” in one animation.</div></div>
+
+  <table>
+    <tr><th>Action</th><th>Code</th><th>Path becomes</th></tr>
+    <tr><td>Push question 1</td><td><code>path.append(1)</code></td><td>[1]</td></tr>
+    <tr><td>Push question 2</td><td><code>path.append(2)</code></td><td>[1, 2]</td></tr>
+    <tr><td>Go back one</td><td><code>path.removeLast()</code></td><td>[1]</td></tr>
+    <tr><td>Pop to root</td><td><code>path.removeLast(path.count)</code></td><td>[ ] (empty)</td></tr>
+  </table>
+  <div class="callout key"><div class="t">Mental model</div>The stack of screens is a <strong>mirror</strong> of the path. You never “navigate” — you edit an array, and SwiftUI navigates for you.</div>
+
+  <div class="quiz" data-answer="0">
+    <div class="q">Quick check: What does <code>path.removeLast(path.count)</code> do?</div>
+    <button>Pops every screen and returns to the root</button>
+    <button>Removes only the last screen</button>
+    <button>Deletes the NavigationStack</button>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <div class="section-head"><div class="num">7</div><h2>Mixing Screen Types with a Route Enum</h2><span class="level-tag l4">Advanced</span></div>
+  <p>Real apps push many kinds of screens: a course, a student, settings. The professional pattern is an <code>enum</code> that lists every screen the app can push, with associated values carrying the data each screen needs.</p>
+  <div class="def"><b>Route enum</b>: a Hashable enum where each case is one kind of screen. Using <code>[Route]</code> as the path makes navigation <em>type-safe</em> — the compiler forces you to handle every screen.</div>
+
+  <h3><span class="ex">EXAMPLE 7.1</span> Dashboard with three screen types and a deep link</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Models</span></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">Course</span>: <span class="ty">Identifiable</span>, <span class="ty">Hashable</span> {</span>
+<span class="ln">    <span class="k">let</span> id = <span class="ty">UUID</span>()</span>
+<span class="ln">    <span class="k">let</span> code: <span class="ty">String</span></span>
+<span class="ln">    <span class="k">let</span> credits: <span class="ty">Int</span></span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln" data-x="A second model type, also Hashable so it can be pushed."><span class="k">struct</span> <span class="ty">Student</span>: <span class="ty">Hashable</span> {</span>
+<span class="ln">    <span class="k">let</span> name: <span class="ty">String</span></span>
+<span class="ln">    <span class="k">let</span> major: <span class="ty">String</span></span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Routes</span></span>
+<span class="ln" data-x="PRO PATTERN: an enum listing every screen the app can push. It is the app's navigation vocabulary. Associated values carry the data each screen needs."><span class="k">enum</span> <span class="ty">Route</span>: <span class="ty">Hashable</span> {</span>
+<span class="ln" data-x="A route to a course screen, carrying the course.">    <span class="k">case</span> course(<span class="ty">Course</span>)</span>
+<span class="ln" data-x="A route to a student screen, carrying the student.">    <span class="k">case</span> student(<span class="ty">Student</span>)</span>
+<span class="ln" data-x="A route with no data at all.">    <span class="k">case</span> settings</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">let</span> sampleCourses = [</span>
+<span class="ln">    <span class="ty">Course</span>(code: <span class="s">"MAC221"</span>, credits: <span class="n">3</span>),</span>
+<span class="ln">    <span class="ty">Course</span>(code: <span class="s">"MAC286"</span>, credits: <span class="n">4</span>)</span>
+<span class="ln">]</span>
+<span class="ln"></span>
+<span class="ln"><span class="c">// MARK: - Screens</span></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="Instead of NavigationPath, a typed array of Route. Because every screen is a Route, the compiler checks our navigation. You can also inspect exactly which routes are on the stack.">    <span class="at">@State</span> <span class="k">private var</span> path: [<span class="ty">Route</span>] = []</span>
+<span class="ln">    <span class="k">let</span> student = <span class="ty">Student</span>(name: <span class="s">"Amina"</span>, major: <span class="s">"Computer Science"</span>)</span>
+<span class="ln"></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln" data-x="NavigationStack accepts a Binding to ANY array of Hashable values, not only NavigationPath.">        <span class="ty">NavigationStack</span>(path: <span class="k">$</span>path) {</span>
+<span class="ln">            <span class="ty">List</span> {</span>
+<span class="ln" data-x="Section groups rows under a header.">                <span class="ty">Section</span>(<span class="s">"Courses"</span>) {</span>
+<span class="ln" data-x="ForEach inside a List lets us mix dynamic rows with static ones. Course is Identifiable, so no id: needed.">                    <span class="ty">ForEach</span>(sampleCourses) { course <span class="k">in</span></span>
+<span class="ln" data-x="Push a Route.course value. Wrapping the course in the enum case tells the stack exactly which kind of screen this is.">                        <span class="ty">NavigationLink</span>(course.code, value: <span class="ty">Route</span>.course(course))</span>
+<span class="ln">                    }</span>
+<span class="ln">                }</span>
+<span class="ln">                <span class="ty">Section</span>(<span class="s">"People"</span>) {</span>
+<span class="ln" data-x="A different case of the same enum pushes a completely different screen.">                    <span class="ty">NavigationLink</span>(student.name, value: <span class="ty">Route</span>.student(student))</span>
+<span class="ln">                }</span>
+<span class="ln">                <span class="ty">Section</span>(<span class="s">"Actions"</span>) {</span>
+<span class="ln" data-x="Programmatic push from a Button: append a route with no data.">                    <span class="ty">Button</span>(<span class="s">"Open Settings"</span>) { path.append(.settings) }</span>
+<span class="ln" data-x="DEEP LINK: push two screens at once. The user lands on the student screen; Back goes to the course screen first. This is how notifications and URL links jump deep into an app.">                    <span class="ty">Button</span>(<span class="s">"Jump: Course → Student"</span>) {</span>
+<span class="ln">                        path.append(.course(sampleCourses[<span class="n">0</span>]))</span>
+<span class="ln">                        path.append(.student(student))</span>
+<span class="ln">                    }</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">            .navigationTitle(<span class="s">"Dashboard"</span>)</span>
+<span class="ln" data-x="ONE destination for the whole enum. Since every pushed value is a Route, a single switch handles every screen. Adding a screen = add a case + a switch branch; the compiler reminds you if you forget.">            .navigationDestination(for: <span class="ty">Route</span>.<span class="k">self</span>) { route <span class="k">in</span></span>
+<span class="ln" data-x="Switch must be exhaustive, so you cannot forget a screen.">                <span class="k">switch</span> route {</span>
+<span class="ln" data-x="Pattern matching extracts the associated Course and hands it to the detail view.">                <span class="k">case</span> .course(<span class="k">let</span> c):   <span class="ty">CourseScreen</span>(course: c)</span>
+<span class="ln">                <span class="k">case</span> .student(<span class="k">let</span> s):  <span class="ty">StudentScreen</span>(student: s)</span>
+<span class="ln">                <span class="k">case</span> .settings:        <span class="ty">SettingsScreen</span>()</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">CourseScreen</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">let</span> course: <span class="ty">Course</span></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">Text</span>(<span class="s">"\(course.code) – \(course.credits) credits"</span>)</span>
+<span class="ln">            .navigationTitle(course.code)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">StudentScreen</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">let</span> student: <span class="ty">Student</span></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">Text</span>(<span class="s">"\(student.name) – \(student.major)"</span>)</span>
+<span class="ln">            .navigationTitle(student.name)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">SettingsScreen</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">Text</span>(<span class="s">"Settings"</span>).navigationTitle(<span class="s">"Settings"</span>)</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span> {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> a grouped “Dashboard” list. Tap “Jump: Course → Student” and you land on Amina’s screen; Back reveals MAC221 underneath, then Dashboard.</div></div>
+
+  <div class="callout key"><div class="t">NavigationPath vs. [Route]</div><strong>NavigationPath</strong>: flexible, holds any Hashable, but you can’t easily read what’s inside. <strong>[Route]</strong>: strict and self-documenting; the compiler enforces every screen. Prefer it for real apps.</div>
+
+  <div class="quiz" data-answer="1">
+    <div class="q">Quick check: What’s the main benefit of a <code>Route</code> enum?</div>
+    <button>It makes screens load faster</button>
+    <button>The compiler enforces that every screen is handled</button>
+    <button>It removes the need for navigationDestination</button>
+    <div class="fb"></div>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <div class="section-head"><div class="num">8</div><h2>Polish: Toolbar, Dismiss & Display Mode</h2><span class="level-tag l3">Harder</span></div>
+  <p>A few modifiers that make navigation feel professional. Students ask about these constantly.</p>
+
+  <h3><span class="ex">EXAMPLE 8.1</span> Toolbar button, custom Done, inline title</h3>
+  <div class="code-wrap">
+    <div class="code-head"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">ContentView.swift</span><span class="hint">hover a line</span></div>
+<pre><span class="ln"><span class="k">import</span> SwiftUI</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">ContentView</span>: <span class="ty">View</span> {</span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">NavigationStack</span> {</span>
+<span class="ln">            <span class="ty">NavigationLink</span>(<span class="s">"Open polished screen"</span>) { <span class="ty">PolishedView</span>() }</span>
+<span class="ln">                .navigationTitle(<span class="s">"Home"</span>)</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="k">struct</span> <span class="ty">PolishedView</span>: <span class="ty">View</span> {</span>
+<span class="ln" data-x="dismiss is an environment value that pops the current screen. It is the programmatic equivalent of tapping Back and works even without a NavigationPath binding.">    <span class="at">@Environment</span>(\.dismiss) <span class="k">private var</span> dismiss</span>
+<span class="ln">    <span class="at">@State</span> <span class="k">private var</span> isFavorite = <span class="k">false</span></span>
+<span class="ln"></span>
+<span class="ln">    <span class="k">var</span> body: <span class="k">some</span> <span class="ty">View</span> {</span>
+<span class="ln">        <span class="ty">VStack</span>(spacing: <span class="n">16</span>) {</span>
+<span class="ln">            <span class="ty">Text</span>(<span class="s">"Polished Screen"</span>).font(.title)</span>
+<span class="ln" data-x="Calling dismiss() pops this screen. Useful for a Done or Cancel button placed in the body.">            <span class="ty">Button</span>(<span class="s">"Done"</span>) { dismiss() }</span>
+<span class="ln">                .buttonStyle(.bordered)</span>
+<span class="ln">        }</span>
+<span class="ln">        .navigationTitle(<span class="s">"Details"</span>)</span>
+<span class="ln" data-x="Title size. .inline = small, centered in the bar (typical for detail screens). .large = big iOS-style title (typical for root screens). .automatic adapts.">        .navigationBarTitleDisplayMode(.inline)</span>
+<span class="ln" data-x="Hides the system Back button. Only do this when you give users another way out (the Done button here) or they get stuck!">        .navigationBarBackButtonHidden(<span class="k">true</span>)</span>
+<span class="ln" data-x="toolbar adds items to the navigation bar.">        .toolbar {</span>
+<span class="ln" data-x="placement picks the position. .topBarTrailing = right side (iOS 17+; use .navigationBarTrailing on iOS 16). Others: .topBarLeading, .bottomBar, .principal (center).">            <span class="ty">ToolbarItem</span>(placement: .topBarTrailing) {</span>
+<span class="ln" data-x="A toggle button in the bar. Tapping flips isFavorite and swaps the heart icon.">                <span class="ty">Button</span> {</span>
+<span class="ln">                    isFavorite.toggle()</span>
+<span class="ln">                } label: {</span>
+<span class="ln">                    <span class="ty">Image</span>(systemName: isFavorite ? <span class="s">"heart.fill"</span> : <span class="s">"heart"</span>)</span>
+<span class="ln">                }</span>
+<span class="ln">            }</span>
+<span class="ln">        }</span>
+<span class="ln">    }</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span>(<span class="s">"Home"</span>) {</span>
+<span class="ln">    <span class="ty">ContentView</span>()</span>
+<span class="ln">}</span>
+<span class="ln"></span>
+<span class="ln"><span class="pv">#Preview</span>(<span class="s">"Polished"</span>) {</span>
+<span class="ln">    <span class="ty">NavigationStack</span> { <span class="ty">PolishedView</span>() }</span>
+<span class="ln">}</span></pre>
+  </div>
+  <div class="preview-note"><div class="ic">▶</div><div><strong>Preview:</strong> the “Polished” preview shows a small centered title, a heart in the top-right that toggles, no Back button, and a Done button that pops the screen.</div></div>
+
+  <div class="callout tip"><div class="t">Styling the whole bar</div>Use <code>.toolbarBackground(.visible, for: .navigationBar)</code> and <code>.toolbarColorScheme(.dark, for: .navigationBar)</code> on the root content to style the bar app-wide.</div>
+
+  <div class="divider"></div>
+  <h2 style="margin-top:50px">Lecture Recap</h2>
+  <table>
+    <tr><th>Concept</th><th>What it does</th><th>Level</th></tr>
+    <tr><td><code>NavigationStack { }</code></td><td>Root container; creates the nav bar and the stack of screens</td><td>Easy</td></tr>
+    <tr><td><code>NavigationLink("…") { View }</code></td><td>Tap to push a specific view</td><td>Easy</td></tr>
+    <tr><td><code>.navigationTitle()</code></td><td>Bar title — on the content, not the stack</td><td>Easy</td></tr>
+    <tr><td>Many structs, one file</td><td>Each screen is its own struct; order in the file doesn’t matter</td><td>Easy</td></tr>
+    <tr><td>Passing properties</td><td>Give the destination data through its initializer</td><td>Medium</td></tr>
+    <tr><td><code>NavigationLink(value:)</code> + <code>.navigationDestination(for:)</code></td><td>Push a value; describe once how to display that type</td><td>Medium</td></tr>
+    <tr><td><code>Hashable</code></td><td>Required for any pushed value</td><td>Medium</td></tr>
+    <tr><td><code>NavigationStack(path: $path)</code></td><td>Binds the stack to state so code can push and pop</td><td>Harder</td></tr>
+    <tr><td><code>path.append()</code> / <code>removeLast()</code></td><td>Programmatic push / pop / pop-to-root</td><td>Harder</td></tr>
+    <tr><td><code>enum Route</code> + <code>[Route]</code></td><td>Type-safe, exhaustive navigation</td><td>Advanced</td></tr>
+    <tr><td><code>@Environment(\.dismiss)</code>, <code>.toolbar</code></td><td>Pop from inside a screen; add bar buttons</td><td>Harder</td></tr>
+    <tr><td><code>#Preview</code></td><td>Live canvas; wrap a pushed screen in a NavigationStack to preview it alone</td><td>Easy</td></tr>
+  </table>
+
+  <h3>Practice Lab (before next class)</h3>
+  <ul>
+    <li><strong>Level 1:</strong> A two-screen app with a title and one NavigationLink (one file, two structs, one #Preview).</li>
+    <li><strong>Level 2:</strong> Home → Profile → Edit, plus Home → Settings, like Example 3.1 but with your own content.</li>
+    <li><strong>Level 3:</strong> A <code>List</code> of 5 movies using <code>NavigationLink(value:)</code> and <code>.navigationDestination(for:)</code>.</li>
+    <li><strong>Level 4:</strong> A 3-step onboarding flow with <code>NavigationPath</code> and a Finish button that pops to root.</li>
+    <li><strong>Level 5:</strong> Refactor Level 3 into a <code>Route</code> enum and add a deep-link button that pushes two screens.</li>
+  </ul>
+  <footer>MAC221 · iOS App Development with SwiftUI · LaGuardia Community College, MEC Department</footer>
+</section>
+
+</main>
+
+<aside class="explain" id="explain">
+  <div class="label"><span class="pulse"></span> Code Explainer</div>
+  <div class="card" id="card">
+    <div class="idle">👋 Hover over any code line marked with an orange dot and its explanation appears here.<br><br>On a touch device, <span class="kbd">tap</span> a line. Click a line to pin it; click again to unpin.</div>
+  </div>
+  <div class="footer">Lines with <b>●</b> have explanations. The panel updates live as you move your cursor.</div>
+</aside>
+</div>
+
+<script>
+(function () {
+  const card = document.getElementById('card');
+  const idleHTML = card.innerHTML;
+  let activeLine = null, pinned = false;
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  function show(line) {
+    const text = line.getAttribute('data-x'); if (!text) return;
+    if (activeLine) activeLine.classList.remove('active');
+    activeLine = line; line.classList.add('active');
+    card.innerHTML = '<code>' + esc(line.textContent.trim()) + '</code>' +
+      '<div class="title">What this line does</div><div class="body">' + esc(text) + '</div>';
+    card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  }
+  function reset() {
+    if (pinned) return;
+    if (activeLine) activeLine.classList.remove('active');
+    activeLine = null; card.innerHTML = idleHTML;
+  }
+  document.querySelectorAll('.ln[data-x]').forEach(line => {
+    line.addEventListener('mouseenter', () => { if (!pinned) show(line); });
+    line.addEventListener('click', () => {
+      if (activeLine === line && pinned) { pinned = false; reset(); return; }
+      pinned = true; show(line);
+    });
+  });
+  document.querySelectorAll('pre').forEach(pre => pre.addEventListener('mouseleave', reset));
+
+  document.querySelectorAll('.quiz').forEach(quiz => {
+    const answer = parseInt(quiz.dataset.answer, 10), fb = quiz.querySelector('.fb');
+    quiz.querySelectorAll('button').forEach((btn, i) => btn.addEventListener('click', () => {
+      quiz.querySelectorAll('button').forEach(b => b.classList.remove('right','wrong'));
+      if (i === answer) { btn.classList.add('right'); fb.textContent = '✅ Correct!'; }
+      else { btn.classList.add('wrong'); fb.textContent = '❌ Not quite — try again.'; }
+    }));
+  });
+
+  const bar = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+  });
+})();
+</script>
+</body>
+</html>

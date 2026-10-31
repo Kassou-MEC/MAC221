@@ -1,0 +1,1674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVVM in SwiftUI</title>
+<meta name="description" content="MAC221 interactive lecture: Model · View · ViewModel in SwiftUI — three graded examples with live UI simulations, hover code explanations and a step-by-step Xcode walkthrough.">
+<style>
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
+:root{
+  --bg:#f6f7fb; --bg-2:#ffffff; --bg-3:#eef0f6;
+  --ink:#171a24; --ink-2:#4b5064; --ink-3:#7d8299;
+  --line:#dfe2ec; --line-2:#cfd3e0;
+  --accent:#f05138;
+  --model:#2e9e5b;  --model-bg:#e5f6ec;  --model-ink:#1b6b3c;
+  --vm:#7a4fd6;     --vm-bg:#efe8fb;     --vm-ink:#5431a3;
+  --view:#2a7bd6;   --view-bg:#e6f0fb;   --view-ink:#1a56a0;
+  --code-bg:#1e2230; --code-ink:#e6e9f2; --code-line:#2a2f40; --code-hl:#334060;
+  --kw:#ff7ab2; --type:#8ad0ff; --str:#ffb86c; --cmt:#7b839a; --attr:#c3a3ff; --num:#9ee493; --fn:#6fe3d6;
+  --xc-bg:#f2f2f4; --xc-side:#e8e8ec; --xc-title:#dcdce0; --xc-ink:#222; --xc-ink2:#666; --xc-sel:#cfe0fb; --xc-editor:#fff;
+  --ios-bg:#f2f2f7; --ios-card:#ffffff; --ios-ink:#111; --ios-ink2:#8e8e93; --ios-line:#e5e5ea; --ios-blue:#007aff; --ios-green:#34c759; --ios-orange:#ff9500; --ios-red:#ff3b30;
+  --shadow:0 10px 30px rgba(20,24,40,.10);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1117; --bg-2:#171a23; --bg-3:#1e222d;
+    --ink:#eceef5; --ink-2:#b6bacb; --ink-3:#848aa0;
+    --line:#2a2f3d; --line-2:#353b4c;
+    --model:#4ccf84; --model-bg:#15301f; --model-ink:#9ee9ba;
+    --vm:#a98cf0; --vm-bg:#251c3f; --vm-ink:#cdbcff;
+    --view:#67a9f5; --view-bg:#162640; --view-ink:#a9ccff;
+    --code-bg:#0c0e14; --code-line:#1a1e2a; --code-hl:#28324e;
+    --xc-bg:#2b2b2e; --xc-side:#232326; --xc-title:#1d1d20; --xc-ink:#e9e9ea; --xc-ink2:#a0a0a6; --xc-sel:#2f4a78; --xc-editor:#1f1f22;
+    --ios-bg:#000; --ios-card:#1c1c1e; --ios-ink:#fff; --ios-ink2:#8e8e93; --ios-line:#2c2c2e; --ios-blue:#0a84ff; --ios-green:#30d158; --ios-orange:#ff9f0a; --ios-red:#ff453a;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1117; --bg-2:#171a23; --bg-3:#1e222d;
+  --ink:#eceef5; --ink-2:#b6bacb; --ink-3:#848aa0;
+  --line:#2a2f3d; --line-2:#353b4c;
+  --model:#4ccf84; --model-bg:#15301f; --model-ink:#9ee9ba;
+  --vm:#a98cf0; --vm-bg:#251c3f; --vm-ink:#cdbcff;
+  --view:#67a9f5; --view-bg:#162640; --view-ink:#a9ccff;
+  --code-bg:#0c0e14; --code-line:#1a1e2a; --code-hl:#28324e;
+  --xc-bg:#2b2b2e; --xc-side:#232326; --xc-title:#1d1d20; --xc-ink:#e9e9ea; --xc-ink2:#a0a0a6; --xc-sel:#2f4a78; --xc-editor:#1f1f22;
+  --ios-bg:#000; --ios-card:#1c1c1e; --ios-ink:#fff; --ios-ink2:#8e8e93; --ios-line:#2c2c2e; --ios-blue:#0a84ff; --ios-green:#30d158; --ios-orange:#ff9f0a; --ios-red:#ff453a;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.65; font-size:19px;
+}
+@media (max-width:600px){body{font-size:17px}}
+code,pre,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace}
+a{color:var(--view)}
+h1,h2,h3,h4{line-height:1.2; margin:0 0 .5rem}
+h2{font-size:clamp(1.8rem,3.2vw,2.5rem); letter-spacing:-.01em}
+h3{font-size:1.35rem}
+p{margin:.4rem 0 1rem}
+.wrap{max-width:1200px; margin:0 auto; padding:0 16px}
+section{padding:64px 0; border-top:1px solid var(--line)}
+section:first-of-type{border-top:none}
+.eyebrow{display:inline-block; font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-bottom:.6rem}
+.lead{font-size:1.15rem; color:var(--ink-2); max-width:72ch}
+.muted{color:var(--ink-3)}
+kbd{font-family:inherit; font-size:.85em; padding:.1em .45em; border:1px solid var(--line-2); border-bottom-width:2px; border-radius:6px; background:var(--bg-2)}
+.pill{display:inline-block; padding:.15em .7em; border-radius:999px; font-size:.8rem; font-weight:700; letter-spacing:.02em; vertical-align:middle}
+.pill.model{background:var(--model-bg); color:var(--model-ink)}
+.pill.vm{background:var(--vm-bg); color:var(--vm-ink)}
+.pill.view{background:var(--view-bg); color:var(--view-ink)}
+.pill.lvl1{background:#e2f5e9; color:#1b6b3c} .pill.lvl2{background:#fff1dc; color:#8a5a00} .pill.lvl3{background:#fde3e0; color:#9c2a1c}
+.card{background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:22px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+@media (max-width:860px){.grid3{grid-template-columns:1fr}}
+.note{border-left:4px solid var(--accent); background:var(--bg-2); padding:12px 16px; border-radius:0 10px 10px 0; margin:1rem 0}
+.callout{display:flex; gap:12px; align-items:flex-start; background:var(--bg-3); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:1rem 0}
+.callout .ic{font-size:1.3rem; line-height:1}
+.subhead{display:flex; align-items:center; gap:12px; margin:36px 0 12px; font-size:1.2rem; font-weight:800}
+.subhead .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--bg-3);font-size:1.1rem}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+.topbar{position:sticky; top:0; z-index:50; backdrop-filter:blur(14px); background:color-mix(in srgb,var(--bg) 82%,transparent); border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex; align-items:center; gap:14px; height:58px}
+.brand{font-weight:800; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; white-space:nowrap}
+.brand .logo{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ff8a5b);display:grid;place-items:center;color:#fff;font-weight:900;font-size:.9rem}
+nav.toc{display:flex; gap:4px; margin-left:auto; overflow-x:auto; scrollbar-width:none}
+nav.toc::-webkit-scrollbar{display:none}
+nav.toc a{color:var(--ink-2); text-decoration:none; font-size:.92rem; padding:6px 10px; border-radius:8px; white-space:nowrap}
+nav.toc a:hover,nav.toc a.active{background:var(--bg-3); color:var(--ink)}
+.theme-btn{border:1px solid var(--line); background:var(--bg-2); color:var(--ink); border-radius:8px; padding:5px 9px; cursor:pointer; font-size:.9rem}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{padding:72px 0 48px}
+.hero h1{font-size:clamp(2.4rem,5.5vw,4.2rem); letter-spacing:-.03em; margin-bottom:1rem}
+.hero h1 .m{color:var(--model)} .hero h1 .vm{color:var(--vm)} .hero h1 .v{color:var(--view)}
+.hero-grid{display:grid; grid-template-columns:1.2fr 1fr; gap:36px; align-items:center}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.meta{display:flex; gap:14px; flex-wrap:wrap; color:var(--ink-3); font-size:.95rem; margin-top:1rem}
+.arch{display:grid; grid-template-columns:1fr auto 1fr auto 1fr; align-items:center; gap:6px}
+.arch .box{border-radius:14px; padding:16px 10px; text-align:center; font-weight:700; border:2px solid}
+.arch .box small{display:block; font-weight:500; font-size:.8rem; opacity:.85; margin-top:4px}
+.arch .box.m{border-color:var(--model); background:var(--model-bg); color:var(--model-ink)}
+.arch .box.vm{border-color:var(--vm); background:var(--vm-bg); color:var(--vm-ink)}
+.arch .box.v{border-color:var(--view); background:var(--view-bg); color:var(--view-ink)}
+.arch .arrow{font-size:1.4rem; color:var(--ink-3); line-height:1; text-align:center}
+.arch .arrow small{display:block; font-size:.65rem; letter-spacing:.05em}
+
+/* ============================================================
+   METAPHOR CARDS
+   ============================================================ */
+.layer-card{position:relative; overflow:hidden}
+.layer-card::before{content:""; position:absolute; inset:0 0 auto 0; height:6px}
+.layer-card.model::before{background:var(--model)} .layer-card.vm::before{background:var(--vm)} .layer-card.view::before{background:var(--view)}
+.layer-card .emoji{font-size:2.2rem; line-height:1; margin:6px 0 10px}
+.layer-card h3{display:flex; align-items:center; gap:10px}
+.layer-card ul{padding-left:1.1rem; margin:.4rem 0; color:var(--ink-2)}
+.layer-card li{margin:.25rem 0}
+.layer-card .def{font-weight:600; color:var(--ink)}
+.restaurant{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px}
+@media (max-width:860px){.restaurant{grid-template-columns:1fr}}
+.tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px}
+.tab{border:1px solid var(--line); background:var(--bg-2); color:var(--ink-2); border-radius:999px; padding:6px 14px; cursor:pointer; font-size:.92rem; font-weight:600}
+.tab.active{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tabpane{display:none}.tabpane.active{display:block}
+.rule{font-weight:700}
+
+/* ============================================================
+   EXAMPLE OVERVIEW ROW
+   ============================================================ */
+.levels{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:18px}
+@media (max-width:860px){.levels{grid-template-columns:1fr}}
+.levels a{display:block; text-decoration:none; color:inherit}
+.levels .card:hover{border-color:var(--accent)}
+.levels h3{margin-top:8px}
+.levels ul{padding-left:1.1rem; color:var(--ink-2); margin:.4rem 0 0; font-size:.95rem}
+
+/* ============================================================
+   CODE WALK (hover → explanation on right)
+   ============================================================ */
+.codewalk{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start; margin-top:18px}
+@media (max-width:980px){.codewalk{grid-template-columns:1fr}}
+.codebox{background:var(--code-bg); color:var(--code-ink); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; border:1px solid #000}
+.codebox .bar{display:flex; align-items:center; gap:8px; padding:10px 14px; background:#15181f; border-bottom:1px solid #000; font-size:.86rem; color:#aab; flex-wrap:wrap}
+.codebox .bar .dots span{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px}
+.codebox .bar .dots span:nth-child(1){background:#ff5f57}.codebox .bar .dots span:nth-child(2){background:#febc2e}.codebox .bar .dots span:nth-child(3){background:#28c840}
+.codebox .bar .fname{margin-left:6px; font-weight:600; color:#dde}
+.codebox .bar .hint{color:#778; font-size:.78rem}
+.codebox .bar .right{margin-left:auto; display:flex; gap:8px; align-items:center}
+.copybtn{display:inline-flex; align-items:center; gap:6px; background:#2a3042; color:#e6e9f2; border:1px solid #3a4158; border-radius:7px; padding:5px 11px; font-size:.82rem; font-weight:600; cursor:pointer; font-family:inherit}
+.copybtn:hover{background:#343b52}
+.copybtn.ok{background:#1f6b3c; border-color:#2e9e5b}
+.copybtn.ghost{background:transparent}
+.filetabs{display:flex; background:#15181f; border-bottom:1px solid #000; overflow-x:auto}
+.filetabs button{background:transparent; border:none; color:#99a; padding:9px 14px; cursor:pointer; font-size:.85rem; border-right:1px solid #0a0c10; white-space:nowrap; font-family:inherit}
+.filetabs button.active{color:#fff; background:var(--code-bg); box-shadow:inset 0 -2px 0 var(--accent)}
+.filetabs button .lay{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+pre.code{margin:0; padding:14px 0; font-size:1.02rem; line-height:1.6; overflow-x:auto; tab-size:4}
+.line{display:flex; min-width:max-content; padding:0 14px 0 0; cursor:default; position:relative; border-left:3px solid transparent}
+.line .ln{width:50px; flex:none; text-align:right; padding-right:14px; color:#556; user-select:none}
+.line .src{white-space:pre}
+.line[data-note]{cursor:pointer}
+.line[data-note]:hover,.line.active{background:var(--code-hl); border-left-color:var(--accent)}
+.line.pinned{border-left-color:#ffd166}
+.line.sect-model{box-shadow:inset 5px 0 0 -2px var(--model)}
+.line.sect-vm{box-shadow:inset 5px 0 0 -2px var(--vm)}
+.line.sect-view{box-shadow:inset 5px 0 0 -2px var(--view)}
+.tok-kw{color:var(--kw)} .tok-type{color:var(--type)} .tok-str{color:var(--str)} .tok-cmt{color:var(--cmt); font-style:italic} .tok-attr{color:var(--attr)} .tok-num{color:var(--num)} .tok-fn{color:var(--fn)} .tok-prop{color:#b4e1ff}
+
+.explain{position:sticky; top:74px; background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:18px 20px; min-height:220px; box-shadow:var(--shadow)}
+.explain .eh{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.explain .eh .lnum{font-size:.78rem; color:var(--ink-3); font-weight:700; letter-spacing:.08em}
+.explain .ecode{display:block; background:var(--code-bg); color:var(--code-ink); padding:8px 10px; border-radius:8px; font-size:.88rem; margin:6px 0 12px; overflow-x:auto; white-space:pre}
+.explain .etext{color:var(--ink-2); font-size:1.05rem}
+.explain .etext b{color:var(--ink)}
+.explain .etext code{background:var(--bg-3); padding:.05em .35em; border-radius:5px; font-size:.9em}
+.explain .idle{color:var(--ink-3); text-align:center; padding:30px 10px}
+.explain .idle .big{font-size:2rem}
+.explain .pinhint{font-size:.78rem; color:var(--ink-3); margin-top:12px; border-top:1px dashed var(--line); padding-top:8px}
+@media (max-width:980px){
+  .explain{position:sticky; bottom:12px; top:auto; order:2; max-height:40vh; overflow:auto}
+  .codewalk{display:flex; flex-direction:column}
+  .codebox{order:1}
+}
+
+/* ============================================================
+   UI ROW (phone simulation + description)
+   ============================================================ */
+.uirow{display:grid; grid-template-columns:300px 1fr; gap:30px; align-items:start; margin-top:14px}
+@media (max-width:860px){.uirow{grid-template-columns:1fr}}
+.phone{width:270px; height:560px; border-radius:44px; background:#0b0b0f; padding:12px; box-shadow:var(--shadow), inset 0 0 0 2px #333; margin:0 auto 56px; position:relative}
+.phone .screen{background:var(--ios-bg); color:var(--ios-ink); height:100%; border-radius:34px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; position:relative; overflow:hidden}
+.phone .notch{position:absolute; top:10px; left:50%; transform:translateX(-50%); width:96px; height:28px; background:#0b0b0f; border-radius:14px; z-index:5}
+.phone .count{font-size:2.8rem; font-weight:800; letter-spacing:-.02em}
+.phone .label{font-size:.8rem; opacity:.6; margin-top:-10px; font-family:"SF Mono",ui-monospace,Menlo,monospace}
+.phone button{border:none; border-radius:12px; padding:11px 20px; font-weight:700; cursor:pointer; font-size:1rem; font-family:inherit}
+.phone .add{background:var(--ios-blue); color:#fff}
+.phone .reset{background:transparent; color:var(--ios-blue)}
+.phone .simtag{position:absolute; bottom:-30px; left:0; right:0; text-align:center; font-size:.78rem; color:var(--ink-3)}
+/* generic iOS app screen */
+.screen.app{justify-content:flex-start; align-items:stretch; gap:0; padding-top:44px; font-size:14px}
+.appnav{padding:8px 16px 6px; display:flex; align-items:flex-end; justify-content:space-between}
+.appnav .title{font-size:26px; font-weight:800; letter-spacing:-.02em}
+.appnav .sub{font-size:12px; color:var(--ios-ink2); padding-bottom:6px}
+.appnav .back{font-size:14px; color:var(--ios-blue); cursor:pointer; padding-bottom:6px}
+.appnav .icon{color:var(--ios-blue); cursor:pointer; font-size:15px; padding-bottom:6px}
+.applist{flex:1; overflow:auto; padding:0 14px 10px}
+.appsection{background:var(--ios-card); border-radius:12px; overflow:hidden}
+.appsection .hdr{font-size:12px; color:var(--ios-ink2); text-transform:uppercase; letter-spacing:.04em; padding:10px 14px 4px; background:var(--ios-bg)}
+.approw{display:flex; align-items:center; gap:10px; padding:11px 14px; border-bottom:1px solid var(--ios-line); cursor:pointer; position:relative; background:var(--ios-card)}
+.approw:last-child{border-bottom:none}
+.approw .ck{width:20px;height:20px;border-radius:50%;border:2px solid var(--ios-ink2); flex:none; display:grid; place-items:center; color:#fff; font-size:11px}
+.approw .ck.on{background:var(--ios-green); border-color:var(--ios-green)}
+.approw .t{flex:1}
+.approw .t.done{text-decoration:line-through; color:var(--ios-ink2)}
+.approw .del{color:var(--ios-red); font-size:12px; font-weight:700; opacity:0; padding:2px 6px; border-radius:6px; background:color-mix(in srgb,var(--ios-red) 12%,transparent)}
+.approw:hover .del{opacity:1}
+.approw .chev{color:var(--ios-ink2); font-size:16px}
+.approw .two{flex:1; display:flex; flex-direction:column; line-height:1.25}
+.approw .two b{font-size:14px}
+.approw .two span{font-size:12px; color:var(--ios-ink2)}
+.approw .grade{font-size:20px; font-weight:800}
+.appbar{display:flex; gap:8px; padding:10px 12px; background:color-mix(in srgb,var(--ios-card) 85%,transparent); border-top:1px solid var(--ios-line); backdrop-filter:blur(8px)}
+.appbar input{flex:1; min-width:0; border:1px solid var(--ios-line); border-radius:8px; padding:7px 10px; font-size:14px; background:var(--ios-card); color:var(--ios-ink); font-family:inherit}
+.appbar button{background:var(--ios-blue); color:#fff; border-radius:8px; padding:7px 12px; font-size:14px}
+.appsearch{margin:4px 14px 10px; background:var(--ios-card); border-radius:10px; display:flex; align-items:center; gap:6px; padding:6px 10px; color:var(--ios-ink2); font-size:13px}
+.appsearch input{flex:1; border:none; background:transparent; font-size:14px; color:var(--ios-ink); outline:none; font-family:inherit; min-width:0}
+.appcenter{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:20px; color:var(--ios-ink2)}
+.appcenter .bigic{font-size:40px}
+.appcenter b{color:var(--ios-ink); font-size:16px}
+.spinner{width:28px;height:28px;border:3px solid var(--ios-line);border-top-color:var(--ios-ink2);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.appdetail{padding:0 14px}
+.kv{display:flex; justify-content:space-between; padding:11px 14px; border-bottom:1px solid var(--ios-line); background:var(--ios-card)}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:var(--ios-ink)} .kv span:last-child{color:var(--ios-ink2)}
+.simctl{display:flex; gap:10px; flex-wrap:wrap; margin-top:40px; justify-content:center}
+.simctl label,.simctl button{font-size:.88rem; border:1px solid var(--line); background:var(--bg-2); color:var(--ink); border-radius:999px; padding:6px 12px; cursor:pointer; font-family:inherit; display:inline-flex; gap:6px; align-items:center}
+.try{list-style:none; padding:0; margin:.6rem 0 0; display:grid; gap:8px}
+.try li{display:flex; gap:10px; align-items:flex-start; background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; color:var(--ink-2)}
+.try li .n{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:.72rem;font-weight:800;color:#fff;background:var(--accent)}
+.layersum{display:grid; gap:8px; margin-top:14px}
+.layersum div{display:flex; gap:10px; align-items:flex-start; font-size:.98rem; color:var(--ink-2)}
+
+/* ============================================================
+   FLOW DIAGRAM (example 1)
+   ============================================================ */
+.flowdiag svg{width:100%; height:auto; display:block}
+.flowdiag text{font-family:inherit; font-weight:700}
+.fl-step{opacity:.25; transition:opacity .25s}
+.fl-step.on{opacity:1}
+.fl-box{stroke-width:3}
+.fl-box.lit{filter:drop-shadow(0 0 10px currentColor)}
+.steps{display:grid; gap:8px; margin-top:12px}
+.step{display:flex; gap:12px; align-items:flex-start; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg-2); opacity:.55; transition:all .25s; font-size:.98rem}
+.step.on{opacity:1; border-color:var(--accent); transform:translateX(4px)}
+.step .n{width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:.75rem;font-weight:800;color:#fff;background:var(--ink-3)}
+.step.on .n{background:var(--accent)}
+
+/* ============================================================
+   XCODE MOCK-UPS
+   ============================================================ */
+.xsteps{display:grid; gap:34px; margin-top:20px}
+.xstep{display:grid; grid-template-columns:1fr 1.25fr; gap:24px; align-items:start}
+@media (max-width:980px){.xstep{grid-template-columns:1fr}}
+.xstep .txt h3{display:flex; gap:12px; align-items:center}
+.xstep .num{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
+.xstep ol,.xstep ul{padding-left:1.2rem; color:var(--ink-2)}
+.xstep li{margin:.3rem 0}
+.xcap{font-size:.82rem; color:var(--ink-3); margin-top:8px; text-align:center}
+.xwin{background:var(--xc-bg); color:var(--xc-ink); border-radius:12px; overflow:hidden; box-shadow:var(--shadow); border:1px solid rgba(0,0,0,.25); font-size:13.5px; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Helvetica,Arial,sans-serif}
+.xtitle{display:flex; align-items:center; gap:10px; height:40px; padding:0 12px; background:var(--xc-title); border-bottom:1px solid rgba(0,0,0,.15)}
+.xtitle .lights span{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:7px}
+.xtitle .lights span:nth-child(1){background:#ff5f57}.xtitle .lights span:nth-child(2){background:#febc2e}.xtitle .lights span:nth-child(3){background:#28c840}
+.xtitle .scheme{margin-left:8px; display:flex; align-items:center; gap:6px; background:rgba(0,0,0,.08); padding:4px 10px; border-radius:6px; font-weight:600}
+.xtitle .scheme .play{color:#1c8f3a; font-size:.95rem}
+.xtitle .status{margin-left:auto; background:rgba(0,0,0,.07); padding:4px 12px; border-radius:6px; color:var(--xc-ink2); min-width:170px; text-align:center}
+.xbody{display:grid; grid-template-columns:210px 1fr; min-height:300px}
+.xbody.one{grid-template-columns:1fr}
+.xnav{background:var(--xc-side); border-right:1px solid rgba(0,0,0,.15); padding:8px 0}
+.xnav .ico{display:flex; gap:9px; padding:0 10px 8px; color:var(--xc-ink2); font-size:11px; border-bottom:1px solid rgba(0,0,0,.08); margin-bottom:6px}
+.xnav .ico b{color:#2a7bd6}
+.tree{list-style:none; margin:0; padding:0}
+.tree li{padding:3px 10px; white-space:nowrap; display:flex; align-items:center; gap:6px}
+.tree li.sel{background:var(--xc-sel); border-radius:5px; margin:0 6px; padding-left:4px}
+.tree .ind1{padding-left:24px}.tree .ind2{padding-left:40px}.tree .ind3{padding-left:56px}
+.tree .f{color:#f0a136} .tree .sw{color:#f05138} .tree .new{color:#2e9e5b; font-weight:700} .tree .fade{opacity:.55}
+.xeditor{background:var(--xc-editor); padding:0}
+.xeditor .crumbs{font-size:11.5px; color:var(--xc-ink2); padding:6px 12px; border-bottom:1px solid rgba(0,0,0,.08)}
+.xeditor pre{margin:0; padding:12px 14px; font-size:12.5px; line-height:1.5; overflow:auto; color:var(--xc-ink)}
+.xeditor .k{color:#ad3da4}.xeditor .t{color:#3e8087}.xeditor .s{color:#d12f1b}.xeditor .c{color:#6c7986}.xeditor .a{color:#947100}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .xeditor .k{color:#fc5fa3}:root:not([data-theme="light"]) .xeditor .t{color:#9ef1dd}:root:not([data-theme="light"]) .xeditor .s{color:#fc6a5d}:root:not([data-theme="light"]) .xeditor .a{color:#d0a8ff}}
+:root[data-theme="dark"] .xeditor .k{color:#fc5fa3}:root[data-theme="dark"] .xeditor .t{color:#9ef1dd}:root[data-theme="dark"] .xeditor .s{color:#fc6a5d}:root[data-theme="dark"] .xeditor .a{color:#d0a8ff}
+.hl-row{background:rgba(240,81,56,.14); display:block; margin:0 -14px; padding:0 14px}
+.ctx{position:absolute; background:var(--xc-editor); border:1px solid rgba(0,0,0,.2); border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,.25); padding:5px; min-width:230px; font-size:12.5px; z-index:3}
+.ctx div{padding:4px 10px; border-radius:5px}
+.ctx div.sel{background:#2a7bd6; color:#fff}
+.ctx hr{border:none; border-top:1px solid rgba(0,0,0,.12); margin:4px 0}
+.rel{position:relative}
+.xsheet{background:var(--xc-editor); margin:18px auto; width:min(580px,92%); border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,.35); border:1px solid rgba(0,0,0,.2); overflow:hidden}
+.xsheet .sh{padding:10px 16px; border-bottom:1px solid rgba(0,0,0,.1); font-weight:600; display:flex; gap:14px}
+.xsheet .sh span{color:var(--xc-ink2)} .xsheet .sh span.on{color:var(--xc-ink); border-bottom:2px solid #2a7bd6}
+.tgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:16px}
+.tpl{text-align:center; padding:12px 6px; border-radius:10px; font-size:12px}
+.tpl .i{width:48px;height:48px;border-radius:12px;margin:0 auto 8px; display:grid; place-items:center; font-size:22px; background:linear-gradient(135deg,#dfe6f3,#c8d4ea); color:#2a7bd6}
+.tpl.sel{background:var(--xc-sel)} .tpl.sel .i{background:linear-gradient(135deg,#2a7bd6,#5aa2f0); color:#fff}
+.form{padding:16px 24px; display:grid; grid-template-columns:160px 1fr; gap:10px 14px; align-items:center}
+.form label{text-align:right; color:var(--xc-ink2)}
+.form .fld{background:var(--xc-bg); border:1px solid rgba(0,0,0,.18); border-radius:6px; padding:5px 10px}
+.form .fld.pop::after{content:"▾"; float:right; color:var(--xc-ink2)}
+.form .fld.hi{outline:2px solid #f05138}
+.sfoot{display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid rgba(0,0,0,.1)}
+.btn{padding:5px 14px; border-radius:6px; border:1px solid rgba(0,0,0,.18); background:var(--xc-bg)}
+.btn.pri{background:#2a7bd6; color:#fff; border-color:#2a7bd6}
+.sim{display:grid; place-items:center; padding:14px}
+.simphone{width:150px; height:300px; border-radius:26px; background:#0b0b0f; padding:8px}
+.simphone .scr{background:#fff; height:100%; border-radius:20px; padding:26px 10px 10px; font-size:9px; color:#111}
+.simphone .scr .nav{font-weight:800; font-size:13px; margin-bottom:6px}
+.simphone .row{display:flex; gap:5px; align-items:center; padding:5px 0; border-bottom:1px solid #eee}
+.simphone .row .ck{width:10px;height:10px;border-radius:50%;border:1.5px solid #999}
+.simphone .row .ck.on{background:#34c759; border-color:#34c759}
+.simphone .inp{margin-top:auto; display:flex; gap:4px}
+.simphone .inp span{flex:1; border:1px solid #ccc; border-radius:5px; padding:3px 5px; color:#999}
+.simphone .inp b{background:#007aff; color:#fff; border-radius:5px; padding:3px 7px}
+
+/* ============================================================
+   QUIZ / CHECKLIST
+   ============================================================ */
+.quiz{display:grid; gap:16px; margin-top:16px}
+.q{background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:18px}
+.q .qt{font-weight:700; margin-bottom:10px}
+.q .opts{display:grid; gap:8px}
+.q button{text-align:left; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:10px; padding:10px 14px; cursor:pointer; font-size:1rem; font-family:inherit}
+.q button:hover{border-color:var(--ink-3)}
+.q button.right{border-color:var(--model); background:var(--model-bg); color:var(--model-ink)}
+.q button.wrong{border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.q .fb{margin-top:10px; font-size:.95rem; color:var(--ink-2); display:none}
+.q .fb.show{display:block}
+.score{font-weight:700; margin-top:12px}
+.check{display:grid; gap:10px; margin-top:14px}
+.check label{display:flex; gap:12px; align-items:flex-start; background:var(--bg-2); border:1px solid var(--line); border-radius:10px; padding:12px 14px; cursor:pointer}
+.check input{margin-top:6px; accent-color:var(--accent)}
+.check label.done{opacity:.6; text-decoration:line-through}
+footer{padding:40px 0 60px; color:var(--ink-3); font-size:.92rem; border-top:1px solid var(--line)}
+@media print{.topbar,.theme-btn,.copybtn{display:none}.explain{display:none}.codewalk{display:block}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="logo">M</span> MAC221 · MVVM</div>
+    <nav class="toc" id="toc">
+      <a href="#why">Why</a>
+      <a href="#metaphor">Metaphors</a>
+      <a href="#ex1">App 1 · Easy</a>
+      <a href="#ex2">App 2 · Intermediate</a>
+      <a href="#ex3">App 3 · Advanced</a>
+      <a href="#xcode">Xcode Steps</a>
+      <a href="#mistakes">Mistakes</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" title="Toggle light / dark">◐</button>
+  </div>
+</header>
+
+<!-- ============================================================ HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">MAC221 · iOS App Development with SwiftUI</span>
+      <h1><span class="m">Model</span> · <span class="v">View</span> · <span class="vm">ViewModel</span></h1>
+      <p class="lead">A way to organize your SwiftUI app so that <b>data</b>, <b>screen</b>, and the <b>brains in between</b> each live in their own place. Once you see it, you'll never want to stuff everything into <code>ContentView</code> again.</p>
+      <div class="meta">
+        <span>⏱ ~60 minutes</span>
+        <span>📱 3 apps: easy → intermediate → advanced</span>
+        <span>🖱 Hover any line of code for an explanation</span>
+        <span>📋 Copy buttons on every file</span>
+        <span>🛠 Xcode step-by-step</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="arch">
+        <div class="box v">View<small>what the user sees</small></div>
+        <div class="arrow">⇄<small>binds</small></div>
+        <div class="box vm">ViewModel<small>logic & state</small></div>
+        <div class="arrow">⇄<small>reads/writes</small></div>
+        <div class="box m">Model<small>pure data</small></div>
+      </div>
+      <p class="muted" style="margin:14px 0 0; font-size:.92rem; text-align:center">The View never touches the Model directly. Everything goes through the ViewModel.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ WHY -->
+<section id="why">
+  <div class="wrap">
+    <span class="eyebrow">01 · The problem</span>
+    <h2>Why not just put everything in ContentView?</h2>
+    <p class="lead">You can — and for a 20-line demo it's fine. But real apps grow. Soon one file holds the data, the rules, the networking, <em>and</em> the layout. That file becomes impossible to test, hard to reuse, and scary to change.</p>
+    <div class="grid3">
+      <div class="card"><h3>😵 The "Massive View" problem</h3><p class="muted">A 600-line <code>ContentView</code> where a button tap, a sort function, and a <code>VStack</code> are all tangled together. Change one color, break the sorting.</p></div>
+      <div class="card"><h3>🧪 Hard to test</h3><p class="muted">You can't easily unit-test "does adding a task work?" when the logic lives inside a view that only exists while it's on screen.</p></div>
+      <div class="card"><h3>♻️ No reuse</h3><p class="muted">Want the same task logic on an iPad layout or a widget? If it's welded to one View, you copy-paste and now maintain two copies.</p></div>
+    </div>
+    <div class="note"><b>MVVM's promise:</b> each piece has <em>one job</em>. The Model holds data. The View draws. The ViewModel connects them and holds the logic. Change one without fear of breaking the others.</div>
+  </div>
+</section>
+
+<!-- ============================================================ METAPHORS -->
+<section id="metaphor">
+  <div class="wrap">
+    <span class="eyebrow">02 · Definitions you'll actually remember</span>
+    <h2>Three layers, three jobs</h2>
+    <div class="grid3">
+      <div class="card layer-card model">
+        <div class="emoji">🥕</div>
+        <h3>Model <span class="pill model">DATA</span></h3>
+        <p class="def">The raw facts of your app — the <em>what</em>.</p>
+        <ul>
+          <li>Plain Swift <code>struct</code>s (sometimes <code>enum</code>s)</li>
+          <li>Knows <b>nothing</b> about SwiftUI — no <code>import SwiftUI</code></li>
+          <li>Example: <code>TodoItem</code> with a title and <code>isDone</code></li>
+          <li>Metaphor: the <b>ingredients in the kitchen</b>. A carrot doesn't know what plate it ends up on.</li>
+        </ul>
+      </div>
+      <div class="card layer-card view">
+        <div class="emoji">🍽️</div>
+        <h3>View <span class="pill view">SCREEN</span></h3>
+        <p class="def">What the user sees and touches — the <em>look</em>.</p>
+        <ul>
+          <li>SwiftUI <code>struct ... : View</code> with a <code>body</code></li>
+          <li>Should be <b>dumb</b>: it displays and forwards taps, it doesn't decide</li>
+          <li>Example: <code>TaskListView</code> with a <code>List</code> and a <code>Button</code></li>
+          <li>Metaphor: the <b>plate and the dining room</b>. Beautiful presentation, no cooking.</li>
+        </ul>
+      </div>
+      <div class="card layer-card vm">
+        <div class="emoji">👨‍🍳</div>
+        <h3>ViewModel <span class="pill vm">LOGIC</span></h3>
+        <p class="def">The brain between them — the <em>how</em>.</p>
+        <ul>
+          <li>A <code>class</code> marked <code>@Observable</code></li>
+          <li>Owns the Model, exposes <b>ready-to-display</b> values, and has the functions the View calls</li>
+          <li>Example: <code>TaskListViewModel</code> with <code>addTask()</code> and <code>remainingText</code></li>
+          <li>Metaphor: the <b>chef</b>. Takes orders from the dining room, works with the ingredients, sends back finished plates.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="restaurant">
+      <div class="card">
+        <h3>🍴 The restaurant, start to finish</h3>
+        <ol style="color:var(--ink-2); padding-left:1.2rem">
+          <li>A customer (the <b>user</b>) taps "Add task" in the dining room (<span class="pill view">View</span>).</li>
+          <li>The waiter carries the order to the kitchen — that's the View calling <code>viewModel.addTask()</code>.</li>
+          <li>The chef (<span class="pill vm">ViewModel</span>) grabs ingredients (<span class="pill model">Model</span>) and prepares the dish — appends a new <code>TodoItem</code> to the array.</li>
+          <li>Because the ViewModel is <code>@Observable</code>, SwiftUI <b>automatically</b> notices the change and re-plates the dining room. You never write "refresh the screen."</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="tabs" id="metaTabs">
+          <button class="tab active" data-pane="mt1">🎛 Second metaphor: TV remote</button>
+          <button class="tab" data-pane="mt2">📏 The one-sentence test</button>
+        </div>
+        <div class="tabpane active" id="mt1">
+          <p class="muted">Think of a smart TV:</p>
+          <ul style="color:var(--ink-2); padding-left:1.1rem">
+            <li><span class="pill model">Model</span> = the broadcast signal / the movie file. Pure content.</li>
+            <li><span class="pill view">View</span> = the screen and the remote buttons. You see pixels, you press things.</li>
+            <li><span class="pill vm">ViewModel</span> = the TV's processor. It receives "volume up," changes the volume value, and tells the screen to show the new volume bar.</li>
+          </ul>
+          <p class="muted">The remote never edits the movie file directly — it always goes through the processor.</p>
+        </div>
+        <div class="tabpane" id="mt2">
+          <p>Not sure where something belongs? Ask:</p>
+          <p class="rule" style="color:var(--model-ink)">"Would this still make sense if my app had no screen at all?" → Model.</p>
+          <p class="rule" style="color:var(--view-ink)">"Is this only about how things look or where they're placed?" → View.</p>
+          <p class="rule" style="color:var(--vm-ink)">"Is this a decision, a calculation, or a response to a user action?" → ViewModel.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:36px">Three apps, three difficulty levels</h3>
+    <p class="muted">Each one shows the running UI first, then the complete code with hover explanations. Every file has a Copy button.</p>
+    <div class="levels">
+      <a href="#ex1"><div class="card"><span class="pill lvl1">EASY · 1 file · ~35 lines</span><h3>🔢 Counter</h3><ul><li>Model = one struct, one Int</li><li>ViewModel = two methods</li><li>View = Text + two Buttons</li></ul></div></a>
+      <a href="#ex2"><div class="card"><span class="pill lvl2">INTERMEDIATE · 4 files · ~100 lines</span><h3>✅ Task Tracker</h3><ul><li>Array of Models, add / toggle / delete</li><li>Two-way binding with <code>$viewModel</code></li><li>Formatted text computed in the ViewModel</li></ul></div></a>
+      <a href="#ex3"><div class="card"><span class="pill lvl3">ADVANCED · 6 files · ~200 lines</span><h3>🎓 Grades Dashboard</h3><ul><li><code>async/await</code> loading, error + retry</li><li>Search, sort, pull-to-refresh, detail screen</li><li>Service protocol + dependency injection</li></ul></div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ EXAMPLE 1 -->
+<section id="ex1">
+  <div class="wrap">
+    <span class="eyebrow">03 · App 1 — <span class="pill lvl1">EASY</span></span>
+    <h2>Counter: the smallest possible MVVM</h2>
+    <p class="lead">One file, ~35 lines, zero magic. First look at the running app and watch the data move; then read the code.</p>
+
+    <div class="subhead"><span class="ic">📱</span> The app</div>
+    <div class="uirow">
+      <div class="phone">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="count" id="demoCount">Count: 0</div>
+          <div class="label">viewModel.displayText</div>
+          <button class="add" id="demoAdd">Add One</button>
+          <button class="reset" id="demoReset">Reset</button>
+        </div>
+        <div class="simtag">Interactive simulation of the SwiftUI app</div>
+      </div>
+      <div>
+        <div class="flowdiag">
+          <svg viewBox="0 0 640 230" role="img" aria-label="Data flow between View, ViewModel and Model">
+            <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+            <g id="fbView" class="fl-box" style="color:var(--view)"><rect x="20" y="75" width="160" height="80" rx="16" fill="var(--view-bg)" stroke="var(--view)"/><text x="100" y="110" text-anchor="middle" fill="var(--view-ink)" font-size="20">View</text><text x="100" y="134" text-anchor="middle" fill="var(--view-ink)" font-size="12" font-weight="500">ContentView</text></g>
+            <g id="fbVM" class="fl-box" style="color:var(--vm)"><rect x="240" y="75" width="160" height="80" rx="16" fill="var(--vm-bg)" stroke="var(--vm)"/><text x="320" y="110" text-anchor="middle" fill="var(--vm-ink)" font-size="20">ViewModel</text><text x="320" y="134" text-anchor="middle" fill="var(--vm-ink)" font-size="12" font-weight="500">CounterViewModel</text></g>
+            <g id="fbModel" class="fl-box" style="color:var(--model)"><rect x="460" y="75" width="160" height="80" rx="16" fill="var(--model-bg)" stroke="var(--model)"/><text x="540" y="110" text-anchor="middle" fill="var(--model-ink)" font-size="20">Model</text><text x="540" y="134" text-anchor="middle" fill="var(--model-ink)" font-size="12" font-weight="500">Counter</text></g>
+            <g id="fa1" class="fl-step" style="color:var(--view)"><path d="M180 92 C 205 92, 215 92, 238 92" fill="none" stroke="currentColor" stroke-width="3" marker-end="url(#ah)"/><text x="210" y="60" text-anchor="middle" fill="var(--ink-2)" font-size="12">① increment()</text></g>
+            <g id="fa2" class="fl-step" style="color:var(--vm)"><path d="M400 92 C 425 92, 435 92, 458 92" fill="none" stroke="currentColor" stroke-width="3" marker-end="url(#ah)"/><text x="430" y="60" text-anchor="middle" fill="var(--ink-2)" font-size="12">② value += 1</text></g>
+            <g id="fa3" class="fl-step" style="color:var(--model)"><path d="M460 138 C 435 138, 425 138, 402 138" fill="none" stroke="currentColor" stroke-width="3" marker-end="url(#ah)"/><text x="430" y="185" text-anchor="middle" fill="var(--ink-2)" font-size="12">③ struct changed</text></g>
+            <g id="fa4" class="fl-step" style="color:var(--vm)"><path d="M240 138 C 215 138, 205 138, 182 138" fill="none" stroke="currentColor" stroke-width="3" marker-end="url(#ah)"/><text x="210" y="185" text-anchor="middle" fill="var(--ink-2)" font-size="12">④ @Observable → body re-runs</text></g>
+          </svg>
+        </div>
+        <div class="steps" id="flowSteps">
+          <div class="step"><span class="n">1</span><div><b>User taps "Add One".</b> The View does one thing: calls <code>viewModel.increment()</code>. It makes <em>no</em> decisions.</div></div>
+          <div class="step"><span class="n">2</span><div><b>ViewModel runs the logic.</b> <code>counter.value += 1</code> mutates the Model it owns.</div></div>
+          <div class="step"><span class="n">3</span><div><b>Model changes.</b> The <code>Counter</code> struct now holds the new value. It still knows nothing about screens.</div></div>
+          <div class="step"><span class="n">4</span><div><b>SwiftUI redraws automatically.</b> Because the ViewModel is <code>@Observable</code> and the View read <code>displayText</code>, SwiftUI re-runs <code>body</code>. No manual refresh.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subhead"><span class="ic">💻</span> The code</div>
+    <p class="muted">Hover (or tap) any line — the explanation appears on the right. Click a line to <b>pin</b> it.</p>
+    <div class="codewalk">
+      <div class="codebox">
+        <div class="bar"><div class="dots"><span></span><span></span><span></span></div><span class="fname">ContentView.swift</span><span class="hint">hover a line →</span><div class="right"><button class="copybtn" data-copy="code1pre">📋 Copy code</button></div></div>
+        <pre class="code" id="code1pre"></pre>
+      </div>
+      <aside class="explain" id="explain1"></aside>
+    </div>
+    <div class="callout"><span class="ic">💡</span><div><b>Notice the direction of knowledge.</b> The View knows about the ViewModel. The ViewModel knows about the Model. The Model knows about <em>nobody</em>. Arrows only point one way → that's what keeps things untangled.</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ EXAMPLE 2 -->
+<section id="ex2">
+  <div class="wrap">
+    <span class="eyebrow">04 · App 2 — <span class="pill lvl2">INTERMEDIATE</span></span>
+    <h2>Task Tracker: one file per layer</h2>
+    <p class="lead">A real multi-file project: a list of Models, three user actions, two-way binding to a text field, and formatted text that the ViewModel prepares.</p>
+
+    <div class="subhead"><span class="ic">📱</span> The app</div>
+    <div class="uirow">
+      <div class="phone">
+        <div class="screen app" id="sim2">
+          <div class="notch"></div>
+          <div class="appnav"><div class="title">My Tasks</div><div class="sub" id="sim2Left"></div></div>
+          <div class="applist"><div class="appsection" id="sim2List"></div></div>
+          <div class="appbar"><input id="sim2Input" placeholder="New task…"><button id="sim2Add">Add</button></div>
+        </div>
+        <div class="simtag">Interactive simulation · hover a row for delete (swipe on iOS)</div>
+      </div>
+      <div>
+        <h3>Try it</h3>
+        <ul class="try">
+          <li><span class="n">1</span><div>Type a task and press <b>Add</b> (or Enter). Try adding an empty one or just spaces — the ViewModel's <code>guard</code> rejects it.</div></li>
+          <li><span class="n">2</span><div>Tap a row to toggle it. Watch the "tasks left" text in the corner update <b>by itself</b> — that's <code>remainingText</code> recomputing.</div></li>
+          <li><span class="n">3</span><div>Hover a row and hit <b>Delete</b> (swipe-left on a real device, via <code>.onDelete</code>).</div></li>
+        </ul>
+        <div class="layersum">
+          <div><span class="pill model">MODEL</span> <span><code>TodoItem</code> — id, title, isDone. <code>import Foundation</code> only.</span></div>
+          <div><span class="pill vm">VIEWMODEL</span> <span><code>TaskListViewModel</code> — owns <code>[TodoItem]</code> and <code>newTitle</code>; exposes <code>remainingText</code>; methods <code>addTask</code>, <code>toggle</code>, <code>delete</code>.</span></div>
+          <div><span class="pill view">VIEW</span> <span><code>TaskListView</code> — List, rows, bottom input bar. Every button body is one ViewModel call.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subhead"><span class="ic">💻</span> The code</div>
+    <div class="codewalk">
+      <div class="codebox">
+        <div class="bar"><div class="dots"><span></span><span></span><span></span></div><span class="fname" id="code2fname">TodoItem.swift</span><span class="hint">hover a line →</span><div class="right"><button class="copybtn" data-copy="code2pre">📋 Copy this file</button><button class="copybtn ghost" data-copyall="CODE2">Copy all files</button></div></div>
+        <div class="filetabs" id="fileTabs2">
+          <button class="active" data-file="model"><span class="lay" style="background:var(--model)"></span>TodoItem.swift</button>
+          <button data-file="vm"><span class="lay" style="background:var(--vm)"></span>TaskListViewModel.swift</button>
+          <button data-file="view"><span class="lay" style="background:var(--view)"></span>TaskListView.swift</button>
+          <button data-file="app"><span class="lay" style="background:var(--accent)"></span>TaskTrackerApp.swift</button>
+        </div>
+        <pre class="code" id="code2pre"></pre>
+      </div>
+      <aside class="explain" id="explain2"></aside>
+    </div>
+    <div class="grid3" style="margin-top:22px">
+      <div class="card"><h3 style="color:var(--model-ink)">🥕 TodoItem.swift</h3><p class="muted">A struct that could be reused in a macOS app, a server, or a test — with zero changes.</p></div>
+      <div class="card"><h3 style="color:var(--vm-ink)">👨‍🍳 TaskListViewModel.swift</h3><p class="muted">Owns the array, exposes <code>remainingText</code> (already pluralized!), and has the three intents. Testable without a screen.</p></div>
+      <div class="card"><h3 style="color:var(--view-ink)">🍽️ TaskListView.swift</h3><p class="muted">Pure layout. No <code>if</code>s about business rules in here.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ EXAMPLE 3 -->
+<section id="ex3">
+  <div class="wrap">
+    <span class="eyebrow">05 · App 3 — <span class="pill lvl3">ADVANCED</span></span>
+    <h2>Grades Dashboard: loading, errors, search, sort, navigation</h2>
+    <p class="lead">What a production screen looks like: data arrives <b>asynchronously</b> from a service, the screen has <b>loading / loaded / failed</b> states, the list is searchable and sortable, rows push a detail screen — and the ViewModel can be unit-tested with a fake service.</p>
+
+    <div class="subhead"><span class="ic">📱</span> The app</div>
+    <div class="uirow">
+      <div class="phone">
+        <div class="screen app" id="sim3">
+          <div class="notch"></div>
+          <div id="sim3Body" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
+        </div>
+        <div class="simtag">Interactive simulation · tap a row for details</div>
+      </div>
+      <div class="simctl" style="grid-column:1; margin-top:0">
+        <label><input type="checkbox" id="sim3Fail"> Simulate server failure</label>
+        <button id="sim3Reload">↻ Reload (pull-to-refresh)</button>
+      </div>
+      <div>
+        <h3>Try it</h3>
+        <ul class="try">
+          <li><span class="n">1</span><div>Watch the spinner — the <code>.task {}</code> modifier calls <code>await viewModel.load()</code> the moment the screen appears. State goes <code>.loading → .loaded</code>.</div></li>
+          <li><span class="n">2</span><div>Type in the search field, then use the <b>⇅</b> button to change the sort order. Both are computed in <code>visibleCourses</code> — the View just displays the array it's handed.</div></li>
+          <li><span class="n">3</span><div>Tap a row. A <code>NavigationLink(value:)</code> pushes <code>CourseDetailView</code>. Hover a row for Delete (swipe on iOS) and watch the GPA header recompute.</div></li>
+          <li><span class="n">4</span><div>Check <b>Simulate server failure</b> and Reload. The state becomes <code>.failed(message)</code> and the View shows a Retry button — zero error logic in the View.</div></li>
+        </ul>
+        <div class="layersum">
+          <div><span class="pill model">MODEL</span> <span><code>Course</code> (with a <code>letterGrade</code> computed from points — domain logic belongs here) + <code>GradeService</code> protocol and a <code>MockGradeService</code>.</span></div>
+          <div><span class="pill vm">VIEWMODEL</span> <span><code>GradesViewModel</code> — a <code>LoadState</code> enum, search + sort, <code>gpaText</code>, <code>load() async</code>, and a service injected through <code>init</code>.</span></div>
+          <div><span class="pill view">VIEW</span> <span><code>GradesView</code> switches on the state; <code>CourseRow</code> and <code>CourseDetailView</code> are small reusable Views.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subhead"><span class="ic">💻</span> The code</div>
+    <div class="codewalk">
+      <div class="codebox">
+        <div class="bar"><div class="dots"><span></span><span></span><span></span></div><span class="fname" id="code3fname">Course.swift</span><span class="hint">hover a line →</span><div class="right"><button class="copybtn" data-copy="code3pre">📋 Copy this file</button><button class="copybtn ghost" data-copyall="CODE3">Copy all files</button></div></div>
+        <div class="filetabs" id="fileTabs3">
+          <button class="active" data-file="model"><span class="lay" style="background:var(--model)"></span>Course.swift</button>
+          <button data-file="service"><span class="lay" style="background:var(--model)"></span>GradeService.swift</button>
+          <button data-file="vm"><span class="lay" style="background:var(--vm)"></span>GradesViewModel.swift</button>
+          <button data-file="view"><span class="lay" style="background:var(--view)"></span>GradesView.swift</button>
+          <button data-file="detail"><span class="lay" style="background:var(--view)"></span>CourseDetailView.swift</button>
+          <button data-file="app"><span class="lay" style="background:var(--accent)"></span>GradesApp.swift</button>
+        </div>
+        <pre class="code" id="code3pre"></pre>
+      </div>
+      <aside class="explain" id="explain3"></aside>
+    </div>
+
+    <div class="grid3" style="margin-top:22px">
+      <div class="card"><h3>🧪 Why the protocol?</h3><p class="muted">In a test you write <code>GradesViewModel(service: FakeService())</code> that returns instantly, then assert <code>gpaText == "GPA 3.47"</code>. No network, no Xcode simulator, runs in milliseconds.</p></div>
+      <div class="card"><h3>🚦 Why an enum for state?</h3><p class="muted">Three Bools (<code>isLoading</code>, <code>hasError</code>, <code>isEmpty</code>) can be true at the same time by accident. An enum makes impossible states impossible — the screen is in exactly one state.</p></div>
+      <div class="card"><h3>🧵 Why <code>@MainActor</code>?</h3><p class="muted">Data arrives on a background thread; UI updates must happen on the main thread. Marking the ViewModel <code>@MainActor</code> guarantees every property change is safe for SwiftUI.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ XCODE STEPS -->
+<section id="xcode">
+  <div class="wrap">
+    <span class="eyebrow">06 · Hands-on</span>
+    <h2>Building App 2 in Xcode, step by step</h2>
+    <p class="lead">Follow along to recreate the Task Tracker. The screenshots below are <b>faithful illustrations</b> of the Xcode panels you'll see (Xcode 16 / 17). Apps 1 and 3 follow exactly the same steps with different file names.</p>
+
+    <div class="xsteps">
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">1</span> Create a new iOS App project</h3>
+          <ol>
+            <li>Open Xcode. On the Welcome window click <b>Create New Project…</b> (or <kbd>⇧⌘N</kbd> — <kbd>File ▸ New ▸ Project…</kbd>).</li>
+            <li>At the top pick the <b>iOS</b> platform.</li>
+            <li>Select the <b>App</b> template and click <b>Next</b>.</li>
+          </ol>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span style="font-weight:600">Choose a template for your new project</span></div>
+            <div class="xbody one" style="min-height:0">
+              <div class="xsheet" style="margin:12px auto">
+                <div class="sh"><span>Multiplatform</span><span class="on">iOS</span><span>macOS</span><span>visionOS</span><span>watchOS</span><span>tvOS</span></div>
+                <div style="padding:10px 16px 0; font-size:12px; color:var(--xc-ink2); font-weight:600">Application</div>
+                <div class="tgrid">
+                  <div class="tpl sel"><div class="i">📱</div>App</div>
+                  <div class="tpl"><div class="i">📄</div>Document App</div>
+                  <div class="tpl"><div class="i">🎮</div>Game</div>
+                  <div class="tpl"><div class="i">🧩</div>App Playground</div>
+                  <div class="tpl"><div class="i">👓</div>AR App</div>
+                  <div class="tpl"><div class="i">🧪</div>Sticker Pack</div>
+                  <div class="tpl"><div class="i">💬</div>iMessage App</div>
+                  <div class="tpl"><div class="i">🔒</div>Safari Ext.</div>
+                </div>
+                <div class="sfoot"><span class="btn">Cancel</span><span class="btn">Previous</span><span class="btn pri">Next</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · File ▸ New ▸ Project ▸ iOS ▸ App</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">2</span> Name it and pick SwiftUI</h3>
+          <ol>
+            <li><b>Product Name:</b> <code>TaskTracker</code></li>
+            <li><b>Organization Identifier:</b> e.g. <code>edu.lagcc.yourname</code></li>
+            <li><b>Interface:</b> <b>SwiftUI</b> &nbsp;·&nbsp; <b>Language:</b> <b>Swift</b></li>
+            <li><b>Storage:</b> None &nbsp;·&nbsp; leave <b>Testing System</b> as default.</li>
+            <li>Click <b>Next</b>, choose a folder, click <b>Create</b>.</li>
+          </ol>
+          <div class="callout"><span class="ic">⚠️</span><div>Make sure <b>Interface = SwiftUI</b>. If you accidentally pick Storyboard you'll get UIKit files and nothing in this lecture will match.</div></div>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span style="font-weight:600">Choose options for your new project</span></div>
+            <div class="xbody one" style="min-height:0">
+              <div class="xsheet" style="margin:12px auto">
+                <div class="form">
+                  <label>Product Name:</label><div class="fld hi">TaskTracker</div>
+                  <label>Team:</label><div class="fld pop">Your Name (Personal Team)</div>
+                  <label>Organization Identifier:</label><div class="fld">edu.lagcc.yourname</div>
+                  <label>Bundle Identifier:</label><div style="color:var(--xc-ink2)">edu.lagcc.yourname.TaskTracker</div>
+                  <label>Interface:</label><div class="fld pop hi">SwiftUI</div>
+                  <label>Language:</label><div class="fld pop">Swift</div>
+                  <label>Testing System:</label><div class="fld pop">Swift Testing with XCTest UI Tests</div>
+                  <label>Storage:</label><div class="fld pop">None</div>
+                  <label></label><div><input type="checkbox" disabled> Host in CloudKit</div>
+                </div>
+                <div class="sfoot"><span class="btn">Cancel</span><span class="btn">Previous</span><span class="btn pri">Next</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · Project options sheet</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">3</span> Create three folders: Model, ViewModel, View</h3>
+          <ol>
+            <li>In the <b>Project Navigator</b> (left sidebar, <kbd>⌘1</kbd>), <b>right-click</b> the yellow <code>TaskTracker</code> folder.</li>
+            <li>Choose <b>New Group</b> (Xcode 16+ may say <b>New Folder</b>).</li>
+            <li>Name it <code>Model</code>. Repeat for <code>ViewModel</code> and <code>View</code>.</li>
+            <li>Drag <code>ContentView.swift</code> into <code>View</code> (we'll rename it in step 6).</li>
+          </ol>
+          <p class="muted">Folders don't change how the code compiles — they just make the architecture <em>visible</em> every time you open the project.</p>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span class="scheme"><span class="play">▶</span> TaskTracker › iPhone 16</span><span class="status">TaskTracker: Ready</span></div>
+            <div class="xbody rel">
+              <div class="xnav">
+                <div class="ico"><b>▣</b> ⌕ ⚠ ◇ ⏱ ▤ ◉</div>
+                <ul class="tree">
+                  <li>▾ <span style="color:#2a7bd6">◈</span> TaskTracker</li>
+                  <li class="ind1 sel">▾ <span class="f">📁</span> TaskTracker</li>
+                  <li class="ind2 new">▸ <span class="f">📁</span> Model</li>
+                  <li class="ind2 new">▸ <span class="f">📁</span> ViewModel</li>
+                  <li class="ind2 new">▸ <span class="f">📁</span> View</li>
+                  <li class="ind2"><span class="sw">▣</span> TaskTrackerApp.swift</li>
+                  <li class="ind2"><span class="sw">▣</span> ContentView.swift</li>
+                  <li class="ind2"><span class="f">🎨</span> Assets</li>
+                  <li class="ind1 fade">▸ <span class="f">📁</span> TaskTrackerTests</li>
+                  <li class="ind1 fade">▸ <span class="f">📁</span> TaskTrackerUITests</li>
+                </ul>
+              </div>
+              <div class="xeditor">
+                <div class="crumbs">TaskTracker › TaskTracker › No Selection</div>
+                <div style="padding:60px 20px; text-align:center; color:var(--xc-ink2)">No Editor</div>
+              </div>
+              <div class="ctx" style="left:130px; top:96px">
+                <div>Show in Finder</div><div>Open with External Editor</div><hr>
+                <div>New File from Template…</div><div>New Empty File</div>
+                <div class="sel">New Group</div><div>New Group from Selection</div><hr>
+                <div>Sort by Name</div><div>Sort by Type</div>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · Right-click ▸ New Group, three times (green = the folders you create)</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">4</span> Add the Model file</h3>
+          <ol>
+            <li><b>Right-click</b> the <code>Model</code> folder → <b>New File from Template…</b> (<kbd>⌘N</kbd>).</li>
+            <li>Pick <b>Swift File</b> (the plain one — <em>not</em> SwiftUI View). Click <b>Next</b>.</li>
+            <li>Name it <code>TodoItem.swift</code> → <b>Create</b>.</li>
+            <li>Use the <b>Copy this file</b> button on <span class="pill model">TodoItem.swift</span> in App 2 and paste, replacing everything.</li>
+          </ol>
+          <div class="callout"><span class="ic">🧠</span><div>Why "Swift File" and not "SwiftUI View"? The Model must <b>not</b> import SwiftUI. A plain Swift File starts with <code>import Foundation</code>, exactly what we want.</div></div>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span style="font-weight:600">Choose a template for your new file</span></div>
+            <div class="xbody one" style="min-height:0">
+              <div class="xsheet" style="margin:12px auto">
+                <div class="sh"><span>Multiplatform</span><span class="on">iOS</span><span>macOS</span><span>watchOS</span><span>tvOS</span></div>
+                <div style="padding:10px 16px 0; font-size:12px; color:var(--xc-ink2); font-weight:600">Source</div>
+                <div class="tgrid">
+                  <div class="tpl"><div class="i">🖼</div>SwiftUI View</div>
+                  <div class="tpl sel"><div class="i">📄</div>Swift File</div>
+                  <div class="tpl"><div class="i">🧪</div>Swift Testing</div>
+                  <div class="tpl"><div class="i">🅾</div>Objective-C File</div>
+                  <div class="tpl"><div class="i">🧾</div>Header File</div>
+                  <div class="tpl"><div class="i">C</div>C File</div>
+                  <div class="tpl"><div class="i">M</div>Metal File</div>
+                  <div class="tpl"><div class="i">⚙️</div>Playground</div>
+                </div>
+                <div class="sfoot"><span class="btn">Cancel</span><span class="btn">Previous</span><span class="btn pri">Next</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · New File from Template ▸ Swift File ▸ "TodoItem"</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">5</span> Add the ViewModel file</h3>
+          <ol>
+            <li><b>Right-click</b> the <code>ViewModel</code> folder → <b>New File from Template…</b> → <b>Swift File</b>.</li>
+            <li>Name it <code>TaskListViewModel.swift</code>.</li>
+            <li>Copy &amp; paste the <span class="pill vm">TaskListViewModel.swift</span> code.</li>
+            <li>Note the <code>import Observation</code> line — that's where <code>@Observable</code> lives.</li>
+            <li>Press <kbd>⌘B</kbd> to build. It compiles with no errors even though no screen uses it yet. <b>That's the point</b> — the logic stands on its own.</li>
+          </ol>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span class="scheme"><span class="play">▶</span> TaskTracker › iPhone 16</span><span class="status">Build Succeeded</span></div>
+            <div class="xbody">
+              <div class="xnav">
+                <div class="ico"><b>▣</b> ⌕ ⚠ ◇ ⏱ ▤ ◉</div>
+                <ul class="tree">
+                  <li>▾ <span style="color:#2a7bd6">◈</span> TaskTracker</li>
+                  <li class="ind1">▾ <span class="f">📁</span> TaskTracker</li>
+                  <li class="ind2">▾ <span class="f">📁</span> Model</li>
+                  <li class="ind3"><span class="sw">▣</span> TodoItem.swift</li>
+                  <li class="ind2">▾ <span class="f">📁</span> ViewModel</li>
+                  <li class="ind3 sel"><span class="sw">▣</span> TaskListViewModel.swift</li>
+                  <li class="ind2">▾ <span class="f">📁</span> View</li>
+                  <li class="ind3"><span class="sw">▣</span> ContentView.swift</li>
+                  <li class="ind2"><span class="sw">▣</span> TaskTrackerApp.swift</li>
+                  <li class="ind2"><span class="f">🎨</span> Assets</li>
+                </ul>
+              </div>
+              <div class="xeditor">
+                <div class="crumbs">TaskTracker › ViewModel › TaskListViewModel.swift › 🅲 TaskListViewModel</div>
+<pre><span class="k">import</span> Foundation
+<span class="hl-row"><span class="k">import</span> Observation</span>
+
+<span class="hl-row"><span class="a">@Observable</span></span>
+<span class="k">class</span> <span class="t">TaskListViewModel</span> {
+    <span class="k">var</span> tasks: [<span class="t">TodoItem</span>] = [
+        <span class="t">TodoItem</span>(title: <span class="s">"Read Chapter 5"</span>),
+        <span class="t">TodoItem</span>(title: <span class="s">"Finish Lab 3"</span>)
+    ]
+    <span class="k">var</span> newTitle: <span class="t">String</span> = <span class="s">""</span>
+
+    <span class="k">var</span> remainingText: <span class="t">String</span> {
+        <span class="k">let</span> left = tasks.filter { !$0.isDone }.count
+        <span class="k">return</span> <span class="s">"\(left) task\(left == 1 ? "" : "s") left"</span>
+    }
+    <span class="c">// addTask(), toggle(_:), delete(at:) …</span>
+}</pre>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · The two highlighted lines are what make a class a ViewModel SwiftUI can watch</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">6</span> Create the View and point the app at it</h3>
+          <ol>
+            <li>In the <code>View</code> folder, select <code>ContentView.swift</code>, press <kbd>Return</kbd> and rename it to <code>TaskListView.swift</code>. Paste the <span class="pill view">TaskListView.swift</span> code.</li>
+            <li>Open <code>TaskTrackerApp.swift</code>. Inside <code>WindowGroup</code>, change <code>ContentView()</code> to <code>TaskListView()</code>.</li>
+            <li>Build again with <kbd>⌘B</kbd>.</li>
+          </ol>
+          <div class="callout"><span class="ic">🔍</span><div><b>Read the View file once more and count the <code>if</code> statements about tasks.</b> There should be none, except for choosing an icon. All decisions moved to the ViewModel.</div></div>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span class="scheme"><span class="play">▶</span> TaskTracker › iPhone 16</span><span class="status">Build Succeeded</span></div>
+            <div class="xbody">
+              <div class="xnav">
+                <div class="ico"><b>▣</b> ⌕ ⚠ ◇ ⏱ ▤ ◉</div>
+                <ul class="tree">
+                  <li>▾ <span style="color:#2a7bd6">◈</span> TaskTracker</li>
+                  <li class="ind1">▾ <span class="f">📁</span> TaskTracker</li>
+                  <li class="ind2">▾ <span class="f">📁</span> Model</li>
+                  <li class="ind3"><span class="sw">▣</span> TodoItem.swift</li>
+                  <li class="ind2">▾ <span class="f">📁</span> ViewModel</li>
+                  <li class="ind3"><span class="sw">▣</span> TaskListViewModel.swift</li>
+                  <li class="ind2">▾ <span class="f">📁</span> View</li>
+                  <li class="ind3"><span class="sw">▣</span> TaskListView.swift</li>
+                  <li class="ind2 sel"><span class="sw">▣</span> TaskTrackerApp.swift</li>
+                  <li class="ind2"><span class="f">🎨</span> Assets</li>
+                </ul>
+              </div>
+              <div class="xeditor">
+                <div class="crumbs">TaskTracker › TaskTracker › TaskTrackerApp.swift › 🅢 TaskTrackerApp</div>
+<pre><span class="k">import</span> SwiftUI
+
+<span class="a">@main</span>
+<span class="k">struct</span> <span class="t">TaskTrackerApp</span>: <span class="t">App</span> {
+    <span class="k">var</span> body: <span class="k">some</span> <span class="t">Scene</span> {
+        <span class="t">WindowGroup</span> {
+<span class="hl-row">            <span class="t">TaskListView</span>()   <span class="c">// was ContentView()</span></span>
+        }
+    }
+}</pre>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · One-line change in the app entry point</div>
+        </div>
+      </div>
+
+      <div class="xstep">
+        <div class="txt">
+          <h3><span class="num">7</span> Run it</h3>
+          <ol>
+            <li>In the toolbar, click the device menu and pick an <b>iPhone 16</b> simulator.</li>
+            <li>Press <kbd>⌘R</kbd> (or the ▶ button). The simulator launches with your task list.</li>
+            <li>Type a task, tap <b>Add</b>, tap a row to check it off, swipe left to delete. Watch "tasks left" update by itself.</li>
+            <li>Tip: open the <b>Canvas</b> with <kbd>⌥⌘⏎</kbd> inside <code>TaskListView.swift</code> to see the <code>#Preview</code> live, without the simulator.</li>
+          </ol>
+          <div class="note"><b>Checkpoint:</b> if "tasks left" updates when you tap a row, your <code>@Observable</code> ViewModel is wired correctly. If it doesn't, check that the View holds the ViewModel with <code>@State</code>.</div>
+        </div>
+        <div>
+          <div class="xwin">
+            <div class="xtitle"><div class="lights"><span></span><span></span><span></span></div><span class="scheme"><span class="play">▶</span> TaskTracker › iPhone 16</span><span class="status">Running TaskTracker on iPhone 16</span></div>
+            <div class="xbody" style="grid-template-columns:1fr 1fr">
+              <div class="xeditor">
+                <div class="crumbs">TaskTracker › View › TaskListView.swift</div>
+<pre><span class="k">struct</span> <span class="t">TaskListView</span>: <span class="t">View</span> {
+    <span class="a">@State</span> <span class="k">private var</span> viewModel = <span class="t">TaskListViewModel</span>()
+
+    <span class="k">var</span> body: <span class="k">some</span> <span class="t">View</span> {
+        <span class="t">NavigationStack</span> {
+            <span class="t">List</span> {
+                <span class="t">ForEach</span>(viewModel.tasks) { task <span class="k">in</span>
+                    <span class="c">// row …</span>
+                }
+            }
+            .navigationTitle(<span class="s">"My Tasks"</span>)
+        }
+    }
+}
+
+<span class="a">#Preview</span> { <span class="t">TaskListView</span>() }</pre>
+              </div>
+              <div class="sim" style="background:var(--xc-side)">
+                <div class="simphone"><div class="scr" style="display:flex;flex-direction:column">
+                  <div class="nav">My Tasks <span style="float:right;font-weight:500;color:#888;font-size:8px">1 task left</span></div>
+                  <div class="row"><span class="ck on"></span><span style="text-decoration:line-through;color:#999">Read Chapter 5</span></div>
+                  <div class="row"><span class="ck"></span><span>Finish Lab 3</span></div>
+                  <div class="inp"><span>New task…</span><b>Add</b></div>
+                </div></div>
+              </div>
+            </div>
+          </div>
+          <div class="xcap">Illustration · Editor on the left, Canvas / Simulator on the right</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:28px"><span class="ic">🎓</span><div><b>For App 3</b>, add two more files: <code>GradeService.swift</code> in the <code>Model</code> folder and <code>CourseDetailView.swift</code> in the <code>View</code> folder. Everything else is the same seven steps.</div></div>
+  </div>
+</section>
+
+<!-- ============================================================ MISTAKES -->
+<section id="mistakes">
+  <div class="wrap">
+    <span class="eyebrow">07 · Before you submit</span>
+    <h2>Common mistakes (and how to spot them)</h2>
+    <div class="grid3">
+      <div class="card"><h3>❌ <code>import SwiftUI</code> in the Model</h3><p class="muted">If your struct needs <code>Color</code> or <code>Image</code>, it has become a View concern. Store a plain value (e.g. <code>priority: Int</code>) and let the View map it to a color.</p></div>
+      <div class="card"><h3>❌ Logic inside <code>Button { }</code></h3><p class="muted"><code>Button { if !title.isEmpty { tasks.append(...) ; title = "" } }</code> → move all of that into <code>viewModel.addTask()</code>. The button body should be one call.</p></div>
+      <div class="card"><h3>❌ Forgetting <code>@Observable</code></h3><p class="muted">Your ViewModel changes but the screen doesn't update. The class must be marked <code>@Observable</code> and the View must hold it with <code>@State</code>.</p></div>
+      <div class="card"><h3>❌ Making the ViewModel a <code>struct</code></h3><p class="muted">Structs are copied; SwiftUI can't watch a copy. ViewModels are <code>class</code>es. Models are usually <code>struct</code>s.</p></div>
+      <div class="card"><h3>❌ Formatting in the View</h3><p class="muted"><code>Text("\(count) task\(count == 1 ? "" : "s")")</code> in the View is logic. Expose <code>remainingText</code> from the ViewModel and the View just shows it.</p></div>
+      <div class="card"><h3>❌ The View reaching past the ViewModel</h3><p class="muted">If a View ever does <code>viewModel.model.something = ...</code>, the chef is being bypassed. Add a method on the ViewModel instead.</p></div>
+    </div>
+    <h3 style="margin-top:28px">✅ Self-check before you submit the lab</h3>
+    <div class="check" id="checklist">
+      <label><input type="checkbox"> My project has <b>Model</b>, <b>ViewModel</b>, and <b>View</b> folders, each with the right files.</label>
+      <label><input type="checkbox"> My Model file imports only <code>Foundation</code>.</label>
+      <label><input type="checkbox"> My ViewModel is a <code>class</code> marked <code>@Observable</code>.</label>
+      <label><input type="checkbox"> My View holds the ViewModel with <code>@State private var viewModel = ...()</code>.</label>
+      <label><input type="checkbox"> Every button in my View calls exactly one ViewModel method.</label>
+      <label><input type="checkbox"> Every file has its imports and the View file ends with a <code>#Preview</code>.</label>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ QUIZ -->
+<section id="quiz">
+  <div class="wrap">
+    <span class="eyebrow">08 · Check your understanding</span>
+    <h2>Which layer does it belong to?</h2>
+    <p class="lead">Click an answer. Instant feedback, no grade recorded — this one's just for you.</p>
+    <div class="quiz" id="quizBox"></div>
+    <div class="score" id="quizScore"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    MAC221 · iOS App Development with SwiftUI · LaGuardia Community College (CUNY) · Mathematics, Engineering &amp; Computer Science Department.<br>
+    Code targets iOS 17+ (<code>@Observable</code>, <code>ContentUnavailableView</code>). Phone screens are browser simulations of the SwiftUI apps; Xcode panels are illustrations drawn for this lecture. Open-licensed course material.
+  </div>
+</footer>
+
+<script>
+/* ============================================================ THEME */
+(function(){
+  const root=document.documentElement, btn=document.getElementById('themeBtn');
+  let saved=null; try{saved=localStorage.getItem('mvvm-theme')}catch(e){}
+  if(saved) root.setAttribute('data-theme',saved);
+  btn.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark';
+    root.setAttribute('data-theme',next);
+    try{localStorage.setItem('mvvm-theme',next)}catch(e){}
+  });
+})();
+
+/* ============================================================ SWIFT HIGHLIGHTER */
+const KW=new Set(['import','struct','class','enum','var','let','func','return','some','private','public','internal','if','else','guard','in','for','while','true','false','nil','self','init','static','mutating','where','switch','case','default','extension','protocol','throws','throw','try','await','async','do','catch','final']);
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function hl(src){
+  const re=/(\/\/.*$)|("(?:[^"\\]|\\.)*")|(@\w+|#\w+)|(\b\d+(?:\.\d+)?\b)|(\.[a-zA-Z_]\w*)|([A-Z][A-Za-z0-9_]*)|([a-zA-Z_]\w*)(?=\()|([a-zA-Z_]\w*)/gm;
+  let out='',last=0,m;
+  while((m=re.exec(src))){
+    out+=esc(src.slice(last,m.index)); last=re.lastIndex;
+    const t=m[0];
+    if(m[1]) out+=`<span class="tok-cmt">${esc(t)}</span>`;
+    else if(m[2]) out+=`<span class="tok-str">${esc(t)}</span>`;
+    else if(m[3]) out+=`<span class="tok-attr">${esc(t)}</span>`;
+    else if(m[4]) out+=`<span class="tok-num">${esc(t)}</span>`;
+    else if(m[5]) out+=`<span class="tok-prop">${esc(t)}</span>`;
+    else if(m[6]) out+=`<span class="tok-type">${esc(t)}</span>`;
+    else if(m[7]) out+= KW.has(t)?`<span class="tok-kw">${esc(t)}</span>`:`<span class="tok-fn">${esc(t)}</span>`;
+    else out+= KW.has(t)?`<span class="tok-kw">${esc(t)}</span>`:esc(t);
+  }
+  return out+esc(src.slice(last));
+}
+
+/* ============================================================ CODE DATA — [code, explanation, layer] */
+const M='model', VM='vm', V='view';
+
+const CODE1=[
+['import SwiftUI','Brings in the SwiftUI framework. This single file holds all three layers, so it needs SwiftUI for the <b>View</b> part. In a multi-file project only the View file imports SwiftUI.'],
+['',null],
+['// MARK: - Model','<code>// MARK:</code> is a special comment: Xcode shows it as a bold section header in the jump bar at the top of the editor. We use it to label each layer.',M],
+['struct Counter {','<b>The Model.</b> A plain <code>struct</code> — just data. It has no idea a screen exists. Metaphor: the ingredient in the kitchen. 🥕',M],
+['    var value: Int = 0','The only piece of state in our app: an integer that starts at zero. Notice there is no <code>@State</code> here — the Model is plain Swift.',M],
+['}','End of the Model. Three lines. Models are usually this boring, and that is a <b>good</b> thing — boring is testable.',M],
+['',null],
+['// MARK: - ViewModel','Section header for the ViewModel layer.',VM],
+['@Observable','<b>The key ingredient.</b> This macro (iOS 17+) makes SwiftUI watch every stored property of the class. When one changes, any View that read it redraws automatically. Without this line the screen would never update.',VM],
+['class CounterViewModel {','<b>The ViewModel.</b> It\'s a <code>class</code>, not a struct, because we need one shared instance that the View can observe over time. Naming convention: <i>&lt;Screen&gt;ViewModel</i>. Metaphor: the chef. 👨‍🍳',VM],
+['    private var counter = Counter()','The ViewModel <b>owns</b> the Model. It\'s <code>private</code> so the View can\'t reach past the chef and poke the ingredients directly.',VM],
+['',null],
+['    var displayText: String { "Count: \\(counter.value)" }','A <b>computed property</b> that turns raw data into a ready-to-show string. The View will never have to format anything — it just displays <code>displayText</code>. This is the ViewModel "plating the dish."',VM],
+['',null],
+['    func increment() { counter.value += 1 }','<b>An intent.</b> The View calls this when the button is tapped. The logic (add one) lives here, not in the button. Because <code>counter</code> is observed, changing it triggers a redraw.',VM],
+['    func reset() { counter.value = 0 }','A second intent. Later, if "reset" needs a confirmation rule or a log entry, you change it <b>here</b> and no View is touched.',VM],
+['}','End of the ViewModel. No <code>import SwiftUI</code> would be required for this class in its own file. It is pure logic.',VM],
+['',null],
+['// MARK: - View','Section header for the View layer.',V],
+['struct ContentView: View {','<b>The View.</b> A struct conforming to <code>View</code>. Its only job: describe what\'s on screen and forward taps. Metaphor: the dining room. 🍽️',V],
+['    @State private var viewModel = CounterViewModel()','The View <b>creates and holds</b> the ViewModel. <code>@State</code> keeps this instance alive across redraws (SwiftUI rebuilds the struct often; <code>@State</code> storage survives). Pair <code>@State</code> with an <code>@Observable</code> class — this is the modern (iOS 17+) pattern.',V],
+['',null],
+['    var body: some View {','Every View has a <code>body</code>. SwiftUI re-runs it whenever an observed value it used has changed.',V],
+['        VStack(spacing: 20) {','Vertical stack with 20 points between children. Layout only — pure View territory.',V],
+['            Text(viewModel.displayText)','<b>Reading from the ViewModel.</b> The View shows <code>displayText</code> exactly as given. No string formatting here. Because <code>body</code> read this property, SwiftUI now knows to redraw when it changes.',V],
+['                .font(.largeTitle)','Styling. The View decides <i>how it looks</i>; the ViewModel decided <i>what it says</i>.',V],
+['            Button("Add One") { viewModel.increment() }','<b>Forwarding an action.</b> The button body is one line: call the ViewModel. The View doesn\'t know or care what "increment" does internally.',V],
+['                .buttonStyle(.borderedProminent)','A filled, prominent button style. Cosmetic.',V],
+['            Button("Reset") { viewModel.reset() }','Same pattern: the View asks, the ViewModel acts.',V],
+['        }','Closes the VStack.',V],
+['        .padding()','Adds default padding around the stack.',V],
+['    }','Closes <code>body</code>.',V],
+['}','End of the View.',V],
+['',null],
+['#Preview {','Xcode Preview macro — shows the View live in the Canvas (<kbd>⌥⌘⏎</kbd>) without launching the simulator.'],
+['    ContentView()','The preview simply creates the View. The View creates its own ViewModel, so no extra setup is needed.'],
+['}','End of file. Three layers, one screen, ~35 lines.'],
+];
+
+const CODE2={
+model:{name:'TodoItem.swift',lines:[
+['import Foundation','Only Foundation — <b>never SwiftUI</b> in a Model. Foundation gives us <code>UUID</code>. This file would compile unchanged in a macOS app, a server, or a unit test.',M],
+['',null],
+['struct TodoItem: Identifiable {','<b>The Model.</b> A struct conforming to <code>Identifiable</code>, which SwiftUI\'s <code>ForEach</code> needs to tell rows apart. The Model can adopt Swift standard protocols — that is not "knowing about SwiftUI."',M],
+['    let id = UUID()','<code>Identifiable</code> requires an <code>id</code>. <code>UUID()</code> generates a unique one per item. It\'s <code>let</code> because identity never changes.',M],
+['    var title: String','The task text. <code>var</code> because the user might edit it later.',M],
+['    var isDone: Bool = false','Completion flag with a default of <code>false</code>, so we can write <code>TodoItem(title: "…")</code> without specifying it.',M],
+['}','That\'s the whole Model. If you\'re thinking "that\'s too simple" — correct. Models should be simple.',M],
+]},
+vm:{name:'TaskListViewModel.swift',lines:[
+['import Foundation','For <code>String</code> helpers and <code>IndexSet</code>. Still no SwiftUI.',VM],
+['import Observation','The <code>@Observable</code> macro lives in the Observation framework. (If you <code>import SwiftUI</code> you get it for free, but importing only Observation keeps the ViewModel UI-independent.)',VM],
+['',null],
+['@Observable','Makes every stored property below observable. Any View that reads <code>tasks</code> or <code>newTitle</code> will redraw when they change.',VM],
+['class TaskListViewModel {','<b>The ViewModel</b> — a class, named after the screen it serves.',VM],
+['    var tasks: [TodoItem] = [','<b>The ViewModel owns the Model data.</b> An array of <code>TodoItem</code>, pre-filled with two sample tasks so the screen isn\'t empty on first launch.',VM],
+['        TodoItem(title: "Read Chapter 5"),','Sample data. Uses the default <code>isDone = false</code>.',VM],
+['        TodoItem(title: "Finish Lab 3")','Second sample task.',VM],
+['    ]','Closes the array literal.',VM],
+['    var newTitle: String = ""','The text the user is currently typing in the "New task" field. Keeping it in the ViewModel (not <code>@State</code> in the View) means <code>addTask()</code> can read and clear it.',VM],
+['',null],
+['    var remainingText: String {','<b>Presentation logic.</b> A computed property that produces the exact string the View should show. The View does zero math.',VM],
+['        let left = tasks.filter { !$0.isDone }.count','Count the tasks that are not done. <code>$0</code> is shorthand for "the current element."',VM],
+['        return "\\(left) task\\(left == 1 ? "" : "s") left"','Pluralization handled here: "1 task left" vs "2 tasks left". Put this in the View and you\'d be mixing grammar with layout.',VM],
+['    }','End of computed property.',VM],
+['',null],
+['    func addTask() {','<b>Intent #1.</b> Called by the Add button. Contains the <i>rule</i> for adding — the View just asks.',VM],
+['        let trimmed = newTitle.trimmingCharacters(in: .whitespaces)','Business rule: ignore leading/trailing spaces.',VM],
+['        guard !trimmed.isEmpty else { return }','Business rule: don\'t add empty tasks. This <code>guard</code> is exactly the kind of <code>if</code> that must <b>not</b> live in a Button closure.',VM],
+['        tasks.append(TodoItem(title: trimmed))','Mutate the Model array. Because <code>tasks</code> is observed, the List will redraw with a new row.',VM],
+['        newTitle = ""','Clear the text field. The View\'s <code>TextField</code> is bound to this property, so it empties on screen automatically.',VM],
+['    }','End of addTask.',VM],
+['',null],
+['    func toggle(_ task: TodoItem) {','<b>Intent #2.</b> Flip a task\'s done state. Takes the <code>TodoItem</code> the user tapped.',VM],
+['        guard let index = tasks.firstIndex(where: { $0.id == task.id }) else { return }','Find the item\'s position by matching <code>id</code>. Structs are value types, so we must mutate the copy <i>inside the array</i>, not the <code>task</code> parameter.',VM],
+['        tasks[index].isDone.toggle()','Flip the Bool in place. Observation fires → row and <code>remainingText</code> update.',VM],
+['    }','End of toggle.',VM],
+['',null],
+['    func delete(at offsets: IndexSet) {','<b>Intent #3.</b> Matches the signature SwiftUI\'s <code>.onDelete</code> expects, so the View can pass this function directly.',VM],
+['        tasks.remove(atOffsets: offsets)','Remove the swiped rows.',VM],
+['    }','End of delete.',VM],
+['}','End of the ViewModel. You could write a unit test: create a <code>TaskListViewModel</code>, call <code>addTask()</code>, assert <code>tasks.count == 3</code>. No screen required.',VM],
+]},
+view:{name:'TaskListView.swift',lines:[
+['import SwiftUI','The <b>only</b> file in the project that needs SwiftUI.',V],
+['',null],
+['struct TaskListView: View {','<b>The View.</b> Named after the screen. Replaces the default <code>ContentView</code>.',V],
+['    @State private var viewModel = TaskListViewModel()','The View creates and owns its ViewModel. <code>@State</code> keeps the instance alive across redraws and — bonus — lets us write <code>$viewModel.newTitle</code> to get a Binding for the text field.',V],
+['',null],
+['    var body: some View {','Describes the UI. Re-run by SwiftUI whenever an observed property it read has changed.',V],
+['        NavigationStack {','Gives us a navigation bar for the title and the toolbar.',V],
+['            List {','A scrolling list. Pure layout.',V],
+['                ForEach(viewModel.tasks) { task in','Loop over the ViewModel\'s tasks. Works because <code>TodoItem</code> is <code>Identifiable</code>.',V],
+['                    HStack {','Horizontal row: icon, title, spacer.',V],
+['                        Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")','Choose an SF Symbol based on <code>isDone</code>. This <code>? :</code> is fine in a View — it\'s about <i>appearance</i>, not a business rule.',V],
+['                            .foregroundStyle(task.isDone ? .green : .secondary)','Color is a View concern. The Model stores a Bool; the View maps it to green.',V],
+['                        Text(task.title)','Show the title exactly as stored.',V],
+['                            .strikethrough(task.isDone)','Cross out completed tasks. Cosmetic.',V],
+['                        Spacer()','Push content to the leading edge.',V],
+['                    }','Closes the HStack.',V],
+['                    .contentShape(Rectangle())','Makes the whole row tappable, not just the text.',V],
+['                    .onTapGesture { viewModel.toggle(task) }','<b>Forward the tap.</b> One call to the ViewModel. The View doesn\'t know how toggling works.',V],
+['                }','Closes ForEach.',V],
+['                .onDelete(perform: viewModel.delete)','Swipe-to-delete. We pass the ViewModel\'s method <i>itself</i> — signatures match perfectly.',V],
+['            }','Closes the List.',V],
+['            .navigationTitle("My Tasks")','Large title in the navigation bar.',V],
+['            .toolbar {','Add items to the navigation bar.',V],
+['                ToolbarItem(placement: .topBarTrailing) {','Top-right corner.',V],
+['                    Text(viewModel.remainingText)','Shows "2 tasks left". <b>No counting, no pluralizing here</b> — the ViewModel already did it.',V],
+['                        .font(.caption)','Small text.',V],
+['                        .foregroundStyle(.secondary)','Muted color.',V],
+['                }','Closes ToolbarItem.',V],
+['            }','Closes toolbar.',V],
+['            .safeAreaInset(edge: .bottom) {','Pins an input bar to the bottom of the screen, above the home indicator.',V],
+['                HStack {','Text field + button side by side.',V],
+['                    TextField("New task…", text: $viewModel.newTitle)','<b>Two-way binding.</b> <code>$viewModel.newTitle</code> lets the field read <i>and</i> write the ViewModel\'s property. When <code>addTask()</code> sets it to <code>""</code>, the field clears.',V],
+['                        .textFieldStyle(.roundedBorder)','Rounded border look.',V],
+['                        .onSubmit { viewModel.addTask() }','Pressing Return on the keyboard also adds — same ViewModel call as the button.',V],
+['                    Button("Add") { viewModel.addTask() }','<b>One line.</b> No trimming, no empty check — that\'s all in the ViewModel.',V],
+['                        .buttonStyle(.borderedProminent)','Filled blue button.',V],
+['                }','Closes HStack.',V],
+['                .padding()','Breathing room.',V],
+['                .background(.bar)','A translucent bar background that matches system toolbars.',V],
+['            }','Closes safeAreaInset.',V],
+['        }','Closes NavigationStack.',V],
+['    }','Closes body.',V],
+['}','End of View. Count the business rules in this file: zero. ✅',V],
+['',null],
+['#Preview {','Live preview in the Canvas.'],
+['    TaskListView()','The View builds its own ViewModel, so the preview needs nothing else.'],
+['}','End of file.'],
+]},
+app:{name:'TaskTrackerApp.swift',lines:[
+['import SwiftUI','The app entry point is a SwiftUI file.'],
+['',null],
+['@main','Marks this struct as the program\'s starting point. Exactly one type in the app has <code>@main</code>.'],
+['struct TaskTrackerApp: App {','Xcode generated this file from the template. Conforms to <code>App</code>, not <code>View</code>.'],
+['    var body: some Scene {','An App\'s body is a <code>Scene</code> (a window), not a View.'],
+['        WindowGroup {','The main window of the app.'],
+['            TaskListView()   // was ContentView()','<b>The one line you change.</b> Point the window at your new View. This is the only place the app entry point and your MVVM files meet.'],
+['        }','Closes WindowGroup.'],
+['    }','Closes body.'],
+['}','End of file. You never need to touch this again while building features.'],
+]}
+};
+
+const CODE3={
+model:{name:'Course.swift',lines:[
+['import Foundation','Foundation only. This Model is reusable anywhere.',M],
+['',null],
+['struct Course: Identifiable, Hashable {','<b>The Model.</b> <code>Identifiable</code> for <code>ForEach</code>; <code>Hashable</code> because <code>NavigationLink(value:)</code> needs to put the course into the navigation path.',M],
+['    let id = UUID()','Stable identity for each course.',M],
+['    var code: String','e.g. "MAC221".',M],
+['    var title: String','e.g. "iOS App Development".',M],
+['    var credits: Int','Credit hours — needed for the weighted GPA.',M],
+['    var gradePoints: Double   // 4.0 scale','The grade stored as a number on the 4.0 scale (3.7, 3.0 …). We store the <i>number</i>, not the letter, because math is easier on numbers.',M],
+['',null],
+['    var letterGrade: String {','<b>Domain logic in the Model.</b> Converting points to a letter is a rule about <i>grades</i>, not about screens or user actions, so it belongs with the data. It would be identical in a web app.',M],
+['        switch gradePoints {','Swift <code>switch</code> on a Double using ranges.',M],
+['        case 3.7...: return "A"','3.7 and above (a one-sided range).',M],
+['        case 3.0..<3.7: return "B"','3.0 up to but not including 3.7.',M],
+['        case 2.0..<3.0: return "C"','',M],
+['        case 1.0..<2.0: return "D"','',M],
+['        default: return "F"','Everything else.',M],
+['        }','',M],
+['    }','End of computed property.',M],
+['}','End of Model. Notice: no formatting with "%.2f", no colors, no "loading" — those are not facts about a course.',M],
+]},
+service:{name:'GradeService.swift',lines:[
+['import Foundation','Still Foundation only — the service layer is part of the Model side.',M],
+['',null],
+['protocol GradeService {','<b>A protocol describes the job, not the implementation.</b> "Something that can fetch courses." The ViewModel will depend on this protocol, never on a concrete type.',M],
+['    func fetchCourses() async throws -> [Course]','<code>async</code>: it takes time (network). <code>throws</code>: it can fail. Returns an array of Models.',M],
+['}','',M],
+['',null],
+['enum GradeServiceError: LocalizedError {','A custom error type. <code>LocalizedError</code> lets us supply a human-readable message.',M],
+['    case serverDown','The one failure we simulate.',M],
+['    var errorDescription: String? { "The grades server is not responding." }','This is the text the ViewModel will hand to the View via <code>error.localizedDescription</code>.',M],
+['}','',M],
+['',null],
+['struct MockGradeService: GradeService {','<b>A fake implementation.</b> In the real app you\'d add <code>LiveGradeService</code> that calls <code>URLSession</code>. The ViewModel wouldn\'t change at all.',M],
+['    var shouldFail = false','A switch so we can demo the error state (this is what the "Simulate server failure" checkbox flips).',M],
+['',null],
+['    func fetchCourses() async throws -> [Course] {','Conforms to the protocol.',M],
+['        try await Task.sleep(for: .seconds(1.2))','Pretend to be a slow network for 1.2 seconds — long enough to see the spinner.',M],
+['        if shouldFail { throw GradeServiceError.serverDown }','Simulated failure.',M],
+['        return [','Sample data on success.',M],
+['            Course(code: "MAC221", title: "iOS App Development", credits: 3, gradePoints: 4.0),','',M],
+['            Course(code: "MAC286", title: "Data Structures in Java", credits: 4, gradePoints: 3.3),','',M],
+['            Course(code: "MAT120", title: "Elementary Statistics", credits: 3, gradePoints: 3.7),','',M],
+['            Course(code: "MAC283", title: "Computer Architecture", credits: 3, gradePoints: 2.7)','',M],
+['        ]','',M],
+['    }','',M],
+['}','End of file. Two files make up the Model layer here: the data (<code>Course</code>) and the data <i>source</i> (<code>GradeService</code>).',M],
+]},
+vm:{name:'GradesViewModel.swift',lines:[
+['import Foundation','For <code>String(format:)</code>.',VM],
+['import Observation','For <code>@Observable</code>.',VM],
+['',null],
+['@Observable','SwiftUI watches every stored property below.',VM],
+['@MainActor','<b>Thread safety.</b> All property changes happen on the main thread — required for anything SwiftUI displays. Even when <code>load()</code> awaits a background fetch, the assignment after <code>await</code> runs back on the main actor.',VM],
+['final class GradesViewModel {','<code>final</code> = nobody subclasses this. A small performance and clarity win.',VM],
+['    enum LoadState {','<b>One enum, one screen state.</b> Instead of juggling <code>isLoading</code> + <code>errorMessage</code> + <code>hasLoaded</code> Bools, the screen is in exactly one of these cases.',VM],
+['        case idle, loading, loaded, failed(String)','<code>failed</code> carries the message to show. The View will <code>switch</code> on this.',VM],
+['    }','',VM],
+['    enum SortOrder: String, CaseIterable {','The sort options. <code>CaseIterable</code> gives us <code>allCases</code> for the Picker; the raw String is the label shown.',VM],
+['        case code = "Course Code", grade = "Highest Grade", credits = "Most Credits"','',VM],
+['    }','',VM],
+['',null],
+['    private(set) var state: LoadState = .idle','<code>private(set)</code>: the View can <b>read</b> state but only the ViewModel can <b>change</b> it. The compiler enforces "don\'t bypass the chef."',VM],
+['    private(set) var courses: [Course] = []','The Model data, owned here.',VM],
+['    var searchText = ""','Bound to the search field (<code>$viewModel.searchText</code>).',VM],
+['    var sortOrder: SortOrder = .code','Bound to the sort Picker.',VM],
+['',null],
+['    private let service: GradeService','<b>Dependency injection.</b> The ViewModel holds <i>a</i> service — any type conforming to the protocol. It doesn\'t know or care whether it\'s the mock or the real network.',VM],
+['',null],
+['    init(service: GradeService = MockGradeService()) {','Default parameter = the mock, so <code>GradesViewModel()</code> just works in previews. A test passes a fake; production passes the live service.',VM],
+['        self.service = service','',VM],
+['    }','',VM],
+['',null],
+['    var visibleCourses: [Course] {','<b>Search + sort, computed for the View.</b> The View only ever shows this array. It never filters or sorts itself.',VM],
+['        let filtered = searchText.isEmpty ? courses : courses.filter {','If the search box is empty, show everything…',VM],
+['            $0.code.localizedCaseInsensitiveContains(searchText) ||','…otherwise match the code…',VM],
+['            $0.title.localizedCaseInsensitiveContains(searchText)','…or the title, ignoring case.',VM],
+['        }','',VM],
+['        switch sortOrder {','Then apply the chosen order.',VM],
+['        case .code:    return filtered.sorted { $0.code < $1.code }','Alphabetical by course code.',VM],
+['        case .grade:   return filtered.sorted { $0.gradePoints > $1.gradePoints }','Best grade first.',VM],
+['        case .credits: return filtered.sorted { $0.credits > $1.credits }','Most credits first.',VM],
+['        }','',VM],
+['    }','',VM],
+['',null],
+['    var gpaText: String {','<b>Presentation logic.</b> Weighted GPA, already formatted as text for the section header.',VM],
+['        let totalCredits = courses.reduce(0) { $0 + $1.credits }','Sum of credits.',VM],
+['        guard totalCredits > 0 else { return "GPA —" }','Avoid dividing by zero when the list is empty.',VM],
+['        let weighted = courses.reduce(0.0) { $0 + $1.gradePoints * Double($1.credits) }','Sum of (points × credits).',VM],
+['        return String(format: "GPA %.2f", weighted / Double(totalCredits))','Two decimals. The View never sees a raw Double.',VM],
+['    }','',VM],
+['',null],
+['    func load() async {','<b>The async intent.</b> Called by <code>.task {}</code> on appear, by pull-to-refresh, and by the Retry button. Marked <code>async</code> because it awaits the service.',VM],
+['        state = .loading','First: tell the View to show the spinner.',VM],
+['        do {','Try the fetch…',VM],
+['            courses = try await service.fetchCourses()','<code>await</code> suspends here until data (or an error) arrives — without blocking the UI.',VM],
+['            state = .loaded','Success → the View switches to the list.',VM],
+['        } catch {','…or handle the failure.',VM],
+['            state = .failed(error.localizedDescription)','Package the message into the state. The View will show it with a Retry button. <b>No error handling lives in the View.</b>',VM],
+['        }','',VM],
+['    }','',VM],
+['',null],
+['    func delete(_ course: Course) {','Intent: remove a course. Called from the swipe action.',VM],
+['        courses.removeAll { $0.id == course.id }','Because <code>courses</code> is observed, <code>visibleCourses</code> and <code>gpaText</code> both update on screen automatically.',VM],
+['    }','',VM],
+['}','End of the ViewModel. In a unit test: <code>let vm = GradesViewModel(service: FakeService()); await vm.load(); #expect(vm.gpaText == "GPA 3.47")</code>.',VM],
+]},
+view:{name:'GradesView.swift',lines:[
+['import SwiftUI','',V],
+['',null],
+['struct GradesView: View {','<b>The main View.</b> Its job: show the right thing for the current state, and forward user actions.',V],
+['    @State private var viewModel = GradesViewModel()','Owns the ViewModel. Uses the default mock service; a preview or test could inject another.',V],
+['',null],
+['    var body: some View {','',V],
+['        NavigationStack {','Needed for the title, toolbar, and pushing the detail screen.',V],
+['            Group {','<code>Group</code> lets us attach modifiers to whichever branch of the <code>switch</code> is showing.',V],
+['                switch viewModel.state {','<b>The View switches on the state enum.</b> Every possible screen is listed once. The compiler will complain if we forget a case.',V],
+['                case .idle, .loading:','Before and during the fetch…',V],
+['                    ProgressView("Loading grades…")','…show a spinner with text.',V],
+['                case .failed(let message):','Pull the message out of the enum.',V],
+['                    ContentUnavailableView {','iOS 17 component for "nothing to show" screens — icon, title, description, actions.',V],
+['                        Label("Couldn\'t load grades", systemImage: "wifi.exclamationmark")','Title + SF Symbol.',V],
+['                    } description: {','',V],
+['                        Text(message)','The message the ViewModel packaged. The View doesn\'t know what went wrong — it just shows the text.',V],
+['                    } actions: {','',V],
+['                        Button("Retry") { Task { await viewModel.load() } }','Retry = call the same intent again. Wrapped in <code>Task {}</code> because a button closure is synchronous and <code>load()</code> is async.',V],
+['                            .buttonStyle(.borderedProminent)','',V],
+['                    }','',V],
+['                case .loaded:','Success →',V],
+['                    courseList','…the list, factored into its own computed property below to keep <code>body</code> readable.',V],
+['                }','',V],
+['            }','',V],
+['            .navigationTitle("My Grades")','',V],
+['            .navigationDestination(for: Course.self) { course in','<b>Navigation.</b> When a <code>Course</code> value is pushed, build this destination. Works because <code>Course</code> is <code>Hashable</code>.',V],
+['                CourseDetailView(course: course)','The detail View receives the Model directly — it only displays, so no ViewModel is needed for it.',V],
+['            }','',V],
+['            .toolbar {','',V],
+['                ToolbarItem(placement: .topBarTrailing) {','',V],
+['                    Menu {','A dropdown in the nav bar.',V],
+['                        Picker("Sort", selection: $viewModel.sortOrder) {','<b>Two-way binding</b> to the ViewModel\'s <code>sortOrder</code>. Choosing an option changes it; <code>visibleCourses</code> recomputes; the list re-sorts.',V],
+['                            ForEach(GradesViewModel.SortOrder.allCases, id: \\.self) { order in','Loop over the enum cases (thanks to <code>CaseIterable</code>).',V],
+['                                Text(order.rawValue).tag(order)','The raw String is the label; <code>.tag</code> ties the row to the enum value.',V],
+['                            }','',V],
+['                        }','',V],
+['                    } label: {','',V],
+['                        Label("Sort", systemImage: "arrow.up.arrow.down")','The ⇅ button.',V],
+['                    }','',V],
+['                }','',V],
+['            }','',V],
+['        }','',V],
+['        .task { await viewModel.load() }','<b>Load on appear.</b> <code>.task</code> runs when the view appears and is cancelled automatically if the view disappears. One line — the View triggers, the ViewModel does the work.',V],
+['    }','',V],
+['',null],
+['    private var courseList: some View {','The "loaded" screen, pulled out of <code>body</code>.',V],
+['        List {','',V],
+['            Section(viewModel.gpaText) {','<b>Section header = the formatted GPA.</b> The View didn\'t compute it.',V],
+['                ForEach(viewModel.visibleCourses) { course in','Only the filtered + sorted array. The View trusts the ViewModel.',V],
+['                    NavigationLink(value: course) {','Tapping pushes the <code>Course</code> value → <code>navigationDestination</code> builds the detail.',V],
+['                        CourseRow(course: course)','A small reusable row View (defined below).',V],
+['                    }','',V],
+['                    .swipeActions {','Swipe-left actions.',V],
+['                        Button("Delete", role: .destructive) { viewModel.delete(course) }','One ViewModel call. <code>role: .destructive</code> makes it red.',V],
+['                    }','',V],
+['                }','',V],
+['            }','',V],
+['        }','',V],
+['        .searchable(text: $viewModel.searchText, prompt: "Search courses")','<b>Search bar bound to the ViewModel.</b> Typing updates <code>searchText</code>; <code>visibleCourses</code> recomputes; list filters. Zero filtering code in the View.',V],
+['        .refreshable { await viewModel.load() }','Pull-to-refresh = call <code>load()</code> again. Same intent, third entry point.',V],
+['    }','',V],
+['}','End of GradesView.',V],
+['',null],
+['struct CourseRow: View {','<b>A small, dumb View.</b> Takes a Model, draws a row. No ViewModel needed because it has no behavior.',V],
+['    let course: Course','Input.',V],
+['    var body: some View {','',V],
+['        HStack {','',V],
+['            VStack(alignment: .leading) {','Code on top, title underneath.',V],
+['                Text(course.code).font(.headline)','',V],
+['                Text(course.title).font(.subheadline).foregroundStyle(.secondary)','',V],
+['            }','',V],
+['            Spacer()','',V],
+['            Text(course.letterGrade)','The letter was computed by the <b>Model</b> (<code>letterGrade</code>).',V],
+['                .font(.title2.bold())','',V],
+['                .foregroundStyle(course.gradePoints >= 3.0 ? .green : .orange)','<b>Color is a View decision.</b> "B or better is green" is about appearance, so it\'s acceptable here. If it were a business rule (e.g. "honor roll"), it would move to the ViewModel.',V],
+['        }','',V],
+['    }','',V],
+['}','',V],
+['',null],
+['#Preview {','',V],
+['    GradesView()','Preview uses the default mock service — spinner for 1.2 s, then the list.',V],
+['}','',V],
+]},
+detail:{name:'CourseDetailView.swift',lines:[
+['import SwiftUI','',V],
+['',null],
+['struct CourseDetailView: View {','<b>Detail screen.</b> Pure display of one Model value. It has no actions, so it needs no ViewModel — don\'t add layers you don\'t need.',V],
+['    let course: Course','The Model handed over by <code>navigationDestination</code>.',V],
+['',null],
+['    var body: some View {','',V],
+['        List {','A grouped list of label/value rows.',V],
+['            LabeledContent("Course", value: course.code)','<code>LabeledContent</code> = label on the left, value on the right, system styling.',V],
+['            LabeledContent("Title", value: course.title)','',V],
+['            LabeledContent("Credits", value: "\\(course.credits)")','Int → String interpolation. Trivial formatting is fine in a View.',V],
+['            LabeledContent("Grade", value: "\\(course.letterGrade) · \\(String(format: "%.1f", course.gradePoints)) pts")','Letter from the Model plus the points with one decimal.',V],
+['        }','',V],
+['        .navigationTitle(course.code)','The nav bar shows the course code; the back button appears automatically.',V],
+['    }','',V],
+['}','',V],
+['',null],
+['#Preview {','',V],
+['    NavigationStack {','Wrap in a NavigationStack so the preview shows the title bar.',V],
+['        CourseDetailView(course: Course(code: "MAC221", title: "iOS App Development", credits: 3, gradePoints: 4.0))','Hand-made sample Model for the preview.',V],
+['    }','',V],
+['}','',V],
+]},
+app:{name:'GradesApp.swift',lines:[
+['import SwiftUI',''],
+['',null],
+['@main','Program entry point.'],
+['struct GradesApp: App {',''],
+['    var body: some Scene {',''],
+['        WindowGroup {',''],
+['            GradesView()','Point the window at the main View. Everything else is wired inside it.'],
+['        }',''],
+['    }',''],
+['}',''],
+]}
+};
+
+/* ============================================================ CODE WALK RENDER + HOVER PANEL */
+function renderCode(preEl, panelEl, lines){
+  preEl.innerHTML=''; preEl._lines=lines;
+  let pinned=null;
+  const idle=()=>{panelEl.innerHTML=`<div class="idle"><div class="big">👈</div>Hover over any line of code.<br><span style="font-size:.9rem">Click a line to pin its explanation.</span></div>`};
+  const show=(el)=>{
+    const n=el.dataset.ln, code=el.dataset.code, note=el.dataset.note, lay=el.dataset.layer;
+    const pill=lay==='model'?'<span class="pill model">MODEL</span>':lay==='vm'?'<span class="pill vm">VIEWMODEL</span>':lay==='view'?'<span class="pill view">VIEW</span>':'';
+    panelEl.innerHTML=`<div class="eh"><span class="lnum">LINE ${n}</span>${pill}</div><code class="ecode">${hl(code.trim()||'(blank)')}</code><div class="etext">${note}</div><div class="pinhint">${pinned?'📌 Pinned — click the line again to unpin.':'Click the line to pin this explanation.'}</div>`;
+  };
+  lines.forEach((l,i)=>{
+    const [code,note,layer]=l;
+    const div=document.createElement('div');
+    div.className='line'+(layer?' sect-'+layer:'');
+    div.dataset.ln=i+1; div.dataset.code=code; if(layer) div.dataset.layer=layer;
+    div.innerHTML=`<span class="ln">${i+1}</span><span class="src">${hl(code)||' '}</span>`;
+    if(note){
+      div.dataset.note=note; div.tabIndex=0;
+      div.addEventListener('mouseenter',()=>{ if(!pinned) show(div); });
+      div.addEventListener('focus',()=>{ if(!pinned) show(div); });
+      div.addEventListener('click',()=>{
+        if(pinned===div){ pinned.classList.remove('pinned'); pinned=null; show(div); return; }
+        if(pinned) pinned.classList.remove('pinned');
+        pinned=div; div.classList.add('pinned'); show(div);
+      });
+    }
+    preEl.appendChild(div);
+  });
+  preEl.onmouseleave=()=>{ if(pinned) show(pinned); else idle(); };
+  idle();
+}
+renderCode(document.getElementById('code1pre'),document.getElementById('explain1'),CODE1);
+
+function wireTabs(tabsId, preId, panelId, nameId, DATA, initial){
+  const pre=document.getElementById(preId), panel=document.getElementById(panelId);
+  function load(key){
+    renderCode(pre,panel,DATA[key].lines);
+    document.getElementById(nameId).textContent=DATA[key].name;
+    document.querySelectorAll('#'+tabsId+' button').forEach(b=>b.classList.toggle('active',b.dataset.file===key));
+  }
+  document.querySelectorAll('#'+tabsId+' button').forEach(b=>b.addEventListener('click',()=>load(b.dataset.file)));
+  load(initial);
+}
+wireTabs('fileTabs2','code2pre','explain2','code2fname',CODE2,'model');
+wireTabs('fileTabs3','code3pre','explain3','code3fname',CODE3,'model');
+
+/* ============================================================ COPY BUTTONS */
+function copyText(text, btn){
+  const done=()=>{const old=btn.innerHTML; btn.innerHTML='✓ Copied'; btn.classList.add('ok'); setTimeout(()=>{btn.innerHTML=old; btn.classList.remove('ok')},1600)};
+  if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(done).catch(()=>fallback()); } else fallback();
+  function fallback(){ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); done();}catch(e){} document.body.removeChild(ta); }
+}
+const ALL={CODE2,CODE3};
+document.querySelectorAll('.copybtn[data-copy]').forEach(btn=>btn.addEventListener('click',()=>{
+  const pre=document.getElementById(btn.dataset.copy); copyText(pre._lines.map(l=>l[0]).join('\n'), btn);
+}));
+document.querySelectorAll('.copybtn[data-copyall]').forEach(btn=>btn.addEventListener('click',()=>{
+  const D=ALL[btn.dataset.copyall];
+  const text=Object.values(D).map(f=>`// ═══════════════ ${f.name} ═══════════════\n`+f.lines.map(l=>l[0]).join('\n')).join('\n\n\n');
+  copyText(text,btn);
+}));
+
+/* ============================================================ METAPHOR TABS */
+document.querySelectorAll('#metaTabs .tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('#metaTabs .tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); document.getElementById(t.dataset.pane).classList.add('active');
+}));
+
+/* ============================================================ SIM 1 — COUNTER + FLOW */
+(function(){
+  let value=0, busy=false;
+  const countEl=document.getElementById('demoCount');
+  const arrows=['fa1','fa2','fa3','fa4'].map(id=>document.getElementById(id));
+  const boxes={view:document.getElementById('fbView'),vm:document.getElementById('fbVM'),model:document.getElementById('fbModel')};
+  const steps=[...document.querySelectorAll('#flowSteps .step')];
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  function clear(){arrows.forEach(a=>a.classList.remove('on')); steps.forEach(s=>s.classList.remove('on')); Object.values(boxes).forEach(b=>b.classList.remove('lit'));}
+  async function run(mutate){
+    if(busy) return; busy=true; clear();
+    const seq=[['view',0],['vm',1],['model',2],['vm',3]];
+    for(const [box,idx] of seq){
+      Object.values(boxes).forEach(b=>b.classList.remove('lit'));
+      boxes[box].classList.add('lit'); arrows[idx].classList.add('on'); steps[idx].classList.add('on');
+      if(idx===1) mutate();
+      await sleep(520);
+    }
+    boxes.view.classList.add('lit');
+    countEl.textContent='Count: '+value;
+    countEl.animate([{transform:'scale(1.15)'},{transform:'scale(1)'}],{duration:260});
+    await sleep(700); busy=false;
+  }
+  document.getElementById('demoAdd').addEventListener('click',()=>run(()=>value++));
+  document.getElementById('demoReset').addEventListener('click',()=>run(()=>value=0));
+})();
+
+/* ============================================================ SIM 2 — TASK TRACKER (mirrors TaskListViewModel) */
+(function(){
+  // "ViewModel"
+  const vm={ tasks:[{id:1,title:'Read Chapter 5',isDone:false},{id:2,title:'Finish Lab 3',isDone:false}], newTitle:'', nextId:3,
+    remainingText(){const left=this.tasks.filter(t=>!t.isDone).length; return `${left} task${left===1?'':'s'} left`;},
+    addTask(){const trimmed=this.newTitle.trim(); if(!trimmed) return; this.tasks.push({id:this.nextId++,title:trimmed,isDone:false}); this.newTitle='';},
+    toggle(id){const t=this.tasks.find(t=>t.id===id); if(t) t.isDone=!t.isDone;},
+    delete(id){this.tasks=this.tasks.filter(t=>t.id!==id);} };
+  // "View"
+  const list=document.getElementById('sim2List'), left=document.getElementById('sim2Left'), input=document.getElementById('sim2Input');
+  function render(){
+    left.textContent=vm.remainingText(); input.value=vm.newTitle;
+    list.innerHTML=vm.tasks.length?'':'<div class="approw" style="color:var(--ios-ink2);cursor:default">No tasks — add one below</div>';
+    vm.tasks.forEach(t=>{
+      const row=document.createElement('div'); row.className='approw';
+      row.innerHTML=`<span class="ck ${t.isDone?'on':''}">${t.isDone?'✓':''}</span><span class="t ${t.isDone?'done':''}">${esc(t.title)}</span><span class="del">Delete</span>`;
+      row.addEventListener('click',e=>{ if(e.target.classList.contains('del')){vm.delete(t.id)} else {vm.toggle(t.id)} render(); });
+      list.appendChild(row);
+    });
+  }
+  input.addEventListener('input',()=>vm.newTitle=input.value);
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){vm.addTask(); render();} });
+  document.getElementById('sim2Add').addEventListener('click',()=>{vm.addTask(); render();});
+  render();
+})();
+
+/* ============================================================ SIM 3 — GRADES DASHBOARD (mirrors GradesViewModel) */
+(function(){
+  const SAMPLE=[
+    {id:1,code:'MAC221',title:'iOS App Development',credits:3,gradePoints:4.0},
+    {id:2,code:'MAC286',title:'Data Structures in Java',credits:4,gradePoints:3.3},
+    {id:3,code:'MAT120',title:'Elementary Statistics',credits:3,gradePoints:3.7},
+    {id:4,code:'MAC283',title:'Computer Architecture',credits:3,gradePoints:2.7},
+  ];
+  const letter=p=>p>=3.7?'A':p>=3.0?'B':p>=2.0?'C':p>=1.0?'D':'F';
+  const ORDERS=[['code','Course Code'],['grade','Highest Grade'],['credits','Most Credits']];
+  // "Service"
+  const service={shouldFail:false, fetchCourses(){return new Promise((res,rej)=>setTimeout(()=>service.shouldFail?rej(new Error('The grades server is not responding.')):res(SAMPLE.map(c=>({...c}))),1200))}};
+  // "ViewModel"
+  const vm={ state:{kind:'idle'}, courses:[], searchText:'', sortOrder:'code', detail:null,
+    visibleCourses(){ const q=this.searchText.toLowerCase(); let f=q?this.courses.filter(c=>c.code.toLowerCase().includes(q)||c.title.toLowerCase().includes(q)):this.courses.slice();
+      if(this.sortOrder==='code') f.sort((a,b)=>a.code.localeCompare(b.code)); else if(this.sortOrder==='grade') f.sort((a,b)=>b.gradePoints-a.gradePoints); else f.sort((a,b)=>b.credits-a.credits); return f; },
+    gpaText(){ const tc=this.courses.reduce((s,c)=>s+c.credits,0); if(!tc) return 'GPA —'; const w=this.courses.reduce((s,c)=>s+c.gradePoints*c.credits,0); return 'GPA '+(w/tc).toFixed(2); },
+    async load(){ this.state={kind:'loading'}; render(); try{ this.courses=await service.fetchCourses(); this.state={kind:'loaded'}; }catch(e){ this.state={kind:'failed',message:e.message}; } render(); },
+    delete(id){ this.courses=this.courses.filter(c=>c.id!==id); } };
+  // "View"
+  const body=document.getElementById('sim3Body');
+  function render(){
+    if(vm.detail){ const c=vm.detail;
+      body.innerHTML=`<div class="appnav"><div class="back">‹ My Grades</div><div class="title" style="font-size:20px">${c.code}</div><div></div></div>
+        <div class="appdetail"><div class="appsection"><div class="kv"><span>Course</span><span>${c.code}</span></div><div class="kv"><span>Title</span><span>${esc(c.title)}</span></div><div class="kv"><span>Credits</span><span>${c.credits}</span></div><div class="kv"><span>Grade</span><span>${letter(c.gradePoints)} · ${c.gradePoints.toFixed(1)} pts</span></div></div></div>`;
+      body.querySelector('.back').addEventListener('click',()=>{vm.detail=null; render();}); return; }
+    let inner='';
+    if(vm.state.kind==='idle'||vm.state.kind==='loading'){
+      inner=`<div class="appcenter"><div class="spinner"></div><span>Loading grades…</span></div>`;
+    } else if(vm.state.kind==='failed'){
+      inner=`<div class="appcenter"><div class="bigic">📡</div><b>Couldn't load grades</b><span>${esc(vm.state.message)}</span><button class="add" id="sim3Retry" style="margin-top:6px">Retry</button></div>`;
+    } else {
+      const rows=vm.visibleCourses().map(c=>`<div class="approw" data-id="${c.id}"><div class="two"><b>${c.code}</b><span>${esc(c.title)}</span></div><span class="grade" style="color:${c.gradePoints>=3?'var(--ios-green)':'var(--ios-orange)'}">${letter(c.gradePoints)}</span><span class="del">Delete</span><span class="chev">›</span></div>`).join('');
+      inner=`<div class="appsearch">🔍<input id="sim3Search" placeholder="Search courses" value="${esc(vm.searchText)}"></div>
+        <div class="applist"><div class="appsection"><div class="hdr">${vm.gpaText()}</div>${rows||'<div class="approw" style="color:var(--ios-ink2);cursor:default">No matches</div>'}</div></div>`;
+    }
+    const sortLabel=ORDERS.find(o=>o[0]===vm.sortOrder)[1];
+    body.innerHTML=`<div class="appnav"><div class="title">My Grades</div><div class="icon" id="sim3Sort" title="Sort: ${sortLabel}">⇅ <span style="font-size:11px">${sortLabel}</span></div></div>${inner}`;
+    const s=document.getElementById('sim3Search'); if(s){ s.addEventListener('input',()=>{vm.searchText=s.value; const pos=s.selectionStart; render(); const n=document.getElementById('sim3Search'); n.focus(); n.setSelectionRange(pos,pos);}); }
+    document.getElementById('sim3Sort').addEventListener('click',()=>{ const i=ORDERS.findIndex(o=>o[0]===vm.sortOrder); vm.sortOrder=ORDERS[(i+1)%ORDERS.length][0]; render(); });
+    const r=document.getElementById('sim3Retry'); if(r) r.addEventListener('click',()=>vm.load());
+    body.querySelectorAll('.approw[data-id]').forEach(row=>row.addEventListener('click',e=>{ const id=+row.dataset.id; if(e.target.classList.contains('del')){vm.delete(id); render();} else {vm.detail=vm.courses.find(c=>c.id===id); render();} }));
+  }
+  document.getElementById('sim3Fail').addEventListener('change',e=>service.shouldFail=e.target.checked);
+  document.getElementById('sim3Reload').addEventListener('click',()=>{vm.detail=null; vm.load();});
+  // ".task { await viewModel.load() }" — load when the phone scrolls into view
+  let started=false;
+  const io=new IntersectionObserver(es=>{ if(es.some(e=>e.isIntersecting)&&!started){ started=true; vm.load(); } },{threshold:.2});
+  render(); io.observe(document.getElementById('sim3'));
+})();
+
+/* ============================================================ CHECKLIST */
+document.querySelectorAll('#checklist input').forEach(cb=>cb.addEventListener('change',()=>cb.parentElement.classList.toggle('done',cb.checked)));
+
+/* ============================================================ QUIZ */
+const QUIZ=[
+ {q:'A `struct Student` with `name`, `gpa`, and `id` — and nothing else. Which layer?',o:['Model','View','ViewModel'],a:0,fb:'Pure data with no screen knowledge = Model. 🥕'},
+ {q:'`var gpaText: String { String(format: "%.2f", student.gpa) }` — formatting a number for display.',o:['Model','View','ViewModel'],a:2,fb:'Turning raw data into a display-ready string is ViewModel work. The View should just show <code>gpaText</code>.'},
+ {q:'`.font(.headline).foregroundStyle(.blue)`',o:['Model','View','ViewModel'],a:1,fb:'Purely about appearance → View. 🍽️'},
+ {q:'Which keyword pair correctly connects a View to a modern (iOS 17+) ViewModel?',o:['<code>@State</code> in the View + <code>@Observable</code> on the class','<code>@Binding</code> in the View + <code>struct</code> ViewModel','<code>@Environment</code> in the View + <code>enum</code> ViewModel'],a:0,fb:'<code>@Observable class</code> + <code>@State private var viewModel</code> is the pattern used throughout this lecture.'},
+ {q:'Your screen does not update when the ViewModel changes a property. Most likely cause?',o:['The Model is a struct','The ViewModel is missing <code>@Observable</code>','You used <code>NavigationStack</code>'],a:1,fb:'Without <code>@Observable</code>, SwiftUI has no way to know anything changed.'},
+ {q:'Inside a Button closure you wrote: `if !text.isEmpty { items.append(Item(text)) }`. What should you do?',o:['Nothing, that\'s fine','Move the rule into a ViewModel method and call it from the button','Move it into the Model struct'],a:1,fb:'Rules about <i>when</i> something may happen are logic → ViewModel. The button body becomes <code>viewModel.add()</code>.'},
+ {q:'In App 3, why does `GradesViewModel` take a `GradeService` protocol in its `init` instead of creating `URLSession` itself?',o:['Protocols are faster than classes','So a test or preview can inject a fake service and the ViewModel never changes','Because `@Observable` requires it'],a:1,fb:'Dependency injection: the ViewModel depends on the <i>job</i> ("fetch courses"), not on who does it. Tests pass a fake; production passes the live service.'},
+ {q:'`enum LoadState { case idle, loading, loaded, failed(String) }` lives in the ViewModel. Why an enum rather than three Bools?',o:['Enums use less memory','So the screen can only be in one state at a time and the View\'s <code>switch</code> must handle every case','Because SwiftUI cannot observe Bools'],a:1,fb:'Impossible states become impossible — you can\'t be "loading" and "failed" simultaneously by accident.'},
+ {q:'Which import should a Model file have?',o:['<code>import SwiftUI</code>','<code>import Foundation</code> only','<code>import UIKit</code>'],a:1,fb:'Models stay UI-free so they can be reused and tested anywhere.'},
+];
+(function(){
+  const box=document.getElementById('quizBox'), scoreEl=document.getElementById('quizScore');
+  let answered=0, correct=0;
+  QUIZ.forEach((item,qi)=>{
+    const q=document.createElement('div'); q.className='q';
+    q.innerHTML=`<div class="qt">${qi+1}. ${item.q.replace(/`([^`]+)`/g,'<code>$1</code>')}</div><div class="opts"></div><div class="fb"></div>`;
+    const opts=q.querySelector('.opts'), fb=q.querySelector('.fb');
+    let done=false;
+    item.o.forEach((opt,oi)=>{
+      const b=document.createElement('button'); b.innerHTML=opt;
+      b.addEventListener('click',()=>{
+        if(done) return; done=true; answered++;
+        if(oi===item.a){ b.classList.add('right'); correct++; fb.innerHTML='✅ Correct. '+item.fb; }
+        else { b.classList.add('wrong'); opts.children[item.a].classList.add('right'); fb.innerHTML='❌ Not quite. '+item.fb; }
+        fb.classList.add('show');
+        scoreEl.textContent=`Score: ${correct} / ${answered}`+(answered===QUIZ.length?(correct===QUIZ.length?' — perfect! 🎉':' — review the layers you missed above.'):'');
+      });
+      opts.appendChild(b);
+    });
+    box.appendChild(q);
+  });
+})();
+
+/* ============================================================ ACTIVE TOC */
+(function(){
+  const links=[...document.querySelectorAll('#toc a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ links.forEach(l=>l.classList.remove('active')); const i=secs.indexOf(e.target); if(i>-1) links[i].classList.add('active'); } });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MAC221 self-graded assignment: Model · View · ViewModel in SwiftUI — 25 questions on the Counter and Task Tracker apps and the Xcode workflow.">
+<title>MAC221 · MVVM Assignment</title>
+<style>
+:root{
+  --bg:#f6f7fb; --bg-2:#ffffff; --bg-3:#eef0f6;
+  --ink:#171a23; --ink-2:#4a5063; --ink-3:#7b8196;
+  --line:#e1e4ee; --line-2:#cdd2e0;
+  --accent:#f05138; --accent-ink:#b93520; --accent-bg:#fdece8;
+  --model:#2e9e5b; --model-bg:#e5f6ec; --model-ink:#1b6b3c;
+  --vm:#7a4fd6;    --vm-bg:#efe8fb;    --vm-ink:#5431a3;
+  --view:#2a7bd6;  --view-bg:#e6f0fb;  --view-ink:#1a56a0;
+  --ok:#1f8a4c; --ok-bg:#e4f5ea; --bad:#c7362b; --bad-bg:#fbe9e7; --mid:#a86a00; --mid-bg:#fdf1d8;
+  --code-bg:#f1f3f9; --shadow:0 1px 2px rgba(20,24,40,.05),0 8px 24px rgba(20,24,40,.06);
+  --radius:14px;
+  color-scheme:light;
+}
+html[data-theme="dark"]{
+  --bg:#0f1117; --bg-2:#171a23; --bg-3:#1e222d;
+  --ink:#eceef5; --ink-2:#b3b9cb; --ink-3:#838aa0;
+  --line:#272c3a; --line-2:#363c4e;
+  --accent:#ff7a63; --accent-ink:#ffa594; --accent-bg:#3a1c16;
+  --model:#4ccf84; --model-bg:#15301f; --model-ink:#9ee9ba;
+  --vm:#a98cf0;    --vm-bg:#251c3f;    --vm-ink:#cdbcff;
+  --view:#67a9f5;  --view-bg:#162640;  --view-ink:#a9ccff;
+  --ok:#5fd693; --ok-bg:#14301f; --bad:#ff8a7e; --bad-bg:#3b1a17; --mid:#f2bf5e; --mid-bg:#33270f;
+  --code-bg:#11141c; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:120px}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+code,pre,kbd,.mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,"Liberation Mono",monospace}
+code{font-size:.88em; background:var(--code-bg); border:1px solid var(--line); padding:.08em .38em; border-radius:6px; overflow-wrap:anywhere}
+kbd{font-size:.82em; padding:.08em .45em; border:1px solid var(--line-2); border-bottom-width:2px; border-radius:6px; background:var(--bg-2); white-space:nowrap}
+a{color:var(--view)}
+button{font:inherit; color:inherit; cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--view); outline-offset:2px}
+.wrap{max-width:860px; margin:0 auto; padding:0 16px}
+[hidden]{display:none !important}
+
+/* ---------- top bar ---------- */
+.top{position:sticky; top:0; z-index:20; background:color-mix(in srgb,var(--bg) 88%,transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.top .row{display:flex; align-items:center; gap:10px; padding:10px 0}
+.brand{display:flex; align-items:center; gap:10px; font-weight:700; min-width:0}
+.brand .logo{flex:none; width:30px; height:30px; border-radius:8px; background:var(--accent); color:#fff; display:grid; place-items:center; font-size:.95rem}
+.brand span.t{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.top .sp{flex:1}
+.btn{border:1px solid var(--line-2); background:var(--bg-2); border-radius:10px; padding:.45rem .8rem; font-weight:600; font-size:.92rem; white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+html[data-theme="dark"] .btn.primary{color:#1a0a07}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.big{padding:.7rem 1.2rem; font-size:1rem}
+.btn:disabled{opacity:.5; cursor:not-allowed}
+.nav{display:flex; gap:5px; overflow-x:auto; padding:0 0 10px; scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none; width:28px; height:28px; border-radius:8px; display:grid; place-items:center; font-size:.78rem; font-weight:700; text-decoration:none; color:var(--ink-3); background:var(--bg-2); border:1px solid var(--line)}
+.nav a.done{background:var(--view-bg); color:var(--view-ink); border-color:transparent}
+.nav a.r-ok{background:var(--ok-bg); color:var(--ok); border-color:transparent}
+.nav a.r-mid{background:var(--mid-bg); color:var(--mid); border-color:transparent}
+.nav a.r-bad{background:var(--bad-bg); color:var(--bad); border-color:transparent}
+.ti{display:inline-block; width:14px; height:14px; border-radius:50%; border:2px solid currentColor; background:linear-gradient(90deg,currentColor 50%,transparent 50%); vertical-align:-2px}
+.prog{font-size:.85rem; color:var(--ink-2); font-weight:600; white-space:nowrap}
+
+/* ---------- hero / start ---------- */
+.hero{padding:34px 0 8px}
+.eyebrow{font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent-ink); font-weight:700}
+h1{font-size:clamp(1.7rem,4.6vw,2.5rem); line-height:1.12; margin:.35rem 0 .6rem; letter-spacing:-.02em; text-wrap:balance}
+.lead{color:var(--ink-2); max-width:62ch; margin:0}
+.flow{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:18px 0 0; font-size:.86rem; color:var(--ink-3)}
+.pill{display:inline-block; padding:.18rem .6rem; border-radius:999px; font-weight:700; font-size:.78rem}
+.pill.model{background:var(--model-bg); color:var(--model-ink)}
+.pill.vm{background:var(--vm-bg); color:var(--vm-ink)}
+.pill.view{background:var(--view-bg); color:var(--view-ink)}
+.pill.xc{background:var(--accent-bg); color:var(--accent-ink)}
+.card{background:var(--bg-2); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow)}
+.start{margin:22px 0 40px}
+.start h2{margin:0 0 .3rem; font-size:1.15rem}
+.start p{margin:0 0 14px; color:var(--ink-2)}
+.namerow{display:flex; gap:10px; flex-wrap:wrap}
+.namerow input{flex:1 1 220px; min-width:0; font:inherit; padding:.7rem .9rem; border-radius:10px; border:1px solid var(--line-2); background:var(--bg); color:var(--ink)}
+.err{color:var(--bad); font-size:.9rem; margin-top:8px; min-height:1.2em}
+.rules{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin:18px 0 0; padding:0; list-style:none}
+.rules li{background:var(--bg-3); border-radius:10px; padding:10px 12px; font-size:.88rem; color:var(--ink-2)}
+.rules b{display:block; color:var(--ink); font-size:.92rem}
+
+/* ---------- sheet head (also the PDF header) ---------- */
+.sheet{display:flex; flex-wrap:wrap; gap:8px 22px; align-items:baseline; margin:18px 0 6px; padding:14px 18px; border:1px solid var(--line); border-radius:12px; background:var(--bg-2)}
+.sheet div{font-size:.9rem; color:var(--ink-2)}
+.sheet b{color:var(--ink)}
+.sheet .edit{border:0; background:none; color:var(--view); padding:0 0 0 6px; font-size:.85rem; text-decoration:underline}
+
+/* ---------- score ---------- */
+.score{display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:center; margin:14px 0 8px}
+.ring{--p:0; width:128px; height:128px; border-radius:50%; background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--bg-3) 0); display:grid; place-items:center}
+.ring>div{width:100px; height:100px; border-radius:50%; background:var(--bg-2); display:grid; place-items:center; text-align:center; line-height:1.1}
+.ring b{font-size:1.9rem; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.ring small{display:block; color:var(--ink-3); font-size:.75rem}
+.score h2{margin:0 0 4px; font-size:1.25rem}
+.score p{margin:0 0 10px; color:var(--ink-2); font-size:.93rem}
+.bars{display:grid; gap:6px}
+.bar{display:grid; grid-template-columns:minmax(90px,150px) 1fr 3.4em; gap:10px; align-items:center; font-size:.82rem; color:var(--ink-2)}
+.bar i{display:block; height:8px; border-radius:99px; background:var(--bg-3); overflow:hidden}
+.bar i u{display:block; height:100%; background:var(--ok); border-radius:99px}
+.bar span:last-child{text-align:right; font-variant-numeric:tabular-nums}
+@media (max-width:520px){.score{grid-template-columns:1fr; justify-items:start}}
+
+/* ---------- parts & questions ---------- */
+.part{margin:34px 0 12px; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.part h2{margin:0; font-size:1.2rem; letter-spacing:-.01em}
+.part p{flex-basis:100%; margin:0; color:var(--ink-2); font-size:.93rem}
+.q{margin:14px 0; padding:0; overflow:hidden; break-inside:avoid}
+.q fieldset{border:0; margin:0; padding:18px 20px 20px; min-width:0}
+.qh{display:flex; gap:10px; align-items:center; margin-bottom:8px; font-size:.8rem; color:var(--ink-3); font-weight:600}
+.qn{flex:none; min-width:30px; height:30px; padding:0 8px; border-radius:9px; background:var(--bg-3); color:var(--ink); display:grid; place-items:center; font-weight:800; font-size:.88rem}
+.qh .kind{text-transform:uppercase; letter-spacing:.08em}
+.qh .pts{margin-left:auto; white-space:nowrap}
+.badge{padding:.15rem .55rem; border-radius:99px; font-weight:800; font-size:.76rem}
+.badge.ok{background:var(--ok-bg); color:var(--ok)} .badge.mid{background:var(--mid-bg); color:var(--mid)} .badge.bad{background:var(--bad-bg); color:var(--bad)}
+.prompt{font-size:1.02rem; font-weight:600; margin:0 0 12px}
+.prompt code{font-weight:500}
+pre.code{margin:0 0 12px; padding:14px 16px; background:var(--code-bg); border:1px solid var(--line); border-radius:10px; overflow-x:auto; font-size:.84rem; line-height:1.75; tab-size:4}
+.hint{font-size:.84rem; color:var(--ink-3); margin:-4px 0 10px}
+
+.opts{display:grid; gap:8px}
+.opt{display:flex; gap:11px; align-items:flex-start; padding:10px 12px; border:1.5px solid var(--line); border-radius:10px; cursor:pointer; transition:border-color .12s,background .12s}
+.opt:hover{border-color:var(--line-2); background:var(--bg-3)}
+.opt input{flex:none; margin:.28em 0 0; width:17px; height:17px; accent-color:var(--view)}
+.opt:has(input:checked){border-color:var(--view); background:var(--view-bg)}
+.opt span{min-width:0}
+fieldset:disabled .opt{cursor:default}
+fieldset:disabled .opt:hover{background:none; border-color:var(--line)}
+fieldset:disabled .opt:has(input:checked){border-color:var(--view); background:var(--view-bg)}
+.opt.good{border-color:var(--ok) !important; background:var(--ok-bg) !important}
+.opt.wrong{border-color:var(--bad) !important; background:var(--bad-bg) !important}
+.opt .tag{margin-left:auto; flex:none; font-size:.74rem; font-weight:800; white-space:nowrap; padding-left:8px}
+.opt.good .tag{color:var(--ok)} .opt.wrong .tag{color:var(--bad)}
+
+.blank{font:inherit; width:13ch; max-width:60vw; padding:.12em .5em; border-radius:6px; border:1.5px solid var(--vm); background:var(--bg-2); color:var(--ink)}
+.blank.ok{border-color:var(--ok); background:var(--ok-bg)} .blank.bad{border-color:var(--bad); background:var(--bad-bg)}
+
+.order{list-style:none; margin:0; padding:0; display:grid; gap:8px; counter-reset:o}
+.order li{counter-increment:o; display:flex; gap:10px; align-items:center; padding:9px 10px 9px 12px; border:1.5px solid var(--line); border-radius:10px; background:var(--bg-2)}
+.order li::before{content:counter(o); flex:none; width:24px; height:24px; border-radius:50%; background:var(--vm-bg); color:var(--vm-ink); display:grid; place-items:center; font-size:.78rem; font-weight:800}
+.order li>span{flex:1; min-width:0}
+.order .mv{display:flex; gap:4px; flex:none}
+.order .mv button{width:32px; height:32px; border-radius:8px; border:1px solid var(--line-2); background:var(--bg-3); line-height:1}
+.order .mv button:disabled{opacity:.3; cursor:default}
+.order li.ok{border-color:var(--ok); background:var(--ok-bg)} .order li.bad{border-color:var(--bad); background:var(--bad-bg)}
+.order li.moved{animation:pop .25s}
+@keyframes pop{from{transform:scale(.985)}to{transform:none}}
+
+.match{display:grid; gap:8px}
+.mrow{display:grid; grid-template-columns:1fr minmax(150px,230px); gap:10px; align-items:center; padding:9px 12px; border:1.5px solid var(--line); border-radius:10px}
+.mrow select{font:inherit; font-size:.92rem; padding:.45rem .5rem; border-radius:8px; border:1px solid var(--line-2); background:var(--bg); color:var(--ink); min-width:0; width:100%}
+.mrow.ok{border-color:var(--ok); background:var(--ok-bg)} .mrow.bad{border-color:var(--bad); background:var(--bad-bg)}
+.mrow .fix{grid-column:1/-1; font-size:.84rem; color:var(--ok); font-weight:600}
+@media (max-width:560px){.mrow{grid-template-columns:1fr}}
+
+.why{margin:14px 0 0; padding:12px 14px; border-left:4px solid var(--vm); background:var(--bg-3); border-radius:0 10px 10px 0; font-size:.92rem}
+.why b.l{display:block; font-size:.74rem; letter-spacing:.1em; text-transform:uppercase; color:var(--vm-ink); margin-bottom:2px}
+.why ol{margin:.3rem 0 0; padding-left:1.3rem}
+
+/* ---------- field guide ---------- */
+details.guide{margin:14px 0; padding:0}
+details.guide summary{cursor:pointer; padding:14px 18px; font-weight:700; list-style:none; display:flex; gap:10px; align-items:center}
+details.guide summary::-webkit-details-marker{display:none}
+details.guide summary::after{content:"＋"; margin-left:auto; color:var(--ink-3)}
+details.guide[open] summary::after{content:"－"}
+.gbody{padding:0 18px 18px; display:grid; grid-template-columns:1fr 250px; gap:18px; align-items:start}
+.gbody ol{margin:0; padding-left:1.2rem; font-size:.93rem; color:var(--ink-2)}
+.gbody li{margin:.3rem 0}
+.gbody p{margin:.6rem 0 0; font-size:.88rem; color:var(--ink-3)}
+.insp{border:1px solid var(--line-2); border-radius:10px; overflow:hidden; font-size:.76rem; background:var(--bg-3)}
+.insp .tb{display:flex; gap:10px; padding:6px 10px; border-bottom:1px solid var(--line-2); color:var(--ink-3)}
+.insp .tb b{color:var(--view)}
+.insp .sec{padding:8px 10px; border-bottom:1px solid var(--line)}
+.insp .sec:last-child{border:0}
+.insp .h{font-weight:800; color:var(--ink-2); margin-bottom:4px}
+.insp .kv{display:grid; grid-template-columns:52px 1fr; gap:6px; color:var(--ink-3)}
+.insp .kv span:nth-child(even){background:var(--bg-2); border:1px solid var(--line); border-radius:4px; padding:0 5px; color:var(--ink)}
+.insp .tm{outline:2px solid var(--accent); outline-offset:-2px; background:var(--accent-bg)}
+.insp .ck{display:flex; gap:6px; align-items:center; color:var(--ink)}
+.insp .ck i{width:12px; height:12px; border-radius:3px; border:1px solid var(--line-2); background:var(--bg-2); display:grid; place-items:center; font-style:normal; font-size:9px; color:#fff}
+.insp .ck i.on{background:var(--view); border-color:var(--view)}
+.cap{font-size:.74rem; color:var(--ink-3); margin-top:6px; text-align:center}
+@media (max-width:640px){.gbody{grid-template-columns:1fr}}
+
+/* ---------- submit / unlock ---------- */
+.finish{margin:30px 0 16px}
+.finish h2{margin:0 0 .3rem; font-size:1.15rem}
+.finish p{margin:0 0 12px; color:var(--ink-2)}
+.finish .acts{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+.finish .miss a{display:inline-block; margin:0 3px 3px 0; padding:0 7px; border-radius:6px; background:var(--mid-bg); color:var(--mid); font-weight:700; text-decoration:none}
+.coderow{display:flex; gap:10px; flex-wrap:wrap}
+.coderow input{flex:1 1 180px; min-width:0; font:inherit; letter-spacing:.14em; text-transform:uppercase; padding:.7rem .9rem; border-radius:10px; border:1px solid var(--line-2); background:var(--bg); color:var(--ink)}
+.linkbtn{border:0; background:none; color:var(--ink-3); text-decoration:underline; font-size:.88rem; padding:0}
+footer{color:var(--ink-3); font-size:.82rem; padding:22px 0 60px; text-align:center}
+
+/* ---------- print / Save as PDF ---------- */
+@media print{
+  html[data-theme]{
+    --bg:#fff; --bg-2:#fff; --bg-3:#f1f2f6; --ink:#111; --ink-2:#333; --ink-3:#666; --line:#d5d8e0; --line-2:#b9bdc9;
+    --accent:#d8432b; --accent-ink:#b93520; --accent-bg:#fdece8;
+    --model-bg:#e5f6ec; --model-ink:#1b6b3c; --vm:#7a4fd6; --vm-bg:#efe8fb; --vm-ink:#5431a3; --view:#2a7bd6; --view-bg:#e6f0fb; --view-ink:#1a56a0;
+    --ok:#1f8a4c; --ok-bg:#e4f5ea; --bad:#c7362b; --bad-bg:#fbe9e7; --mid:#a86a00; --mid-bg:#fdf1d8; --code-bg:#f5f6fa; --shadow:none;
+    color-scheme:light;
+  }
+  *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{font-size:9.5pt; line-height:1.4}
+  .top,.start,.finish .acts,.finish .coderow,.linkbtn,.order .mv,.sheet .edit,details.guide,.noprint,.hint,footer{display:none !important}
+  .hero{padding:0}
+  h1{font-size:17pt; margin:.1rem 0 .3rem}
+  .flow{margin-top:6px}
+  .wrap{max-width:none; padding:0}
+  .q,.card{box-shadow:none}
+  .sheet{margin:8px 0; padding:8px 12px}
+  .ring{width:92px; height:92px} .ring>div{width:72px; height:72px} .ring b{font-size:1.5rem}
+  .part{display:block; margin:14px 0 4px; break-after:avoid; break-inside:avoid}
+  .part h2{display:inline; font-size:12pt; margin-left:6px}
+  .part p{margin:2px 0 0}
+  .q{break-inside:avoid; margin:7px 0; border-radius:8px}
+  .q fieldset{padding:9px 12px 10px}
+  .qh{margin-bottom:3px} .qn{height:22px; min-width:22px}
+  .prompt{font-size:10pt; margin-bottom:6px}
+  pre.code{padding:7px 10px; margin-bottom:6px; line-height:1.45; white-space:pre-wrap}
+  .opts,.order,.match{gap:3px}
+  .opt,.order li,.mrow{padding:4px 9px; border-width:1px; border-radius:6px}
+  .opt input{width:12px; height:12px}
+  .mrow select{padding:1px 4px}
+  .why{margin-top:6px; padding:6px 10px}
+  .finish{margin:12px 0; padding:10px 12px}
+  .blank{border-width:1px}
+  @page{margin:14mm}
+}
+</style>
+</head>
+<body>
+
+<header class="top" id="top" hidden>
+  <div class="wrap">
+    <div class="row">
+      <div class="brand"><span class="logo">M</span><span class="t">MAC221 · MVVM Assignment</span></div>
+      <span class="sp"></span>
+      <span class="prog" id="prog"></span>
+      <button class="btn" id="pdfBtn" type="button" title="Opens the print dialog — choose “Save as PDF”">⬇ PDF</button>
+      <button class="btn theme" type="button" aria-label="Switch between light and dark mode"><i class="ti"></i></button>
+    </div>
+    <nav class="nav" id="nav" aria-label="Jump to question"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div class="eyebrow">MAC221 · iOS App Development with SwiftUI</div>
+      <button class="btn theme noprint" id="heroTheme" type="button" aria-label="Switch between light and dark mode"><i class="ti"></i> <span class="tl"></span></button>
+    </div>
+    <h1>Model · View · ViewModel — Assignment</h1>
+    <p class="lead">25 questions on the Counter app, the Task Tracker app, and building an MVVM project in Xcode. <b>Open lecture:</b> keep the <a href="https://kassou-mec.github.io/MAC221/ModelViewVM.html" target="_blank" rel="noopener">MVVM lecture</a> open in another tab. Most questions ask you to <em>apply</em> it — trace code, find the bug, extend the app — so the answers are not written there word for word.</p>
+    <div class="flow"><span class="pill view">View</span>⇄<span class="pill vm">ViewModel</span>⇄<span class="pill model">Model</span><span>· 4 points per question · 100 total</span></div>
+  </section>
+
+  <section class="card start" id="start">
+    <h2>Enter your last name to begin</h2>
+    <p>That's the only thing you need. Your answers are saved in this browser as you go, so you can close the tab and come back.</p>
+    <form class="namerow" id="nameForm" autocomplete="off">
+      <input id="nameIn" type="text" placeholder="Last name" aria-label="Last name" maxlength="40" autocapitalize="words">
+      <button class="btn primary big" type="submit">Start assignment →</button>
+    </form>
+    <div class="err" id="nameErr" role="alert"></div>
+    <ul class="rules">
+      <li><b>1 · Answer</b>Multiple choice, select-all, true/false, fill-in code, put-in-order and matching.</li>
+      <li><b>2 · Submit</b>Submitting locks your answers.</li>
+      <li><b>3 · Grade</b>Type the code your professor gives you to see your grade and the explanations.</li>
+      <li><b>4 · Save</b>Use the PDF button to save your work and turn it in.</li>
+    </ul>
+  </section>
+
+  <div id="work" hidden>
+    <div class="sheet" id="sheet"></div>
+    <section class="card" id="scoreCard" hidden></section>
+    <div id="questions"></div>
+
+    <section class="card finish" id="finish"></section>
+  </div>
+
+  <footer>MAC221 · LaGuardia Community College (CUNY) · Mathematics, Engineering &amp; Computer Science Department</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+const Q = [{"id":"q1","part":0,"type":"mc","prompt":"A teammate wants every task to show a priority color, so they add <code>var color: Color<\/code> to <code>TodoItem<\/code>. The file no longer compiles without SwiftUI. What is the MVVM fix?","options":["Move <code>TodoItem.swift<\/code> into the <code>View<\/code> group","Store a plain value such as <code>priority: Int<\/code> in <code>TodoItem<\/code> and let the View turn it into a color","Turn <code>TodoItem<\/code> into a class marked <code>@Observable<\/code>","Add <code>import SwiftUI<\/code> to <code>TodoItem.swift<\/code> so <code>Color<\/code> compiles"]},{"id":"q2","part":0,"type":"match","prompt":"You are adding four new things to the Task Tracker. Match each one to the layer it belongs in.","rows":["<code>var dueDate: Date<\/code> — when a task is due","<code>func clearCompleted()<\/code> — removes every finished task","<code>.font(.caption)<\/code> and <code>.foregroundStyle(.secondary)<\/code> on the counter text","<code>var progressText: String<\/code> — returns “3 of 5 done”"],"choices":["Model","View","ViewModel"]},{"id":"q3","part":0,"type":"mc","prompt":"This Counter builds and runs. The user taps <b>Add One<\/b> three times. What does the screen show?","code":"class CounterViewModel {\n    private var counter = Counter()\n    var displayText: String { \"Count: \\(counter.value)\" }\n    func increment() { counter.value += 1 }\n}\n\nstruct ContentView: View {\n    @State private var viewModel = CounterViewModel()\n    var body: some View {\n        VStack {\n            Text(viewModel.displayText)\n            Button(\"Add One\") { viewModel.increment() }\n        }\n    }\n}","options":["<b>Count: 1<\/b> — only the first tap is observed","<b>Count: 0<\/b> — the value becomes 3 in memory, but SwiftUI is never told to redraw","<b>Count: 3<\/b> — <code>@State<\/code> is enough to watch the class","Nothing — the app crashes on the first tap"]},{"id":"q4","part":0,"type":"mc","prompt":"The app should allow at most 10 tasks. A classmate writes this in <code>TaskListView<\/code>. What is the best review comment?","code":"Button(\"Add\") {\n    if viewModel.tasks.count < 10 {\n        viewModel.addTask()\n    }\n}","options":["The 10-task rule is a decision, so it belongs inside <code>addTask()<\/code> as a <code>guard<\/code>; the button should be one call","It is fine — the button still ends up calling a ViewModel method","Move the <code>if<\/code> into <code>TaskTrackerApp.swift<\/code> so it runs once at launch","Move the <code>if<\/code> into <code>TodoItem<\/code>, because the limit is data"]},{"id":"q5","part":0,"type":"mc","prompt":"To “make the screen refresh”, a student adds <code>var view: TaskListView?<\/code> to <code>TaskListViewModel<\/code>. What is wrong with that?","options":["The property should be in <code>TodoItem<\/code> instead","Nothing — the ViewModel needs a reference to the View it updates","It should be <code>let<\/code> instead of <code>var<\/code>","The ViewModel must not know about the View — <code>@Observable<\/code> already makes SwiftUI redraw"]},{"id":"q6","part":0,"type":"mc","prompt":"New feature: the <b>Add<\/b> button should be greyed out while the text field is empty or only spaces. Which design follows MVVM?","options":["<code>TodoItem<\/code> gets a <code>canAdd<\/code> property","The View keeps its own <code>@State var canAdd<\/code> and updates it in <code>.onChange<\/code>","The View writes <code>.disabled(viewModel.newTitle.trimmingCharacters(in: .whitespaces).isEmpty)<\/code>","The ViewModel exposes <code>var canAdd: Bool<\/code>; the View writes <code>.disabled(!viewModel.canAdd)<\/code>"]},{"id":"q7","part":1,"type":"fill","prompt":"The Counter's ViewModel is changed as shown. Follow the taps and type the number the screen shows at the end.","code":"func increment() {\n    guard counter.value < 3 else { return }\n    counter.value += 1\n}\nfunc reset() { counter.value = 0 }\n\n// Taps:  Add One ×5,  Reset,  Add One ×2\n// Screen shows:  Count: ⟦1⟧","blanks":1},{"id":"q8","part":1,"type":"fill","prompt":"Complete the two property wrappers / macros that make the Counter screen update by itself.","code":"@⟦1⟧\nclass CounterViewModel {\n    private var counter = Counter()\n    // …\n}\n\nstruct ContentView: View {\n    @⟦2⟧ private var viewModel = CounterViewModel()\n    // …\n}","blanks":2},{"id":"q9","part":1,"type":"order","prompt":"The user taps “Add One”. Put the four things that happen in order.","items":["The ViewModel runs <code>counter.value += 1<\/code>","SwiftUI re-runs <code>body<\/code> and the new count appears","The View calls <code>viewModel.increment()<\/code>","The <code>Counter<\/code> struct now holds the new value"]},{"id":"q10","part":1,"type":"mc","prompt":"Using the lecture's Counter code unchanged, a classmate adds this button to <code>ContentView<\/code>. What happens?","code":"Button(\"Reset\") { viewModel.counter.value = 0 }","options":["It compiles and works, and it is good MVVM","It does not compile — <code>counter<\/code> is <code>private<\/code> inside the ViewModel","It compiles, then crashes when tapped","It compiles, but the screen does not update"]},{"id":"q11","part":2,"type":"mc","prompt":"The user types three spaces in the text field and taps <b>Add<\/b>. What happens?","code":"func addTask() {\n    let trimmed = newTitle.trimmingCharacters(in: .whitespaces)\n    guard !trimmed.isEmpty else { return }\n    tasks.append(TodoItem(title: trimmed))\n    newTitle = \"\"\n}","options":["Nothing is added, and the three spaces stay in the text field","A task titled with three spaces is appended, then the field clears","A blank row is added to the list","Nothing is added, and the text field is cleared"]},{"id":"q12","part":2,"type":"mc","prompt":"The app starts with its two sample tasks, both not done. The user then does this, in order. What does <code>remainingText<\/code> return at the end?","code":"1. taps the row \"Read Chapter 5\"\n2. types \"Study MVVM\" and taps Add\n3. taps the row \"Read Chapter 5\" again\n4. swipes to delete \"Finish Lab 3\"\n\nvar remainingText: String {\n    let left = tasks.filter { !$0.isDone }.count\n    return \"\\(left) task\\(left == 1 ? \"\" : \"s\") left\"\n}","options":["<code>\"2 task left\"<\/code>","<code>\"3 tasks left\"<\/code>","<code>\"1 task left\"<\/code>","<code>\"2 tasks left\"<\/code>"]},{"id":"q13","part":2,"type":"fill","prompt":"The text field must read <em>and<\/em> write the ViewModel's <code>newTitle<\/code> (two-way binding). Fill in the blank.","code":"TextField(\"New task…\", text: ⟦1⟧.newTitle)\n    .textFieldStyle(.roundedBorder)\n    .onSubmit { viewModel.addTask() }","blanks":1},{"id":"q14","part":2,"type":"mc","prompt":"A student replaces <code>let id = UUID()<\/code> with <code>var id: String { title }<\/code>. The array holds two tasks, both titled “Study”, at index 0 and index 1. The user taps the row for index 1. Which task does <code>toggle<\/code> flip?","code":"func toggle(_ task: TodoItem) {\n    guard let index = tasks.firstIndex(where: { $0.id == task.id }) else { return }\n    tasks[index].isDone.toggle()\n}","options":["Both tasks","Index 1 — the one that was tapped","Index 0 — <code>firstIndex<\/code> stops at the first task whose id is “Study”","Neither — the <code>guard<\/code> returns"]},{"id":"q15","part":2,"type":"multi","prompt":"Code review: which of these lines from a classmate's Task Tracker are MVVM mistakes?","options":["In the View: <code>.onDelete(perform: viewModel.delete)<\/code>","In <code>TodoItem.swift<\/code>: <code>import Foundation<\/code>","In <code>TaskListViewModel.swift<\/code>: <code>import Observation<\/code>","In the View: <code>Button(\"Add\") { viewModel.tasks.append(TodoItem(title: viewModel.newTitle)) }<\/code>","In the View: <code>private var viewModel = TaskListViewModel()<\/code> with no <code>@State<\/code>","In the View: <code>Text(\"\\(viewModel.tasks.filter { !$0.isDone }.count) left\")<\/code>"]},{"id":"q16","part":3,"type":"mc","prompt":"A trash button knows <em>which task<\/em> was tapped, not an <code>IndexSet<\/code>. You add a second intent to <code>TaskListViewModel<\/code>. Which body is correct?","code":"func delete(_ task: TodoItem) {\n    // ?\n}","options":["<code>task.isDone = true<\/code>","<code>tasks.remove(atOffsets: task.id)<\/code>","<code>tasks.removeAll()<\/code>","<code>tasks.removeAll { $0.id == task.id }<\/code>"]},{"id":"q17","part":3,"type":"fill","prompt":"Add the trash button to the row in <code>TaskListView.swift<\/code>. Complete the three blanks.","code":"ForEach(viewModel.tasks) { task in\n    HStack {\n        // icon and title …\n        Spacer()\n        Button(role: .⟦1⟧) {\n            viewModel.⟦2⟧(⟦3⟧)\n        } label: {\n            Image(systemName: \"trash\")\n        }\n        .buttonStyle(.borderless)\n    }\n}","blanks":3},{"id":"q18","part":3,"type":"multi","prompt":"After the Delete button is added correctly, which statements are true?","options":["<code>TodoItem.swift<\/code> does not change at all","The button's action is still exactly one ViewModel call","<code>remainingText<\/code> updates by itself after a delete — no refresh code is needed","It is fine for the button to run <code>viewModel.tasks.removeAll { … }<\/code> itself, right in the View","<code>TaskListViewModel.swift<\/code> now needs <code>import SwiftUI<\/code>"]},{"id":"q19","part":4,"type":"mc","prompt":"You created <code>TaskListView.swift<\/code> as a brand-new file and never touched <code>ContentView.swift<\/code>. The build succeeds, but the simulator shows “Hello, world!” instead of your task list. What did you miss?","options":["The simulator must be an iPhone 16 for lists to appear","<code>TaskListView.swift<\/code> has no <code>#Preview<\/code>","<code>TaskListView.swift<\/code> is in the wrong group","<code>TaskTrackerApp.swift<\/code> still creates <code>ContentView()<\/code> inside <code>WindowGroup<\/code>"]},{"id":"q20","part":4,"type":"order","prompt":"Put the steps for building the Task Tracker as an MVVM project in order.","items":["Right-click the <code>TaskTracker<\/code> folder ▸ New Group, three times: <code>Model<\/code>, <code>ViewModel<\/code>, <code>View<\/code>","In <code>View<\/code>, rename <code>ContentView.swift<\/code> to <code>TaskListView.swift<\/code> and paste the View code","In <code>TaskTrackerApp.swift<\/code>, change <code>ContentView()<\/code> to <code>TaskListView()<\/code>, then run with <kbd>⌘R<\/kbd>","In <code>Model<\/code>, add a Swift File named <code>TodoItem.swift<\/code>","In <code>ViewModel<\/code>, add <code>TaskListViewModel.swift<\/code> and build with <kbd>⌘B<\/kbd>","Create a new project: iOS ▸ App, Interface SwiftUI, name it <code>TaskTracker<\/code>"]},{"id":"q21","part":4,"type":"mc","prompt":"In the Project Navigator you rename the file <code>ContentView.swift<\/code> to <code>TaskListView.swift<\/code>, but you do not paste the new code. Then you change the app file to <code>TaskListView()<\/code> and press <kbd>⌘B<\/kbd>. What happens?","options":["It builds — Swift matches a view to its file name","Xcode renames the struct automatically, so it builds and shows “Hello, world!”","Build error: <code>Cannot find 'TaskListView' in scope<\/code> — renaming the file did not rename the struct inside it","It builds, but the screen is blank"]},{"id":"q22","part":4,"type":"match","prompt":"Match each job to the part of the Xcode window where you do it.","rows":["Create the <code>Model<\/code>, <code>ViewModel<\/code> and <code>View<\/code> groups and drag files into them","See and change the <b>Target Membership<\/b> of the selected file","Watch the <code>#Preview<\/code> of <code>TaskListView<\/code> update live, without the simulator","Choose the iPhone 16 simulator before pressing <kbd>⌘R<\/kbd>"],"choices":["Project Navigator (left sidebar)","File Inspector (right panel)","Canvas (beside the editor)","Device menu in the toolbar","Debug console (bottom)"]},{"id":"q23","part":4,"type":"mc","prompt":"The app fails to build with <code>Cannot find 'TodoItem' in scope<\/code>. You select <code>TodoItem.swift<\/code> and the File Inspector shows this. What do you do?","code":"Target Membership\n  [ ] TaskTracker\n  [x] TaskTrackerTests\n  [ ] TaskTrackerUITests","options":["Drag the file into the <code>ViewModel<\/code> group so the ViewModel can see it","Check <b>TaskTracker<\/b> — the file must belong to the app target to be compiled into the app","Uncheck <b>TaskTrackerTests<\/b> and leave the rest alone","Add <code>import TaskTrackerTests<\/code> at the top of <code>TaskListViewModel.swift<\/code>"]},{"id":"q24","part":4,"type":"order","prompt":"Put the steps for linking <code>TodoItem.swift<\/code> to the app target in order.","items":["Find the <b>Target Membership<\/b> section","Click <code>TodoItem.swift<\/code> in the Project Navigator","Make sure <b>TaskTracker<\/b> is checked (Xcode 16+: add it with <b>+<\/b>)","Build again with <kbd>⌘B<\/kbd> — the error is gone","Open the File Inspector in the right-hand panel (<kbd>⌥⌘1<\/kbd>)"]},{"id":"q25","part":4,"type":"tf","prompt":"True or false: a file can sit inside the <code>Model<\/code> group, show up in the Project Navigator, and still be left out of the app when you build.","options":["True","False"]}];
+const PARTS = [{"title":"The three layers","pill":"vm","sub":"Who does what in Model · View · ViewModel."},{"title":"App 1 · Counter","pill":"model","sub":"The smallest possible MVVM app — one file, three layers."},{"title":"App 2 · Task Tracker","pill":"view","sub":"One file per layer: <code>TodoItem<\/code>, <code>TaskListViewModel<\/code>, <code>TaskListView<\/code>."},{"title":"Add a Delete button to Task Tracker","pill":"vm","sub":"The lecture deletes with a swipe (<code>.onDelete<\/code>). Now give every row a visible trash button — the MVVM way."},{"title":"Building it in Xcode","pill":"xc","sub":"Creating the project, adding the three layers, and linking files to the app target.","guide":true}];
+const VAULT = "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";
+const STORE = "mac221-mvvm-assignment-v2";
+const PTS = 4;
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const el = (tag,cls,html)=>{const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e;};
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KIND = {mc:"Multiple choice", tf:"True / False", multi:"Select all that apply", fill:"Fill in the code", order:"Put in order", match:"Match"};
+
+/* ---------- state ---------- */
+let S = {name:"", answers:{}, submitted:null, code:""};
+try{ const raw=localStorage.getItem(STORE); if(raw){ const o=JSON.parse(raw); if(o&&typeof o==="object") S=Object.assign(S,o); } }catch(e){}
+const save=()=>{ try{ localStorage.setItem(STORE,JSON.stringify(S)); }catch(e){} };
+let KEYS=null; // decrypted answer key, only after the code is entered
+
+/* ---------- theme ---------- */
+function setTheme(t,persist){
+  document.documentElement.dataset.theme=t;
+  $$(".theme").forEach(b=>{ b.title = t==="dark"?"Switch to light mode":"Switch to dark mode"; });
+  $$(".theme .tl").forEach(s=>s.textContent = t==="dark"?"Light mode":"Dark mode");
+  if(persist){ try{ localStorage.setItem(STORE+"-theme",t); }catch(e){} }
+}
+(function(){
+  let t=null; try{ t=localStorage.getItem(STORE+"-theme"); }catch(e){}
+  if(t!=="dark"&&t!=="light") t = (window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  setTheme(t,false);
+  $$(".theme").forEach(b=>b.addEventListener("click",()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark",true)));
+})();
+
+/* ---------- answer vault (opens only with the professor's code) ---------- */
+function fnv(str){ let h=0x811c9dc5; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,0x01000193); } return h>>>0; }
+function stream(seed){ let a=seed|0; return function(){ a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)&255; }; }
+function openVault(code){
+  try{
+    const bin=atob(VAULT), next=stream(fnv("mvvm|"+code.trim().toUpperCase())), out=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i)^next();
+    const txt=new TextDecoder("utf-8").decode(out);
+    if(txt.slice(0,8)!=="MVVM-OK|") return null;
+    return JSON.parse(txt.slice(8));
+  }catch(e){ return null; }
+}
+
+/* ---------- build questions ---------- */
+const box=$("#questions"), nav=$("#nav");
+function build(){
+  let lastPart=-1;
+  Q.forEach((q,i)=>{
+    if(q.part!==lastPart){
+      lastPart=q.part; const p=PARTS[q.part];
+      const h=el("div","part"); h.innerHTML=`<span class="pill ${p.pill}">Part ${"ABCDE"[q.part]}</span><h2>${p.title}</h2><p>${p.sub}</p>`;
+      box.appendChild(h);
+      if(p.guide){ const g=el("details","card guide"); g.innerHTML=GUIDE; box.appendChild(g); }
+    }
+    const n=i+1;
+    const card=el("section","card q"); card.id="q"+n; card.dataset.i=i;
+    const fs=el("fieldset");
+    fs.innerHTML=`<legend class="sr" style="position:absolute;left:-9999px">Question ${n}</legend>
+      <div class="qh"><span class="qn">${n}</span><span class="kind">${KIND[q.type]}</span><span class="pts">${PTS} pts</span></div>
+      <p class="prompt">${q.prompt}</p>`;
+    if(q.code && q.type!=="fill") fs.appendChild(el("pre","code",esc(q.code)));
+    if(q.type==="mc"||q.type==="tf"||q.type==="multi"){
+      const wrapO=el("div","opts");
+      q.options.forEach((o,k)=>{
+        const l=el("label","opt");
+        l.innerHTML=`<input type="${q.type==="multi"?"checkbox":"radio"}" name="q${n}" value="${k}"><span>${o}</span>`;
+        wrapO.appendChild(l);
+      });
+      fs.appendChild(wrapO);
+    } else if(q.type==="fill"){
+      let b=0;
+      const html=esc(q.code).replace(/⟦\d⟧/g,()=>`<input class="blank" data-b="${b++}" type="text" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" aria-label="Blank ${b}">`);
+      fs.appendChild(el("pre","code",html));
+      fs.appendChild(el("p","hint","Type exactly what belongs in each box. Swift is case-sensitive."));
+    } else if(q.type==="order"){
+      fs.appendChild(el("p","hint","Use ▲ ▼ to move each step until the list reads top-to-bottom in the right order."));
+      const ol=el("ol","order"); fs.appendChild(ol);
+    } else if(q.type==="match"){
+      const m=el("div","match");
+      q.rows.forEach((r,k)=>{
+        const row=el("div","mrow");
+        row.innerHTML=`<span>${r}</span><select data-r="${k}" aria-label="Match for row ${k+1}"><option value="-1">— choose —</option>${q.choices.map((c,j)=>`<option value="${j}">${esc(c)}</option>`).join("")}</select>`;
+        m.appendChild(row);
+      });
+      fs.appendChild(m);
+    }
+    card.appendChild(fs); box.appendChild(card);
+    const a=el("a",null,String(n)); a.href="#q"+n; a.setAttribute("aria-label","Question "+n); nav.appendChild(a);
+  });
+}
+const GUIDE=`<summary><span class="pill xc">Field guide</span> Target Membership — linking a file to your app</summary>
+<div class="gbody"><div>
+<ol>
+<li>A file showing in the <b>Project Navigator</b> (left) is not automatically compiled. Xcode only compiles files that are <b>members of the app target</b>.</li>
+<li>Click the file (for example <code>TodoItem.swift</code>) in the Project Navigator.</li>
+<li>Open the <b>File Inspector</b> in the right-hand panel: <kbd>⌥⌘1</kbd> (<kbd>⌥⌘0</kbd> shows or hides the whole inspector panel).</li>
+<li>Find the <b>Target Membership</b> section and make sure <b>TaskTracker</b> is checked. In Xcode 16+ the section is a list — use <b>+</b> to add the target if it is missing.</li>
+<li>Build again with <kbd>⌘B</kbd>.</li>
+</ol>
+<p>Typical symptom of a missing membership: the file is right there in the navigator, but the build fails with <code>Cannot find 'TodoItem' in scope</code>. It usually happens when a file is dragged in from Finder or created with the target box unchecked.</p>
+</div><div>
+<div class="insp" aria-hidden="true">
+  <div class="tb"><b>▤</b><span>◷</span><span>?</span></div>
+  <div class="sec"><div class="h">Identity and Type</div><div class="kv"><span>Name</span><span>TodoItem.swift</span><span>Type</span><span>Swift Source</span></div></div>
+  <div class="sec tm"><div class="h">Target Membership</div>
+    <div class="ck"><i class="on">✓</i> TaskTracker</div>
+    <div class="ck"><i></i> TaskTrackerTests</div>
+    <div class="ck"><i></i> TaskTrackerUITests</div></div>
+  <div class="sec"><div class="h">Text Settings</div><div class="kv"><span>Indent</span><span>Spaces</span></div></div>
+</div><div class="cap">Illustration · File Inspector (right panel)</div>
+</div></div>`;
+
+/* ---------- reading / writing answers ---------- */
+function answered(q,a){
+  if(a==null) return false;
+  if(q.type==="mc"||q.type==="tf") return Number.isInteger(a);
+  if(q.type==="multi") return a.length>0;
+  if(q.type==="fill") return a.length===q.blanks && a.every(x=>String(x||"").trim()!=="");
+  if(q.type==="order") return Array.isArray(a);
+  if(q.type==="match") return a.length===q.rows.length && a.every(x=>x>=0);
+  return false;
+}
+function drawOrder(card,q,movedIdx){
+  const i=+card.dataset.i, ol=$(".order",card);
+  const cur=Array.isArray(S.answers[q.id])?S.answers[q.id]:q.items.map((_,k)=>k);
+  ol.innerHTML="";
+  cur.forEach((idx,pos)=>{
+    const li=el("li",idx===movedIdx?"moved":null); li.dataset.idx=idx;
+    li.innerHTML=`<span>${q.items[idx]}</span><span class="mv"><button type="button" data-d="-1" aria-label="Move up" ${pos===0?"disabled":""}>▲</button><button type="button" data-d="1" aria-label="Move down" ${pos===cur.length-1?"disabled":""}>▼</button></span>`;
+    ol.appendChild(li);
+  });
+}
+function restore(){
+  $$(".q").forEach(card=>{
+    const q=Q[+card.dataset.i], a=S.answers[q.id];
+    if(q.type==="mc"||q.type==="tf"){ $$("input",card).forEach(inp=>inp.checked = (+inp.value===a)); }
+    else if(q.type==="multi"){ $$("input",card).forEach(inp=>inp.checked = Array.isArray(a)&&a.includes(+inp.value)); }
+    else if(q.type==="fill"){ $$(".blank",card).forEach(inp=>inp.value = (a&&a[+inp.dataset.b])||""); }
+    else if(q.type==="order"){ drawOrder(card,q); }
+    else if(q.type==="match"){ $$("select",card).forEach(s=>s.value = a?String(a[+s.dataset.r]):"-1"); }
+  });
+}
+box.addEventListener("change",e=>{
+  const card=e.target.closest(".q"); if(!card||S.submitted) return;
+  const q=Q[+card.dataset.i];
+  if(q.type==="mc"||q.type==="tf"){ const c=$("input:checked",card); S.answers[q.id]=c?+c.value:null; }
+  else if(q.type==="multi"){ S.answers[q.id]=$$("input:checked",card).map(x=>+x.value).sort((a,b)=>a-b); }
+  else if(q.type==="match"){ S.answers[q.id]=$$("select",card).map(s=>+s.value); }
+  else return;
+  save(); progress();
+});
+box.addEventListener("input",e=>{
+  if(!e.target.classList.contains("blank")||S.submitted) return;
+  const card=e.target.closest(".q"), q=Q[+card.dataset.i];
+  S.answers[q.id]=$$(".blank",card).map(x=>x.value);
+  save(); progress();
+});
+box.addEventListener("click",e=>{
+  const b=e.target.closest(".mv button"); if(!b||S.submitted) return;
+  const card=b.closest(".q"), q=Q[+card.dataset.i], li=b.closest("li");
+  const cur=Array.isArray(S.answers[q.id])?S.answers[q.id].slice():q.items.map((_,k)=>k);
+  const idx=+li.dataset.idx, pos=cur.indexOf(idx), to=pos+(+b.dataset.d);
+  if(to<0||to>=cur.length) return;
+  cur.splice(pos,1); cur.splice(to,0,idx);
+  S.answers[q.id]=cur; save(); drawOrder(card,q,idx); progress();
+  const nb=$(`li[data-idx="${idx}"] button[data-d="${b.dataset.d}"]`,card);
+  if(nb){ (nb.disabled?$(`li[data-idx="${idx}"] button:not(:disabled)`,card):nb).focus(); }
+});
+
+/* ---------- grading ---------- */
+const norm=s=>String(s||"").replace(/\s+/g,"");
+function grade(q,key,a){ // returns fraction 0..1
+  if(!answered(q,a) && q.type!=="fill" && q.type!=="match") return 0;
+  if(q.type==="mc"||q.type==="tf") return a===key.a?1:0;
+  if(q.type==="multi") return (a.length===key.a.length && a.every((x,i)=>x===key.a[i]))?1:0;
+  if(q.type==="fill"){ if(!a) return 0; let n=0; key.a.forEach((alts,i)=>{ if(alts.map(norm).includes(norm(a[i]))) n++; }); return n/key.a.length; }
+  if(q.type==="order"){ let n=0; key.a.forEach((x,i)=>{ if(a[i]===x) n++; }); return n/key.a.length; }
+  if(q.type==="match"){ if(!a) return 0; let n=0; key.a.forEach((x,i)=>{ if(a[i]===x) n++; }); return n/key.a.length; }
+  return 0;
+}
+const fmt=x=>(Math.round(x*100)/100).toString();
+
+function showResults(){
+  const fr=Q.map((q,i)=>grade(q,KEYS[i],S.answers[q.id]));
+  const total=fr.reduce((s,f)=>s+f*PTS,0), max=Q.length*PTS, pct=Math.round(total/max*100);
+  $$(".q").forEach(card=>{
+    const i=+card.dataset.i, q=Q[i], key=KEYS[i], a=S.answers[q.id], f=fr[i];
+    const cls=f===1?"ok":f>0?"mid":"bad";
+    const pts=$(".pts",card); pts.innerHTML=`<span class="badge ${cls}">${f===1?"✓ Correct":f>0?"◐ Partial":"✗ Incorrect"}</span> ${fmt(f*PTS)} / ${PTS}`;
+    nav.children[i].className="r-"+cls;
+    $$(".why,.tag,.fix",card).forEach(x=>x.remove());
+    let extra="";
+    if(q.type==="mc"||q.type==="tf"||q.type==="multi"){
+      const right=q.type==="multi"?key.a:[key.a], mine=q.type==="multi"?(a||[]):[a];
+      $$(".opt",card).forEach((l,k)=>{
+        l.classList.remove("good","wrong");
+        if(right.includes(k)){ l.classList.add("good"); l.insertAdjacentHTML("beforeend",`<span class="tag">✓ correct${mine.includes(k)?"":" (missed)"}</span>`); }
+        else if(mine.includes(k)){ l.classList.add("wrong"); l.insertAdjacentHTML("beforeend",`<span class="tag">✗ your pick</span>`); }
+      });
+    } else if(q.type==="fill"){
+      $$(".blank",card).forEach((inp,k)=>{ const ok=key.a[k].map(norm).includes(norm(inp.value)); inp.classList.add(ok?"ok":"bad"); });
+      extra=`<div>Answers: ${key.a.map((alts,k)=>`<code>${esc(alts[0])}</code>`).join(" · ")}</div>`;
+    } else if(q.type==="order"){
+      $$(".order li",card).forEach((li,k)=>li.classList.add(+li.dataset.idx===key.a[k]?"ok":"bad"));
+      if(f<1) extra=`<div>Correct order:<ol>${key.a.map(x=>`<li>${q.items[x]}</li>`).join("")}</ol></div>`;
+    } else if(q.type==="match"){
+      $$(".mrow",card).forEach((row,k)=>{ const ok=a&&a[k]===key.a[k]; row.classList.add(ok?"ok":"bad"); if(!ok) row.insertAdjacentHTML("beforeend",`<span class="fix">✓ ${esc(q.choices[key.a[k]])}</span>`); });
+    }
+    $("fieldset",card).insertAdjacentHTML("beforeend",`<div class="why"><b class="l">Explanation</b>${key.why}${extra}</div>`);
+  });
+  const perPart=PARTS.map((p,pi)=>{ let s=0,m=0; Q.forEach((q,i)=>{ if(q.part===pi){ s+=fr[i]*PTS; m+=PTS; } }); return {t:p.title,s,m}; });
+  const full=fr.filter(f=>f===1).length;
+  const msg = pct>=90?"Excellent — you have MVVM down.":pct>=75?"Solid work. Review the explanations on the ones you missed.":pct>=60?"You're getting there. Re-read the lecture sections for the parts with the shortest bars.":"Go back through the lecture and the explanations below, then ask in class about anything unclear.";
+  const sc=$("#scoreCard"); sc.hidden=false;
+  sc.innerHTML=`<div class="score"><div class="ring" style="--p:${pct}"><div><div><b>${fmt(total)}</b><small>out of ${max}</small></div></div></div>
+    <div><h2>${esc(S.name)} — ${pct}%</h2><p>${full} of ${Q.length} fully correct. ${msg}</p>
+    <div class="bars">${perPart.map(p=>`<div class="bar"><span>${p.t}</span><i><u style="width:${p.m?p.s/p.m*100:0}%"></u></i><span>${fmt(p.s)}/${p.m}</span></div>`).join("")}</div></div></div>`;
+  S.scoreText=`${fmt(total)} / ${max} (${pct}%)`;
+}
+
+/* ---------- screens ---------- */
+function progress(){
+  let n=0;
+  Q.forEach((q,i)=>{ const d=answered(q,S.answers[q.id]); if(d) n++; if(!KEYS) nav.children[i].className=d?"done":""; });
+  $("#prog").textContent = KEYS ? "Graded" : S.submitted ? "Submitted" : `${n} / ${Q.length} answered`;
+  return n;
+}
+function sheet(){
+  const when = S.submitted ? new Date(S.submitted).toLocaleString([], {dateStyle:"medium", timeStyle:"short"}) : "not yet";
+  $("#sheet").innerHTML=`<div>Last name: <b>${esc(S.name)}</b>${S.submitted?"":`<button class="edit" type="button" id="editName">change</button>`}</div>
+    <div>Submitted: <b>${when}</b></div>
+    <div>Grade: <b>${KEYS&&S.scoreText?S.scoreText:"hidden until the code is entered"}</b></div>`;
+  const e=$("#editName"); if(e) e.addEventListener("click",()=>{ $("#start").hidden=false; $("#work").hidden=true; $("#top").hidden=true; $("#nameIn").value=S.name; $("#nameIn").focus(); });
+}
+function finish(confirming){
+  const f=$("#finish");
+  if(KEYS){
+    f.innerHTML=`<h2>All done</h2><p>Your grade and the explanations are shown above. Save a PDF copy and turn it in as your professor instructed.</p>
+      <div class="acts"><button class="btn primary big" type="button" data-act="pdf">⬇ Save as PDF</button><a class="btn" href="#scoreCard">Back to my grade ↑</a></div>`;
+  } else if(S.submitted){
+    f.innerHTML=`<h2>Submitted — your answers are locked 🔒</h2><p>Enter the code your professor gives you to reveal your grade and the explanation for every question. You can save a PDF now, or after your grade is showing.</p>
+      <form class="coderow" id="codeForm" autocomplete="off"><input id="codeIn" type="text" placeholder="Grade code" aria-label="Grade code" maxlength="20" autocapitalize="characters" spellcheck="false">
+      <button class="btn primary big" type="submit">Show my grade</button><button class="btn big" type="button" data-act="pdf">⬇ Save as PDF</button></form>
+      <div class="err" id="codeErr" role="alert"></div>`;
+    $("#codeForm").addEventListener("submit",e=>{
+      e.preventDefault();
+      const code=$("#codeIn").value, k=openVault(code);
+      if(!k){ $("#codeErr").textContent="That code isn't right. Check with your professor and try again."; return; }
+      KEYS=k; S.code=code.trim().toUpperCase(); showResults(); save(); sheet(); progress(); finish();
+      $("#scoreCard").scrollIntoView({block:"start"});
+    });
+  } else {
+    const n=progress(), miss=Q.map((q,i)=>answered(q,S.answers[q.id])?null:i+1).filter(Boolean);
+    if(confirming){
+      f.innerHTML=`<h2>${miss.length?`You still have ${miss.length} unanswered question${miss.length===1?"":"s"}`:"Ready to submit?"}</h2>
+        <p class="miss">${miss.length?`Unanswered: ${miss.map(m=>`<a href="#q${m}">${m}</a>`).join("")}<br>Unanswered questions earn 0 points. `:""}Once you submit, your answers are locked and cannot be changed.</p>
+        <div class="acts"><button class="btn primary big" type="button" data-act="submit">${miss.length?"Submit anyway":"Yes, submit and lock"}</button><button class="btn big" type="button" data-act="cancel">Keep working</button></div>`;
+    } else {
+      f.innerHTML=`<h2>Finished?</h2><p>${n} of ${Q.length} answered. Submitting locks your answers; your grade appears after you enter the code from your professor.</p>
+        <div class="acts"><button class="btn primary big" type="button" data-act="ask">Submit assignment</button><button class="btn big" type="button" data-act="pdf">⬇ Save as PDF</button><span class="sp" style="flex:1"></span><button class="linkbtn" type="button" data-act="clear">Clear my answers</button></div>`;
+    }
+  }
+}
+function lock(){ $$(".q fieldset").forEach(fs=>fs.disabled=true); }
+$("#finish").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const act=b.dataset.act;
+  if(act==="pdf") window.print();
+  else if(act==="ask") finish(true);
+  else if(act==="cancel") finish(false);
+  else if(act==="submit"){ S.submitted=Date.now(); save(); lock(); sheet(); progress(); finish(); $("#finish").scrollIntoView({block:"center"}); const c=$("#codeIn"); if(c) c.focus({preventScroll:true}); }
+  else if(act==="clear"){
+    if(b.dataset.sure){ S.answers={}; save(); restore(); progress(); finish(); window.scrollTo(0,0); }
+    else { b.dataset.sure="1"; b.textContent="Click again to erase all answers"; b.style.color="var(--bad)"; }
+  }
+});
+$("#pdfBtn").addEventListener("click",()=>window.print());
+
+function enter(){
+  $("#start").hidden=true; $("#work").hidden=false; $("#top").hidden=false; $("#heroTheme").hidden=true;
+  document.title=`MAC221 MVVM Assignment — ${S.name}`;
+  if(S.submitted) lock();
+  if(S.submitted && S.code){ const k=openVault(S.code); if(k){ KEYS=k; showResults(); } }
+  sheet(); progress(); finish();
+}
+$("#nameForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const v=$("#nameIn").value.trim().replace(/\s+/g," ");
+  if(!/^[\p{L}][\p{L}\p{M}' .-]{1,39}$/u.test(v)){ $("#nameErr").textContent="Please type your last name (letters only, at least 2)."; return; }
+  $("#nameErr").textContent=""; S.name=v; save(); enter(); window.scrollTo(0,0);
+});
+
+build(); restore();
+if(S.name) enter(); else { setTimeout(()=>{ try{ $("#nameIn").focus({preventScroll:true}); }catch(e){} },0); }
+})();
+</script>
+</body>
+</html>
